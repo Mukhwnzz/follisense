@@ -11,7 +11,7 @@ const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [showForgotConfirm, setShowForgotConfirm] = useState(false);
+  
 
   const canSubmit = email.trim().length > 0 && password.length >= 1;
 

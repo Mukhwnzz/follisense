@@ -349,6 +349,39 @@ const ProfilePage = () => {
           </div>
           <div className="space-y-2">
             <button className="card-elevated w-full p-4 text-left text-sm text-foreground flex items-center justify-between">Export my data <ChevronRight size={16} className="text-muted-foreground" /></button>
+            <button onClick={() => setShowChangePassword(!showChangePassword)} className="card-elevated w-full p-4 text-left text-sm text-foreground flex items-center gap-2">
+              <Lock size={16} strokeWidth={1.5} /> Change password <ChevronRight size={16} className="text-muted-foreground ml-auto" />
+            </button>
+            {showChangePassword && (
+              <div className="card-elevated p-4 space-y-3">
+                <div className="relative">
+                  <label className="text-xs font-medium text-muted-foreground mb-1 block">Current password</label>
+                  <input type={showCurrentPw ? 'text' : 'password'} value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} className="w-full h-10 px-3 pr-10 rounded-lg border border-border bg-card text-foreground text-sm focus:outline-none focus:border-primary" />
+                  <button type="button" onClick={() => setShowCurrentPw(!showCurrentPw)} className="absolute right-3 top-7 text-muted-foreground">{showCurrentPw ? <EyeOff size={16} /> : <Eye size={16} />}</button>
+                </div>
+                <div className="relative">
+                  <label className="text-xs font-medium text-muted-foreground mb-1 block">New password</label>
+                  <input type={showNewPw ? 'text' : 'password'} value={newPassword} onChange={e => setNewPassword(e.target.value)} className="w-full h-10 px-3 pr-10 rounded-lg border border-border bg-card text-foreground text-sm focus:outline-none focus:border-primary" />
+                  <button type="button" onClick={() => setShowNewPw(!showNewPw)} className="absolute right-3 top-7 text-muted-foreground">{showNewPw ? <EyeOff size={16} /> : <Eye size={16} />}</button>
+                </div>
+                <div className="relative">
+                  <label className="text-xs font-medium text-muted-foreground mb-1 block">Confirm new password</label>
+                  <input type={showConfirmPw ? 'text' : 'password'} value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} className="w-full h-10 px-3 pr-10 rounded-lg border border-border bg-card text-foreground text-sm focus:outline-none focus:border-primary" />
+                  <button type="button" onClick={() => setShowConfirmPw(!showConfirmPw)} className="absolute right-3 top-7 text-muted-foreground">{showConfirmPw ? <EyeOff size={16} /> : <Eye size={16} />}</button>
+                </div>
+                <button
+                  onClick={() => {
+                    toast({ title: 'Password updated' });
+                    setCurrentPassword(''); setNewPassword(''); setConfirmPassword('');
+                    setShowChangePassword(false);
+                  }}
+                  disabled={!currentPassword || !newPassword || !confirmPassword || newPassword !== confirmPassword}
+                  className={`w-full h-10 rounded-xl font-medium text-sm btn-press transition-colors ${currentPassword && newPassword && confirmPassword && newPassword === confirmPassword ? 'bg-primary text-primary-foreground' : 'bg-border text-muted-foreground cursor-not-allowed'}`}
+                >
+                  Update password
+                </button>
+              </div>
+            )}
             <button onClick={handleDelete} className="card-elevated w-full p-4 text-left text-sm text-destructive flex items-center gap-2"><Trash2 size={16} strokeWidth={1.5} /> Delete all data</button>
           </div>
         </div>
