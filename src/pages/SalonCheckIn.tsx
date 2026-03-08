@@ -87,16 +87,18 @@ const SalonCheckIn = () => {
   const removePhoto = (id: string) => setPhotos(prev => prev.filter(p => p.id !== id));
 
   const handleComplete = () => {
-    // Save to client's history
-    if (addCheckInEntry) {
-      addCheckInEntry({
-        type: 'salon-checkin',
+    // Save check-in data to localStorage for the client's timeline
+    try {
+      const existing = JSON.parse(localStorage.getItem('follisense-salon-checkins') || '[]');
+      existing.push({
+        id: `sc-${Date.now()}`,
         date: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
         photos: photos.length,
         observations: selectedObservations.map(id => observations.find(o => o.id === id)?.label || id),
         note,
       });
-    }
+      localStorage.setItem('follisense-salon-checkins', JSON.stringify(existing));
+    } catch {}
     toast({ title: 'Check-in saved', description: 'The salon observation has been added to your timeline.' });
     setStep(4);
   };
