@@ -52,6 +52,7 @@ const App = () => (
               <Route path="/login" element={<LoginPage />} />
               <Route path="/forgot-password" element={<ForgotPasswordPage />} />
               <Route path="/onboarding" element={<Onboarding />} />
+              <Route path="/onboarding/baseline-response" element={<BaselineResponse />} />
               <Route path="/home" element={<HomePage />} />
               <Route path="/my-routine" element={<MyRoutine />} />
               <Route path="/chat" element={<ChatPage />} />
