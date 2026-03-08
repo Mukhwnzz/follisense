@@ -264,7 +264,17 @@ const WashDayAssessment = () => {
         </div>
 
         <AnimatePresence mode="wait">
-          {!isPhotoStep && currentQ ? (
+          {acknowledgment ? (
+            <motion.div
+              key="ack"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="pt-16 text-center"
+            >
+              <p className="text-lg font-medium text-foreground">{acknowledgment}</p>
+            </motion.div>
+          ) : !isPhotoStep && currentQ ? (
             <motion.div
               key={currentStep}
               initial={{ opacity: 0, x: 20 }}
@@ -276,10 +286,10 @@ const WashDayAssessment = () => {
               <p className="text-label mb-2">Braids — Day 28 of 28</p>
               <h2 className="text-xl font-semibold mb-6">{currentQ.q}</h2>
               <div className="space-y-3">
-                {currentQ.options.map(opt => (
+                {currentQ.options.map((opt, optIdx) => (
                   <button
                     key={opt.label}
-                    onClick={() => selectAnswer(opt.label)}
+                    onClick={() => selectAnswer(opt.label, optIdx)}
                     className={`selection-card w-full text-left ${answers[currentQ.key] === opt.label ? 'selected' : ''}`}
                   >
                     <p className="font-medium text-foreground">{opt.label}</p>
