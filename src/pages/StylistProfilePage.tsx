@@ -125,7 +125,11 @@ const StylistProfilePage = () => {
           <div className="card-elevated divide-y divide-border">
             <div className="flex items-center justify-between p-4">
               <div className="flex items-center gap-2"><Briefcase size={15} className="text-muted-foreground" /><span className="text-sm text-foreground">Role</span></div>
-              <span className="text-sm text-muted-foreground">{profile.role || 'Not set'}</span>
+              <span className="text-sm text-muted-foreground truncate max-w-[180px]">{(() => {
+                const roles = Array.isArray(profile.role) ? profile.role.filter(r => r !== 'Other') : (profile.role ? [profile.role] : []);
+                if (profile.otherRole) roles.push(profile.otherRole);
+                return roles.length > 0 ? roles.join(', ') : 'Not set';
+              })()}</span>
             </div>
             <div className="flex items-center justify-between p-4">
               <div className="flex items-center gap-2"><MapPin size={15} className="text-muted-foreground" /><span className="text-sm text-foreground">Business</span></div>
