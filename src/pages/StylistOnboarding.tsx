@@ -167,9 +167,11 @@ const StylistOnboarding = () => {
           )}
         </motion.div>
 
-        <button onClick={handleNext} disabled={!canNext()} className={`w-full h-14 rounded-xl font-semibold text-base btn-press mt-6 transition-colors ${canNext() ? 'bg-primary text-primary-foreground' : 'bg-border text-muted-foreground cursor-not-allowed'}`}>
-          {step === 3 ? 'Get started' : 'Next'}
-        </button>
+        <div className="flex-shrink-0 pt-4 pb-2">
+          <button onClick={handleNext} disabled={!canNext()} className={`w-full h-14 rounded-xl font-semibold text-base btn-press transition-colors ${canNext() ? 'bg-primary text-primary-foreground' : 'bg-border text-muted-foreground cursor-not-allowed'}`}>
+            {step === 3 ? 'Get started' : 'Next'}
+          </button>
+        </div>
       </div>
     </div>
   );

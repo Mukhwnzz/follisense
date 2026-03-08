@@ -171,8 +171,17 @@ const ReferralGuide = () => (
 
 const StylistLearnPage = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [selectedConditionId, setSelectedConditionId] = useState<string | null>(null);
   const [activeSection, setActiveSection] = useState<'conditions' | 'refer'>('conditions');
+
+  useEffect(() => {
+    const conditionParam = searchParams.get('condition');
+    if (conditionParam && getConditionById(conditionParam)) {
+      setSelectedConditionId(conditionParam);
+      setSearchParams({}, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
 
   const selectedCondition = selectedConditionId ? getConditionById(selectedConditionId) : null;
 
