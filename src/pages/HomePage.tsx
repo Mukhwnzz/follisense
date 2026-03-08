@@ -8,7 +8,7 @@ import { Calendar as CalendarPicker } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 
-const serviceOptions = ['Wash', 'Treatment', 'Style installation', 'Style removal/takedown', 'Trim', 'Colour', 'Other'];
+const serviceOptions = ['Wash', 'Treatment', 'Style installation', 'Style removal/takedown', 'Trim', 'Colour', 'Lineup or shape-up', 'Retwist (locs)', 'Barber fade or cut', 'Scalp treatment', 'Other'];
 
 const protectiveStyleTips = [
   "Quick thought — a satin pillowcase tonight could help protect your edges while you sleep",
