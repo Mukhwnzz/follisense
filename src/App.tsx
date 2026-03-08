@@ -9,6 +9,7 @@ import Welcome from "./pages/Welcome";
 import SignUpPage from "./pages/SignUpPage";
 import LoginPage from "./pages/LoginPage";
 import Onboarding from "./pages/Onboarding";
+import BaselineResponse from "./pages/BaselineResponse";
 import HomePage from "./pages/HomePage";
 import MidCycleCheckIn from "./pages/MidCycleCheckIn";
 import WashDayAssessment from "./pages/WashDayAssessment";
