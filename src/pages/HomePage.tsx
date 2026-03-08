@@ -70,35 +70,51 @@ const HomePage = () => {
           </button>
         </div>
 
-        {/* Cycle status card */}
-        <div className="card-elevated p-5 mb-4 border-l-4 border-l-primary">
-          <div className="flex items-center gap-5">
-            <div className="relative flex-shrink-0">
-              <svg width={size} height={size} className="-rotate-90">
-                <circle cx={size/2} cy={size/2} r={radius} fill="none" stroke="hsl(var(--border))" strokeWidth={stroke} />
-                <motion.circle
-                  cx={size/2} cy={size/2} r={radius} fill="none"
-                  stroke="hsl(var(--primary))" strokeWidth={stroke}
-                  strokeDasharray={circumference} strokeDashoffset={offset}
-                  strokeLinecap="round"
-                  initial={{ strokeDashoffset: circumference }}
-                  animate={{ strokeDashoffset: offset }}
-                  transition={{ duration: 1, ease: 'easeOut' }}
-                />
-              </svg>
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-xl font-semibold text-foreground">{currentDay}</span>
-                <span className="text-[11px] text-muted-foreground">of {totalDays} days</span>
+        {/* Cycle status card — protective style wearer */}
+        {!onboardingData.isWornOutOnly ? (
+          <div className="card-elevated p-5 mb-4 border-l-4 border-l-primary">
+            <div className="flex items-center gap-5">
+              <div className="relative flex-shrink-0">
+                <svg width={size} height={size} className="-rotate-90">
+                  <circle cx={size/2} cy={size/2} r={radius} fill="none" stroke="hsl(var(--border))" strokeWidth={stroke} />
+                  <motion.circle
+                    cx={size/2} cy={size/2} r={radius} fill="none"
+                    stroke="hsl(var(--primary))" strokeWidth={stroke}
+                    strokeDasharray={circumference} strokeDashoffset={offset}
+                    strokeLinecap="round"
+                    initial={{ strokeDashoffset: circumference }}
+                    animate={{ strokeDashoffset: offset }}
+                    transition={{ duration: 1, ease: 'easeOut' }}
+                  />
+                </svg>
+                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                  <span className="text-xl font-semibold text-foreground">{currentDay}</span>
+                  <span className="text-[11px] text-muted-foreground">of {totalDays} days</span>
+                </div>
+              </div>
+              <div>
+                <p className="text-label mb-1">Current style</p>
+                <p className="font-semibold text-lg text-foreground">{currentStyle}</p>
+                <p className="text-sm text-muted-foreground mt-1">Installed Feb 24</p>
+                <p className="text-sm text-muted-foreground">Next wash day: Mar 10</p>
               </div>
             </div>
-            <div>
-              <p className="text-label mb-1">Current style</p>
-              <p className="font-semibold text-lg text-foreground">{currentStyle}</p>
-              <p className="text-sm text-muted-foreground mt-1">Installed Feb 24</p>
-              <p className="text-sm text-muted-foreground">Next wash day: Mar 10</p>
+          </div>
+        ) : (
+          <div className="card-elevated p-5 mb-4 border-l-4 border-l-primary">
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 rounded-2xl bg-sage-light flex flex-col items-center justify-center flex-shrink-0">
+                <span className="text-xl font-semibold text-foreground">3</span>
+                <span className="text-[10px] text-muted-foreground leading-tight">days ago</span>
+              </div>
+              <div className="flex-1">
+                <p className="text-label mb-1">Last wash</p>
+                <p className="font-semibold text-foreground">{new Date(Date.now() - 3 * 86400000).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}</p>
+                <p className="text-sm text-muted-foreground mt-1">Next check-in: {new Date(Date.now() + 4 * 86400000).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}</p>
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* Health profile prompt */}
         {!healthProfile.sweat && !healthProfile.medicalConditions.length && (
