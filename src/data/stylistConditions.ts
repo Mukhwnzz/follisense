@@ -65,7 +65,7 @@ export const stylistConditions: StylistCondition[] = [
     whatItLooksLike: 'Yellowish, oily, or waxy flakes. Redness or pink patches on the scalp. May see crusting along the hairline or behind the ears. Different from dry scalp: seborrheic dermatitis flakes are larger, oilier, and often yellowish.',
     whereToLook: 'Hairline, behind the ears, crown, anywhere the scalp is oilier.',
     whatToTell: '"You\'ve got some flaking and irritation that looks like it could be seborrheic dermatitis. A medicated shampoo with ketoconazole or zinc pyrithione usually helps. If it doesn\'t clear up, a doctor can prescribe something stronger."',
-    whatYouCanDo: 'Recommend gentle cleansing. Don\'t cover with heavy products. Note it in ScalpSense.',
+    whatYouCanDo: 'Recommend gentle cleansing. Don\'t cover with heavy products. Note it in FolliSense.',
     severityGuide: 'Mild (some flaking) = self-manageable with OTC products. Moderate to severe (persistent, spreading, painful) = refer.',
     darkerSkinNote: 'On darker skin: Flakes tend to be more visible against dark hair and skin. But the redness that typically accompanies it on lighter skin may appear as hyperpigmentation (darker patches) or a slight purple or ashy tone on brown and dark brown skin. Don\'t look for pink. Look for colour change from the client\'s normal skin tone.',
   },
