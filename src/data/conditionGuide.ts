@@ -2,17 +2,25 @@ export interface SelfCheckQuestion {
   question: string;
 }
 
+export interface PhotoPlaceholder {
+  label: string;
+  description: string;
+}
+
 export interface ConsumerCondition {
   id: string;
   name: string;
   summary: string;
   whatIsIt: string;
   selfCheck: SelfCheckQuestion[];
+  photoGallery: PhotoPlaceholder[];
   actionSteps: string[];
   dontDo: string[];
   whenToSee: string;
   relatedArticleId?: string;
   dermnetUrl: string;
+  externalLinkLabel: string;
+  externalLinkUrl: string;
   chatPrompts: string[];
 }
 
