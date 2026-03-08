@@ -308,9 +308,17 @@ const Onboarding = () => {
   const [cycleLenMin, setCycleLenMin] = useState('');
   const [cycleLenMax, setCycleLenMax] = useState('');
   const [washFreq, setWashFreq] = useState('');
+  const [washFreqBucket, setWashFreqBucket] = useState(''); // 'weekly+' or 'less'
+  const [washFreqDetail, setWashFreqDetail] = useState('');
   const [washFreqPerCycle, setWashFreqPerCycle] = useState('');
   const [betweenWashCare, setBetweenWashCare] = useState<string[]>([]);
   const [otherBetweenWash, setOtherBetweenWash] = useState('');
+
+  // Camera permission
+  const [cameraAllowed, setCameraAllowed] = useState(false);
+  const [showCameraModal, setShowCameraModal] = useState(false);
+  const [pendingPhotoArea, setPendingPhotoArea] = useState<string | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<Record<string, string>>({});
 
   // Male-specific routine state
   const [barberFreq, setBarberFreq] = useState('');
