@@ -386,8 +386,28 @@ const HomePage = () => {
           <ChevronRight size={18} className="text-muted-foreground" />
         </button>
 
+        {/* Complete your profile (skipped sections) */}
+        {(() => {
+          const skipped = JSON.parse(sessionStorage.getItem('follisense-skipped-sections') || '[]');
+          const hasSkippedProducts = skipped.includes(6);
+          const hasIncompleteProfile = hasSkippedProducts || (!healthProfile.sweat && !healthProfile.medicalConditions.length);
+          if (!hasIncompleteProfile) return null;
+          return (
+            <button onClick={() => navigate(hasSkippedProducts ? '/onboarding?step=6' : '/health-profile')} className="card-elevated p-4 mb-4 w-full flex items-center gap-3 text-left border-l-4 border-l-warning">
+              <div className="w-10 h-10 rounded-xl bg-warning/15 flex items-center justify-center flex-shrink-0">
+                <Target size={20} className="text-warning" strokeWidth={1.5} />
+              </div>
+              <div className="flex-1">
+                <p className="font-medium text-foreground text-sm">Complete your profile</p>
+                <p className="text-xs text-muted-foreground">Fill in skipped sections for better personalisation</p>
+              </div>
+              <ChevronRight size={18} className="text-muted-foreground" />
+            </button>
+          );
+        })()}
+
         {/* Health profile prompt */}
-        {!healthProfile.sweat && !healthProfile.medicalConditions.length && (
+        {!healthProfile.sweat && !healthProfile.medicalConditions.length && !JSON.parse(sessionStorage.getItem('follisense-skipped-sections') || '[]').length && (
           <button onClick={() => navigate('/health-profile')} className="card-elevated p-4 mb-4 w-full flex items-center gap-3 text-left border-l-4 border-l-secondary">
             <div className="w-10 h-10 rounded-xl bg-sage-light flex items-center justify-center flex-shrink-0">
               <Heart size={20} className="text-primary" strokeWidth={1.5} />
