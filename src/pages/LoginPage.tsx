@@ -84,6 +84,19 @@ const LoginPage = () => {
           </div>
 
           <button
+            type="button"
+            onClick={() => {
+              setEmail('test@scalpsense.app');
+              setPassword('demo1234');
+              setUserName('Ama');
+              navigate(onboardingComplete ? '/home' : '/onboarding');
+            }}
+            className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+          >
+            Use test account
+          </button>
+
+          <button
             type="submit"
             disabled={!canSubmit}
             className={`w-full h-14 rounded-xl font-semibold text-base btn-press transition-colors ${
