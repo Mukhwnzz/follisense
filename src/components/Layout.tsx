@@ -1,5 +1,5 @@
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Home, Clock, BookOpen, User, Users } from 'lucide-react';
+import { Home, Clock, BookOpen, User, Users, MessageCircle } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 
 const consumerTabs = [
