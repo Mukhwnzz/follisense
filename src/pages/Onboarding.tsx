@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, HelpCircle, ChevronDown, Camera, Check } from 'lucide-react';
+import { ArrowLeft, HelpCircle, ChevronDown, Camera, Check, Eye, Stethoscope } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 
 const hairTypes = [
@@ -120,9 +120,32 @@ const CurlIcon = ({ type }: { type: string }) => {
   return patterns[type] || null;
 };
 
+const computeBaselineRisk = (itch: string, tenderness: string, hairline: string): 'green' | 'amber' | 'red' => {
+  const mildest = ['None', 'No concerns'];
+  const severe = ['Severe', 'Very concerned'];
+  const moderate = ['Moderate', 'Noticeable change'];
+
+  const values = [itch, tenderness, hairline];
+  if (values.every(v => mildest.includes(v))) return 'green';
+  if (values.some(v => severe.includes(v))) return 'red';
+  const moderateCount = values.filter(v => moderate.includes(v)).length;
+  if (moderateCount >= 2) return 'red';
+  return 'amber';
+};
+
+const getBaselineSevereFlaggedSymptoms = (itch: string, tenderness: string, hairline: string): string[] => {
+  const flagged: string[] = [];
+  const severe = ['Severe', 'Very concerned'];
+  const moderate = ['Moderate', 'Noticeable change'];
+  if (severe.includes(itch) || moderate.includes(itch)) flagged.push('scalp itching');
+  if (severe.includes(tenderness) || moderate.includes(tenderness)) flagged.push('tenderness');
+  if (severe.includes(hairline) || moderate.includes(hairline)) flagged.push('hairline changes');
+  return flagged;
+};
+
 const Onboarding = () => {
   const navigate = useNavigate();
-  const { setOnboardingComplete, setOnboardingData, setBaselinePhotos } = useApp();
+  const { setOnboardingComplete, setOnboardingData, setBaselinePhotos, setBaselineRisk, setBaselineDate } = useApp();
   const [step, setStep] = useState(1);
   const [hairType, setHairType] = useState('');
   const [chemicalProcessing, setChemicalProcessing] = useState('');
@@ -152,6 +175,7 @@ const Onboarding = () => {
   const [showMoreStyles, setShowMoreStyles] = useState(false);
   const [showMoreProducts, setShowMoreProducts] = useState(false);
   const [capturedPhotos, setCapturedPhotos] = useState<Record<string, boolean>>({});
+  const [baselineResultScreen, setBaselineResultScreen] = useState<'amber' | 'red' | null>(null);
 
   const totalSteps = 6;
 
@@ -192,6 +216,21 @@ const Onboarding = () => {
 
   const handleNext = () => {
     if (step < totalSteps) {
+      // Baseline risk check after Step 4
+      if (step === 4 && !baselineResultScreen) {
+        const risk = computeBaselineRisk(itch, tenderness, hairline);
+        const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+        setBaselineRisk(risk);
+        setBaselineDate(today);
+        if (risk !== 'green') {
+          setBaselineResultScreen(risk as 'amber' | 'red');
+          return;
+        }
+      }
+      // Clear baseline result screen when moving past step 4
+      if (step === 4 && baselineResultScreen) {
+        setBaselineResultScreen(null);
+      }
       // Save baseline photos when leaving photo step
       if (step === 5) {
         const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
@@ -472,7 +511,7 @@ const Onboarding = () => {
               </div>
             )}
 
-            {step === 4 && (
+            {step === 4 && !baselineResultScreen && (
               <div>
                 <h2 className="text-2xl font-semibold mb-2">Quick baseline — how's your scalp right now?</h2>
                 <p className="text-muted-foreground mb-6">This helps us set your starting point</p>
@@ -502,6 +541,102 @@ const Onboarding = () => {
                     </div>
                   </div>
                 </div>
+              </div>
+            )}
+
+            {step === 4 && baselineResultScreen === 'amber' && (
+              <div>
+                <div className="flex justify-center mb-6">
+                  <motion.div
+                    initial={{ scale: 0.8 }}
+                    animate={{ scale: 1 }}
+                    transition={{ duration: 0.5, ease: 'easeOut' }}
+                    className="w-20 h-20 rounded-full bg-warning flex items-center justify-center"
+                  >
+                    <Eye size={32} className="text-warning-foreground" strokeWidth={1.8} />
+                  </motion.div>
+                </div>
+                <h2 className="text-2xl font-semibold text-center mb-2">Thanks for sharing — a couple of things to keep in mind</h2>
+                <p className="text-muted-foreground text-center mb-6">Based on what you've told us, you have some symptoms worth tracking from the start.</p>
+
+                <div className="card-elevated p-5 mb-4">
+                  <h3 className="font-semibold mb-3">What happens next</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    We'll factor this into your first check-in so we can see whether things improve, stay the same, or get worse.
+                  </p>
+                  <h4 className="font-medium text-foreground text-sm mb-2">In the meantime</h4>
+                  <ol className="space-y-2">
+                    {getBaselineSevereFlaggedSymptoms(itch, tenderness, hairline).includes('scalp itching') && (
+                      <li className="flex gap-3 text-sm">
+                        <span className="w-5 h-5 rounded-full bg-warning/20 flex items-center justify-center flex-shrink-0 text-xs font-semibold text-warning">•</span>
+                        <span className="text-muted-foreground">Apply a lightweight, non-comedogenic scalp oil to soothe irritation</span>
+                      </li>
+                    )}
+                    {getBaselineSevereFlaggedSymptoms(itch, tenderness, hairline).includes('tenderness') && (
+                      <li className="flex gap-3 text-sm">
+                        <span className="w-5 h-5 rounded-full bg-warning/20 flex items-center justify-center flex-shrink-0 text-xs font-semibold text-warning">•</span>
+                        <span className="text-muted-foreground">Avoid re-tightening your edges — if they're loose, leave them</span>
+                      </li>
+                    )}
+                    {getBaselineSevereFlaggedSymptoms(itch, tenderness, hairline).includes('hairline changes') && (
+                      <li className="flex gap-3 text-sm">
+                        <span className="w-5 h-5 rounded-full bg-warning/20 flex items-center justify-center flex-shrink-0 text-xs font-semibold text-warning">•</span>
+                        <span className="text-muted-foreground">Consider loosening or avoiding tension on your hairline for the next style</span>
+                      </li>
+                    )}
+                  </ol>
+                </div>
+
+                <div className="rounded-2xl bg-accent p-4 mb-6">
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    This isn't a diagnosis — it's a starting point. ScalpSense will help you track how things develop.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {step === 4 && baselineResultScreen === 'red' && (
+              <div>
+                <div className="flex justify-center mb-6">
+                  <motion.div
+                    initial={{ scale: 0.8 }}
+                    animate={{ scale: 1 }}
+                    transition={{ duration: 0.5, ease: 'easeOut' }}
+                    className="w-20 h-20 rounded-full bg-destructive flex items-center justify-center"
+                  >
+                    <Stethoscope size={32} className="text-destructive-foreground" strokeWidth={1.8} />
+                  </motion.div>
+                </div>
+                <h2 className="text-2xl font-semibold text-center mb-2">We'd recommend seeking advice soon</h2>
+                <p className="text-muted-foreground text-center mb-6">The symptoms you've described suggest it's worth speaking to a professional sooner rather than later.</p>
+
+                <div className="card-elevated p-5 mb-4">
+                  <h3 className="font-semibold mb-2">What this means</h3>
+                  <p className="text-sm text-muted-foreground">
+                    You don't need to wait for a full cycle of tracking to take action. The symptoms you've described — especially {getBaselineSevereFlaggedSymptoms(itch, tenderness, hairline).join(' and ')} — are worth getting checked.
+                  </p>
+                </div>
+
+                <div className="card-elevated p-5 mb-4">
+                  <h3 className="font-semibold mb-2">Who to see</h3>
+                  <p className="text-sm text-muted-foreground">
+                    A trichologist specialises in hair and scalp conditions. A dermatologist can investigate further. Your GP can refer you.
+                  </p>
+                </div>
+
+                <div className="card-elevated p-5 mb-4">
+                  <h3 className="font-semibold mb-2">We'll still track with you</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Setting up ScalpSense now means you'll have a symptom timeline to share with whoever you see — that's useful context for any consultation.
+                  </p>
+                </div>
+
+                <button
+                  onClick={() => navigate('/clinician-summary')}
+                  className="w-full h-12 rounded-xl border-2 border-border font-semibold text-sm btn-press mb-4 flex items-center justify-center gap-2"
+                >
+                  <Stethoscope size={16} strokeWidth={1.8} /> View your baseline summary
+                </button>
               </div>
             )}
 
@@ -609,7 +744,14 @@ const Onboarding = () => {
         </AnimatePresence>
 
         <div className="pb-8">
-          {step === 5 ? (
+          {step === 4 && baselineResultScreen ? (
+            <button
+              onClick={handleNext}
+              className="w-full h-14 rounded-xl font-semibold text-base btn-press transition-colors bg-primary text-primary-foreground"
+            >
+              Continue setup
+            </button>
+          ) : step === 5 ? (
             <div className="space-y-3">
               <button
                 onClick={handleNext}
@@ -629,7 +771,7 @@ const Onboarding = () => {
                 canProceed() ? 'bg-primary text-primary-foreground' : 'bg-border text-muted-foreground cursor-not-allowed'
               }`}
             >
-              {step === totalSteps ? 'Set up my cycle' : 'Next'}
+              {step === totalSteps ? 'Set up my cycle' : step === 4 ? 'Set up my cycle' : 'Next'}
             </button>
           )}
         </div>
