@@ -362,7 +362,7 @@ const Onboarding = () => {
             {/* Step 1: Hair type & chemical processing */}
             {step === 1 && (
               <div>
-                <h2 className="text-2xl font-semibold mb-2">Let's get to know your hair</h2>
+                <h2 className="text-lg font-medium text-foreground mb-2">Let's get to know your hair</h2>
                 <p className="text-muted-foreground mb-6">Select the option closest to your hair type</p>
                 <div className="space-y-3 mb-8">
                   {hairTypes.map(ht => (
