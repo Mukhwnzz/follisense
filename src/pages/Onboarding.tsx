@@ -91,6 +91,7 @@ const Onboarding = () => {
   const [otherProduct, setOtherProduct] = useState('');
   const [prodFreq, setProdFreq] = useState('');
   const [showMoreStyles, setShowMoreStyles] = useState(false);
+  const [showMoreProducts, setShowMoreProducts] = useState(false);
 
   const totalSteps = 5;
 
@@ -321,8 +322,8 @@ const Onboarding = () => {
               <div>
                 <h2 className="text-2xl font-semibold mb-2">What products do you use on your scalp?</h2>
                 <p className="text-muted-foreground mb-6">This helps us understand what might be affecting your scalp health</p>
-                <div className="grid grid-cols-2 gap-3 mb-4">
-                  {productOptions.map(p => (
+                <div className="grid grid-cols-2 gap-3">
+                  {productOptions.slice(0, 8).map(p => (
                     <button
                       key={p}
                       onClick={() => toggleProduct(p)}
@@ -332,6 +333,27 @@ const Onboarding = () => {
                     </button>
                   ))}
                 </div>
+                {!showMoreProducts && (
+                  <button
+                    onClick={() => setShowMoreProducts(true)}
+                    className="w-full flex items-center justify-center gap-1.5 text-sm font-medium text-primary mt-3 py-2"
+                  >
+                    Show more products <ChevronDown size={16} strokeWidth={2} />
+                  </button>
+                )}
+                {showMoreProducts && (
+                  <div className="grid grid-cols-2 gap-3 mt-3">
+                    {productOptions.slice(8).map(p => (
+                      <button
+                        key={p}
+                        onClick={() => toggleProduct(p)}
+                        className={`selection-card text-center py-5 ${products.includes(p) ? 'selected' : ''}`}
+                      >
+                        <p className="font-medium text-foreground text-sm">{p}</p>
+                      </button>
+                    ))}
+                  </div>
+                )}
                 {products.includes('Other') && (
                   <input
                     type="text"
