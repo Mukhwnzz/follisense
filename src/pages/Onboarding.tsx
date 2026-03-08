@@ -318,8 +318,8 @@ const Onboarding = () => {
 
             {step === 2 && (
               <div>
-                <h2 className="text-2xl font-semibold mb-2">What protective style do you usually wear?</h2>
-                <p className="text-muted-foreground mb-6">Select all that apply</p>
+                <h2 className="text-2xl font-semibold mb-2">How do you usually wear your hair?</h2>
+                <p className="text-muted-foreground mb-6">Select everything you rotate between</p>
                 <div className="grid grid-cols-2 gap-3">
                   {styleOptions.slice(0, 8).map(s => (
                     <button
@@ -361,10 +361,22 @@ const Onboarding = () => {
                     className="w-full h-12 px-4 rounded-xl border-2 border-border bg-card text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors mt-3"
                   />
                 )}
+
+                {/* Follow-up: protective style frequency */}
+                {hasProtectiveStyle && styles.length > 0 && (
+                  <div className="mt-8">
+                    <p className="font-medium text-foreground mb-3">How much of the time are you in a protective or installed style?</p>
+                    <div className="flex flex-wrap gap-2">
+                      {protectiveFrequencyOptions.map(o => (
+                        <button key={o} onClick={() => setProtectiveFreq(o)} className={`pill-option ${protectiveFreq === o ? 'selected' : ''}`}>{o}</button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
-            {step === 3 && (
+            {step === 3 && !isWornOutOnly && (
               <div>
                 <h2 className="text-2xl font-semibold mb-2">Your cycle</h2>
                 <p className="text-muted-foreground mb-6">How long do you typically keep a style in?</p>
@@ -431,6 +443,31 @@ const Onboarding = () => {
                       className="w-full h-12 px-4 rounded-xl border-2 border-border bg-card text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors mt-3"
                     />
                   )}
+                </div>
+              </div>
+            )}
+
+            {step === 3 && isWornOutOnly && (
+              <div>
+                <h2 className="text-2xl font-semibold mb-2">Your hair routine</h2>
+                <p className="text-muted-foreground mb-6">Since you mostly wear your hair out, we'll base your check-ins on your wash routine</p>
+
+                <div className="mb-8">
+                  <p className="font-medium text-foreground mb-3">How often do you wash your hair?</p>
+                  <div className="flex flex-wrap gap-2">
+                    {wornOutWashOptions.map(o => (
+                      <button key={o} onClick={() => setWornOutWashFreq(o)} className={`pill-option ${wornOutWashFreq === o ? 'selected' : ''}`}>{o}</button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <p className="font-medium text-foreground mb-3">How often do you restyle or manipulate your hair?</p>
+                  <div className="flex flex-wrap gap-2">
+                    {restyleOptions.map(o => (
+                      <button key={o} onClick={() => setRestyleFreq(o)} className={`pill-option ${restyleFreq === o ? 'selected' : ''}`}>{o}</button>
+                    ))}
+                  </div>
                 </div>
               </div>
             )}
