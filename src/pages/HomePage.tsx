@@ -387,6 +387,18 @@ const HomePage = () => {
           <ChevronRight size={18} className="text-muted-foreground" />
         </button>
 
+        {/* Spot It — scalp check guide */}
+        <button onClick={() => navigate('/spot-it')} className="card-elevated p-4 mb-4 w-full flex items-center gap-3 text-left border-l-4 border-l-primary">
+          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+            <Eye size={20} className="text-primary" strokeWidth={1.5} />
+          </div>
+          <div className="flex-1">
+            <p className="font-medium text-foreground text-sm">Spot It — scalp check guide</p>
+            <p className="text-xs text-muted-foreground">See something on your scalp? Find out what it could be</p>
+          </div>
+          <ChevronRight size={18} className="text-muted-foreground" />
+        </button>
+
         {/* Complete your profile (skipped sections) */}
         {(() => {
           const skipped = JSON.parse(sessionStorage.getItem('follisense-skipped-sections') || '[]');
