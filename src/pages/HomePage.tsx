@@ -16,8 +16,18 @@ const protectiveStyleTips = [
   "If your braids feel tight around the hairline, don't tough it out — loosen or remove the ones causing pain",
   "Staying hydrated helps your scalp too — aim for 2 litres today",
   "Try pressing gently with a fingertip instead of scratching — it relieves itch without damaging the scalp",
-  "Your wash day is coming up in about 5 days — start thinking about whether you'll reinstall or give your hair a break",
+  "Your wash day is coming up — start thinking about whether you'll reinstall or give your hair a break",
   "If you're exercising today, a light spritz of scalp refresh spray afterwards can help with sweat buildup under your style",
+];
+
+const maleTips = [
+  "Wearing your durag tonight? Make sure your hairline isn't under too much tension from the tie",
+  "If your barber is lining you up every week, give your edges a break now and then",
+  "Cornrows feeling tight? Don't tough it out. Loosen the front ones to protect your hairline",
+  "Sweat buildup under a wave cap can irritate your scalp. A quick rinse or scalp wipe helps",
+  "If your locs are pulling at the root, that's traction. Talk to your loctician about lighter retwists",
+  "Staying hydrated helps your scalp too — aim for 2 litres today",
+  "Try pressing gently with a fingertip instead of scratching — it relieves itch without damaging the scalp",
 ];
 
 const wornOutTips = [
