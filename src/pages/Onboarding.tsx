@@ -262,6 +262,7 @@ const Onboarding = () => {
         baselineItch: itch,
         baselineTenderness: tenderness,
         baselineHairline: hairline,
+        baselineHairHealth,
         scalpProducts: products,
         otherProduct,
         productFrequency: prodFreq,
