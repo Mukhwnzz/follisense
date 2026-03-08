@@ -89,7 +89,7 @@ const hairHealthSteps = [
   },
   {
     key: 'hairAppearance',
-    q: 'How does your hair look overall compared to your normal?',
+    q: 'How does your hair look overall?',
     options: [
       { label: 'Looks healthy, no changes', desc: '' },
       { label: 'A bit dull or lacklustre', desc: '' },
