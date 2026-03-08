@@ -289,7 +289,11 @@ const Onboarding = () => {
       }
       case 4: return allBaselineAnswered;
       case 5: return true;
-      case 6: return products.length > 0 && !!prodFreq && (!products.includes('Other') || otherProduct.trim().length > 0);
+      case 6: {
+        const scalpOk = products.length > 0 && !!prodFreq && (!products.includes('Other') || otherProduct.trim().length > 0);
+        const hairOk = hairProds.length > 0 && !!hairProdFreq && (!hairProds.includes('Other') || otherHairProd.trim().length > 0);
+        return scalpOk && hairOk;
+      }
       case 7: return !!menstrualTracking && (menstrualTracking !== 'Yes, I\'d like to track' || (!!menstrualCycleLength && !!hormonalContraception));
       case 8: return goals.length > 0;
       default: return false;
