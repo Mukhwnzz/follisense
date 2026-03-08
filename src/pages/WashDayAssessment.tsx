@@ -129,7 +129,7 @@ const WashDayAssessment = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const isRegularCheckIn = searchParams.get('mode') === 'regular';
-  const { setCurrentCheckIn, baselinePhotos } = useApp();
+  const { setCurrentCheckIn, baselinePhotos, research, incrementResearchPhotos, checkInCount, setCheckInCount } = useApp();
   const [currentStep, setCurrentStep] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [newProductText, setNewProductText] = useState('');
@@ -137,6 +137,7 @@ const WashDayAssessment = () => {
   const [showConfirm, setShowConfirm] = useState(false);
   const [showHairIntro, setShowHairIntro] = useState(false);
   const [acknowledgment, setAcknowledgment] = useState<string | null>(null);
+  const [includeInResearch, setIncludeInResearch] = useState(research.consented);
 
   const totalSteps = allSteps.length + 1; // +1 for photo step
   const isProductStep = currentStep === allSteps.length - 1;
