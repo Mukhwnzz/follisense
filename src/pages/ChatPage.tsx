@@ -259,7 +259,7 @@ const buildContextAwareResponse = (userMessage: string, ctx: UserContext, histor
     }
 
     if (ctx.baselineHairHealth && ctx.baselineHairHealth.includes('dry')) {
-      response += `You mentioned dryness during your baseline assessment, which suggests a **moisture deficit**. Deep conditioning and sealing with an oil or butter can help.\n\n`;
+      response += `You mentioned dryness during your baseline assessment, which suggests a **moisture deficit**. Deep conditioning can help restore hydration.\n\n`;
     }
 
     response += '- **Mechanical breakage** — from tight styling or rough handling. Fix: gentler detangling, satin accessories.\n';

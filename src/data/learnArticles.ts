@@ -177,7 +177,7 @@ export const articles: Article[] = [
     readTime: 1,
     content: [
       'The ends of your hair are the oldest part. A strand at shoulder length might be 2 to 3 years old. It\'s been through thousands of washes, styling sessions, environmental exposure, and manipulation. Of course it\'s drier and more fragile than the hair near your root.',
-      'This is why protective styling works: it reduces daily manipulation on those fragile ends. Sealing your ends with a butter or oil, tucking them away, and trimming when they start to split are the best things you can do.',
+      'This is why protective styling works: it reduces daily manipulation on those fragile ends. Keeping your ends moisturised, tucking them away, and trimming when they start to split are the best things you can do.',
     ],
     relatedIds: ['hair-breakage', 'hair-growth-rate', 'protective-styling-truth'],
   },

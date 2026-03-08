@@ -26,6 +26,7 @@ const ProfilePage = () => {
   const [showGoalEditor, setShowGoalEditor] = useState(false);
   const [editGoals, setEditGoals] = useState<string[]>(onboardingData.goals || []);
   const [showProductEditor, setShowProductEditor] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   const notificationOptions = [
     { key: 'dailyTip' as const, label: 'Daily scalp care tip', desc: 'A quick tip or reminder to help your scalp health between check-ins' },
