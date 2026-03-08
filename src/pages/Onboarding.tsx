@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, HelpCircle } from 'lucide-react';
+import { ArrowLeft, HelpCircle, ChevronDown } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 
 const hairTypes = [
@@ -90,6 +90,7 @@ const Onboarding = () => {
   const [products, setProducts] = useState<string[]>([]);
   const [otherProduct, setOtherProduct] = useState('');
   const [prodFreq, setProdFreq] = useState('');
+  const [showMoreStyles, setShowMoreStyles] = useState(false);
 
   const totalSteps = 5;
 
@@ -222,7 +223,7 @@ const Onboarding = () => {
                 <h2 className="text-2xl font-semibold mb-2">What protective style do you usually wear?</h2>
                 <p className="text-muted-foreground mb-6">Select all that apply</p>
                 <div className="grid grid-cols-2 gap-3">
-                  {styleOptions.map(s => (
+                  {styleOptions.slice(0, 8).map(s => (
                     <button
                       key={s}
                       onClick={() => toggleStyle(s)}
@@ -232,6 +233,27 @@ const Onboarding = () => {
                     </button>
                   ))}
                 </div>
+                {!showMoreStyles && (
+                  <button
+                    onClick={() => setShowMoreStyles(true)}
+                    className="w-full flex items-center justify-center gap-1.5 text-sm font-medium text-primary mt-3 py-2"
+                  >
+                    Show more styles <ChevronDown size={16} strokeWidth={2} />
+                  </button>
+                )}
+                {showMoreStyles && (
+                  <div className="grid grid-cols-2 gap-3 mt-3">
+                    {styleOptions.slice(8).map(s => (
+                      <button
+                        key={s}
+                        onClick={() => toggleStyle(s)}
+                        className={`selection-card text-center py-5 ${styles.includes(s) ? 'selected' : ''}`}
+                      >
+                        <p className="font-medium text-foreground text-sm">{s}</p>
+                      </button>
+                    ))}
+                  </div>
+                )}
                 {styles.includes('Other') && (
                   <input
                     type="text"
