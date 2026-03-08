@@ -145,7 +145,7 @@ const ProfilePage = () => {
           </div>
           <h1 className="text-2xl font-semibold">{userName || 'Your profile'}</h1>
           {onboardingData.gender && (
-            <p className="text-sm text-muted-foreground mt-0.5">{onboardingData.gender}</p>
+            <p className="text-sm text-muted-foreground mt-0.5">{onboardingData.gender === 'woman' ? 'Female' : onboardingData.gender === 'man' ? 'Male' : 'Prefer not to say'}</p>
           )}
         </div>
 
