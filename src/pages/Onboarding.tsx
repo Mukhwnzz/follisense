@@ -302,7 +302,6 @@ const Onboarding = () => {
   const [gender, setGender] = useState('');
   const [hairType, setHairType] = useState('');
   const [chemicalProcessing, setChemicalProcessing] = useState('');
-  const [chemicalSubSelection, setChemicalSubSelection] = useState('');
   const [chemicalMultiple, setChemicalMultiple] = useState<string[]>([]);
   const [lastChemicalTreatment, setLastChemicalTreatment] = useState('');
   const [styles, setStyles] = useState<string[]>([]);
