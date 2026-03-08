@@ -17,7 +17,7 @@ const scalpSteps = [
   },
   {
     key: 'tenderness',
-    q: 'Does your scalp feel tender or sore?',
+    q: 'Any scalp soreness or tenderness?',
     options: [
       { label: 'No', desc: 'No tenderness' },
       { label: 'A little', desc: 'Mild sensitivity in some areas' },
