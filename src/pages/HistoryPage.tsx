@@ -140,6 +140,51 @@ const HistoryPage = () => {
               </div>
             ))}
 
+            {/* Salon check-in entries */}
+            {salonCheckIns.map(checkin => (
+              <div key={checkin.id} className="relative pl-10">
+                <div className="absolute left-[9px] top-5 w-3 h-3 rounded-full border-2 border-card bg-primary" />
+                <button onClick={() => setExpanded(expanded === checkin.id ? null : checkin.id)} className="card-elevated p-4 w-full text-left border-l-4 border-l-primary">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <ClipboardCheck size={16} className="text-primary flex-shrink-0" strokeWidth={1.5} />
+                      <div>
+                        <p className="font-medium text-foreground text-sm">Salon check-in</p>
+                        <p className="text-xs text-muted-foreground">{checkin.date}</p>
+                      </div>
+                    </div>
+                    <ChevronDown size={18} className={`text-muted-foreground transition-transform ${expanded === checkin.id ? 'rotate-180' : ''}`} />
+                  </div>
+                  <AnimatePresence>
+                    {expanded === checkin.id && (
+                      <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} className="overflow-hidden">
+                        <div className="pt-3 mt-3 border-t border-border space-y-1.5">
+                          <div className="flex justify-between text-sm">
+                            <span className="text-muted-foreground">Photos</span>
+                            <span className="text-foreground">{checkin.photos} captured</span>
+                          </div>
+                          {checkin.observations.length > 0 && (
+                            <div>
+                              <p className="text-xs text-muted-foreground">Observations</p>
+                              <ul className="mt-1 space-y-0.5">
+                                {checkin.observations.map(o => (<li key={o} className="text-sm text-foreground">• {o}</li>))}
+                              </ul>
+                            </div>
+                          )}
+                          {checkin.note && (
+                            <div className="flex justify-between text-sm">
+                              <span className="text-muted-foreground">Notes</span>
+                              <span className="text-foreground text-right">{checkin.note}</span>
+                            </div>
+                          )}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </button>
+              </div>
+            ))}
+
             {/* Salon visit entries */}
             {salonVisits.map(visit => (
               <div key={visit.id} className="relative pl-10">
