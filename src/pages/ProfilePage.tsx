@@ -446,15 +446,17 @@ const ProfilePage = () => {
           </div>
         </div>
 
-        {/* ── Data & Privacy ── */}
+        {/* ── Your Data — How we use your info ── */}
         <div className="mb-6">
-          <h3 className="text-label mb-3">Data & Privacy</h3>
+          <h3 className="text-label mb-3">Your Data</h3>
           <div className="card-elevated p-4 mb-3">
             <div className="flex items-start gap-3">
               <Shield size={20} className="text-primary mt-0.5 flex-shrink-0" strokeWidth={1.5} />
               <div>
-                <p className="text-sm text-foreground font-medium mb-1">Your data stays on your device</p>
-                <p className="text-xs text-muted-foreground">Photos are never uploaded or shared. All symptom data is stored locally.</p>
+                <p className="text-sm text-foreground font-medium mb-1">How we use your information</p>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Your data is used to personalise your experience, time your reminders, and generate your clinician summary if you ever need one. Nothing is shared without your permission. Photos are stored on your device only.
+                </p>
               </div>
             </div>
           </div>

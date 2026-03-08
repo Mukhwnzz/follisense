@@ -76,6 +76,7 @@ const StylistObservation = () => {
   const [showAddLocation, setShowAddLocation] = useState(false);
   const [newLocName, setNewLocName] = useState('');
   const [newLocCity, setNewLocCity] = useState('');
+  const [newLocCountry, setNewLocCountry] = useState('');
 
   // Step 3: Observations
   const [observations, setObservations] = useState<string[]>([]);
