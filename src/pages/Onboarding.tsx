@@ -901,7 +901,7 @@ const Onboarding = () => {
                 ) : (
                   <div>
                     <h2 className="text-lg font-medium text-foreground mb-1">How are things right now?</h2>
-                    <p className="text-xs text-muted-foreground mb-2">{sectionWhyText[4]}</p>
+                    <p className="text-xs text-muted-foreground mb-2">{sectionWhyText[5]}</p>
                     <p className="text-muted-foreground mb-6">Just a few questions so we know where you're starting from</p>
                     <div className="flex gap-1 mb-6">
                       {baselineQuestions.map((_, i) => (
