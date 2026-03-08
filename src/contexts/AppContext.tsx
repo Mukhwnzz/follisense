@@ -179,6 +179,11 @@ interface AppContextType {
   setBaselineDate: (d: string | null) => void;
   quickLogs: QuickLogEntry[];
   addQuickLog: (entry: QuickLogEntry) => void;
+  research: ResearchData;
+  setResearch: (d: ResearchData) => void;
+  incrementResearchPhotos: () => void;
+  checkInCount: number;
+  setCheckInCount: (n: number) => void;
   resetAll: () => void;
 }
 
