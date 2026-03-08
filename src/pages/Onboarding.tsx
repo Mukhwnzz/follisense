@@ -27,11 +27,40 @@ const chemicalOptions = [
 const chemicalMultipleOptions = ['Relaxed', 'Texturised', 'Colour treated', 'Bleached'];
 
 const styleOptions = [
-  'Box braids', 'Cornrows / flat twists', 'Knotless braids', 'Twists (two-strand)',
-  'Twist out / braid out', 'Locs / faux locs', 'Weave / sew-in', 'Wig (lace front)',
-  'Wig (other)', 'Crochet braids', 'Hair extensions (k-tips, micro links, etc.)',
-  'Wash and go', 'Bantu knots', 'Silk press / blowout', 'Other',
+  'Worn out / loose (natural)', 'Worn out / loose (relaxed or straightened)',
+  'Silk press / blowout', 'Twist out / braid out',
+  'Wash and go', 'Box braids',
+  'Knotless braids', 'Cornrows / flat twists',
+  'Twists (two-strand)', 'Crochet braids',
+  'Locs / faux locs', 'Weave / sew-in',
+  'Wig (lace front)', 'Wig (other)',
+  'Hair extensions (k-tips, micro links, etc.)', 'Bantu knots',
+  'Other',
 ];
+
+const nonProtectiveStyles = [
+  'Worn out / loose (natural)',
+  'Worn out / loose (relaxed or straightened)',
+  'Silk press / blowout',
+  'Twist out / braid out',
+  'Wash and go',
+];
+
+const protectiveFrequencyOptions = [
+  'Most of the time',
+  'About half the time',
+  'Occasionally',
+  'Rarely — I mostly wear my hair out',
+];
+
+const wornOutWashOptions = [
+  'More than once a week',
+  'About once a week',
+  'Every 2 weeks',
+  'Less than every 2 weeks',
+];
+
+const restyleOptions = ['Daily', 'Every few days', 'Weekly', 'Less often'];
 
 const cycleLengths = ['1–2 weeks', '2–4 weeks', '4–6 weeks', '6+ weeks', 'It varies'];
 const washFrequencyOptions = [
