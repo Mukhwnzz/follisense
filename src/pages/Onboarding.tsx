@@ -525,8 +525,8 @@ const Onboarding = () => {
                   </motion.div>
                 ) : (
                   <div>
-                    <h2 className="text-2xl font-semibold mb-2">Quick check-in — how are things right now?</h2>
-                    <p className="text-muted-foreground mb-6">This helps us set your starting point</p>
+                    <h2 className="text-lg font-medium text-foreground mb-2">How are things right now?</h2>
+                    <p className="text-muted-foreground mb-6">Just a few questions so we know where you're starting from</p>
 
                     <div className="flex gap-1 mb-6">
                       {baselineQuestions.map((_, i) => (
