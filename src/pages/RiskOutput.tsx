@@ -85,6 +85,7 @@ const RiskOutput = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { currentCheckIn, riskOverride, setRiskOverride, healthProfile, onboardingData } = useApp();
+  const isMale = onboardingData.gender === 'man';
 
   const paramRisk = searchParams.get('risk') as RiskLevel | null;
   const risk: RiskLevel = paramRisk || riskOverride || computeRisk(currentCheckIn);
