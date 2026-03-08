@@ -42,7 +42,7 @@ const StylistProfilePage = () => {
 
   const saveProfile = (updated: StylistProfile) => {
     setProfile(updated);
-    localStorage.setItem('scalpsense-stylist-profile', JSON.stringify(updated));
+    localStorage.setItem('follisense-stylist-profile', JSON.stringify(updated));
   };
 
   const toggleService = (s: string) => {
