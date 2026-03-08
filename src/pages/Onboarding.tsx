@@ -59,15 +59,37 @@ const betweenWashOptions = [
   'Nothing — I leave it alone until wash day', 'Other',
 ];
 
-const productOptions = [
-  'Scalp oil (e.g., tea tree, rosemary, castor)', 'Hair oil (e.g., argan, jojoba, coconut)',
-  'Leave-in conditioner', 'Deep conditioner / mask', 'Edge control / gel',
-  'Mousse / foam', 'Hair butter / cream', 'Grease / pomade',
-  'Anti-dandruff / medicated shampoo', 'Clarifying shampoo', 'Co-wash',
-  'Growth serum / scalp treatment', 'Dry shampoo / scalp refresh spray',
-  'Heat protectant', 'Protein treatment', 'Apple cider vinegar rinse',
-  "None — I don't use products on my scalp", 'Other',
+const scalpProductOptions = [
+  'Scalp oil (e.g., tea tree, rosemary, castor)',
+  'Scalp serum or treatment',
+  'Anti-dandruff or medicated shampoo',
+  'Clarifying shampoo',
+  'Scalp scrub or exfoliant',
+  'Scalp refresh spray',
+  'Grease or pomade (applied to scalp)',
+  'Growth drops or topical (e.g., minoxidil)',
+  'Apple cider vinegar rinse',
+  'Nothing directly on my scalp',
+  'Other',
 ];
+
+const hairProductOptions = [
+  'Leave-in conditioner',
+  'Deep conditioner or mask',
+  'Hair oil (e.g., argan, jojoba, coconut)',
+  'Hair butter or cream',
+  'Mousse or foam',
+  'Gel',
+  'Edge control',
+  'Heat protectant',
+  'Protein treatment',
+  'Co-wash',
+  'Dry shampoo',
+  'Detangler',
+  'None',
+  'Other',
+];
+
 const productFrequencies = ['Daily', 'Every few days', 'Weekly', 'Only on wash day', 'Rarely'];
 
 const goalOptions = [
