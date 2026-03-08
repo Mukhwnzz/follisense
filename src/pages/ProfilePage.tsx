@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { User, ChevronRight, Shield, Trash2, Leaf, Repeat, Heart, Camera, RefreshCw, Target, Check, Calendar, Microscope, ChevronDown, Eye, EyeOff, Lock } from 'lucide-react';
+import { User, ChevronRight, Shield, Trash2, Leaf, Repeat, Heart, Camera, RefreshCw, Target, Check, Calendar, Microscope, ChevronDown, Eye, EyeOff, Lock, Sparkles } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 import ProductSearch from '@/components/ProductSearch';
 import { toast } from '@/hooks/use-toast';
@@ -144,6 +144,20 @@ const ProfilePage = () => {
                 </div>
               </div>
             )}
+          </div>
+        )}
+
+        {/* My Routine link */}
+        {!stylistMode && (
+          <div className="mb-6">
+            <button onClick={() => navigate('/my-routine')} className="card-elevated w-full p-4 flex items-center gap-3 text-left">
+              <div className="w-10 h-10 rounded-xl bg-sage-light flex items-center justify-center flex-shrink-0"><Sparkles size={20} className="text-primary" strokeWidth={1.5} /></div>
+              <div className="flex-1">
+                <p className="font-medium text-foreground text-sm">My Routine</p>
+                <p className="text-xs text-muted-foreground">Your personalised scalp care plan</p>
+              </div>
+              <ChevronRight size={18} className="text-muted-foreground" />
+            </button>
           </div>
         )}
 
