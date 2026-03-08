@@ -4,10 +4,20 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, X, Camera } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 
+const getAcknowledgment = (optionIndex: number, totalOptions: number): string => {
+  if (optionIndex === 0) {
+    const mild = ["Great — let's keep going", "Good to hear", "Nice — moving on"];
+    return mild[Math.floor(Math.random() * mild.length)];
+  }
+  if (optionIndex === 1) return "Noted — we'll keep an eye on that";
+  if (optionIndex >= totalOptions - 1) return "Thanks for letting us know — this is important";
+  return "Thanks for flagging that — we'll factor this in";
+};
+
 const scalpSteps = [
   {
     key: 'itch',
-    q: 'How itchy has your scalp been this cycle?',
+    q: "How's the itching been this cycle?",
     options: [
       { label: 'None', desc: 'No itching at all' },
       { label: 'Mild', desc: 'Occasional, not bothersome' },
