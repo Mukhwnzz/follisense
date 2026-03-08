@@ -121,7 +121,7 @@ const ReferralGuide = () => (
 
     <div className="card-elevated p-5">
       <h3 className="font-semibold text-foreground mb-2">How to refer using FolliSense</h3>
-      <p className="text-sm text-muted-foreground leading-relaxed mb-3">When you document an observation in ScalpSense:</p>
+      <p className="text-sm text-muted-foreground leading-relaxed mb-3">When you document an observation in FolliSense:</p>
       <ol className="space-y-2 text-sm text-muted-foreground list-decimal list-inside">
         <li>Capture what you see (photos and notes)</li>
         <li>Share the observation with your client through the app</li>
