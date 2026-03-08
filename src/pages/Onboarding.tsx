@@ -677,11 +677,21 @@ const Onboarding = () => {
                 {styles.includes('Other') && (
                   <input type="text" value={otherStyle} onChange={e => setOtherStyle(e.target.value)} placeholder="Describe your style" className="w-full h-12 px-4 rounded-xl border-2 border-border bg-card text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors mt-3" />
                 )}
-                {hasProtectiveOrStretchedStyle && styles.length > 0 && (
+                {isMale && hasMaleInstalledStyles && styles.length > 0 && (
                   <div className="mt-8">
-                    <p className="font-medium text-foreground mb-3">How much of the time are you in a protective or installed style?</p>
+                    <p className="font-medium text-foreground mb-3">How often do you wear this style?</p>
                     <div className="flex flex-wrap gap-2">
-                      {protectiveFrequencyOptions.map(o => (
+                      {protectiveFrequencyOptionsMale.map(o => (
+                        <button key={o} onClick={() => setProtectiveFreq(o)} className={`pill-option ${protectiveFreq === o ? 'selected' : ''}`}>{o}</button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {!isMale && hasProtectiveOrStretchedStyle && styles.length > 0 && (
+                  <div className="mt-8">
+                    <p className="font-medium text-foreground mb-3">How often are you in an installed or protective style?</p>
+                    <div className="flex flex-wrap gap-2">
+                      {protectiveFrequencyOptionsFemale.map(o => (
                         <button key={o} onClick={() => setProtectiveFreq(o)} className={`pill-option ${protectiveFreq === o ? 'selected' : ''}`}>{o}</button>
                       ))}
                     </div>
