@@ -317,6 +317,15 @@ const Onboarding = () => {
   const [betweenWashCare, setBetweenWashCare] = useState<string[]>([]);
   const [otherBetweenWash, setOtherBetweenWash] = useState('');
 
+  // Male-specific routine state
+  const [barberFreq, setBarberFreq] = useState('');
+  const [locRetwistFreq, setLocRetwistFreq] = useState('');
+  const [maleStyleDuration, setMaleStyleDuration] = useState('');
+  const [maleScalpWashFreq, setMaleScalpWashFreq] = useState('');
+  const [maleWashFreq, setMaleWashFreq] = useState('');
+  const [maleBetweenCare, setMaleBetweenCare] = useState<string[]>([]);
+  const [otherMaleBetweenCare, setOtherMaleBetweenCare] = useState('');
+
   const isMale = gender === 'man';
   const isNeutral = gender === 'non-binary' || gender === 'prefer-not-to-say';
 
@@ -329,6 +338,15 @@ const Onboarding = () => {
 
   const isWornOutOnly = styles.length > 0 && styles.every(s => wornOutOnlyStyles.includes(s));
   const hasProtectiveOrStretchedStyle = styles.length > 0 && styles.some(s => !wornOutOnlyStyles.includes(s) && s !== 'Other');
+
+  // Male style categorization
+  const maleInstalledStyles = ['Locs or faux locs', 'Box braids', 'Cornrows or flat twists', 'Twists (two-strand)'];
+  const maleNonInstalledStyles = ['Fade or low cut (barber-maintained)', 'Free-form (no manipulation)', 'Waves (with durag or wave cap)', 'High top or frohawk', 'Short natural (TWA, tapered)'];
+  const hasLocsMale = isMale && styles.some(s => s === 'Locs or faux locs');
+  const hasBraidsMale = isMale && styles.some(s => ['Box braids', 'Cornrows or flat twists', 'Twists (two-strand)'].includes(s));
+  const hasFadeOrShortMale = isMale && styles.some(s => maleNonInstalledStyles.includes(s));
+  const hasMaleInstalledStyles = isMale && styles.some(s => maleInstalledStyles.includes(s));
+  const toggleMaleBetweenCare = (v: string) => setMaleBetweenCare(prev => prev.includes(v) ? prev.filter(x => x !== v) : [...prev, v]);
 
   // Baseline — conversational step-through
   const [baselineStep, setBaselineStep] = useState(0);
