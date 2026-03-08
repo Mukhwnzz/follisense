@@ -100,6 +100,23 @@ const HomePage = () => {
           </div>
         </div>
 
+        {/* Health profile prompt */}
+        {!healthProfile.sweat && !healthProfile.medicalConditions.length && (
+          <button
+            onClick={() => navigate('/health-profile')}
+            className="card-elevated p-4 mb-4 w-full flex items-center gap-3 text-left border-l-4 border-l-secondary"
+          >
+            <div className="w-10 h-10 rounded-xl bg-sage-light flex items-center justify-center flex-shrink-0">
+              <Heart size={20} className="text-primary" strokeWidth={1.5} />
+            </div>
+            <div className="flex-1">
+              <p className="font-medium text-foreground text-sm">Complete your health profile</p>
+              <p className="text-xs text-muted-foreground">For more personalised insights</p>
+            </div>
+            <ChevronRight size={18} className="text-muted-foreground" />
+          </button>
+        )}
+
         {/* Salon visit card */}
         <button
           onClick={() => setShowSalonForm(true)}

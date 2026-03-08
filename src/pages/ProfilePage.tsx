@@ -60,6 +60,25 @@ const ProfilePage = () => {
           </button>
         </div>
 
+        {/* Health profile link */}
+        {!stylistMode && (
+          <div className="mb-6">
+            <button
+              onClick={() => navigate('/health-profile')}
+              className="card-elevated w-full p-4 flex items-center gap-3 text-left"
+            >
+              <div className="w-10 h-10 rounded-xl bg-sage-light flex items-center justify-center flex-shrink-0">
+                <Heart size={20} className="text-primary" strokeWidth={1.5} />
+              </div>
+              <div className="flex-1">
+                <p className="font-medium text-foreground text-sm">Health Profile</p>
+                <p className="text-xs text-muted-foreground">Medical history, blood work & more</p>
+              </div>
+              <ChevronRight size={18} className="text-muted-foreground" />
+            </button>
+          </div>
+        )}
+
         {/* Hair settings */}
         {!stylistMode && (
           <div className="mb-6">
