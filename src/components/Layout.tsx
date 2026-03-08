@@ -12,7 +12,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const hiddenNavPaths = ['/', '/onboarding', '/mid-cycle', '/wash-day'];
+  const hiddenNavPaths = ['/', '/onboarding', '/mid-cycle', '/wash-day', '/results', '/clinician-summary'];
   const showNav = !hiddenNavPaths.some(p => location.pathname.startsWith(p));
 
   return (
