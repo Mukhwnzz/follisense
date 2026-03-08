@@ -704,7 +704,7 @@ const Onboarding = () => {
             )}
 
             {/* Step 4: Baseline — conversational step-through */}
-            {step === 4 && !baselineResultScreen && (
+            {step === 4 && (
               <div>
                 {baselineAck ? (
                   <motion.div
