@@ -112,7 +112,8 @@ const Onboarding = () => {
       case 2: return styles.length > 0 && (!styles.includes('Other') || otherStyle.trim().length > 0);
       case 3: return !!cycleLen && !!washFreq;
       case 4: return !!itch && !!tenderness && !!hairline;
-      case 5: return products.length > 0 && !!prodFreq && (!products.includes('Other') || otherProduct.trim().length > 0);
+      case 5: return true; // photo step — always can proceed (skip or capture)
+      case 6: return products.length > 0 && !!prodFreq && (!products.includes('Other') || otherProduct.trim().length > 0);
       default: return false;
     }
   };
