@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, X, Camera } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
@@ -47,6 +47,7 @@ const scalpSteps = [
   {
     key: 'hairline',
     q: 'How are your edges and temples looking?',
+    qRegular: 'Noticed any changes around your hairline, temples, or parting?',
     options: [
       { label: 'No change', desc: 'Edges look the same as usual' },
       { label: 'Looks a bit thinner', desc: 'Slight difference, not sure' },
@@ -57,6 +58,7 @@ const scalpSteps = [
   {
     key: 'shedding',
     q: 'How much hair came out at wash time?',
+    qRegular: 'How much shedding have you noticed recently — in the shower, on your pillow, or while styling?',
     options: [
       { label: 'Normal', desc: "About what I'd expect" },
       { label: 'More than usual', desc: 'A bit more than usual' },
@@ -118,6 +120,8 @@ const photoAreas = [
 
 const WashDayAssessment = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const isRegularCheckIn = searchParams.get('mode') === 'regular';
   const { setCurrentCheckIn, baselinePhotos } = useApp();
   const [currentStep, setCurrentStep] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
@@ -283,9 +287,9 @@ const WashDayAssessment = () => {
               transition={{ duration: 0.2 }}
               className="pt-4"
             >
-              <p className="text-label mb-2">Braids — Day 28 of 28</p>
-              <p className="text-sm text-muted-foreground mb-1">Let's see how your scalp did this cycle</p>
-              <h2 className="text-xl font-semibold mb-6">{currentQ.q}</h2>
+              <p className="text-label mb-2">{isRegularCheckIn ? 'Scalp check-in' : 'Braids — Day 28 of 28'}</p>
+              <p className="text-sm text-muted-foreground mb-1">{isRegularCheckIn ? "Time for your scalp check-in — takes about 2 minutes" : "Let's see how your scalp did this cycle"}</p>
+              <h2 className="text-xl font-semibold mb-6">{(currentQ as any).qRegular && isRegularCheckIn ? (currentQ as any).qRegular : currentQ.q}</h2>
               <div className="space-y-3">
                 {currentQ.options.map((opt, optIdx) => (
                   <button

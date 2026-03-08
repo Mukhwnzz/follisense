@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { User, ChevronRight, Leaf, Lightbulb, Scissors, X, Calendar, Heart, AlertTriangle, ArrowRight, Target } from 'lucide-react';
+import { User, ChevronRight, Leaf, Lightbulb, Scissors, X, Calendar, Heart, AlertTriangle, ArrowRight, Target, MessageCircle } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar as CalendarPicker } from '@/components/ui/calendar';
@@ -10,7 +10,7 @@ import { format } from 'date-fns';
 
 const serviceOptions = ['Wash', 'Treatment', 'Style installation', 'Style removal/takedown', 'Trim', 'Colour', 'Other'];
 
-const dailyTips = [
+const protectiveStyleTips = [
   "Quick thought — a satin pillowcase tonight could help protect your edges while you sleep",
   "A light scalp oil massage today can help with circulation — even over your protective style",
   "If your braids feel tight around the hairline, don't tough it out — loosen or remove the ones causing pain",
@@ -18,6 +18,16 @@ const dailyTips = [
   "Try pressing gently with a fingertip instead of scratching — it relieves itch without damaging the scalp",
   "Your wash day is coming up in about 5 days — start thinking about whether you'll reinstall or give your hair a break",
   "If you're exercising today, a light spritz of scalp refresh spray afterwards can help with sweat buildup under your style",
+];
+
+const wornOutTips = [
+  "Using heat today? A heat protectant on mid-lengths and ends helps — but don't forget your scalp can burn too",
+  "If you're restyling daily, try to keep tension low around your hairline — edges are delicate",
+  "Sleeping with your hair out? A satin pillowcase or bonnet reduces friction and breakage overnight",
+  "Washing more than twice a week? Your scalp might be overcompensating with oil. Try stretching to every 4–5 days",
+  "Sun exposure on your parting and hairline can cause scalp damage — consider a scalp SPF spray if you're outside a lot",
+  "Staying hydrated helps your scalp too — aim for 2 litres today",
+  "Try pressing gently with a fingertip instead of scratching — it relieves itch without damaging the scalp",
 ];
 
 const lutealTips = [
@@ -102,7 +112,8 @@ const HomePage = () => {
     return m[onboardingData.menstrualCycleLength] || 28;
   })();
 
-  // Determine tip based on menstrual phase
+  // Determine tip based on user type and menstrual phase
+  const dailyTips = onboardingData.isWornOutOnly ? wornOutTips : protectiveStyleTips;
   let todayTip = dailyTips[dayOfYear % dailyTips.length];
   if (cycleDay) {
     if (cycleDay >= 1 && cycleDay <= 5) {
@@ -200,13 +211,14 @@ const HomePage = () => {
           <div className="card-elevated p-5 mb-4 border-l-4 border-l-primary">
             <div className="flex items-center gap-4">
               <div className="w-16 h-16 rounded-2xl bg-sage-light flex flex-col items-center justify-center flex-shrink-0">
-                <span className="text-xl font-semibold text-foreground">3</span>
-                <span className="text-[10px] text-muted-foreground leading-tight">days ago</span>
+                <Leaf size={22} className="text-primary mb-0.5" strokeWidth={1.8} />
+                <span className="text-[10px] text-muted-foreground leading-tight">Tracker</span>
               </div>
               <div className="flex-1">
-                <p className="text-label mb-1">Last wash</p>
-                <p className="font-semibold text-foreground">{new Date(Date.now() - 3 * 86400000).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}</p>
-                <p className="text-sm text-muted-foreground mt-1">Next check-in: {new Date(Date.now() + 4 * 86400000).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}</p>
+                <p className="font-semibold text-foreground mb-1">Scalp health tracker</p>
+                <p className="text-sm text-muted-foreground">Last check-in: Feb 20</p>
+                <p className="text-sm text-muted-foreground">Next check-in: {new Date(Date.now() + 4 * 86400000).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}</p>
+                <p className="text-xs text-primary font-medium mt-1">3 check-ins completed</p>
               </div>
             </div>
           </div>
@@ -290,16 +302,32 @@ const HomePage = () => {
         </button>
 
         {/* Next action */}
-        <div className="card-elevated p-5 mb-6">
+        <div className="card-elevated p-5 mb-4">
           <div className="flex items-center gap-3 mb-3">
             <div className="w-8 h-8 rounded-lg bg-sage-light flex items-center justify-center">
               <Leaf size={18} className="text-primary" strokeWidth={1.8} />
             </div>
-            <h3 className="font-semibold text-foreground">Mid-cycle check-in</h3>
+            <h3 className="font-semibold text-foreground">{onboardingData.isWornOutOnly ? 'Scalp check-in' : 'Mid-cycle check-in'}</h3>
           </div>
-          <p className="text-sm text-muted-foreground mb-4">Hey — it's been 2 weeks since your braids went in. Quick check-in? Takes about a minute.</p>
-          <button onClick={() => navigate('/mid-cycle')} className="w-full h-12 bg-primary text-primary-foreground rounded-xl font-semibold text-sm btn-press">Start check-in</button>
+          <p className="text-sm text-muted-foreground mb-4">
+            {onboardingData.isWornOutOnly
+              ? "It's been 2 weeks — ready for a quick scalp check?"
+              : "Hey — it's been 2 weeks since your braids went in. Quick check-in? Takes about a minute."}
+          </p>
+          <button onClick={() => navigate(onboardingData.isWornOutOnly ? '/wash-day?mode=regular' : '/mid-cycle')} className="w-full h-12 bg-primary text-primary-foreground rounded-xl font-semibold text-sm btn-press">Start check-in</button>
         </div>
+
+        {/* Got a question? */}
+        <button onClick={() => navigate('/chat')} className="card-elevated p-4 mb-4 w-full flex items-center gap-3 text-left">
+          <div className="w-10 h-10 rounded-xl bg-sage-light flex items-center justify-center flex-shrink-0">
+            <MessageCircle size={20} className="text-primary" strokeWidth={1.5} />
+          </div>
+          <div className="flex-1">
+            <p className="font-medium text-foreground text-sm">Got a question?</p>
+            <p className="text-xs text-muted-foreground">Chat with ScalpSense about your scalp and hair</p>
+          </div>
+          <ChevronRight size={18} className="text-muted-foreground" />
+        </button>
 
         {/* Recent */}
         <div className="mb-6">
@@ -370,19 +398,19 @@ const HomePage = () => {
               ) : (
                 <>
                   <p className="text-foreground leading-relaxed mb-6">
-                    Wash day? Let's see how your scalp did this cycle.
+                    It's been 2 weeks — ready for a quick scalp check? Takes about 2 minutes.
                   </p>
                   <button
-                    onClick={() => { setDismissedCheckInModal(true); navigate('/wash-day'); }}
+                    onClick={() => { setDismissedCheckInModal(true); navigate('/wash-day?mode=regular'); }}
                     className="w-full h-14 bg-primary text-primary-foreground rounded-xl font-semibold text-base btn-press mb-3"
                   >
-                    Start assessment
+                    Start check-in
                   </button>
                   <button
                     onClick={() => setDismissedCheckInModal(true)}
                     className="w-full text-center text-sm text-muted-foreground py-2"
                   >
-                    Not washing today
+                    Remind me later
                   </button>
                 </>
               )}

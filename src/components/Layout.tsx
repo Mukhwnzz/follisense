@@ -1,9 +1,10 @@
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Home, Clock, BookOpen, User, Users } from 'lucide-react';
+import { Home, Clock, BookOpen, User, Users, MessageCircle } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 
 const consumerTabs = [
   { path: '/home', icon: Home, label: 'Home' },
+  { path: '/chat', icon: MessageCircle, label: 'Chat' },
   { path: '/history', icon: Clock, label: 'History' },
   { path: '/learn', icon: BookOpen, label: 'Learn' },
   { path: '/profile', icon: User, label: 'Profile' },

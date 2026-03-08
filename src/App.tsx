@@ -19,6 +19,7 @@ import ProfilePage from "./pages/ProfilePage";
 import StylistHome from "./pages/StylistHome";
 import StylistObservation from "./pages/StylistObservation";
 import StylistClients from "./pages/StylistClients";
+import ChatPage from "./pages/ChatPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -35,6 +36,7 @@ const App = () => (
               <Route path="/" element={<Welcome />} />
               <Route path="/onboarding" element={<Onboarding />} />
               <Route path="/home" element={<HomePage />} />
+              <Route path="/chat" element={<ChatPage />} />
               <Route path="/mid-cycle" element={<MidCycleCheckIn />} />
               <Route path="/wash-day" element={<WashDayAssessment />} />
               <Route path="/results" element={<RiskOutput />} />
