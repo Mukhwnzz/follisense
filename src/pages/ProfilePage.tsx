@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { User, ChevronRight, Shield, Trash2, Leaf, Repeat } from 'lucide-react';
+import { User, ChevronRight, Shield, Trash2, Leaf, Repeat, Heart } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 
 const ProfilePage = () => {
