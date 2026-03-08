@@ -700,8 +700,82 @@ const Onboarding = () => {
               </div>
             )}
 
-            {/* Step 3: Cycle / routine */}
-            {step === 3 && !isWornOutOnly && (
+            {/* Step 3: Male-specific routine */}
+            {step === 3 && isMale && (
+              <div>
+                <h2 className="text-lg font-medium text-foreground mb-2">Your routine</h2>
+
+                {/* Fade / short natural / waves / free-form path */}
+                {hasFadeOrShortMale && !hasLocsMale && !hasBraidsMale && (
+                  <>
+                    <p className="font-medium text-foreground mb-3">How often do you go to the barber?</p>
+                    <div className="flex flex-wrap gap-2 mb-6">
+                      {['Every week', 'Every 2 weeks', 'Every 3 to 4 weeks', 'Monthly or less', 'I cut my own hair'].map(o => (
+                        <button key={o} onClick={() => setBarberFreq(o)} className={`pill-option ${barberFreq === o ? 'selected' : ''}`}>{o}</button>
+                      ))}
+                    </div>
+                    <p className="font-medium text-foreground mb-3">How often do you wash your hair?</p>
+                    <div className="flex flex-wrap gap-2 mb-6">
+                      {['Daily', 'Every few days', 'Weekly', 'Less than weekly'].map(o => (
+                        <button key={o} onClick={() => setMaleWashFreq(o)} className={`pill-option ${maleWashFreq === o ? 'selected' : ''}`}>{o}</button>
+                      ))}
+                    </div>
+                  </>
+                )}
+
+                {/* Locs path */}
+                {hasLocsMale && (
+                  <>
+                    <p className="font-medium text-foreground mb-3">How often do you get your locs retwisted?</p>
+                    <div className="flex flex-wrap gap-2 mb-6">
+                      {['Every 2 weeks', 'Every 3 to 4 weeks', 'Every 6 to 8 weeks', 'Less often than that', 'I do it myself'].map(o => (
+                        <button key={o} onClick={() => setLocRetwistFreq(o)} className={`pill-option ${locRetwistFreq === o ? 'selected' : ''}`}>{o}</button>
+                      ))}
+                    </div>
+                    <p className="font-medium text-foreground mb-3">How often do you wash your scalp?</p>
+                    <div className="flex flex-wrap gap-2 mb-6">
+                      {['Weekly', 'Every 2 weeks', 'Every 3 to 4 weeks', 'Less often'].map(o => (
+                        <button key={o} onClick={() => setMaleScalpWashFreq(o)} className={`pill-option ${maleScalpWashFreq === o ? 'selected' : ''}`}>{o}</button>
+                      ))}
+                    </div>
+                  </>
+                )}
+
+                {/* Braids / cornrows / twists path */}
+                {hasBraidsMale && !hasLocsMale && (
+                  <>
+                    <p className="font-medium text-foreground mb-3">How long do you usually keep them in?</p>
+                    <div className="flex flex-wrap gap-2 mb-6">
+                      {['Less than a week', '1 to 2 weeks', '2 to 4 weeks', 'Longer than 4 weeks'].map(o => (
+                        <button key={o} onClick={() => setMaleStyleDuration(o)} className={`pill-option ${maleStyleDuration === o ? 'selected' : ''}`}>{o}</button>
+                      ))}
+                    </div>
+                    <p className="font-medium text-foreground mb-3">How often do you wash or cleanse your scalp while they're in?</p>
+                    <div className="flex flex-wrap gap-2 mb-6">
+                      {['Every few days', 'Weekly', 'Only when I take them out', "I don't"].map(o => (
+                        <button key={o} onClick={() => setMaleScalpWashFreq(o)} className={`pill-option ${maleScalpWashFreq === o ? 'selected' : ''}`}>{o}</button>
+                      ))}
+                    </div>
+                  </>
+                )}
+
+                {/* Between-care for all male users */}
+                <div className="mt-2">
+                  <p className="font-medium text-foreground mb-3">Between barber visits or washes, do you do anything for your scalp?</p>
+                  <div className="flex flex-wrap gap-2">
+                    {['Moisturise or oil my scalp', 'Use a scalp spray or tonic', 'Brush (for waves)', 'Wear a durag or wave cap', 'Nothing really', 'Other'].map(o => (
+                      <button key={o} onClick={() => toggleMaleBetweenCare(o)} className={`pill-option ${maleBetweenCare.includes(o) ? 'selected' : ''}`}>{o}</button>
+                    ))}
+                  </div>
+                  {maleBetweenCare.includes('Other') && (
+                    <input type="text" value={otherMaleBetweenCare} onChange={e => setOtherMaleBetweenCare(e.target.value)} placeholder="What else do you do?" className="w-full h-12 px-4 rounded-xl border-2 border-border bg-card text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors mt-3" />
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Step 3: Cycle / routine (non-male, protective styles) */}
+            {step === 3 && !isMale && !isWornOutOnly && (
               <div>
                 <h2 className="text-lg font-medium text-foreground mb-2">Your cycle</h2>
                 <p className="text-muted-foreground mb-6">How long do you typically keep a style in?</p>
@@ -756,7 +830,8 @@ const Onboarding = () => {
               </div>
             )}
 
-            {step === 3 && isWornOutOnly && (
+            {/* Step 3: Worn-out-only routine (non-male) */}
+            {step === 3 && !isMale && isWornOutOnly && (
               <div>
                 <h2 className="text-lg font-medium text-foreground mb-2">Your routine</h2>
                 <p className="text-muted-foreground mb-6">How often do you wash your hair?</p>
