@@ -12,6 +12,7 @@ const consumerTabs = [
 
 const stylistTabs = [
   { path: '/stylist', icon: Home, label: 'Home' },
+  { path: '/stylist/learn', icon: BookOpen, label: 'Learn' },
   { path: '/stylist/clients', icon: Users, label: 'Clients' },
   { path: '/stylist/profile', icon: User, label: 'Profile' },
 ];
