@@ -67,6 +67,8 @@ const HomePage = () => {
   const [stylistName, setStylistName] = useState('');
   const [visitNotes, setVisitNotes] = useState('');
   const [dismissedWashPrompt, setDismissedWashPrompt] = useState(false);
+  const [dismissedCheckInModal, setDismissedCheckInModal] = useState(false);
+  const [showCheckInModal, setShowCheckInModal] = useState(true);
 
   const [showQuickLog, setShowQuickLog] = useState(false);
   const [quickLogStep, setQuickLogStep] = useState(0);
