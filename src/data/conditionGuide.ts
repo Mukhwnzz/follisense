@@ -36,6 +36,11 @@ export const consumerConditions: ConsumerCondition[] = [
       { question: 'Have you noticed it getting gradually worse over months?' },
       { question: 'Is the affected area sore or tender after a new installation?' },
     ],
+    photoGallery: [
+      { label: 'Early stage — hairline', description: 'Early stage traction alopecia showing thinning at the hairline and temples' },
+      { label: 'Moderate — temple recession', description: 'Moderate traction alopecia with visible recession at the temples from tight braids' },
+      { label: 'Advanced — follicle scarring', description: 'Advanced traction alopecia with smooth, shiny skin and no visible follicles at hairline' },
+    ],
     actionSteps: [
       'Reduce tension immediately — ask your stylist for a looser installation',
       'Give your hair breaks between protective styles (at least 1–2 weeks)',
@@ -48,6 +53,8 @@ export const consumerConditions: ConsumerCondition[] = [
     whenToSee: "If you've noticed visible thinning or bare patches, see a trichologist or dermatologist. Early intervention can mean the difference between regrowth and permanent loss.",
     relatedArticleId: 'traction-alopecia',
     dermnetUrl: 'https://dermnetnz.org/topics/traction-alopecia',
+    externalLinkLabel: 'British Association of Dermatologists',
+    externalLinkUrl: 'https://www.bad.org.uk',
     chatPrompts: ['Could I have traction alopecia?', "What's the difference between traction alopecia and normal shedding?", 'What should I tell my doctor about this?'],
   },
   {
