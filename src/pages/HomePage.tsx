@@ -80,7 +80,7 @@ const getQuickLogTips = (symptoms: string[]): string[] => {
 
 const HomePage = () => {
   const navigate = useNavigate();
-  const { onboardingData, history, salonVisits, addSalonVisit, healthProfile, addQuickLog, research, setResearch, checkInCount } = useApp();
+  const { onboardingData, history, salonVisits, addSalonVisit, healthProfile, addQuickLog, research, setResearch, checkInCount, userName } = useApp();
   const [showSalonForm, setShowSalonForm] = useState(false);
   const [visitDate, setVisitDate] = useState<Date>(new Date());
   const [services, setServices] = useState<string[]>([]);
