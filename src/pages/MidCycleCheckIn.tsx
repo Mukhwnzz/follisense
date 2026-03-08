@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, X } from 'lucide-react';
@@ -7,33 +7,64 @@ import { useApp } from '@/contexts/AppContext';
 const questions = [
   {
     key: 'itch',
-    q: "How's the itching been since your last check-in?",
+    q: "How's the itching been this cycle?",
     options: ['None', 'Mild', 'Moderate', 'Severe'],
   },
   {
     key: 'tenderness',
-    q: 'Any scalp tenderness or soreness?',
+    q: 'Any scalp soreness or tenderness?',
     options: ['None', 'A little', 'Yes, noticeably', 'Yes, painful'],
   },
   {
     key: 'hairline',
-    q: 'Noticed any changes around your edges or temples?',
+    q: 'How are your edges looking?',
     options: ['No change', 'Looks a bit different', 'Noticeable change', "I'm concerned"],
   },
   {
     key: 'hairConcern',
-    q: 'Noticed any unusual breakage or dryness since your last check-in?',
-    options: ['No, hair feels normal', 'A little more breakage or dryness than usual', 'Yes, noticeably more', "Yes, I'm concerned"],
+    q: 'Any breakage or dryness since your last check-in?',
+    options: ['No, hair feels normal', 'A little more than usual', 'Yes, noticeably more', "Yes, I'm concerned"],
   },
 ];
+
+const getAcknowledgment = (optionIndex: number): string => {
+  if (optionIndex === 0) {
+    const mild = ["Great — let's keep going", "Good to hear", "Nice — moving on"];
+    return mild[Math.floor(Math.random() * mild.length)];
+  }
+  if (optionIndex === 1) return "Noted — we'll keep an eye on that";
+  if (optionIndex === 2) return "Thanks for flagging that — we'll factor this in";
+  return "Thanks for letting us know — this is important";
+};
 
 const MidCycleCheckIn = () => {
   const navigate = useNavigate();
   const { setCurrentCheckIn } = useApp();
   const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [currentStep, setCurrentStep] = useState(0);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [acknowledgment, setAcknowledgment] = useState<string | null>(null);
 
+  const isLastStep = currentStep === questions.length - 1;
   const allAnswered = questions.every(q => answers[q.key]);
+  const currentQ = questions[currentStep];
+
+  const selectAnswer = (opt: string, optIndex: number) => {
+    setAnswers(prev => ({ ...prev, [currentQ.key]: opt }));
+    const ack = getAcknowledgment(optIndex);
+    setAcknowledgment(ack);
+  };
+
+  useEffect(() => {
+    if (!acknowledgment) return;
+    const timer = setTimeout(() => {
+      setAcknowledgment(null);
+      if (!isLastStep) {
+        setCurrentStep(prev => prev + 1);
+      }
+    }, 1200);
+    return () => clearTimeout(timer);
+  }, [acknowledgment, isLastStep]);
 
   const handleSubmit = () => {
     setCurrentCheckIn({
@@ -52,50 +83,70 @@ const MidCycleCheckIn = () => {
       <div className="max-w-[430px] mx-auto px-6">
         {/* Top bar */}
         <div className="flex items-center justify-between py-4">
-          <button onClick={() => setShowConfirm(true)} className="p-2 -ml-2">
+          <button onClick={() => {
+            if (currentStep > 0) setCurrentStep(prev => prev - 1);
+            else setShowConfirm(true);
+          }} className="p-2 -ml-2">
             <ArrowLeft size={22} className="text-foreground" strokeWidth={1.8} />
           </button>
-          <p className="text-sm text-muted-foreground">Day 14 of your braids cycle</p>
+          <div className="flex gap-1">
+            {questions.map((_, i) => (
+              <div key={i} className={`h-1 w-5 rounded-full transition-colors duration-300 ${i <= currentStep ? 'bg-primary' : 'bg-border'}`} />
+            ))}
+          </div>
           <button onClick={() => setShowConfirm(true)} className="p-2 -mr-2">
             <X size={22} className="text-foreground" strokeWidth={1.8} />
           </button>
         </div>
 
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
-          <h2 className="text-2xl font-semibold mb-2">Mid-Cycle Check-In</h2>
-          <p className="text-muted-foreground mb-8">Just 4 quick questions — takes about 1 minute</p>
-
-          <div className="space-y-8">
-            {questions.map((q, i) => (
-              <div key={q.key}>
-                <p className="font-medium text-foreground mb-3">{i + 1}. {q.q}</p>
-                <div className="flex flex-wrap gap-2">
-                  {q.options.map(opt => (
-                    <button
-                      key={opt}
-                      onClick={() => setAnswers(prev => ({ ...prev, [q.key]: opt }))}
-                      className={`pill-option ${answers[q.key] === opt ? 'selected' : ''}`}
-                    >
-                      {opt}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="pt-8 pb-8">
-            <button
-              onClick={handleSubmit}
-              disabled={!allAnswered}
-              className={`w-full h-14 rounded-xl font-semibold text-base btn-press transition-colors ${
-                allAnswered ? 'bg-primary text-primary-foreground' : 'bg-border text-muted-foreground cursor-not-allowed'
-              }`}
+        <AnimatePresence mode="wait">
+          {acknowledgment ? (
+            <motion.div
+              key="ack"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="pt-16 text-center"
             >
-              See results
-            </button>
-          </div>
-        </motion.div>
+              <p className="text-lg font-medium text-foreground">{acknowledgment}</p>
+            </motion.div>
+          ) : (
+            <motion.div
+              key={currentStep}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.2 }}
+              className="pt-4"
+            >
+              <p className="text-label mb-2">Day 14 of your braids cycle</p>
+              <h2 className="text-xl font-semibold mb-6">{currentQ.q}</h2>
+
+              <div className="space-y-3">
+                {currentQ.options.map((opt, optIdx) => (
+                  <button
+                    key={opt}
+                    onClick={() => selectAnswer(opt, optIdx)}
+                    className={`selection-card w-full text-left ${answers[currentQ.key] === opt ? 'selected' : ''}`}
+                  >
+                    <p className="font-medium text-foreground">{opt}</p>
+                  </button>
+                ))}
+              </div>
+
+              {isLastStep && allAnswered && !acknowledgment && (
+                <div className="pt-8">
+                  <button
+                    onClick={handleSubmit}
+                    className="w-full h-14 rounded-xl font-semibold text-base btn-press bg-primary text-primary-foreground"
+                  >
+                    See results
+                  </button>
+                </div>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Confirm exit modal */}

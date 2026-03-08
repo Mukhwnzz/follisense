@@ -11,13 +11,13 @@ import { format } from 'date-fns';
 const serviceOptions = ['Wash', 'Treatment', 'Style installation', 'Style removal/takedown', 'Trim', 'Colour', 'Other'];
 
 const dailyTips = [
-  "Tip: Sleeping on a satin pillowcase reduces friction on your edges while in braids",
-  "Reminder: A light scalp oil massage today can help with circulation — even over your protective style",
-  "Tip: If your braids feel tight around the hairline, don't tough it out — loosen or remove the ones causing pain",
-  "Reminder: Staying hydrated helps your scalp too — aim for 2 litres today",
-  "Tip: Resist the urge to scratch — try pressing gently with a fingertip instead to relieve itch without damaging the scalp",
-  "Reminder: Your wash day is in 5 days — start thinking about whether you'll reinstall or give your hair a break",
-  "Tip: If you're exercising today, a light spritz of scalp refresh spray afterwards can help with sweat buildup under your style",
+  "Quick thought — a satin pillowcase tonight could help protect your edges while you sleep",
+  "A light scalp oil massage today can help with circulation — even over your protective style",
+  "If your braids feel tight around the hairline, don't tough it out — loosen or remove the ones causing pain",
+  "Staying hydrated helps your scalp too — aim for 2 litres today",
+  "Try pressing gently with a fingertip instead of scratching — it relieves itch without damaging the scalp",
+  "Your wash day is coming up in about 5 days — start thinking about whether you'll reinstall or give your hair a break",
+  "If you're exercising today, a light spritz of scalp refresh spray afterwards can help with sweat buildup under your style",
 ];
 
 
@@ -207,11 +207,11 @@ const HomePage = () => {
         {/* Pre-wash day prompt */}
         {showWashPrompt && (
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="card-elevated p-5 mb-4 border-l-4 border-l-warning">
-            <h3 className="font-semibold text-foreground mb-1">Wash day is coming up</h3>
-            <p className="text-sm text-muted-foreground mb-4">When you take down your style, take a moment to check your scalp. We'll walk you through it.</p>
+            <h3 className="font-semibold text-foreground mb-1">Wash day?</h3>
+            <p className="text-sm text-muted-foreground mb-4">Let's take a look at how your scalp did this cycle.</p>
             <div className="flex gap-3">
-              <button onClick={() => navigate('/wash-day')} className="flex-1 h-10 bg-primary text-primary-foreground rounded-xl font-medium text-sm btn-press">Start early assessment</button>
-              <button onClick={() => setDismissedWashPrompt(true)} className="flex-1 h-10 rounded-xl border border-border font-medium text-sm btn-press text-muted-foreground">I'll wait</button>
+              <button onClick={() => navigate('/wash-day')} className="flex-1 h-10 bg-primary text-primary-foreground rounded-xl font-medium text-sm btn-press">Start assessment</button>
+              <button onClick={() => setDismissedWashPrompt(true)} className="flex-1 h-10 rounded-xl border border-border font-medium text-sm btn-press text-muted-foreground">Not yet</button>
             </div>
           </motion.div>
         )}
@@ -262,7 +262,7 @@ const HomePage = () => {
             </div>
             <h3 className="font-semibold text-foreground">Mid-cycle check-in</h3>
           </div>
-          <p className="text-sm text-muted-foreground mb-4">4 quick questions — takes 1 minute</p>
+          <p className="text-sm text-muted-foreground mb-4">Hey — it's been 2 weeks since your braids went in. Quick check-in? Takes about a minute.</p>
           <button onClick={() => navigate('/mid-cycle')} className="w-full h-12 bg-primary text-primary-foreground rounded-xl font-semibold text-sm btn-press">Start check-in</button>
         </div>
 

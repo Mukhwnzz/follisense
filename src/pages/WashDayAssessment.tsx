@@ -1,13 +1,23 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, X, Camera } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 
+const getAcknowledgment = (optionIndex: number, totalOptions: number): string => {
+  if (optionIndex === 0) {
+    const mild = ["Great — let's keep going", "Good to hear", "Nice — moving on"];
+    return mild[Math.floor(Math.random() * mild.length)];
+  }
+  if (optionIndex === 1) return "Noted — we'll keep an eye on that";
+  if (optionIndex >= totalOptions - 1) return "Thanks for letting us know — this is important";
+  return "Thanks for flagging that — we'll factor this in";
+};
+
 const scalpSteps = [
   {
     key: 'itch',
-    q: 'How itchy has your scalp been this cycle?',
+    q: "How's the itching been this cycle?",
     options: [
       { label: 'None', desc: 'No itching at all' },
       { label: 'Mild', desc: 'Occasional, not bothersome' },
@@ -17,7 +27,7 @@ const scalpSteps = [
   },
   {
     key: 'tenderness',
-    q: 'Does your scalp feel tender or sore?',
+    q: 'Any scalp soreness or tenderness?',
     options: [
       { label: 'No', desc: 'No tenderness' },
       { label: 'A little', desc: 'Mild sensitivity in some areas' },
@@ -27,7 +37,7 @@ const scalpSteps = [
   },
   {
     key: 'flaking',
-    q: 'Have you noticed any flaking or buildup?',
+    q: 'Noticed any flaking or buildup?',
     options: [
       { label: 'None', desc: 'Scalp looks clear' },
       { label: 'Some flaking', desc: 'Light flakes, some buildup' },
@@ -36,7 +46,7 @@ const scalpSteps = [
   },
   {
     key: 'hairline',
-    q: 'Any changes around your edges or temples?',
+    q: 'How are your edges looking?',
     options: [
       { label: 'No change', desc: 'Edges look the same as usual' },
       { label: 'Looks a bit thinner', desc: 'Slight difference, not sure' },
@@ -46,7 +56,7 @@ const scalpSteps = [
   },
   {
     key: 'shedding',
-    q: 'How much hair came out during wash and detangling?',
+    q: 'How much hair came out at wash time?',
     options: [
       { label: 'Normal', desc: "About what I'd expect" },
       { label: 'More than usual', desc: 'A bit more than usual' },
@@ -59,7 +69,7 @@ const scalpSteps = [
 const hairHealthSteps = [
   {
     key: 'hairFeel',
-    q: 'How does your hair feel?',
+    q: "How's your hair feeling right now?",
     options: [
       { label: 'Soft and moisturised as usual', desc: '' },
       { label: 'A bit dry', desc: '' },
@@ -69,7 +79,7 @@ const hairHealthSteps = [
   },
   {
     key: 'hairBreakage',
-    q: 'Have you noticed any breakage?',
+    q: 'Any breakage lately?',
     options: [
       { label: 'No breakage', desc: '' },
       { label: 'A little — mostly at the ends', desc: '' },
@@ -115,6 +125,7 @@ const WashDayAssessment = () => {
   const [photoSaved, setPhotoSaved] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [showHairIntro, setShowHairIntro] = useState(false);
+  const [acknowledgment, setAcknowledgment] = useState<string | null>(null);
 
   const totalSteps = allSteps.length + 1; // +1 for photo step
   const isProductStep = currentStep === allSteps.length - 1;
@@ -123,16 +134,32 @@ const WashDayAssessment = () => {
   const isHairIntroStep = currentStep === scalpSteps.length && !showHairIntro;
   const currentQ = allSteps[currentStep];
 
-  const selectAnswer = (val: string) => {
+  const selectAnswer = (val: string, optIndex: number) => {
     setAnswers(prev => ({ ...prev, [currentQ.key]: val }));
     if (currentQ.key === 'newProducts' && val === 'No, same routine') {
-      setTimeout(() => setCurrentStep(allSteps.length), 300);
+      const ack = getAcknowledgment(0, 2);
+      setAcknowledgment(ack);
     } else if (currentQ.key === 'newProducts' && val === 'Yes, I tried something new') {
-      // Stay on step to show text input
+      // Stay on step to show text input — no acknowledgment
     } else {
-      setTimeout(() => setCurrentStep(prev => prev + 1), 300);
+      const ack = getAcknowledgment(optIndex, currentQ.options.length);
+      setAcknowledgment(ack);
     }
   };
+
+  useEffect(() => {
+    if (!acknowledgment) return;
+    const timer = setTimeout(() => {
+      const wasProduct = currentQ?.key === 'newProducts' && answers.newProducts === 'No, same routine';
+      setAcknowledgment(null);
+      if (wasProduct) {
+        setCurrentStep(allSteps.length);
+      } else {
+        setCurrentStep(prev => prev + 1);
+      }
+    }, 1200);
+    return () => clearTimeout(timer);
+  }, [acknowledgment]);
 
   const handleProductContinue = () => {
     setCurrentStep(allSteps.length);
@@ -237,7 +264,17 @@ const WashDayAssessment = () => {
         </div>
 
         <AnimatePresence mode="wait">
-          {!isPhotoStep && currentQ ? (
+          {acknowledgment ? (
+            <motion.div
+              key="ack"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="pt-16 text-center"
+            >
+              <p className="text-lg font-medium text-foreground">{acknowledgment}</p>
+            </motion.div>
+          ) : !isPhotoStep && currentQ ? (
             <motion.div
               key={currentStep}
               initial={{ opacity: 0, x: 20 }}
@@ -249,10 +286,10 @@ const WashDayAssessment = () => {
               <p className="text-label mb-2">Braids — Day 28 of 28</p>
               <h2 className="text-xl font-semibold mb-6">{currentQ.q}</h2>
               <div className="space-y-3">
-                {currentQ.options.map(opt => (
+                {currentQ.options.map((opt, optIdx) => (
                   <button
                     key={opt.label}
-                    onClick={() => selectAnswer(opt.label)}
+                    onClick={() => selectAnswer(opt.label, optIdx)}
                     className={`selection-card w-full text-left ${answers[currentQ.key] === opt.label ? 'selected' : ''}`}
                   >
                     <p className="font-medium text-foreground">{opt.label}</p>
