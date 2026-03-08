@@ -425,43 +425,29 @@ const Onboarding = () => {
         return cycleOk && washOk && betweenOk;
       }
       case 4: return allBaselineAnswered;
-      case 5: return true;
-      case 6: {
+      case 5: return true; // baseline response — always can proceed
+      case 6: return true; // photos — always can proceed
+      case 7: {
         const scalpNone = products.length === 1 && products[0] === 'None';
         const hairNone = hairProds.length === 1 && hairProds[0] === 'None';
         const scalpOk = scalpNone || (products.length > 0 && !!prodFreq);
         const hairOk = hairNone || (hairProds.length > 0 && !!hairProdFreq);
         return scalpOk && hairOk;
       }
-      case 7: {
+      case 8: {
         if (skipMenstrual) return goals.length > 0; // This is goals step for men
         return !!menstrualTracking && (menstrualTracking !== "Yes, I'd like to track" || (!!menstrualCycleLength && !!hormonalContraception));
       }
-      case 8: return goals.length > 0;
+      case 9: return goals.length > 0;
       default: return false;
     }
   };
 
-  const isLastStep = skipMenstrual ? step === 7 : step === 8;
+  const isLastStep = skipMenstrual ? step === 8 : step === 9;
 
   const handleNext = () => {
     if (!isLastStep) {
-      if (step === 4 && !baselineResultScreen) {
-        const itch = baselineAnswers.itch || '';
-        const tenderness = baselineAnswers.tenderness || '';
-        const hairline = baselineAnswers.hairline || '';
-        const hairHealth = baselineAnswers.hairHealth || '';
-        const risk = computeBaselineRisk(itch, tenderness, hairline, hairHealth);
-        const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
-        setBaselineRisk(risk);
-        setBaselineDate(today);
-        setBaselineResultScreen(risk);
-        return;
-      }
-      if (step === 4 && baselineResultScreen) {
-        setBaselineResultScreen(null);
-      }
-      if (step === 5) {
+      if (step === 6) {
         const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
         const photos = baselineAreas.filter(a => capturedPhotos[a.id]).map(a => ({ area: a.label, captured: true, date: today }));
         setBaselinePhotos(photos);
@@ -496,11 +482,13 @@ const Onboarding = () => {
   };
 
   const handleBack = () => {
-    if (step === 4 && baselineResultScreen) {
+    if (step === 5) {
+      // Going back from baseline response to baseline questions
       setBaselineResultScreen(null);
+      setStep(4);
       return;
     }
-    if (step === 4 && baselineStep > 0 && !baselineResultScreen) {
+    if (step === 4 && baselineStep > 0) {
       setBaselineStep(prev => prev - 1);
       return;
     }
