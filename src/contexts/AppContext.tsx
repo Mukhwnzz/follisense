@@ -103,6 +103,21 @@ const demoClientObservations: ClientObservation[] = [
   { id: 'co4', clientName: 'R.B.', date: 'Feb 20', observations: ['Thinning at crown / vertex', 'Tender or sore areas'], photos: ['Crown / vertex', 'Hairline / edges'], risk: 'red' },
 ];
 
+// Dummy stylist observations visible in consumer History
+export interface StylistObservationEntry {
+  id: string;
+  date: string;
+  stylistName: string;
+  observations: string[];
+  notes?: string;
+  risk: 'green' | 'amber' | 'red';
+}
+
+const demoStylistObservations: StylistObservationEntry[] = [
+  { id: 'so1', date: 'Mar 5', stylistName: 'Ama', observations: ['Thinning at hairline / edges', 'Signs of traction damage'], notes: 'Recommended loosening edges on next install', risk: 'amber' },
+  { id: 'so2', date: 'Feb 2', stylistName: 'Ama', observations: ['Nothing of concern'], risk: 'green' },
+];
+
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider = ({ children }: { children: ReactNode }) => {

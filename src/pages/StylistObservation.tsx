@@ -74,7 +74,7 @@ const StylistObservation = () => {
       notes: notes || undefined,
       risk: computeRisk(),
     });
-    toast.success('Observation saved');
+    toast.success('Observation shared with client.');
     navigate('/stylist');
   };
 
