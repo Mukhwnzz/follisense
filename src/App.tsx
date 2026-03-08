@@ -12,6 +12,7 @@ import MidCycleCheckIn from "./pages/MidCycleCheckIn";
 import WashDayAssessment from "./pages/WashDayAssessment";
 import RiskOutput from "./pages/RiskOutput";
 import ClinicianSummary from "./pages/ClinicianSummary";
+import HealthProfile from "./pages/HealthProfile";
 import HistoryPage from "./pages/HistoryPage";
 import LearnPage from "./pages/LearnPage";
 import ProfilePage from "./pages/ProfilePage";
@@ -38,6 +39,7 @@ const App = () => (
               <Route path="/wash-day" element={<WashDayAssessment />} />
               <Route path="/results" element={<RiskOutput />} />
               <Route path="/clinician-summary" element={<ClinicianSummary />} />
+              <Route path="/health-profile" element={<HealthProfile />} />
               <Route path="/history" element={<HistoryPage />} />
               <Route path="/learn" element={<LearnPage />} />
               <Route path="/profile" element={<ProfilePage />} />

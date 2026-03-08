@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { User, ChevronRight, Leaf, Lightbulb, Scissors, X, Calendar } from 'lucide-react';
+import { User, ChevronRight, Leaf, Lightbulb, Scissors, X, Calendar, Heart } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar as CalendarPicker } from '@/components/ui/calendar';
@@ -12,7 +12,7 @@ const serviceOptions = ['Wash', 'Treatment', 'Style installation', 'Style remova
 
 const HomePage = () => {
   const navigate = useNavigate();
-  const { onboardingData, history, salonVisits, addSalonVisit } = useApp();
+  const { onboardingData, history, salonVisits, addSalonVisit, healthProfile } = useApp();
   const [showSalonForm, setShowSalonForm] = useState(false);
   const [visitDate, setVisitDate] = useState<Date>(new Date());
   const [services, setServices] = useState<string[]>([]);
@@ -99,6 +99,23 @@ const HomePage = () => {
             </div>
           </div>
         </div>
+
+        {/* Health profile prompt */}
+        {!healthProfile.sweat && !healthProfile.medicalConditions.length && (
+          <button
+            onClick={() => navigate('/health-profile')}
+            className="card-elevated p-4 mb-4 w-full flex items-center gap-3 text-left border-l-4 border-l-secondary"
+          >
+            <div className="w-10 h-10 rounded-xl bg-sage-light flex items-center justify-center flex-shrink-0">
+              <Heart size={20} className="text-primary" strokeWidth={1.5} />
+            </div>
+            <div className="flex-1">
+              <p className="font-medium text-foreground text-sm">Complete your health profile</p>
+              <p className="text-xs text-muted-foreground">For more personalised insights</p>
+            </div>
+            <ChevronRight size={18} className="text-muted-foreground" />
+          </button>
+        )}
 
         {/* Salon visit card */}
         <button
