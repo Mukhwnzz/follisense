@@ -331,10 +331,11 @@ const WashDayAssessment = () => {
               transition={{ duration: 0.2 }}
               className="pt-4"
             >
-              <h2 className="text-xl font-semibold mb-2">Want to add a photo?</h2>
-              <p className="text-muted-foreground text-sm mb-6">
-                Tracking your hairline visually over time can help you spot gradual changes. Photos are stored on your device only — never uploaded.
+              <h2 className="text-xl font-semibold mb-2">Want to add photos?</h2>
+              <p className="text-muted-foreground text-sm mb-1">
+                Tracking visually helps you spot gradual changes.
               </p>
+              <p className="text-xs text-muted-foreground mb-6">Photos stay on your device only.</p>
 
               {!photoSaved ? (
                 <div className="space-y-3 mb-8">

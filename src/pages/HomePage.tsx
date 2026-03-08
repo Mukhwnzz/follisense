@@ -334,6 +334,63 @@ const HomePage = () => {
         </div>
       </motion.div>
 
+      {/* Check-In Prompt Modal */}
+      <AnimatePresence>
+        {showCheckInModal && !dismissedCheckInModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-foreground/30 z-[55] flex items-center justify-center px-6"
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-card rounded-3xl p-6 max-w-sm w-full shadow-card"
+            >
+              {!onboardingData.isWornOutOnly ? (
+                <>
+                  <p className="text-foreground leading-relaxed mb-6">
+                    Hey — your braids have been in for 14 days. Quick scalp check? Takes about a minute.
+                  </p>
+                  <button
+                    onClick={() => { setDismissedCheckInModal(true); navigate('/mid-cycle'); }}
+                    className="w-full h-14 bg-primary text-primary-foreground rounded-xl font-semibold text-base btn-press mb-3"
+                  >
+                    Start check-in
+                  </button>
+                  <button
+                    onClick={() => setDismissedCheckInModal(true)}
+                    className="w-full text-center text-sm text-muted-foreground py-2"
+                  >
+                    Remind me later
+                  </button>
+                </>
+              ) : (
+                <>
+                  <p className="text-foreground leading-relaxed mb-6">
+                    Wash day? Let's see how your scalp did this cycle.
+                  </p>
+                  <button
+                    onClick={() => { setDismissedCheckInModal(true); navigate('/wash-day'); }}
+                    className="w-full h-14 bg-primary text-primary-foreground rounded-xl font-semibold text-base btn-press mb-3"
+                  >
+                    Start assessment
+                  </button>
+                  <button
+                    onClick={() => setDismissedCheckInModal(true)}
+                    className="w-full text-center text-sm text-muted-foreground py-2"
+                  >
+                    Not washing today
+                  </button>
+                </>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Quick Log Modal */}
       <AnimatePresence>
         {showQuickLog && (
