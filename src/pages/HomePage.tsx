@@ -12,7 +12,7 @@ const serviceOptions = ['Wash', 'Treatment', 'Style installation', 'Style remova
 
 const HomePage = () => {
   const navigate = useNavigate();
-  const { onboardingData, history, salonVisits, addSalonVisit } = useApp();
+  const { onboardingData, history, salonVisits, addSalonVisit, healthProfile } = useApp();
   const [showSalonForm, setShowSalonForm] = useState(false);
   const [visitDate, setVisitDate] = useState<Date>(new Date());
   const [services, setServices] = useState<string[]>([]);
