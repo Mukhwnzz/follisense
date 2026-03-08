@@ -162,7 +162,28 @@ const StylistLearnPage = () => {
     <div className="page-container pt-6">
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
         <h1 className="text-2xl font-semibold mb-1">Stylist Reference Guide</h1>
-        <p className="text-muted-foreground text-sm mb-5">Spot it, understand it, refer it</p>
+        <p className="text-muted-foreground text-sm mb-4">Spot it, understand it, refer it</p>
+
+        {/* Quiz card */}
+        {(() => {
+          let quiz = { totalPoints: 0, currentStreak: 0 };
+          try { const s = localStorage.getItem('scalpsense-quiz'); if (s) quiz = JSON.parse(s); } catch {}
+          return (
+            <button onClick={() => navigate('/stylist/quiz')} className="card-elevated p-4 w-full text-left flex items-center justify-between mb-5 btn-press">
+              <div>
+                <h3 className="font-semibold text-foreground text-sm">Scalp Quiz</h3>
+                <p className="text-xs text-muted-foreground">Test your eye. Build your confidence.</p>
+                <div className="flex items-center gap-3 text-[11px] text-muted-foreground mt-1">
+                  <span className="flex items-center gap-1"><Flame size={11} className="text-primary" />{quiz.currentStreak}</span>
+                  <span className="flex items-center gap-1"><Star size={11} className="text-primary" />{quiz.totalPoints} pts</span>
+                </div>
+              </div>
+              <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <Play size={15} className="text-primary ml-0.5" />
+              </div>
+            </button>
+          );
+        })()}
 
         {/* Section toggle */}
         <div className="flex gap-2 mb-6">
