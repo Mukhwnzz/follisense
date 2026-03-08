@@ -30,6 +30,11 @@ export interface OnboardingData {
   scalpProducts: string[];
   otherProduct: string;
   productFrequency: string;
+  // Menstrual
+  menstrualTracking: string;
+  lastPeriodDate: string;
+  menstrualCycleLength: string;
+  hormonalContraception: string;
   // Goals
   goals: string[];
 }
@@ -108,6 +113,13 @@ export interface HealthProfileData {
   familyHistory: string;
 }
 
+export interface QuickLogEntry {
+  id: string;
+  date: string;
+  symptoms: string[];
+  severity: string;
+}
+
 const defaultHealthProfile: HealthProfileData = {
   sweat: '',
   exercise: '',
@@ -159,13 +171,6 @@ interface AppContextType {
   resetAll: () => void;
 }
 
-export interface QuickLogEntry {
-  id: string;
-  date: string;
-  symptoms: string[];
-  severity: string;
-}
-
 const defaultOnboarding: OnboardingData = {
   hairType: '',
   chemicalProcessing: '',
@@ -190,6 +195,10 @@ const defaultOnboarding: OnboardingData = {
   scalpProducts: [],
   otherProduct: '',
   productFrequency: '',
+  menstrualTracking: '',
+  lastPeriodDate: '',
+  menstrualCycleLength: '',
+  hormonalContraception: '',
   goals: [],
 };
 

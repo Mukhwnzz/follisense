@@ -20,9 +20,16 @@ const dailyTips = [
   "If you're exercising today, a light spritz of scalp refresh spray afterwards can help with sweat buildup under your style",
 ];
 
+const lutealTips = [
+  "You're in the second half of your cycle — increased scalp oiliness or sensitivity is normal right now",
+];
+
+const menstruationTips = [
+  "Some women notice more shedding around their period — this is usually temporary and hormonal",
+];
 
 const quickLogSymptoms = [
-  'Itching', 'Tenderness / soreness', 'Flaking', 'Thinning / shedding', 'Bumps or irritation', 'Something else',
+  'Itching', 'Tenderness / soreness', 'Flaking', 'Thinning / shedding', 'Breakage', 'Bumps or irritation', 'Something else',
 ];
 
 const quickLogSeverities = [
@@ -51,8 +58,6 @@ const getQuickLogTips = (symptoms: string[]): string[] => {
   return tips.slice(0, 3);
 };
 
-
-
 const HomePage = () => {
   const navigate = useNavigate();
   const { onboardingData, history, salonVisits, addSalonVisit, healthProfile, addQuickLog } = useApp();
@@ -78,13 +83,40 @@ const HomePage = () => {
   const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
 
   const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000);
-  const todayTip = dailyTips[dayOfYear % dailyTips.length];
+
+  // Menstrual cycle day calculation
+  const getCycleDay = (): number | null => {
+    if (onboardingData.menstrualTracking !== "Yes, I'd like to track" || !onboardingData.lastPeriodDate) return null;
+    const lastPeriod = new Date(onboardingData.lastPeriodDate);
+    const diffDays = Math.floor((Date.now() - lastPeriod.getTime()) / 86400000);
+    const cycleLengthMap: Record<string, number> = { '21–25 days': 23, '26–30 days': 28, '31–35 days': 33 };
+    const cycleLen = cycleLengthMap[onboardingData.menstrualCycleLength] || 28;
+    return diffDays > 0 ? ((diffDays - 1) % cycleLen) + 1 : null;
+  };
+
+  const cycleDay = getCycleDay();
+  const cycleLenNum = (() => {
+    const m: Record<string, number> = { '21–25 days': 23, '26–30 days': 28, '31–35 days': 33 };
+    return m[onboardingData.menstrualCycleLength] || 28;
+  })();
+
+  // Determine tip based on menstrual phase
+  let todayTip = dailyTips[dayOfYear % dailyTips.length];
+  if (cycleDay) {
+    if (cycleDay >= 1 && cycleDay <= 5) {
+      todayTip = menstruationTips[0];
+    } else if (cycleDay >= 15 && cycleDay <= cycleLenNum) {
+      todayTip = lutealTips[0];
+    }
+  }
 
   const daysUntilWash = totalDays - currentDay;
   const showWashPrompt = !onboardingData.isWornOutOnly && daysUntilWash <= 2 && !dismissedWashPrompt;
 
   const recentEntries = [
     { label: 'Wash day check-in', date: 'Feb 20', risk: 'green' as const },
+    { label: 'Quick log: itching', date: 'Feb 15', risk: 'amber' as const },
+    { label: 'Stylist observation', date: 'Feb 12', risk: 'amber' as const, icon: 'eye' },
     { label: 'Mid-cycle check-in', date: 'Feb 10', risk: 'green' as const },
     { label: 'Wash day check-in', date: 'Feb 6', risk: 'amber' as const },
   ];
@@ -124,11 +156,6 @@ const HomePage = () => {
     });
     resetQuickLog();
   };
-
-  // Compute next check-in date for welcome message
-  const nextCheckInDate = new Date();
-  nextCheckInDate.setDate(nextCheckInDate.getDate() + 7);
-  const nextCheckInStr = nextCheckInDate.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
 
   return (
     <div className="page-container pt-6">
@@ -182,6 +209,11 @@ const HomePage = () => {
           </div>
         )}
 
+        {/* Menstrual cycle indicator */}
+        {cycleDay && (
+          <div className="text-xs text-muted-foreground mb-3 px-1">Cycle day {cycleDay}</div>
+        )}
+
         {/* Goals card */}
         {onboardingData.goals.length > 0 && (
           <button onClick={() => navigate('/profile')} className="card-elevated p-4 mb-4 w-full text-left flex items-center gap-3">
@@ -207,11 +239,11 @@ const HomePage = () => {
         {/* Pre-wash day prompt */}
         {showWashPrompt && (
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="card-elevated p-5 mb-4 border-l-4 border-l-warning">
-            <h3 className="font-semibold text-foreground mb-1">Wash day?</h3>
-            <p className="text-sm text-muted-foreground mb-4">Let's take a look at how your scalp did this cycle.</p>
+            <h3 className="font-semibold text-foreground mb-1">Wash day is coming up</h3>
+            <p className="text-sm text-muted-foreground mb-4">When you take down your style, take a moment to check your scalp.</p>
             <div className="flex gap-3">
-              <button onClick={() => navigate('/wash-day')} className="flex-1 h-10 bg-primary text-primary-foreground rounded-xl font-medium text-sm btn-press">Start assessment</button>
-              <button onClick={() => setDismissedWashPrompt(true)} className="flex-1 h-10 rounded-xl border border-border font-medium text-sm btn-press text-muted-foreground">Not yet</button>
+              <button onClick={() => navigate('/wash-day')} className="flex-1 h-10 bg-primary text-primary-foreground rounded-xl font-medium text-sm btn-press">Start early assessment</button>
+              <button onClick={() => setDismissedWashPrompt(true)} className="flex-1 h-10 rounded-xl border border-border font-medium text-sm btn-press text-muted-foreground">I'll wait</button>
             </div>
           </motion.div>
         )}
@@ -353,7 +385,7 @@ const HomePage = () => {
                       <div>
                         <div className="w-12 h-12 rounded-full bg-warning/15 flex items-center justify-center mx-auto mb-4"><AlertTriangle size={22} className="text-warning" strokeWidth={1.8} /></div>
                         <h4 className="font-semibold text-center mb-2">Here are some things to try</h4>
-                        <p className="text-sm text-muted-foreground text-center mb-4">Before your next wash day — and if it gets worse, you can do a full check-in anytime.</p>
+                        <p className="text-sm text-muted-foreground text-center mb-4">If it gets worse, you can do a full check-in anytime.</p>
                         <div className="card-elevated p-4 mb-6">
                           <ol className="space-y-3">
                             {getQuickLogTips(quickSymptoms).map((tip, i) => (
@@ -369,7 +401,7 @@ const HomePage = () => {
                     {quickSeverity === 'Severe' && (
                       <div>
                         <div className="w-12 h-12 rounded-full bg-destructive/15 flex items-center justify-center mx-auto mb-4"><AlertTriangle size={22} className="text-destructive" strokeWidth={1.8} /></div>
-                        <h4 className="font-semibold text-center mb-2">This sounds like it's worth attention now</h4>
+                        <h4 className="font-semibold text-center mb-2">This sounds like it needs attention now</h4>
                         <p className="text-sm text-muted-foreground text-center mb-6">A full assessment will give you personalised guidance and, if needed, a summary to share with a professional.</p>
                         <button onClick={() => { handleQuickLogDone(); navigate('/wash-day'); }} className="w-full h-14 bg-primary text-primary-foreground rounded-xl font-semibold text-base btn-press mb-3">Do a full assessment</button>
                         <button onClick={() => navigate('/results?risk=red')} className="w-full h-12 rounded-xl border-2 border-border font-medium text-sm btn-press mb-6">View guidance</button>

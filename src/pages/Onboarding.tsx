@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, HelpCircle, ChevronDown, Camera, Check, Eye, Stethoscope } from 'lucide-react';
@@ -14,7 +14,7 @@ const hairTypes = [
   { id: '4a', label: '4a', desc: 'Dense, S-shaped coils' },
   { id: '4b', label: '4b', desc: 'Z-shaped, tightly coiled' },
   { id: '4c', label: '4c', desc: 'Very tight, densely packed coils' },
-  { id: 'unsure', label: 'Not sure', desc: "That's okay — lots of people have a mix of different curl patterns" },
+  { id: 'unsure', label: 'Not sure', desc: "That's okay — lots of us have a mix of patterns" },
 ];
 
 const chemicalOptions = [
@@ -58,9 +58,6 @@ const betweenWashOptions = [
   'Rinse with water only', 'Massage / manipulate the scalp',
   'Nothing — I leave it alone until wash day', 'Other',
 ];
-const severities = ['None', 'Mild', 'Moderate', 'Severe'];
-const tendernessSeverities = ['None', 'Mild', 'Moderate', 'Severe'];
-const hairlineConcerns = ['No concerns', 'Slight concern', 'Noticeable change', 'Very concerned'];
 
 const productOptions = [
   'Scalp oil (e.g., tea tree, rosemary, castor)', 'Hair oil (e.g., argan, jojoba, coconut)',
@@ -84,6 +81,47 @@ const goalOptions = [
   "I'm not sure yet — just exploring",
 ];
 
+const menstrualCycleLengthOptions = ['21–25 days', '26–30 days', '31–35 days', 'Irregular', 'Not sure'];
+const contraceptionOptions = ['No', 'Yes (pill)', 'Yes (implant or injection)', 'Yes (IUD/coil)', 'Prefer not to say'];
+
+const baselineQuestions = [
+  {
+    key: 'itch',
+    q: 'Any scalp itching right now?',
+    options: ['None', 'Mild', 'Moderate', 'Severe'],
+  },
+  {
+    key: 'tenderness',
+    q: 'Any tenderness or soreness?',
+    options: ['None', 'Mild', 'Moderate', 'Severe'],
+  },
+  {
+    key: 'hairline',
+    q: 'Any concerns about your hairline or edges?',
+    options: ['No concerns', 'Slight concern', 'Noticeable change', 'Very concerned'],
+  },
+  {
+    key: 'hairHealth',
+    q: 'How would you describe your hair health right now?',
+    options: [
+      'Healthy — no concerns',
+      'Some dryness or breakage but nothing unusual',
+      'Noticeably dry, brittle, or breaking more than usual',
+      "Concerned about my hair's condition",
+    ],
+  },
+];
+
+const getBaselineAcknowledgment = (optionIndex: number): string => {
+  if (optionIndex === 0) {
+    const mild = ['Good to hear', "Great — let's keep going", 'Nice'];
+    return mild[Math.floor(Math.random() * mild.length)];
+  }
+  if (optionIndex === 1) return 'Noted';
+  if (optionIndex === 2) return 'Thanks for flagging that';
+  return "We'll factor that in";
+};
+
 const CurlIcon = ({ type }: { type: string }) => {
   if (type === 'unsure') return <HelpCircle size={24} className="text-muted-foreground" strokeWidth={1.5} />;
   const patterns: Record<string, React.ReactNode> = {
@@ -101,7 +139,7 @@ const computeBaselineRisk = (itch: string, tenderness: string, hairline: string,
   const severe = ['Severe', 'Very concerned'];
   const moderate = ['Moderate', 'Noticeable change'];
   const hairMildest = ['Healthy — no concerns'];
-  const hairModerate = ['Noticeably dry, brittle, or breaking more than usual', 'Concerned about my hair\'s condition'];
+  const hairModerate = ['Noticeably dry, brittle, or breaking more than usual', "Concerned about my hair's condition"];
   const scalpValues = [itch, tenderness, hairline];
   const allScalpMild = scalpValues.every(v => mildest.includes(v));
   const allMild = allScalpMild && hairMildest.includes(hairHealth);
@@ -145,10 +183,12 @@ const Onboarding = () => {
   const [otherBetweenWash, setOtherBetweenWash] = useState('');
   const hasProtectiveStyle = styles.some(s => !nonProtectiveStyles.includes(s) && s !== 'Other');
   const isWornOutOnly = styles.length > 0 && !hasProtectiveStyle;
-  const [itch, setItch] = useState('');
-  const [tenderness, setTenderness] = useState('');
-  const [hairline, setHairline] = useState('');
-  const [baselineHairHealth, setBaselineHairHealth] = useState('');
+
+  // Baseline — now conversational step-through
+  const [baselineStep, setBaselineStep] = useState(0);
+  const [baselineAnswers, setBaselineAnswers] = useState<Record<string, string>>({});
+  const [baselineAck, setBaselineAck] = useState<string | null>(null);
+
   const [products, setProducts] = useState<string[]>([]);
   const [otherProduct, setOtherProduct] = useState('');
   const [prodFreq, setProdFreq] = useState('');
@@ -157,11 +197,16 @@ const Onboarding = () => {
   const [capturedPhotos, setCapturedPhotos] = useState<Record<string, boolean>>({});
   const [baselineResultScreen, setBaselineResultScreen] = useState<'amber' | 'red' | null>(null);
 
+  // Menstrual
+  const [menstrualTracking, setMenstrualTracking] = useState('');
+  const [lastPeriodDate, setLastPeriodDate] = useState<Date | undefined>(undefined);
+  const [menstrualCycleLength, setMenstrualCycleLength] = useState('');
+  const [hormonalContraception, setHormonalContraception] = useState('');
 
-  // Goals state
+  // Goals
   const [goals, setGoals] = useState<string[]>([]);
 
-  const totalSteps = 7; // 6 original + goals
+  const totalSteps = 8;
 
   const baselineAreas = [
     { id: 'hairline', label: 'Hairline — temples and edges', desc: 'Front-facing', optional: false },
@@ -182,6 +227,25 @@ const Onboarding = () => {
     });
   };
 
+  // Baseline acknowledgment auto-advance
+  useEffect(() => {
+    if (!baselineAck) return;
+    const timer = setTimeout(() => {
+      setBaselineAck(null);
+      if (baselineStep < baselineQuestions.length - 1) {
+        setBaselineStep(prev => prev + 1);
+      }
+    }, 1200);
+    return () => clearTimeout(timer);
+  }, [baselineAck, baselineStep]);
+
+  const selectBaselineAnswer = (key: string, val: string, optIndex: number) => {
+    setBaselineAnswers(prev => ({ ...prev, [key]: val }));
+    setBaselineAck(getBaselineAcknowledgment(optIndex));
+  };
+
+  const allBaselineAnswered = baselineQuestions.every(q => baselineAnswers[q.key]);
+
   const canProceed = () => {
     switch (step) {
       case 1: return !!hairType && !!chemicalProcessing && (chemicalProcessing !== 'Multiple' || chemicalMultiple.length > 0);
@@ -197,10 +261,11 @@ const Onboarding = () => {
         const betweenOk = betweenWashCare.length > 0 && (!betweenWashCare.includes('Other') || otherBetweenWash.trim().length > 0);
         return cycleOk && washOk && betweenOk;
       }
-      case 4: return !!itch && !!tenderness && !!hairline && !!baselineHairHealth;
-      case 5: return true; // photo step
+      case 4: return allBaselineAnswered;
+      case 5: return true;
       case 6: return products.length > 0 && !!prodFreq && (!products.includes('Other') || otherProduct.trim().length > 0);
-      case 7: return goals.length > 0;
+      case 7: return !!menstrualTracking && (menstrualTracking !== 'Yes, I\'d like to track' || (!!menstrualCycleLength && !!hormonalContraception));
+      case 8: return goals.length > 0;
       default: return false;
     }
   };
@@ -208,7 +273,11 @@ const Onboarding = () => {
   const handleNext = () => {
     if (step < totalSteps) {
       if (step === 4 && !baselineResultScreen) {
-        const risk = computeBaselineRisk(itch, tenderness, hairline, baselineHairHealth);
+        const itch = baselineAnswers.itch || '';
+        const tenderness = baselineAnswers.tenderness || '';
+        const hairline = baselineAnswers.hairline || '';
+        const hairHealth = baselineAnswers.hairHealth || '';
+        const risk = computeBaselineRisk(itch, tenderness, hairline, hairHealth);
         const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
         setBaselineRisk(risk);
         setBaselineDate(today);
@@ -225,10 +294,9 @@ const Onboarding = () => {
       }
       setStep(step + 1);
     } else {
-      // Final step — save and navigate
       const nextCheckIn = new Date();
       nextCheckIn.setDate(nextCheckIn.getDate() + 7);
-      
+
       setOnboardingData({
         hairType, chemicalProcessing, chemicalProcessingMultiple: chemicalMultiple,
         protectiveStyles: styles, otherStyle, protectiveStyleFrequency: protectiveFreq,
@@ -236,8 +304,13 @@ const Onboarding = () => {
         washFrequency: washFreq, washFrequencyPerCycle: washFreqPerCycle,
         betweenWashCare, otherBetweenWashCare: otherBetweenWash,
         wornOutWashFrequency: wornOutWashFreq, restyleFrequency: restyleFreq,
-        baselineItch: itch, baselineTenderness: tenderness, baselineHairline: hairline, baselineHairHealth,
+        baselineItch: baselineAnswers.itch || '', baselineTenderness: baselineAnswers.tenderness || '',
+        baselineHairline: baselineAnswers.hairline || '', baselineHairHealth: baselineAnswers.hairHealth || '',
         scalpProducts: products, otherProduct, productFrequency: prodFreq,
+        menstrualTracking,
+        lastPeriodDate: lastPeriodDate ? format(lastPeriodDate, 'yyyy-MM-dd') : '',
+        menstrualCycleLength,
+        hormonalContraception,
         goals,
       });
       setOnboardingComplete(true);
@@ -246,9 +319,21 @@ const Onboarding = () => {
   };
 
   const handleBack = () => {
+    if (step === 4 && baselineResultScreen) {
+      setBaselineResultScreen(null);
+      return;
+    }
+    if (step === 4 && baselineStep > 0 && !baselineResultScreen) {
+      setBaselineStep(prev => prev - 1);
+      return;
+    }
     if (step > 1) setStep(step - 1);
     else navigate('/');
   };
+
+  const itch = baselineAnswers.itch || '';
+  const tenderness = baselineAnswers.tenderness || '';
+  const hairline = baselineAnswers.hairline || '';
 
   return (
     <div className="min-h-screen bg-background">
@@ -267,7 +352,7 @@ const Onboarding = () => {
 
         <AnimatePresence mode="wait">
           <motion.div
-            key={step}
+            key={`${step}-${baselineResultScreen}-${baselineStep}`}
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
@@ -277,7 +362,7 @@ const Onboarding = () => {
             {/* Step 1: Hair type & chemical processing */}
             {step === 1 && (
               <div>
-                <h2 className="text-2xl font-semibold mb-2">Let's personalise your experience</h2>
+                <h2 className="text-2xl font-semibold mb-2">Let's get to know your hair</h2>
                 <p className="text-muted-foreground mb-6">Select the option closest to your hair type</p>
                 <div className="space-y-3 mb-8">
                   {hairTypes.map(ht => (
@@ -305,7 +390,7 @@ const Onboarding = () => {
                     ))}
                   </div>
                 )}
-                <p className="text-xs text-muted-foreground mt-3">Chemical processing can affect how your scalp responds to styling and products — this helps us give you more relevant guidance.</p>
+                <p className="text-xs text-muted-foreground mt-3">Chemical processing can affect how your scalp responds to styling — this helps us personalise your experience.</p>
               </div>
             )}
 
@@ -409,10 +494,9 @@ const Onboarding = () => {
 
             {step === 3 && isWornOutOnly && (
               <div>
-                <h2 className="text-2xl font-semibold mb-2">Your hair routine</h2>
-                <p className="text-muted-foreground mb-6">Since you mostly wear your hair out, we'll base your check-ins on your wash routine</p>
+                <h2 className="text-2xl font-semibold mb-2">Your routine</h2>
+                <p className="text-muted-foreground mb-6">How often do you wash your hair?</p>
                 <div className="mb-8">
-                  <p className="font-medium text-foreground mb-3">How often do you wash your hair?</p>
                   <div className="flex flex-wrap gap-2">
                     {wornOutWashOptions.map(o => (<button key={o} onClick={() => setWornOutWashFreq(o)} className={`pill-option ${wornOutWashFreq === o ? 'selected' : ''}`}>{o}</button>))}
                   </div>
@@ -426,33 +510,54 @@ const Onboarding = () => {
               </div>
             )}
 
-            {/* Step 4: Baseline */}
+            {/* Step 4: Baseline — conversational step-through */}
             {step === 4 && !baselineResultScreen && (
               <div>
-                <h2 className="text-2xl font-semibold mb-2">Quick baseline — how's your scalp right now?</h2>
-                <p className="text-muted-foreground mb-6">This helps us set your starting point</p>
-                <div className="space-y-6">
+                {baselineAck ? (
+                  <motion.div
+                    key="baseline-ack"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="pt-16 text-center"
+                  >
+                    <p className="text-lg font-medium text-foreground">{baselineAck}</p>
+                  </motion.div>
+                ) : (
                   <div>
-                    <p className="font-medium text-foreground mb-3">Any current scalp itching?</p>
-                    <div className="flex flex-wrap gap-2">{severities.map(s => (<button key={s} onClick={() => setItch(s)} className={`pill-option ${itch === s ? 'selected' : ''}`}>{s}</button>))}</div>
-                  </div>
-                  <div>
-                    <p className="font-medium text-foreground mb-3">Any tenderness or soreness?</p>
-                    <div className="flex flex-wrap gap-2">{tendernessSeverities.map(s => (<button key={s} onClick={() => setTenderness(s)} className={`pill-option ${tenderness === s ? 'selected' : ''}`}>{s}</button>))}</div>
-                  </div>
-                  <div>
-                    <p className="font-medium text-foreground mb-3">Any concerns about your hairline or edges?</p>
-                    <div className="flex flex-wrap gap-2">{hairlineConcerns.map(s => (<button key={s} onClick={() => setHairline(s)} className={`pill-option ${hairline === s ? 'selected' : ''}`}>{s}</button>))}</div>
-                  </div>
-                  <div>
-                    <p className="font-medium text-foreground mb-3">How would you describe your hair health right now?</p>
-                    <div className="flex flex-wrap gap-2">
-                      {['Healthy — no concerns', 'Some dryness or breakage but nothing unusual', 'Noticeably dry, brittle, or breaking more than usual', "Concerned about my hair's condition"].map(s => (
-                        <button key={s} onClick={() => setBaselineHairHealth(s)} className={`pill-option ${baselineHairHealth === s ? 'selected' : ''}`}>{s}</button>
+                    <h2 className="text-2xl font-semibold mb-2">Quick check-in — how are things right now?</h2>
+                    <p className="text-muted-foreground mb-6">This helps us set your starting point</p>
+
+                    <div className="flex gap-1 mb-6">
+                      {baselineQuestions.map((_, i) => (
+                        <div key={i} className={`h-1 flex-1 rounded-full transition-colors duration-300 ${i <= baselineStep ? 'bg-primary' : 'bg-border'}`} />
                       ))}
                     </div>
+
+                    <AnimatePresence mode="wait">
+                      <motion.div
+                        key={baselineStep}
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -20 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <h3 className="text-lg font-semibold mb-4">{baselineQuestions[baselineStep].q}</h3>
+                        <div className="space-y-3">
+                          {baselineQuestions[baselineStep].options.map((opt, optIdx) => (
+                            <button
+                              key={opt}
+                              onClick={() => selectBaselineAnswer(baselineQuestions[baselineStep].key, opt, optIdx)}
+                              className={`selection-card w-full text-left ${baselineAnswers[baselineQuestions[baselineStep].key] === opt ? 'selected' : ''}`}
+                            >
+                              <p className="font-medium text-foreground">{opt}</p>
+                            </button>
+                          ))}
+                        </div>
+                      </motion.div>
+                    </AnimatePresence>
                   </div>
-                </div>
+                )}
               </div>
             )}
 
@@ -463,12 +568,10 @@ const Onboarding = () => {
                     <Eye size={32} className="text-warning-foreground" strokeWidth={1.8} />
                   </motion.div>
                 </div>
-                <h2 className="text-2xl font-semibold text-center mb-2">Thanks for sharing — a couple of things to keep in mind</h2>
-                <p className="text-muted-foreground text-center mb-6">Based on what you've told us, you have some symptoms worth tracking from the start.</p>
+                <h2 className="text-2xl font-semibold text-center mb-2">Thanks for sharing — a couple of things to note</h2>
+                <p className="text-muted-foreground text-center mb-6">You have some symptoms worth tracking from the start. We'll factor this into your first check-in so we can see how things develop.</p>
                 <div className="card-elevated p-5 mb-4">
-                  <h3 className="font-semibold mb-3">What happens next</h3>
-                  <p className="text-sm text-muted-foreground mb-4">We'll factor this into your first check-in so we can see whether things improve, stay the same, or get worse.</p>
-                  <h4 className="font-medium text-foreground text-sm mb-2">In the meantime</h4>
+                  <h3 className="font-semibold mb-3">In the meantime</h3>
                   <ol className="space-y-2">
                     {getBaselineSevereFlaggedSymptoms(itch, tenderness, hairline).includes('scalp itching') && (
                       <li className="flex gap-3 text-sm"><span className="w-5 h-5 rounded-full bg-warning/20 flex items-center justify-center flex-shrink-0 text-xs font-semibold text-warning">•</span><span className="text-muted-foreground">Apply a lightweight, non-comedogenic scalp oil to soothe irritation</span></li>
@@ -482,7 +585,7 @@ const Onboarding = () => {
                   </ol>
                 </div>
                 <div className="rounded-2xl bg-accent p-4 mb-6">
-                  <p className="text-sm text-muted-foreground leading-relaxed">This isn't a diagnosis — it's a starting point. ScalpSense will help you track how things develop.</p>
+                  <p className="text-sm text-muted-foreground leading-relaxed">This isn't a diagnosis — it's a starting point.</p>
                 </div>
               </div>
             )}
@@ -495,18 +598,14 @@ const Onboarding = () => {
                   </motion.div>
                 </div>
                 <h2 className="text-2xl font-semibold text-center mb-2">We'd recommend seeking advice soon</h2>
-                <p className="text-muted-foreground text-center mb-6">The symptoms you've described suggest it's worth speaking to a professional sooner rather than later.</p>
-                <div className="card-elevated p-5 mb-4">
-                  <h3 className="font-semibold mb-2">What this means</h3>
-                  <p className="text-sm text-muted-foreground">You don't need to wait for a full cycle of tracking to take action. The symptoms you've described — especially {getBaselineSevereFlaggedSymptoms(itch, tenderness, hairline).join(' and ')} — are worth getting checked.</p>
-                </div>
+                <p className="text-muted-foreground text-center mb-6">The symptoms you've described — especially {getBaselineSevereFlaggedSymptoms(itch, tenderness, hairline).join(' and ')} — are worth getting checked sooner rather than later.</p>
                 <div className="card-elevated p-5 mb-4">
                   <h3 className="font-semibold mb-2">Who to see</h3>
                   <p className="text-sm text-muted-foreground">A trichologist specialises in hair and scalp conditions. A dermatologist can investigate further. Your GP can refer you.</p>
                 </div>
                 <div className="card-elevated p-5 mb-4">
                   <h3 className="font-semibold mb-2">We'll still track with you</h3>
-                  <p className="text-sm text-muted-foreground">Setting up ScalpSense now means you'll have a symptom timeline to share with whoever you see — that's useful context for any consultation.</p>
+                  <p className="text-sm text-muted-foreground">Setting up ScalpSense now means you'll have a symptom timeline to share with whoever you see.</p>
                 </div>
                 <button onClick={() => navigate('/clinician-summary')} className="w-full h-12 rounded-xl border-2 border-border font-semibold text-sm btn-press mb-4 flex items-center justify-center gap-2">
                   <Stethoscope size={16} strokeWidth={1.8} /> View your baseline summary
@@ -518,7 +617,7 @@ const Onboarding = () => {
             {step === 5 && (
               <div>
                 <h2 className="text-2xl font-semibold mb-2">Capture your starting point</h2>
-                <p className="text-muted-foreground mb-6">A baseline photo helps you spot gradual changes over time that are hard to notice day to day.</p>
+                <p className="text-muted-foreground mb-6">A baseline photo helps you spot gradual changes that are hard to notice day to day</p>
                 <div className="space-y-3 mb-6">
                   {baselineAreas.map(area => (
                     <button key={area.id} onClick={() => setCapturedPhotos(prev => ({ ...prev, [area.id]: true }))} className={`selection-card w-full flex items-center gap-4 text-left ${area.optional ? 'border-dashed opacity-80' : ''} ${capturedPhotos[area.id] ? 'selected' : ''}`}>
@@ -534,7 +633,7 @@ const Onboarding = () => {
                   ))}
                 </div>
                 <div className="rounded-2xl bg-accent p-4 mb-4">
-                  <p className="text-xs text-muted-foreground leading-relaxed">🔒 Photos are stored on your device only — never uploaded, never shared unless you choose to. No AI analysis is applied.</p>
+                  <p className="text-xs text-muted-foreground leading-relaxed">🔒 Photos are stored on your device only — never uploaded, never shared unless you choose to.</p>
                 </div>
                 <div className="rounded-2xl bg-accent p-4 mb-6">
                   <p className="text-xs text-muted-foreground leading-relaxed">💡 For the best baseline, take photos in good natural light with your hair parted or pulled back so your scalp is visible.</p>
@@ -571,19 +670,73 @@ const Onboarding = () => {
                 {products.includes('Other') && (
                   <input type="text" value={otherProduct} onChange={e => setOtherProduct(e.target.value)} placeholder="What else do you use?" className="w-full h-12 px-4 rounded-xl border-2 border-border bg-card text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors mb-4" />
                 )}
-                <p className="text-muted-foreground mb-4">How often do you apply products to your scalp?</p>
+                <p className="text-muted-foreground mb-4 mt-6">How often do you apply products to your scalp?</p>
                 <div className="flex flex-wrap gap-2">
                   {productFrequencies.map(f => (<button key={f} onClick={() => setProdFreq(f)} className={`pill-option ${prodFreq === f ? 'selected' : ''}`}>{f}</button>))}
                 </div>
               </div>
             )}
 
-            {/* Step 7: Goals */}
+            {/* Step 7: Menstrual cycle */}
             {step === 7 && (
               <div>
-                <h2 className="text-2xl font-semibold mb-2">What matters most to you right now?</h2>
-                <p className="text-muted-foreground mb-6">This helps us focus your check-ins and tips on what you care about. Pick up to 3.</p>
+                <h2 className="text-2xl font-semibold mb-2">Do you want to link your menstrual cycle?</h2>
+                <p className="text-muted-foreground mb-6">Hormonal changes can affect your scalp — tracking this helps us give smarter insights</p>
+                <div className="space-y-3 mb-6">
+                  {["Yes, I'd like to track", 'No thanks', "I don't menstruate"].map(opt => (
+                    <button
+                      key={opt}
+                      onClick={() => setMenstrualTracking(opt)}
+                      className={`selection-card w-full text-left ${menstrualTracking === opt ? 'selected' : ''}`}
+                    >
+                      <p className="font-medium text-foreground">{opt}</p>
+                    </button>
+                  ))}
+                </div>
 
+                {menstrualTracking === "Yes, I'd like to track" && (
+                  <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
+                    <div>
+                      <p className="font-medium text-foreground mb-3">When did your last period start?</p>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <button className="w-full h-12 px-4 rounded-xl border-2 border-border bg-card text-left text-sm flex items-center gap-2">
+                            <span className={lastPeriodDate ? 'text-foreground' : 'text-muted-foreground'}>
+                              {lastPeriodDate ? format(lastPeriodDate, 'PPP') : 'Select a date'}
+                            </span>
+                          </button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar mode="single" selected={lastPeriodDate} onSelect={(d) => d && setLastPeriodDate(d)} initialFocus className={cn("p-3 pointer-events-auto")} />
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+                    <div>
+                      <p className="font-medium text-foreground mb-3">How long is your typical cycle?</p>
+                      <div className="flex flex-wrap gap-2">
+                        {menstrualCycleLengthOptions.map(o => (
+                          <button key={o} onClick={() => setMenstrualCycleLength(o)} className={`pill-option ${menstrualCycleLength === o ? 'selected' : ''}`}>{o}</button>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <p className="font-medium text-foreground mb-3">Are you on hormonal contraception?</p>
+                      <div className="flex flex-wrap gap-2">
+                        {contraceptionOptions.map(o => (
+                          <button key={o} onClick={() => setHormonalContraception(o)} className={`pill-option ${hormonalContraception === o ? 'selected' : ''}`}>{o}</button>
+                        ))}
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </div>
+            )}
+
+            {/* Step 8: Goals */}
+            {step === 8 && (
+              <div>
+                <h2 className="text-2xl font-semibold mb-2">What matters most to you right now?</h2>
+                <p className="text-muted-foreground mb-6">Pick up to 3 — this helps us focus your experience</p>
                 <div className="space-y-3 mb-6">
                   {goalOptions.map(g => (
                     <button
@@ -611,6 +764,12 @@ const Onboarding = () => {
             <button onClick={handleNext} className="w-full h-14 rounded-xl font-semibold text-base btn-press transition-colors bg-primary text-primary-foreground">
               Continue setup
             </button>
+          ) : step === 4 && !baselineResultScreen && !baselineAck ? (
+            allBaselineAnswered && baselineStep === baselineQuestions.length - 1 ? (
+              <button onClick={handleNext} className="w-full h-14 rounded-xl font-semibold text-base btn-press transition-colors bg-primary text-primary-foreground">
+                Set up my cycle
+              </button>
+            ) : null
           ) : step === 5 ? (
             <div className="space-y-3">
               <button onClick={handleNext} className="w-full h-14 rounded-xl font-semibold text-base btn-press transition-colors bg-primary text-primary-foreground">
@@ -620,7 +779,7 @@ const Onboarding = () => {
                 <p className="text-xs text-center text-muted-foreground">You can always add baseline photos later from your Profile.</p>
               )}
             </div>
-          ) : (
+          ) : step === 4 && baselineAck ? null : (
             <button
               onClick={handleNext}
               disabled={!canProceed()}
@@ -628,7 +787,7 @@ const Onboarding = () => {
                 canProceed() ? 'bg-primary text-primary-foreground' : 'bg-border text-muted-foreground cursor-not-allowed'
               }`}
             >
-              {step === totalSteps ? "Let's go" : step === 4 ? 'Set up my cycle' : 'Next'}
+              {step === totalSteps ? "Let's go" : 'Next'}
             </button>
           )}
         </div>
