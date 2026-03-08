@@ -5,11 +5,11 @@ import { Leaf, Check } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 import { Progress } from '@/components/ui/progress';
 
-const roles = ['Hairstylist or braider', 'Barber', 'Loctician', 'Trichologist', 'Dermatologist', 'Other'];
+const roles = ['Hairstylist', 'Braider', 'Barber', 'Loctician', 'Salon owner', 'Salon assistant or apprentice', 'Mobile or home-visit stylist', 'Other'];
 const experience = ['Less than 1 year', '1 to 3 years', '3 to 5 years', '5 to 10 years', '10+ years'];
 const workplaces = ['A salon', 'Home-based studio', 'Mobile or home service', 'Clinic', 'Multiple locations'];
 const clientCounts = ['1 to 5', '5 to 15', '15 to 30', '30+'];
-const services = ['Braids (box braids, knotless, etc.)', 'Cornrows or flat twists', 'Locs installation or maintenance', 'Weave or sew-in', 'Wig install (lace fronts, etc.)', 'Crochet braids', 'Twist styles', 'Natural hair styling', 'Silk press or blowout', 'Relaxer or chemical treatments', 'Colour or bleach', 'Haircuts or trims', 'Barber services (fades, lineups)', 'Scalp treatments', 'Trichology consultations'];
+const services = ['Braids (box braids, knotless, etc.)', 'Cornrows or flat twists', 'Locs installation or maintenance', 'Weave or sew-in', 'Wig install (lace fronts, etc.)', 'Crochet braids', 'Twist styles', 'Natural hair styling', 'Silk press or blowout', 'Relaxer or chemical treatments', 'Colour or bleach', 'Haircuts or trims', 'Barber services (fades, lineups)', 'Scalp treatments'];
 const goals = ['Document scalp observations for my clients', 'Learn to spot scalp conditions early', 'Build trust with clients through better scalp care', 'Track client scalp health over time', 'Get referral guidance when I see something concerning', 'Stay up to date on scalp health knowledge', "I'm just exploring for now"];
 
 interface StylistProfile {
@@ -33,7 +33,7 @@ const StylistOnboarding = () => {
   const toggleGoal = (g: string) => setProfile(p => ({ ...p, goals: p.goals.includes(g) ? p.goals.filter(x => x !== g) : [...p.goals, g] }));
 
   const canNext = () => {
-    if (step === 0) return profile.role && profile.experience;
+    if (step === 0) return profile.role && (profile.role !== 'Other' || profile.otherRole.trim()) && profile.experience;
     if (step === 1) return profile.workplace && profile.clientCount;
     if (step === 2) return profile.services.length > 0;
     if (step === 3) return profile.goals.length > 0;
@@ -42,7 +42,6 @@ const StylistOnboarding = () => {
 
   const handleNext = () => {
     if (step < 3) { setStep(step + 1); return; }
-    // Save profile to localStorage for the prototype
     localStorage.setItem('follisense-stylist-profile', JSON.stringify(profile));
     setStylistMode(true);
     navigate('/stylist');
@@ -74,9 +73,14 @@ const StylistOnboarding = () => {
             <div>
               <h1 className="text-xl font-semibold mb-6">Tell us about you</h1>
               <p className="text-sm font-medium text-foreground mb-3">What do you do?</p>
-              <div className="space-y-2 mb-6">
+              <div className="space-y-2 mb-4">
                 {roles.map(r => <SelectButton key={r} selected={profile.role === r} label={r} onClick={() => setProfile(p => ({ ...p, role: r }))} />)}
               </div>
+              {profile.role === 'Other' && (
+                <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
+                  <input type="text" value={profile.otherRole} onChange={e => setProfile(p => ({ ...p, otherRole: e.target.value }))} placeholder="Tell us your role" className="w-full h-12 px-4 rounded-xl border-2 border-border bg-card text-foreground text-sm focus:outline-none focus:border-primary" />
+                </motion.div>
+              )}
               <p className="text-sm font-medium text-foreground mb-3">How long have you been practising?</p>
               <div className="space-y-2 pb-2">
                 {experience.map(e => <SelectButton key={e} selected={profile.experience === e} label={e} onClick={() => setProfile(p => ({ ...p, experience: e }))} />)}

@@ -1,9 +1,9 @@
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Plus, Leaf, Flame, Star, Play, Trophy, Zap, Timer } from 'lucide-react';
+import { Plus, Leaf, Flame, Star, Play, Trophy, Zap, Timer, MapPin, ChevronDown } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 import { dummyLeaderboard } from '@/data/quizQuestions';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 
 interface StylistProfile {
   role: string; businessName: string; [key: string]: any;
@@ -27,8 +27,10 @@ const loadQuizState = () => {
 
 const StylistHome = () => {
   const navigate = useNavigate();
-  const { clientObservations, userName } = useApp();
+  const { clientObservations, userName, stylistLocations } = useApp();
   const [quiz, setQuiz] = useState(loadQuizState);
+  const [locationFilter, setLocationFilter] = useState('All locations');
+  const [showLocationDropdown, setShowLocationDropdown] = useState(false);
 
   useEffect(() => {
     const handler = () => setQuiz(loadQuizState());
@@ -37,6 +39,17 @@ const StylistHome = () => {
   }, []);
 
   const stylistProfile = loadStylistProfile();
+
+  const locationNames = useMemo(() => {
+    const names = new Set<string>();
+    clientObservations.forEach(o => { if (o.location) names.add(o.location); });
+    return ['All locations', ...Array.from(names)];
+  }, [clientObservations]);
+
+  const filteredObservations = useMemo(() => {
+    if (locationFilter === 'All locations') return clientObservations;
+    return clientObservations.filter(o => o.location === locationFilter);
+  }, [clientObservations, locationFilter]);
 
   const userEntry = { rank: 5, name: 'You', points: quiz.totalPoints, bestStreak: quiz.bestStreak };
   const leaderboard = [...dummyLeaderboard, userEntry].sort((a, b) => b.points - a.points).map((e, i) => ({ ...e, rank: i + 1 }));
@@ -61,12 +74,8 @@ const StylistHome = () => {
         <p className="text-muted-foreground text-sm mb-6">Document scalp observations for your clients</p>
 
         {/* New observation button */}
-        <button
-          onClick={() => navigate('/stylist/observation')}
-          className="w-full h-14 bg-primary text-primary-foreground rounded-xl font-semibold text-base btn-press flex items-center justify-center gap-2 mb-4"
-        >
-          <Plus size={20} strokeWidth={2} />
-          New client observation
+        <button onClick={() => navigate('/stylist/observation')} className="w-full h-14 bg-primary text-primary-foreground rounded-xl font-semibold text-base btn-press flex items-center justify-center gap-2 mb-4">
+          <Plus size={20} strokeWidth={2} /> New client observation
         </button>
 
         {/* Quiz card */}
@@ -85,9 +94,7 @@ const StylistHome = () => {
             <span className="flex items-center gap-1"><Star size={13} className="text-primary" />Points: {quiz.totalPoints}</span>
           </div>
           <div className="flex gap-2">
-            <button onClick={() => navigate('/stylist/quiz')} className="flex-1 h-10 bg-primary text-primary-foreground rounded-lg font-semibold text-sm btn-press">
-              Play
-            </button>
+            <button onClick={() => navigate('/stylist/quiz')} className="flex-1 h-10 bg-primary text-primary-foreground rounded-lg font-semibold text-sm btn-press">Play</button>
             <button onClick={() => navigate('/stylist/quiz?mode=challenge')} className="flex-1 h-10 bg-accent text-accent-foreground rounded-lg font-semibold text-sm btn-press flex items-center justify-center gap-1.5">
               <Zap size={14} /> Challenge
             </button>
@@ -103,9 +110,7 @@ const StylistHome = () => {
           <p className="text-xs text-muted-foreground mb-2">10 seconds per question. Faster = more points. Can you beat your high score?</p>
           <div className="flex items-center justify-between">
             <span className="text-xs text-muted-foreground">High score: <span className="font-semibold text-foreground">{quiz.challengeHighScore || 0}</span></span>
-            <button onClick={() => navigate('/stylist/quiz?mode=challenge')} className="text-xs font-semibold text-primary flex items-center gap-1 btn-press">
-              Play now <Zap size={11} />
-            </button>
+            <button onClick={() => navigate('/stylist/quiz?mode=challenge')} className="text-xs font-semibold text-primary flex items-center gap-1 btn-press">Play now <Zap size={11} /></button>
           </div>
         </div>
 
@@ -134,17 +139,35 @@ const StylistHome = () => {
         </div>
 
         {/* Recent observations */}
-        <h3 className="font-semibold text-foreground mb-3">Recent observations</h3>
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="font-semibold text-foreground">Recent observations</h3>
+          {locationNames.length > 2 && (
+            <div className="relative">
+              <button onClick={() => setShowLocationDropdown(!showLocationDropdown)} className="flex items-center gap-1 text-xs text-muted-foreground btn-press">
+                <MapPin size={12} /> {locationFilter} <ChevronDown size={12} />
+              </button>
+              {showLocationDropdown && (
+                <div className="absolute right-0 top-full mt-1 bg-card border border-border rounded-xl shadow-lg z-10 min-w-[160px]">
+                  {locationNames.map(name => (
+                    <button key={name} onClick={() => { setLocationFilter(name); setShowLocationDropdown(false); }} className={`w-full text-left px-4 py-2.5 text-xs ${locationFilter === name ? 'text-primary font-medium' : 'text-foreground'} hover:bg-accent first:rounded-t-xl last:rounded-b-xl`}>
+                      {name}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
         <div className="space-y-2 mb-20">
-          {clientObservations.map(obs => (
+          {filteredObservations.map(obs => (
             <div key={obs.id} className="card-elevated p-4 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center">
-                  <span className="text-sm font-semibold text-foreground">{obs.clientName}</span>
+                  <span className="text-sm font-semibold text-foreground">{obs.clientName.charAt(0)}</span>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-foreground">{obs.observations[0]}</p>
-                  <p className="text-xs text-muted-foreground">{obs.date}</p>
+                  <p className="text-sm font-medium text-foreground">{obs.clientName}{obs.location ? ` — ${obs.location}` : ''}</p>
+                  <p className="text-xs text-muted-foreground">{obs.date}{obs.locationCity ? `, ${obs.locationCity}` : ''}</p>
                 </div>
               </div>
               <span className={`status-dot ${obs.risk}`} />

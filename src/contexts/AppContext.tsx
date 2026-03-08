@@ -35,12 +35,10 @@ export interface OnboardingData {
   scalpProducts: string[];
   otherProduct: string;
   productFrequency: string;
-  // Menstrual
   menstrualTracking: string;
   lastPeriodDate: string;
   menstrualCycleLength: string;
   hormonalContraception: string;
-  // Goals
   goals: string[];
   hairProducts: string[];
   otherHairProduct: string;
@@ -78,8 +76,21 @@ export interface ClientObservation {
   date: string;
   observations: string[];
   photos: string[];
+  photoAreas: string[];
   notes?: string;
   risk: 'green' | 'amber' | 'red';
+  location?: string;
+  locationCity?: string;
+  service?: string;
+  comparison?: string;
+  clientType?: 'new' | 'returning';
+}
+
+export interface StylistLocation {
+  id: string;
+  name: string;
+  city: string;
+  isPrimary: boolean;
 }
 
 export interface CycleEntry {
@@ -96,8 +107,10 @@ export interface StylistObservationEntry {
   id: string;
   date: string;
   stylistName: string;
+  location?: string;
   observations: string[];
   notes?: string;
+  comparison?: string;
   risk: 'green' | 'amber' | 'red';
 }
 
@@ -137,24 +150,11 @@ export interface ResearchData {
 }
 
 const defaultHealthProfile: HealthProfileData = {
-  sweat: '',
-  exercise: '',
-  heatStyling: '',
-  satinCovering: '',
-  medicalConditions: [],
-  pregnancyStatus: '',
-  medications: '',
-  medicationDetails: '',
-  lastBloodTest: '',
-  bloodLevels: {},
-  skinConditions: [],
-  skinConditionDetails: '',
-  sensitiveSkin: '',
-  recentStressors: [],
-  previousHairLoss: '',
-  diagnosedCondition: '',
-  diagnosedConditionDetails: '',
-  familyHistory: '',
+  sweat: '', exercise: '', heatStyling: '', satinCovering: '',
+  medicalConditions: [], pregnancyStatus: '', medications: '', medicationDetails: '',
+  lastBloodTest: '', bloodLevels: {}, skinConditions: [], skinConditionDetails: '',
+  sensitiveSkin: '', recentStressors: [], previousHairLoss: '',
+  diagnosedCondition: '', diagnosedConditionDetails: '', familyHistory: '',
 };
 
 interface AppContextType {
@@ -176,6 +176,10 @@ interface AppContextType {
   clientObservations: ClientObservation[];
   addClientObservation: (o: ClientObservation) => void;
   stylistObservations: StylistObservationEntry[];
+  stylistLocations: StylistLocation[];
+  setStylistLocations: (locs: StylistLocation[]) => void;
+  addStylistLocation: (loc: StylistLocation) => void;
+  removeStylistLocation: (id: string) => void;
   healthProfile: HealthProfileData;
   setHealthProfile: (d: HealthProfileData) => void;
   baselinePhotos: BaselinePhoto[];
@@ -195,43 +199,18 @@ interface AppContextType {
 }
 
 const defaultOnboarding: OnboardingData = {
-  gender: '',
-  hairType: '',
-  chemicalProcessing: '',
-  lastChemicalTreatment: '',
-  chemicalProcessingMultiple: [],
-  protectiveStyles: [],
-  barberFrequency: '',
-  locRetwistFrequency: '',
-  maleStyleFrequency: '',
-  otherStyle: '',
-  protectiveStyleFrequency: '',
-  isWornOutOnly: false,
-  cycleLength: '',
-  cycleLengthMin: '',
-  cycleLengthMax: '',
-  washFrequency: '',
-  washFrequencyPerCycle: '',
-  betweenWashCare: [],
-  otherBetweenWashCare: '',
-  wornOutWashFrequency: '',
-  restyleFrequency: '',
-  baselineItch: '',
-  baselineTenderness: '',
-  baselineHairline: '',
-  baselineHairHealth: '',
-  scalpProducts: [],
-  otherProduct: '',
-  productFrequency: '',
-  menstrualTracking: '',
-  lastPeriodDate: '',
-  menstrualCycleLength: '',
-  hormonalContraception: '',
-  goals: [],
-  hairProducts: [],
-  otherHairProduct: '',
-  hairProductFrequency: '',
-  scalpProductFrequency: '',
+  gender: '', hairType: '', chemicalProcessing: '', lastChemicalTreatment: '',
+  chemicalProcessingMultiple: [], protectiveStyles: [], barberFrequency: '',
+  locRetwistFrequency: '', maleStyleFrequency: '', otherStyle: '',
+  protectiveStyleFrequency: '', isWornOutOnly: false, cycleLength: '',
+  cycleLengthMin: '', cycleLengthMax: '', washFrequency: '',
+  washFrequencyPerCycle: '', betweenWashCare: [], otherBetweenWashCare: '',
+  wornOutWashFrequency: '', restyleFrequency: '', baselineItch: '',
+  baselineTenderness: '', baselineHairline: '', baselineHairHealth: '',
+  scalpProducts: [], otherProduct: '', productFrequency: '',
+  menstrualTracking: '', lastPeriodDate: '', menstrualCycleLength: '',
+  hormonalContraception: '', goals: [], hairProducts: [],
+  otherHairProduct: '', hairProductFrequency: '', scalpProductFrequency: '',
 };
 
 const demoHistory: CycleEntry[] = [
@@ -248,15 +227,20 @@ const demoSalonVisits: SalonVisit[] = [
 ];
 
 const demoClientObservations: ClientObservation[] = [
-  { id: 'co1', clientName: 'A.M.', date: 'Mar 5', observations: ['Thinning at hairline / edges', 'Signs of traction damage'], photos: ['Hairline / edges'], notes: 'Recommended loosening edges on next install', risk: 'amber' },
-  { id: 'co2', clientName: 'T.K.', date: 'Mar 3', observations: ['Nothing of concern'], photos: [], risk: 'green' },
-  { id: 'co3', clientName: 'S.J.', date: 'Feb 28', observations: ['Excessive flaking or buildup', 'Scalp redness or irritation'], photos: ['Crown / vertex'], notes: 'Suggested anti-dandruff shampoo', risk: 'amber' },
-  { id: 'co4', clientName: 'R.B.', date: 'Feb 20', observations: ['Thinning at crown / vertex', 'Tender or sore areas'], photos: ['Crown / vertex', 'Hairline / edges'], risk: 'red' },
+  { id: 'co1', clientName: 'A.M.', date: 'Mar 5', observations: ['Thinning at hairline or edges', 'Signs of traction damage'], photos: ['Hairline / edges'], photoAreas: ['Hairline or temples'], notes: 'Recommended loosening edges on next install', risk: 'amber', location: 'Natural Touch Studio', locationCity: 'Lekki', service: 'Style installation (braids, cornrows, twists, etc.)', comparison: 'Worse than last time', clientType: 'returning' },
+  { id: 'co2', clientName: 'T.K.', date: 'Mar 3', observations: ['General check, nothing concerning'], photos: [], photoAreas: [], risk: 'green', location: 'Natural Touch Studio', locationCity: 'Lekki', service: 'Wash', clientType: 'new' },
+  { id: 'co3', clientName: 'S.J.', date: 'Feb 28', observations: ['Excessive flaking or buildup', 'Scalp redness or irritation'], photos: ['Crown / vertex'], photoAreas: ['Crown or vertex'], notes: 'Suggested anti-dandruff shampoo', risk: 'amber', location: 'Natural Touch Studio', locationCity: 'Lekki', service: 'Scalp treatment', comparison: 'About the same', clientType: 'returning' },
+  { id: 'co4', clientName: 'R.B.', date: 'Feb 20', observations: ['Thinning at crown or vertex', 'Tender or sore areas'], photos: ['Crown / vertex', 'Hairline / edges'], photoAreas: ['Crown or vertex', 'Hairline or temples'], risk: 'red', location: 'Home Studio', locationCity: 'Ikeja', service: 'General consultation', clientType: 'new' },
 ];
 
 const demoStylistObservations: StylistObservationEntry[] = [
-  { id: 'so1', date: 'Feb 25', stylistName: 'Ama', observations: ['Thinning at hairline / edges', 'Signs of traction damage'], notes: 'Stylist noted: slight thinning at temples', risk: 'amber' },
-  { id: 'so2', date: 'Feb 2', stylistName: 'Ama', observations: ['Nothing of concern'], risk: 'green' },
+  { id: 'so1', date: 'Feb 25', stylistName: 'Ama', location: 'Natural Touch Studio, Lekki', observations: ['Thinning at hairline or edges', 'Signs of traction damage'], notes: 'Stylist noted: slight thinning at temples. Recommended loosening edges on next install.', comparison: 'Worse than last time', risk: 'amber' },
+  { id: 'so2', date: 'Feb 2', stylistName: 'Ama', location: 'Natural Touch Studio, Lekki', observations: ['General check, nothing concerning'], comparison: 'About the same', risk: 'green' },
+];
+
+const defaultStylistLocations: StylistLocation[] = [
+  { id: 'loc1', name: 'Natural Touch Studio', city: 'Lekki', isPrimary: true },
+  { id: 'loc2', name: 'Home Studio', city: 'Ikeja', isPrimary: false },
 ];
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -270,17 +254,20 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [stylistMode, setStylistMode] = useState(false);
   const [salonVisits, setSalonVisits] = useState<SalonVisit[]>(demoSalonVisits);
   const [clientObservations, setClientObservations] = useState<ClientObservation[]>(demoClientObservations);
+  const [stylistLocations, setStylistLocations] = useState<StylistLocation[]>(defaultStylistLocations);
   const [healthProfile, setHealthProfile] = useState<HealthProfileData>(defaultHealthProfile);
   const [baselinePhotos, setBaselinePhotos] = useState<BaselinePhoto[]>([]);
   const [baselineRisk, setBaselineRisk] = useState<'green' | 'amber' | 'red' | null>(null);
   const [baselineDate, setBaselineDate] = useState<string | null>(null);
   const [quickLogs, setQuickLogs] = useState<QuickLogEntry[]>([]);
   const [research, setResearch] = useState<ResearchData>({ consented: false, consentDate: null, photoCount: 0, dismissed: false });
-  const [checkInCount, setCheckInCount] = useState(3); // demo: 3 completed
+  const [checkInCount, setCheckInCount] = useState(3);
 
   const addSalonVisit = (v: SalonVisit) => setSalonVisits(prev => [v, ...prev]);
   const addClientObservation = (o: ClientObservation) => setClientObservations(prev => [o, ...prev]);
   const addQuickLog = (entry: QuickLogEntry) => setQuickLogs(prev => [entry, ...prev]);
+  const addStylistLocation = (loc: StylistLocation) => setStylistLocations(prev => [...prev, loc]);
+  const removeStylistLocation = (id: string) => setStylistLocations(prev => prev.filter(l => l.id !== id));
   const incrementResearchPhotos = () => setResearch(prev => ({ ...prev, photoCount: prev.photoCount + 1 }));
 
   const resetAll = () => {
@@ -292,6 +279,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     setStylistMode(false);
     setSalonVisits(demoSalonVisits);
     setClientObservations(demoClientObservations);
+    setStylistLocations(defaultStylistLocations);
     setHealthProfile(defaultHealthProfile);
     setBaselinePhotos([]);
     setBaselineRisk(null);
@@ -313,6 +301,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       stylistMode, setStylistMode,
       clientObservations, addClientObservation,
       stylistObservations: demoStylistObservations,
+      stylistLocations, setStylistLocations, addStylistLocation, removeStylistLocation,
       healthProfile, setHealthProfile,
       baselinePhotos, setBaselinePhotos,
       baselineRisk, setBaselineRisk,
@@ -329,8 +318,6 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
 export const useApp = () => {
   const ctx = useContext(AppContext);
-  if (!ctx) {
-    throw new Error('useApp must be used within AppProvider');
-  }
+  if (!ctx) throw new Error('useApp must be used within AppProvider');
   return ctx;
 };
