@@ -2,6 +2,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Check, Eye, Stethoscope, ArrowLeft, Leaf } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
+import type { HealthProfileData } from '@/contexts/AppContext';
 
 type RiskLevel = 'green' | 'amber' | 'red';
 
