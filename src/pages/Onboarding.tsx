@@ -430,6 +430,9 @@ const Onboarding = () => {
                     ))}
                   </div>
                 )}
+                {(chemicalProcessing.startsWith('Yes') || chemicalProcessing === 'Previously processed, currently growing out' || chemicalProcessing === 'Multiple') && (
+                  <p className="text-xs text-muted-foreground mt-3">When was your last chemical treatment? This helps us understand where you are in your hair journey.</p>
+                )}
                 <p className="text-xs text-muted-foreground mt-3">Chemical processing can affect how your scalp responds to styling — this helps us personalise your experience.</p>
               </div>
             )}
