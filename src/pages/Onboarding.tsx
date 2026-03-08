@@ -129,6 +129,9 @@ const Onboarding = () => {
   const [chemicalMultiple, setChemicalMultiple] = useState<string[]>([]);
   const [styles, setStyles] = useState<string[]>([]);
   const [otherStyle, setOtherStyle] = useState('');
+  const [protectiveFreq, setProtectiveFreq] = useState('');
+  const [wornOutWashFreq, setWornOutWashFreq] = useState('');
+  const [restyleFreq, setRestyleFreq] = useState('');
   const [cycleLen, setCycleLen] = useState('');
   const [cycleLenMin, setCycleLenMin] = useState('');
   const [cycleLenMax, setCycleLenMax] = useState('');
@@ -136,6 +139,10 @@ const Onboarding = () => {
   const [washFreqPerCycle, setWashFreqPerCycle] = useState('');
   const [betweenWashCare, setBetweenWashCare] = useState<string[]>([]);
   const [otherBetweenWash, setOtherBetweenWash] = useState('');
+
+  // Determine if user only selected non-protective styles
+  const hasProtectiveStyle = styles.some(s => !nonProtectiveStyles.includes(s) && s !== 'Other');
+  const isWornOutOnly = styles.length > 0 && !hasProtectiveStyle;
   const [itch, setItch] = useState('');
   const [tenderness, setTenderness] = useState('');
   const [hairline, setHairline] = useState('');
