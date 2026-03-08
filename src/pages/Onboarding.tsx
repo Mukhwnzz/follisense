@@ -1095,7 +1095,7 @@ const Onboarding = () => {
             <button onClick={handleNext} className="w-full h-14 rounded-xl font-semibold text-base btn-press transition-colors bg-primary text-primary-foreground">
               Let's get started
             </button>
-          ) : step === 4 ? null : step === 5 ? (
+          ) : step === 5 ? null : step === 6 ? (
             <div className="space-y-3">
               <button onClick={handleNext} className="w-full h-14 rounded-xl font-semibold text-base btn-press transition-colors bg-primary text-primary-foreground">
                 {Object.values(capturedPhotos).some(Boolean) ? 'Continue' : 'Skip for now'}
