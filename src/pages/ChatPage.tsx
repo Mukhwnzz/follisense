@@ -152,45 +152,6 @@ const ChatPage = () => {
     scrollToBottom();
   }, [messages, isTyping]);
 
-  // Calculate menstrual cycle day
-  const getCycleDay = (): number | null => {
-    if (onboardingData.menstrualTracking !== "Yes, I'd like to track" || !onboardingData.lastPeriodDate) return null;
-    const lastPeriod = new Date(onboardingData.lastPeriodDate);
-    const diffDays = Math.floor((Date.now() - lastPeriod.getTime()) / 86400000);
-    const cycleLenMap: Record<string, number> = { '21–25 days': 23, '26–30 days': 28, '31–35 days': 33 };
-    const cycleLen = cycleLenMap[onboardingData.menstrualCycleLength] || 28;
-    return diffDays > 0 ? ((diffDays - 1) % cycleLen) + 1 : null;
-  };
-
-  const userData: UserData = {
-    gender: onboardingData.gender,
-    hairType: onboardingData.hairType,
-    chemicalProcessing: onboardingData.chemicalProcessing,
-    lastChemicalTreatment: onboardingData.lastChemicalTreatment,
-    styles: onboardingData.protectiveStyles,
-    protectiveStyleFrequency: onboardingData.protectiveStyleFrequency,
-    cycleLength: onboardingData.cycleLength,
-    washFrequency: onboardingData.washFrequency || onboardingData.wornOutWashFrequency,
-    betweenWashCare: onboardingData.betweenWashCare,
-    scalpProducts: onboardingData.scalpProducts,
-    hairProducts: onboardingData.hairProducts,
-    goals: onboardingData.goals,
-    baseline: {
-      itch: onboardingData.baselineItch,
-      tenderness: onboardingData.baselineTenderness,
-      hairline: onboardingData.baselineHairline,
-      hairHealth: onboardingData.baselineHairHealth,
-    },
-    lastCheckInRisk: currentCheckIn ? 'Completed' : baselineRisk || 'No check-ins yet',
-    medicalConditions: healthProfile.medicalConditions,
-    teTriggers: healthProfile.recentStressors,
-    menstrualTracking: onboardingData.menstrualTracking,
-    cycleDay: getCycleDay(),
-  };
-
-  // System prompt is built but used for future API integration
-  const _systemPrompt = buildSystemPrompt(userData);
-
   const sendMessage = async (text: string) => {
     if (!text.trim()) return;
 
@@ -200,20 +161,17 @@ const ChatPage = () => {
       content: text.trim(),
     };
 
-    const updatedMessages = [...messages, userMsg];
-    setMessages(updatedMessages);
+    setMessages(prev => [...prev, userMsg]);
     setInputValue('');
     setIsTyping(true);
 
-    // Generate response (offline fallback — replace with API call when connected)
     setTimeout(() => {
-      const rawResponse = buildOfflineResponse(text, userData);
-      const { text: cleanText, suggestions } = parseResponse(rawResponse);
+      const { text: responseText, suggestions } = matchResponse(text);
 
       const assistantMsg: Message = {
         id: `assistant-${Date.now()}`,
         role: 'assistant',
-        content: cleanText,
+        content: responseText,
         suggestions,
       };
 
