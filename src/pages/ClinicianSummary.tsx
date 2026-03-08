@@ -143,7 +143,7 @@ const ClinicianSummary = () => {
             // Telogen effluvium triggers
             const telogenTriggers: string[] = [];
             if (hp.pregnancyStatus === 'Postpartum (within 12 months)') telogenTriggers.push('Postpartum (within 12 months)');
-            const validStressors = hp.recentStressors.filter(s => s !== 'None of these' && s !== 'Prefer not to say');
+            const validStressors = (hp.recentStressors || []).filter(s => s !== 'None of these' && s !== 'Prefer not to say');
             telogenTriggers.push(...validStressors);
             if (telogenTriggers.length > 0) {
               contextItems.push({ label: 'Potential telogen effluvium triggers', value: telogenTriggers.join(', ') });
