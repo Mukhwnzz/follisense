@@ -461,7 +461,6 @@ const Onboarding = () => {
               {step === totalSteps ? 'Set up my cycle' : 'Next'}
             </button>
           )}
-          </button>
         </div>
       </div>
     </div>
