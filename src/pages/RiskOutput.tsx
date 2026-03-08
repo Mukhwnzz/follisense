@@ -114,7 +114,7 @@ const RiskOutput = () => {
           </button>
           <button onClick={handleLogoTap} className="flex items-center gap-1.5">
             <Leaf size={18} className="text-primary" strokeWidth={1.8} />
-            <span className="text-sm font-semibold text-foreground">ScalpSense</span>
+            <span className="text-sm font-semibold text-foreground">FolliSense</span>
           </button>
           <div className="w-10" />
         </div>

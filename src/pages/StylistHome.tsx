@@ -115,7 +115,7 @@ const StylistHome = () => {
             <Trophy size={16} className="text-primary" />
             <h3 className="font-semibold text-foreground">Leaderboard</h3>
           </div>
-          <p className="text-xs text-muted-foreground mb-3">Top stylists in the ScalpSense community</p>
+          <p className="text-xs text-muted-foreground mb-3">Top stylists in the FolliSense community</p>
           <div className="space-y-2 mb-3">
             {leaderboard.slice(0, 5).map(entry => (
               <div key={entry.name} className={`flex items-center justify-between py-2 px-3 rounded-lg text-sm ${entry.name === 'You' ? 'bg-primary/10 font-semibold' : ''}`}>

@@ -247,7 +247,7 @@ const StylistLearnPage = () => {
             <h3 className="font-semibold text-foreground text-sm">Why representation matters in clinical education</h3>
           </div>
           <p className="text-sm text-muted-foreground leading-relaxed mb-4">
-            Most medical training materials show skin conditions on lighter skin. That means many stylists and even some clinicians are less confident identifying conditions on darker skin tones. ScalpSense is working to change this. If you'd like to contribute to building better visual references for our community, let us know.
+            Most medical training materials show skin conditions on lighter skin. That means many stylists and even some clinicians are less confident identifying conditions on darker skin tones. FolliSense is working to change this. If you'd like to contribute to building better visual references for our community, let us know.
           </p>
           <button
             onClick={() => toast({ title: 'Thank you', description: "We'll be in touch." })}

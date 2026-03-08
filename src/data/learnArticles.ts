@@ -266,7 +266,7 @@ export const articles: Article[] = [
     content: [
       'Central centrifugal cicatricial alopecia is a form of scarring hair loss that starts at the crown and spreads outward. It primarily affects women of African descent. The exact cause isn\'t fully understood, but it\'s linked to genetics, styling practices, and possibly certain hair products.',
       'Unlike traction alopecia, CCCA starts at the top of the head, not the edges. Early symptoms include tenderness or a tingling sensation at the crown, gradual thinning that starts centrally, and sometimes small bumps.',
-      'Early detection matters because CCCA causes permanent scarring of the hair follicle. Treatment can slow or stop progression but can\'t reverse scarring that\'s already happened. If you notice unexplained thinning at your crown, see a dermatologist. This is one of the reasons ScalpSense tracks the crown area specifically.',
+      'Early detection matters because CCCA causes permanent scarring of the hair follicle. Treatment can slow or stop progression but can\'t reverse scarring that\'s already happened. If you notice unexplained thinning at your crown, see a dermatologist. This is one of the reasons FolliSense tracks the crown area specifically.',
     ],
     relatedIds: ['traction-alopecia', 'androgenetic', 'alopecia-areata'],
   },

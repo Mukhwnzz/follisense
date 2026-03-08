@@ -376,7 +376,7 @@ const HomePage = () => {
           </div>
           <div className="flex-1">
             <p className="font-medium text-foreground text-sm">Got a question?</p>
-            <p className="text-xs text-muted-foreground">Chat with ScalpSense about your scalp and hair</p>
+            <p className="text-xs text-muted-foreground">Chat with FolliSense about your scalp and hair</p>
           </div>
           <ChevronRight size={18} className="text-muted-foreground" />
         </button>

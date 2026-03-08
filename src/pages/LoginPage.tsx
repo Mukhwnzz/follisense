@@ -86,7 +86,7 @@ const LoginPage = () => {
           <button
             type="button"
             onClick={() => {
-              setEmail('test@scalpsense.app');
+              setEmail('test@follisense.app');
               setPassword('demo1234');
               setUserName('Ama');
               navigate(onboardingComplete ? '/home' : '/onboarding');

@@ -238,7 +238,7 @@ const ClinicianSummary = () => {
           )}
 
           <div className="rounded-2xl bg-accent p-4 mb-6">
-            <p className="text-xs text-muted-foreground leading-relaxed">ScalpSense is a symptom-tracking and triage tool. This summary does not constitute a medical diagnosis. Report generated {today}.</p>
+            <p className="text-xs text-muted-foreground leading-relaxed">FolliSense is a symptom-tracking and triage tool. This summary does not constitute a medical diagnosis. Report generated {today}.</p>
           </div>
 
           <div className="flex gap-3 mb-3">

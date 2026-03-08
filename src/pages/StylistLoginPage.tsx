@@ -49,7 +49,7 @@ const StylistLoginPage = () => {
             </div>
           </div>
 
-          <button type="button" onClick={() => { setEmail('stylist@scalpsense.app'); setPassword('demo1234'); setUserName('Ama'); setStylistMode(true); navigate('/stylist'); }} className="text-xs text-muted-foreground hover:text-foreground transition-colors">Use test account</button>
+          <button type="button" onClick={() => { setEmail('stylist@follisense.app'); setPassword('demo1234'); setUserName('Ama'); setStylistMode(true); navigate('/stylist'); }} className="text-xs text-muted-foreground hover:text-foreground transition-colors">Use test account</button>
 
           <button type="submit" disabled={!canSubmit} className={`w-full h-14 rounded-xl font-semibold text-base btn-press transition-colors ${canSubmit ? 'bg-primary text-primary-foreground' : 'bg-border text-muted-foreground cursor-not-allowed'}`}>Log in</button>
         </form>

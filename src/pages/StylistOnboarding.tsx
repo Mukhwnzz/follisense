@@ -112,7 +112,7 @@ const StylistOnboarding = () => {
           )}
           {step === 3 && (
             <div>
-              <h1 className="text-xl font-semibold mb-1">What do you want from ScalpSense?</h1>
+              <h1 className="text-xl font-semibold mb-1">What do you want from FolliSense?</h1>
               <p className="text-sm text-muted-foreground mb-5">Pick all that apply</p>
               <div className="space-y-2">
                 {goals.map(g => (

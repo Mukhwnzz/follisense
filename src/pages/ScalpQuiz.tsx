@@ -25,7 +25,7 @@ const loadQuizState = (): QuizState => {
 };
 
 const saveQuizState = (state: QuizState) => {
-  localStorage.setItem('scalpsense-quiz', JSON.stringify(state));
+  localStorage.setItem('follisense-quiz', JSON.stringify(state));
 };
 
 const shuffleArray = <T,>(arr: T[]): T[] => {

@@ -43,7 +43,7 @@ const ResearchProgramme = () => {
               Right now, AI tools for skin and scalp health perform poorly on darker skin tones. The reason is simple: they weren't trained on data that represents us.
             </p>
             <p>
-              ScalpSense is in a unique position to change that. Every time you do a check-in, you're generating structured, clinically meaningful data: photos tagged with your hair type, symptoms, cycle timing, and scalp region. That's exactly what's needed to train AI that actually works for women with textured hair.
+              FolliSense is in a unique position to change that. Every time you do a check-in, you're generating structured, clinically meaningful data: photos tagged with your hair type, symptoms, cycle timing, and scalp region. That's exactly what's needed to train AI that actually works for women with textured hair.
             </p>
             <p>If you choose to contribute, here's what happens:</p>
           </div>

@@ -83,7 +83,7 @@ const StylistObservation = () => {
     
     if (navigator.share) {
       try {
-        await navigator.share({ title: 'ScalpSense Observation', text });
+        await navigator.share({ title: 'FolliSense Observation', text });
       } catch {
         toast.info('Sharing cancelled');
       }
