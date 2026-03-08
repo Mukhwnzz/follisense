@@ -80,7 +80,11 @@ const FloatingChat = () => {
       return starterQuestions.amber;
     }
     if (path === '/history') return starterQuestions.history;
-    if (path === '/learn') return starterQuestions.learn;
+    if (path === '/learn') {
+      // If on a condition guide page, show condition-specific prompts
+      if (location.search.includes('condition')) return starterQuestions.condition;
+      return starterQuestions.learn;
+    }
     return starterQuestions.default;
   };
 
