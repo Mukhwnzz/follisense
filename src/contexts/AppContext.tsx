@@ -296,6 +296,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <AppContext.Provider value={{
+      userName, setUserName,
       onboardingComplete, setOnboardingComplete,
       onboardingData, setOnboardingData,
       currentCheckIn, setCurrentCheckIn,
