@@ -144,8 +144,9 @@ const HomePage = () => {
 
   const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000);
 
-  // Menstrual cycle day calculation
+  // Menstrual cycle day calculation — returns null for male users
   const getCycleDay = (): number | null => {
+    if (onboardingData.gender === 'man') return null;
     if (onboardingData.menstrualTracking !== "Yes, I'd like to track" || !onboardingData.lastPeriodDate) return null;
     const lastPeriod = new Date(onboardingData.lastPeriodDate);
     const diffDays = Math.floor((Date.now() - lastPeriod.getTime()) / 86400000);
