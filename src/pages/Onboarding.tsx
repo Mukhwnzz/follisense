@@ -512,7 +512,7 @@ const Onboarding = () => {
           </button>
           <div className="flex gap-2">
             {Array.from({ length: progressSteps }).map((_, i) => (
-              <div key={i} className={`h-1 w-6 rounded-full transition-colors duration-300 ${i < step ? 'bg-primary' : 'bg-border'}`} />
+              <div key={i} className={`h-1 w-6 rounded-full transition-colors duration-300 ${i <= step ? 'bg-primary' : 'bg-border'}`} />
             ))}
           </div>
           <div className="w-10" />

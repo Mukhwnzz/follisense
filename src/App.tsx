@@ -24,6 +24,7 @@ import StylistClients from "./pages/StylistClients";
 import ChatPage from "./pages/ChatPage";
 import ProductDirectory from "./pages/ProductDirectory";
 import ResearchProgramme from "./pages/ResearchProgramme";
+import FindSpecialist from "./pages/FindSpecialist";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -50,6 +51,7 @@ const App = () => (
               <Route path="/health-profile" element={<HealthProfile />} />
               <Route path="/products" element={<ProductDirectory />} />
               <Route path="/research" element={<ResearchProgramme />} />
+              <Route path="/find-specialist" element={<FindSpecialist />} />
               <Route path="/history" element={<HistoryPage />} />
               <Route path="/learn" element={<LearnPage />} />
               <Route path="/profile" element={<ProfilePage />} />
