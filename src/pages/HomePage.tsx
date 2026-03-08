@@ -107,6 +107,17 @@ const HomePage = () => {
   const [showHealthNudge, setShowHealthNudge] = useState(false);
   const [dismissedHealthNudge, setDismissedHealthNudge] = useState(false);
 
+  // Track home visit time + clear onboarding flag
+  useEffect(() => {
+    localStorage.setItem('follisense-last-home-visit', String(Date.now()));
+    // Clear the just-onboarded flag after first Home visit
+    const justOnboarded = sessionStorage.getItem('follisense-just-onboarded');
+    if (justOnboarded === 'true') {
+      // Don't clear immediately — clear after navigating away and back
+      return () => { sessionStorage.removeItem('follisense-just-onboarded'); };
+    }
+  }, []);
+
   // Show health profile nudge 2 seconds after first visit
   useEffect(() => {
     const timer = setTimeout(() => {
