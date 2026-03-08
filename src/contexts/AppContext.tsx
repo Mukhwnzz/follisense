@@ -1,5 +1,11 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
+export interface BaselinePhoto {
+  area: string;
+  captured: boolean;
+  date: string;
+}
+
 export interface OnboardingData {
   hairType: string;
   chemicalProcessing: string;
@@ -132,6 +138,8 @@ interface AppContextType {
   stylistObservations: StylistObservationEntry[];
   healthProfile: HealthProfileData;
   setHealthProfile: (d: HealthProfileData) => void;
+  baselinePhotos: BaselinePhoto[];
+  setBaselinePhotos: (photos: BaselinePhoto[]) => void;
   resetAll: () => void;
 }
 
@@ -187,6 +195,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [salonVisits, setSalonVisits] = useState<SalonVisit[]>(demoSalonVisits);
   const [clientObservations, setClientObservations] = useState<ClientObservation[]>(demoClientObservations);
   const [healthProfile, setHealthProfile] = useState<HealthProfileData>(defaultHealthProfile);
+  const [baselinePhotos, setBaselinePhotos] = useState<BaselinePhoto[]>([]);
 
   const addSalonVisit = (v: SalonVisit) => setSalonVisits(prev => [v, ...prev]);
   const addClientObservation = (o: ClientObservation) => setClientObservations(prev => [o, ...prev]);
@@ -200,6 +209,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     setSalonVisits(demoSalonVisits);
     setClientObservations(demoClientObservations);
     setHealthProfile(defaultHealthProfile);
+    setBaselinePhotos([]);
   };
 
   return (
@@ -214,6 +224,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       clientObservations, addClientObservation,
       stylistObservations: demoStylistObservations,
       healthProfile, setHealthProfile,
+      baselinePhotos, setBaselinePhotos,
       resetAll,
     }}>
       {children}

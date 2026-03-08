@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, HelpCircle, ChevronDown } from 'lucide-react';
+import { ArrowLeft, HelpCircle, ChevronDown, Camera, Check } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 
 const hairTypes = [
@@ -75,7 +75,7 @@ const CurlIcon = ({ type }: { type: string }) => {
 
 const Onboarding = () => {
   const navigate = useNavigate();
-  const { setOnboardingComplete, setOnboardingData } = useApp();
+  const { setOnboardingComplete, setOnboardingData, setBaselinePhotos } = useApp();
   const [step, setStep] = useState(1);
   const [hairType, setHairType] = useState('');
   const [chemicalProcessing, setChemicalProcessing] = useState('');
@@ -92,8 +92,15 @@ const Onboarding = () => {
   const [prodFreq, setProdFreq] = useState('');
   const [showMoreStyles, setShowMoreStyles] = useState(false);
   const [showMoreProducts, setShowMoreProducts] = useState(false);
+  const [capturedPhotos, setCapturedPhotos] = useState<Record<string, boolean>>({});
 
-  const totalSteps = 5;
+  const totalSteps = 6;
+
+  const baselineAreas = [
+    { id: 'hairline', label: 'Hairline — temples and edges', desc: 'Front-facing', optional: false },
+    { id: 'crown', label: 'Crown and vertex', desc: 'Top of head', optional: false },
+    { id: 'nape', label: 'Nape / back of neck', desc: 'Optional', optional: true },
+  ];
 
   const toggleStyle = (s: string) => setStyles(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s]);
   const toggleProduct = (p: string) => setProducts(prev => prev.includes(p) ? prev.filter(x => x !== p) : [...prev, p]);
@@ -105,13 +112,22 @@ const Onboarding = () => {
       case 2: return styles.length > 0 && (!styles.includes('Other') || otherStyle.trim().length > 0);
       case 3: return !!cycleLen && !!washFreq;
       case 4: return !!itch && !!tenderness && !!hairline;
-      case 5: return products.length > 0 && !!prodFreq && (!products.includes('Other') || otherProduct.trim().length > 0);
+      case 5: return true; // photo step — always can proceed (skip or capture)
+      case 6: return products.length > 0 && !!prodFreq && (!products.includes('Other') || otherProduct.trim().length > 0);
       default: return false;
     }
   };
 
   const handleNext = () => {
     if (step < totalSteps) {
+      // Save baseline photos when leaving photo step
+      if (step === 5) {
+        const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+        const photos = baselineAreas
+          .filter(a => capturedPhotos[a.id])
+          .map(a => ({ area: a.label, captured: true, date: today }));
+        setBaselinePhotos(photos);
+      }
       setStep(step + 1);
     } else {
       setOnboardingData({
@@ -320,6 +336,53 @@ const Onboarding = () => {
 
             {step === 5 && (
               <div>
+                <h2 className="text-2xl font-semibold mb-2">Capture your starting point</h2>
+                <p className="text-muted-foreground mb-6">
+                  A baseline photo helps you spot gradual changes over time that are hard to notice day to day.
+                </p>
+
+                <div className="space-y-3 mb-6">
+                  {baselineAreas.map(area => (
+                    <button
+                      key={area.id}
+                      onClick={() => setCapturedPhotos(prev => ({ ...prev, [area.id]: true }))}
+                      className={`selection-card w-full flex items-center gap-4 text-left ${area.optional ? 'border-dashed opacity-80' : ''} ${capturedPhotos[area.id] ? 'selected' : ''}`}
+                    >
+                      <div className={`w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 ${capturedPhotos[area.id] ? 'bg-primary/10' : 'bg-accent'}`}>
+                        {capturedPhotos[area.id] ? (
+                          <Check size={22} className="text-primary" strokeWidth={2} />
+                        ) : (
+                          <Camera size={22} className="text-muted-foreground" strokeWidth={1.5} />
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-medium text-foreground text-sm">{area.label}</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          {capturedPhotos[area.id] ? 'Photo captured ✓' : area.desc}
+                        </p>
+                      </div>
+                      {area.optional && !capturedPhotos[area.id] && (
+                        <span className="text-xs text-muted-foreground bg-accent px-2 py-0.5 rounded-full">Optional</span>
+                      )}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="rounded-2xl bg-accent p-4 mb-4">
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    🔒 Photos are stored on your device only — never uploaded, never shared unless you choose to. No AI analysis is applied.
+                  </p>
+                </div>
+                <div className="rounded-2xl bg-accent p-4 mb-6">
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    💡 For the best baseline, take photos in good natural light with your hair parted or pulled back so your scalp is visible.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {step === 6 && (
+              <div>
                 <h2 className="text-2xl font-semibold mb-2">What products do you use on your scalp?</h2>
                 <p className="text-muted-foreground mb-6">This helps us understand what might be affecting your scalp health</p>
                 <div className="grid grid-cols-2 gap-3">
@@ -375,15 +438,29 @@ const Onboarding = () => {
         </AnimatePresence>
 
         <div className="pb-8">
-          <button
-            onClick={handleNext}
-            disabled={!canProceed()}
-            className={`w-full h-14 rounded-xl font-semibold text-base btn-press transition-colors ${
-              canProceed() ? 'bg-primary text-primary-foreground' : 'bg-border text-muted-foreground cursor-not-allowed'
-            }`}
-          >
-            {step === totalSteps ? 'Set up my cycle' : 'Next'}
-          </button>
+          {step === 5 ? (
+            <div className="space-y-3">
+              <button
+                onClick={handleNext}
+                className="w-full h-14 rounded-xl font-semibold text-base btn-press transition-colors bg-primary text-primary-foreground"
+              >
+                {Object.values(capturedPhotos).some(Boolean) ? 'Continue' : 'Skip for now'}
+              </button>
+              {!Object.values(capturedPhotos).some(Boolean) && (
+                <p className="text-xs text-center text-muted-foreground">You can always add baseline photos later from your Profile.</p>
+              )}
+            </div>
+          ) : (
+            <button
+              onClick={handleNext}
+              disabled={!canProceed()}
+              className={`w-full h-14 rounded-xl font-semibold text-base btn-press transition-colors ${
+                canProceed() ? 'bg-primary text-primary-foreground' : 'bg-border text-muted-foreground cursor-not-allowed'
+              }`}
+            >
+              {step === totalSteps ? 'Set up my cycle' : 'Next'}
+            </button>
+          )}
         </div>
       </div>
     </div>

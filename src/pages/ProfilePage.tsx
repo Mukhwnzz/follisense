@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { User, ChevronRight, Shield, Trash2, Leaf, Repeat, Heart } from 'lucide-react';
+import { User, ChevronRight, Shield, Trash2, Leaf, Repeat, Heart, Camera, RefreshCw } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 
 const ProfilePage = () => {
   const navigate = useNavigate();
-  const { onboardingData, resetAll, stylistMode, setStylistMode } = useApp();
+  const { onboardingData, resetAll, stylistMode, setStylistMode, baselinePhotos, setBaselinePhotos } = useApp();
 
   const [reminders, setReminders] = useState({
     midCycle: true,
@@ -26,6 +26,21 @@ const ProfilePage = () => {
   const handleModeSwitch = () => {
     setStylistMode(!stylistMode);
     navigate(stylistMode ? '/home' : '/stylist');
+  };
+
+  const handleRetakePhoto = (area: string) => {
+    const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+    setBaselinePhotos(
+      baselinePhotos.map(p => p.area === area ? { ...p, date: today } : p)
+    );
+  };
+
+  const handleAddBaseline = () => {
+    const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+    setBaselinePhotos([
+      { area: 'Hairline — temples and edges', captured: true, date: today },
+      { area: 'Crown and vertex', captured: true, date: today },
+    ]);
   };
 
   return (
@@ -76,6 +91,47 @@ const ProfilePage = () => {
               </div>
               <ChevronRight size={18} className="text-muted-foreground" />
             </button>
+          </div>
+        )}
+
+        {/* Baseline photos */}
+        {!stylistMode && (
+          <div className="mb-6">
+            <h3 className="text-label mb-3">Baseline Photos</h3>
+            {baselinePhotos.length > 0 ? (
+              <div className="card-elevated divide-y divide-border">
+                {baselinePhotos.map(photo => (
+                  <div key={photo.area} className="flex items-center gap-3 p-4">
+                    <div className="w-12 h-12 rounded-xl bg-accent flex items-center justify-center flex-shrink-0">
+                      <Camera size={20} className="text-muted-foreground" strokeWidth={1.5} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-foreground truncate">{photo.area}</p>
+                      <p className="text-xs text-muted-foreground">Captured {photo.date}</p>
+                    </div>
+                    <button
+                      onClick={() => handleRetakePhoto(photo.area)}
+                      className="flex items-center gap-1 text-xs font-medium text-primary px-2 py-1"
+                    >
+                      <RefreshCw size={12} strokeWidth={2} /> Retake
+                    </button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <button
+                onClick={handleAddBaseline}
+                className="card-elevated w-full p-5 flex flex-col items-center gap-3 text-center"
+              >
+                <div className="w-12 h-12 rounded-xl bg-accent flex items-center justify-center">
+                  <Camera size={22} className="text-muted-foreground" strokeWidth={1.5} />
+                </div>
+                <div>
+                  <p className="font-medium text-foreground text-sm">Add your baseline photos</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">Capture your starting point to track changes over time</p>
+                </div>
+              </button>
+            )}
           </div>
         )}
 

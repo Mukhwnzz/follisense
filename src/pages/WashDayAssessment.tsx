@@ -64,9 +64,14 @@ const symptomSteps = [
   },
 ];
 
+const photoAreas = [
+  { id: 'hairline', label: 'Temples / edges', baselineLabel: 'Hairline — temples and edges' },
+  { id: 'crown', label: 'Crown / vertex', baselineLabel: 'Crown and vertex' },
+];
+
 const WashDayAssessment = () => {
   const navigate = useNavigate();
-  const { setCurrentCheckIn } = useApp();
+  const { setCurrentCheckIn, baselinePhotos } = useApp();
   const [currentStep, setCurrentStep] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [newProductText, setNewProductText] = useState('');
@@ -80,18 +85,17 @@ const WashDayAssessment = () => {
 
   const selectAnswer = (val: string) => {
     setAnswers(prev => ({ ...prev, [currentQ.key]: val }));
-    // If new products = "No, same routine", skip follow-up and go to photo
     if (currentQ.key === 'newProducts' && val === 'No, same routine') {
       setTimeout(() => setCurrentStep(symptomSteps.length), 300);
     } else if (currentQ.key === 'newProducts' && val === 'Yes, I tried something new') {
-      // Stay on step to show text input — don't auto-advance
+      // Stay on step to show text input
     } else {
       setTimeout(() => setCurrentStep(prev => prev + 1), 300);
     }
   };
 
   const handleProductContinue = () => {
-    setCurrentStep(symptomSteps.length); // go to photo step
+    setCurrentStep(symptomSteps.length);
   };
 
   const handleSubmit = () => {
@@ -107,6 +111,10 @@ const WashDayAssessment = () => {
       date: new Date().toLocaleDateString('en-GB', { month: 'short', day: 'numeric' }),
     });
     navigate('/results');
+  };
+
+  const getBaselineForArea = (baselineLabel: string) => {
+    return baselinePhotos.find(p => p.area === baselineLabel);
   };
 
   return (
@@ -152,7 +160,6 @@ const WashDayAssessment = () => {
                 ))}
               </div>
 
-              {/* Show text input when user selected "Yes, I tried something new" */}
               {isProductFollowUp && (
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
@@ -192,18 +199,35 @@ const WashDayAssessment = () => {
 
               {!photoSaved ? (
                 <div className="space-y-3 mb-8">
-                  {['Temples / edges', 'Crown / vertex'].map(area => (
-                    <button
-                      key={area}
-                      onClick={() => setPhotoSaved(true)}
-                      className="selection-card w-full flex items-center gap-4"
-                    >
-                      <div className="w-12 h-12 rounded-xl bg-accent flex items-center justify-center">
-                        <Camera size={22} className="text-muted-foreground" strokeWidth={1.5} />
+                  {photoAreas.map(area => {
+                    const baseline = getBaselineForArea(area.baselineLabel);
+                    return (
+                      <div key={area.id}>
+                        <button
+                          onClick={() => setPhotoSaved(true)}
+                          className="selection-card w-full flex items-center gap-4"
+                        >
+                          <div className="w-12 h-12 rounded-xl bg-accent flex items-center justify-center">
+                            <Camera size={22} className="text-muted-foreground" strokeWidth={1.5} />
+                          </div>
+                          <div className="flex-1 text-left">
+                            <p className="font-medium text-foreground">{area.label}</p>
+                            {baseline && (
+                              <p className="text-xs text-primary mt-0.5">Compare with your baseline from {baseline.date}</p>
+                            )}
+                          </div>
+                        </button>
+                        {baseline && (
+                          <div className="flex items-center gap-3 mt-2 ml-1 px-3 py-2 rounded-xl bg-accent">
+                            <div className="w-10 h-10 rounded-lg bg-border flex items-center justify-center flex-shrink-0">
+                              <Camera size={14} className="text-muted-foreground" strokeWidth={1.5} />
+                            </div>
+                            <p className="text-xs text-muted-foreground">Baseline — {baseline.date}</p>
+                          </div>
+                        )}
                       </div>
-                      <p className="font-medium text-foreground">{area}</p>
-                    </button>
-                  ))}
+                    );
+                  })}
                 </div>
               ) : (
                 <div className="card-elevated p-5 mb-8 text-center">
