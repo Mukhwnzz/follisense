@@ -67,6 +67,7 @@ export const stylistConditions: StylistCondition[] = [
     whatToTell: '"You\'ve got some flaking and irritation that looks like it could be seborrheic dermatitis. A medicated shampoo with ketoconazole or zinc pyrithione usually helps. If it doesn\'t clear up, a doctor can prescribe something stronger."',
     whatYouCanDo: 'Recommend gentle cleansing. Don\'t cover with heavy products. Note it in ScalpSense.',
     severityGuide: 'Mild (some flaking) = self-manageable with OTC products. Moderate to severe (persistent, spreading, painful) = refer.',
+    darkerSkinNote: 'On darker skin: Flakes tend to be more visible against dark hair and skin. But the redness that typically accompanies it on lighter skin may appear as hyperpigmentation (darker patches) or a slight purple or ashy tone on brown and dark brown skin. Don\'t look for pink. Look for colour change from the client\'s normal skin tone.',
   },
   {
     id: 'scalp-psoriasis',
