@@ -190,8 +190,10 @@ interface AppContextType {
 }
 
 const defaultOnboarding: OnboardingData = {
+  gender: '',
   hairType: '',
   chemicalProcessing: '',
+  lastChemicalTreatment: '',
   chemicalProcessingMultiple: [],
   protectiveStyles: [],
   otherStyle: '',
