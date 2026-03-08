@@ -616,7 +616,7 @@ const Onboarding = () => {
             {/* Step 5: Baseline photos */}
             {step === 5 && (
               <div>
-                <h2 className="text-2xl font-semibold mb-2">Capture your starting point</h2>
+                <h2 className="text-lg font-medium text-foreground mb-2">Capture your starting point</h2>
                 <p className="text-muted-foreground mb-6">A baseline photo helps you spot gradual changes that are hard to notice day to day</p>
                 <div className="space-y-3 mb-6">
                   {baselineAreas.map(area => (
