@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, HelpCircle, ChevronDown } from 'lucide-react';
+import { ArrowLeft, HelpCircle, ChevronDown, Camera, Check } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 
 const hairTypes = [
