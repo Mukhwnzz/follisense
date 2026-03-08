@@ -95,7 +95,7 @@ const buildContextAwareResponse = (userMessage: string, ctx: UserContext, histor
     }
 
     if (ctx.scalpProducts.some(p => p.toLowerCase().includes('oil') || p.toLowerCase().includes('grease') || p.toLowerCase().includes('pomade'))) {
-      response += `- **Your scalp products** — oils and pomades can sometimes clog follicles if applied too heavily or too often, especially under an installed style.\n`;
+      response += `- **Your scalp products** — oils and pomades can sometimes clog follicles if applied too heavily or too often, especially under an installed style. Most scalp oils have limited clinical evidence, and heavy oils like castor oil or coconut oil can worsen buildup.\n`;
     }
 
     response += '- **Dry scalp** — if your scalp feels tight and the flakes are small and white, it might just need moisture, not medicated treatment.\n';
