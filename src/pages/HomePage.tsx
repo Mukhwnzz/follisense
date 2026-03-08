@@ -673,7 +673,7 @@ const HomePage = () => {
                         <p className="text-sm text-muted-foreground text-center mb-4">Here are some things to try. If it gets worse, you can do a full check-in anytime.</p>
                         <div className="card-elevated p-4 mb-6">
                           <ol className="space-y-3">
-                            {getQuickLogTips(quickSymptoms).map((tip, i) => (
+                            {getQuickLogTips(quickSymptoms, isMale).map((tip, i) => (
                               <li key={i} className="flex gap-3 text-sm">
                                 <span className="w-5 h-5 rounded-full bg-warning/15 flex items-center justify-center flex-shrink-0 text-xs font-semibold text-warning">{i + 1}</span>
                                 <span className="text-muted-foreground">{tip}</span>
