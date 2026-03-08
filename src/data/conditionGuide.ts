@@ -225,6 +225,11 @@ export const consumerConditions: ConsumerCondition[] = [
       { question: 'Is it itchy?' },
       { question: 'Has anyone in your household had a similar patch?' },
     ],
+    photoGallery: [
+      { label: 'Black dot pattern', description: 'Tinea capitis showing characteristic black dot pattern where hairs have broken at the scalp' },
+      { label: 'Scaling with hair loss', description: 'Tinea capitis with scaling and patchy hair loss on darker skin' },
+      { label: 'Ring-shaped border', description: 'Tinea capitis showing a raised ring-shaped border on the scalp' },
+    ],
     actionSteps: [
       'See a doctor as soon as possible — this requires prescription medication',
       'Avoid sharing combs, brushes, pillowcases, or hats',
@@ -237,6 +242,8 @@ export const consumerConditions: ConsumerCondition[] = [
     whenToSee: 'See a doctor promptly. Tinea capitis is contagious and requires oral antifungal treatment.',
     relatedArticleId: undefined,
     dermnetUrl: 'https://dermnetnz.org/topics/tinea-capitis',
+    externalLinkLabel: 'DermNet NZ — Tinea capitis',
+    externalLinkUrl: 'https://dermnetnz.org',
     chatPrompts: ['Could I have a scalp fungal infection?', 'Is tinea capitis contagious?', 'What should I tell my doctor about this?'],
   },
   {
