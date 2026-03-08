@@ -3,6 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, HelpCircle, ChevronDown, Camera, Check, Eye, Stethoscope } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { cn } from '@/lib/utils';
+import { format } from 'date-fns';
 
 const hairTypes = [
   { id: '3b', label: '3b', desc: 'Loose, springy curls' },
@@ -14,16 +18,9 @@ const hairTypes = [
 ];
 
 const chemicalOptions = [
-  'No, fully natural',
-  'Yes, relaxed / permed',
-  'Yes, texturised',
-  'Yes, colour treated',
-  'Yes, bleached',
-  'Multiple',
-  'Previously processed, currently growing out',
-  'Not sure',
+  'No, fully natural', 'Yes, relaxed / permed', 'Yes, texturised', 'Yes, colour treated',
+  'Yes, bleached', 'Multiple', 'Previously processed, currently growing out', 'Not sure',
 ];
-
 const chemicalMultipleOptions = ['Relaxed', 'Texturised', 'Colour treated', 'Bleached'];
 
 const styleOptions = [
@@ -39,74 +36,56 @@ const styleOptions = [
 ];
 
 const nonProtectiveStyles = [
-  'Worn out / loose (natural)',
-  'Worn out / loose (relaxed or straightened)',
-  'Silk press / blowout',
-  'Twist out / braid out',
-  'Wash and go',
+  'Worn out / loose (natural)', 'Worn out / loose (relaxed or straightened)',
+  'Silk press / blowout', 'Twist out / braid out', 'Wash and go',
 ];
 
 const protectiveFrequencyOptions = [
-  'Most of the time',
-  'About half the time',
-  'Occasionally',
-  'Rarely — I mostly wear my hair out',
+  'Most of the time', 'About half the time', 'Occasionally', 'Rarely — I mostly wear my hair out',
 ];
-
-const wornOutWashOptions = [
-  'More than once a week',
-  'About once a week',
-  'Every 2 weeks',
-  'Less than every 2 weeks',
-];
-
+const wornOutWashOptions = ['More than once a week', 'About once a week', 'Every 2 weeks', 'Less than every 2 weeks'];
 const restyleOptions = ['Daily', 'Every few days', 'Weekly', 'Less often'];
-
 const cycleLengths = ['1–2 weeks', '2–4 weeks', '4–6 weeks', '6+ weeks', 'It varies'];
 const washFrequencyOptions = [
-  'More than once a week',
-  'About once a week',
-  'Every 2 weeks',
-  'Every 3–4 weeks',
-  'Only when I take the style down',
-  'It depends on the style',
+  'More than once a week', 'About once a week', 'Every 2 weeks', 'Every 3–4 weeks',
+  'Only when I take the style down', 'It depends on the style',
 ];
 const washPerCycleOptions = ['0 (not at all)', '1', '2–3', '4+'];
 const cycleLengthMinOptions = ['Less than 1 week', '1–2 weeks', '2–4 weeks', '4–6 weeks'];
 const cycleLengthMaxOptions = ['2–4 weeks', '4–6 weeks', '6–8 weeks', '8+ weeks'];
 const betweenWashOptions = [
-  'Apply oil or serum to the scalp',
-  'Use a scalp refresh spray or dry shampoo',
-  'Rinse with water only',
-  'Massage / manipulate the scalp',
-  'Nothing — I leave it alone until wash day',
-  'Other',
+  'Apply oil or serum to the scalp', 'Use a scalp refresh spray or dry shampoo',
+  'Rinse with water only', 'Massage / manipulate the scalp',
+  'Nothing — I leave it alone until wash day', 'Other',
 ];
 const severities = ['None', 'Mild', 'Moderate', 'Severe'];
 const tendernessSeverities = ['None', 'Mild', 'Moderate', 'Severe'];
 const hairlineConcerns = ['No concerns', 'Slight concern', 'Noticeable change', 'Very concerned'];
 
 const productOptions = [
-  'Scalp oil (e.g., tea tree, rosemary, castor)',
-  'Hair oil (e.g., argan, jojoba, coconut)',
-  'Leave-in conditioner',
-  'Deep conditioner / mask',
-  'Edge control / gel',
-  'Mousse / foam',
-  'Hair butter / cream',
-  'Grease / pomade',
-  'Anti-dandruff / medicated shampoo',
-  'Clarifying shampoo',
-  'Co-wash',
-  'Growth serum / scalp treatment',
-  'Dry shampoo / scalp refresh spray',
-  'Heat protectant',
-  'Protein treatment',
-  'Apple cider vinegar rinse',
-  "None — I don't use products on my scalp",
-  'Other',
+  'Scalp oil (e.g., tea tree, rosemary, castor)', 'Hair oil (e.g., argan, jojoba, coconut)',
+  'Leave-in conditioner', 'Deep conditioner / mask', 'Edge control / gel',
+  'Mousse / foam', 'Hair butter / cream', 'Grease / pomade',
+  'Anti-dandruff / medicated shampoo', 'Clarifying shampoo', 'Co-wash',
+  'Growth serum / scalp treatment', 'Dry shampoo / scalp refresh spray',
+  'Heat protectant', 'Protein treatment', 'Apple cider vinegar rinse',
+  "None — I don't use products on my scalp", 'Other',
 ];
 const productFrequencies = ['Daily', 'Every few days', 'Weekly', 'Only on wash day', 'Rarely'];
+
+const menstrualCycleLengths = ['21–25 days', '26–30 days', '31–35 days', 'Irregular', 'Not sure'];
+const hormonalContraceptionOptions = ['No', 'Yes (pill)', 'Yes (implant or injection)', 'Yes (IUD/coil)', 'Prefer not to say'];
+
+const goalOptions = [
+  'Protect my edges / grow my hairline back',
+  'Reduce scalp irritation or itching',
+  'Understand my hair loss or thinning',
+  'Build a consistent scalp care routine',
+  'Monitor my scalp between salon visits',
+  'Recover from damage (chemical, heat, or traction)',
+  'General scalp and hair health',
+  "I'm not sure yet — just exploring",
+];
 
 const CurlIcon = ({ type }: { type: string }) => {
   if (type === 'unsure') return <HelpCircle size={24} className="text-muted-foreground" strokeWidth={1.5} />;
@@ -126,7 +105,6 @@ const computeBaselineRisk = (itch: string, tenderness: string, hairline: string,
   const moderate = ['Moderate', 'Noticeable change'];
   const hairMildest = ['Healthy — no concerns'];
   const hairModerate = ['Noticeably dry, brittle, or breaking more than usual', 'Concerned about my hair\'s condition'];
-
   const scalpValues = [itch, tenderness, hairline];
   const allScalpMild = scalpValues.every(v => mildest.includes(v));
   const allMild = allScalpMild && hairMildest.includes(hairHealth);
@@ -134,9 +112,7 @@ const computeBaselineRisk = (itch: string, tenderness: string, hairline: string,
   if (scalpValues.some(v => severe.includes(v))) return 'red';
   const moderateCount = scalpValues.filter(v => moderate.includes(v)).length;
   if (moderateCount >= 2) return 'red';
-  // Hair intensification: green scalp + moderate hair → amber
   if (allScalpMild && hairModerate.includes(hairHealth)) return 'amber';
-  // Amber scalp + moderate hair → red
   if (!allScalpMild && hairModerate.includes(hairHealth) && moderateCount >= 1) return 'red';
   return allScalpMild ? 'green' : 'amber';
 };
@@ -170,8 +146,6 @@ const Onboarding = () => {
   const [washFreqPerCycle, setWashFreqPerCycle] = useState('');
   const [betweenWashCare, setBetweenWashCare] = useState<string[]>([]);
   const [otherBetweenWash, setOtherBetweenWash] = useState('');
-
-  // Determine if user only selected non-protective styles
   const hasProtectiveStyle = styles.some(s => !nonProtectiveStyles.includes(s) && s !== 'Other');
   const isWornOutOnly = styles.length > 0 && !hasProtectiveStyle;
   const [itch, setItch] = useState('');
@@ -186,7 +160,16 @@ const Onboarding = () => {
   const [capturedPhotos, setCapturedPhotos] = useState<Record<string, boolean>>({});
   const [baselineResultScreen, setBaselineResultScreen] = useState<'amber' | 'red' | null>(null);
 
-  const totalSteps = 6;
+  // Menstrual cycle state
+  const [menstrualTracking, setMenstrualTracking] = useState('');
+  const [lastPeriodDate, setLastPeriodDate] = useState<Date | undefined>();
+  const [menstrualCycleLen, setMenstrualCycleLen] = useState('');
+  const [hormonalContraception, setHormonalContraception] = useState('');
+
+  // Goals state
+  const [goals, setGoals] = useState<string[]>([]);
+
+  const totalSteps = 8; // was 6, now +2 for menstrual + goals
 
   const baselineAreas = [
     { id: 'hairline', label: 'Hairline — temples and edges', desc: 'Front-facing', optional: false },
@@ -199,6 +182,13 @@ const Onboarding = () => {
   const toggleProduct = (p: string) => setProducts(prev => prev.includes(p) ? prev.filter(x => x !== p) : [...prev, p]);
   const toggleChemMulti = (v: string) => setChemicalMultiple(prev => prev.includes(v) ? prev.filter(x => x !== v) : [...prev, v]);
   const toggleBetweenWash = (v: string) => setBetweenWashCare(prev => prev.includes(v) ? prev.filter(x => x !== v) : [...prev, v]);
+  const toggleGoal = (g: string) => {
+    setGoals(prev => {
+      if (prev.includes(g)) return prev.filter(x => x !== g);
+      if (prev.length >= 3) return prev;
+      return [...prev, g];
+    });
+  };
 
   const canProceed = () => {
     switch (step) {
@@ -209,24 +199,23 @@ const Onboarding = () => {
         return stylesOk && freqOk;
       }
       case 3: {
-        if (isWornOutOnly) {
-          return !!wornOutWashFreq && !!restyleFreq;
-        }
+        if (isWornOutOnly) return !!wornOutWashFreq && !!restyleFreq;
         const cycleOk = !!cycleLen && (cycleLen !== 'It varies' || (!!cycleLenMin && !!cycleLenMax));
         const washOk = !!washFreq && (washFreq !== 'It depends on the style' || !!washFreqPerCycle);
         const betweenOk = betweenWashCare.length > 0 && (!betweenWashCare.includes('Other') || otherBetweenWash.trim().length > 0);
         return cycleOk && washOk && betweenOk;
       }
       case 4: return !!itch && !!tenderness && !!hairline && !!baselineHairHealth;
-      case 5: return true; // photo step — always can proceed (skip or capture)
+      case 5: return true; // photo step
       case 6: return products.length > 0 && !!prodFreq && (!products.includes('Other') || otherProduct.trim().length > 0);
+      case 7: return !!menstrualTracking && (menstrualTracking !== 'yes' || (!!menstrualCycleLen && !!hormonalContraception));
+      case 8: return goals.length > 0;
       default: return false;
     }
   };
 
   const handleNext = () => {
     if (step < totalSteps) {
-      // Baseline risk check after Step 4
       if (step === 4 && !baselineResultScreen) {
         const risk = computeBaselineRisk(itch, tenderness, hairline, baselineHairHealth);
         const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
@@ -237,44 +226,32 @@ const Onboarding = () => {
           return;
         }
       }
-      // Clear baseline result screen when moving past step 4
-      if (step === 4 && baselineResultScreen) {
-        setBaselineResultScreen(null);
-      }
-      // Save baseline photos when leaving photo step
+      if (step === 4 && baselineResultScreen) setBaselineResultScreen(null);
       if (step === 5) {
         const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
-        const photos = baselineAreas
-          .filter(a => capturedPhotos[a.id])
-          .map(a => ({ area: a.label, captured: true, date: today }));
+        const photos = baselineAreas.filter(a => capturedPhotos[a.id]).map(a => ({ area: a.label, captured: true, date: today }));
         setBaselinePhotos(photos);
       }
       setStep(step + 1);
     } else {
+      // Final step — save and navigate
+      const nextCheckIn = new Date();
+      nextCheckIn.setDate(nextCheckIn.getDate() + 7);
+      
       setOnboardingData({
-        hairType,
-        chemicalProcessing,
-        chemicalProcessingMultiple: chemicalMultiple,
-        protectiveStyles: styles,
-        otherStyle,
-        protectiveStyleFrequency: protectiveFreq,
-        isWornOutOnly,
-        cycleLength: cycleLen,
-        cycleLengthMin: cycleLenMin,
-        cycleLengthMax: cycleLenMax,
-        washFrequency: washFreq,
-        washFrequencyPerCycle: washFreqPerCycle,
-        betweenWashCare,
-        otherBetweenWashCare: otherBetweenWash,
-        wornOutWashFrequency: wornOutWashFreq,
-        restyleFrequency: restyleFreq,
-        baselineItch: itch,
-        baselineTenderness: tenderness,
-        baselineHairline: hairline,
-        baselineHairHealth,
-        scalpProducts: products,
-        otherProduct,
-        productFrequency: prodFreq,
+        hairType, chemicalProcessing, chemicalProcessingMultiple: chemicalMultiple,
+        protectiveStyles: styles, otherStyle, protectiveStyleFrequency: protectiveFreq,
+        isWornOutOnly, cycleLength: cycleLen, cycleLengthMin: cycleLenMin, cycleLengthMax: cycleLenMax,
+        washFrequency: washFreq, washFrequencyPerCycle: washFreqPerCycle,
+        betweenWashCare, otherBetweenWashCare: otherBetweenWash,
+        wornOutWashFrequency: wornOutWashFreq, restyleFrequency: restyleFreq,
+        baselineItch: itch, baselineTenderness: tenderness, baselineHairline: hairline, baselineHairHealth,
+        scalpProducts: products, otherProduct, productFrequency: prodFreq,
+        menstrualTracking,
+        lastPeriodDate: lastPeriodDate ? format(lastPeriodDate, 'yyyy-MM-dd') : '',
+        menstrualCycleLength: menstrualCycleLen,
+        hormonalContraception,
+        goals,
       });
       setOnboardingComplete(true);
       navigate('/home');
@@ -295,7 +272,7 @@ const Onboarding = () => {
           </button>
           <div className="flex gap-2">
             {Array.from({ length: totalSteps }).map((_, i) => (
-              <div key={i} className={`h-1 w-8 rounded-full transition-colors duration-300 ${i < step ? 'bg-primary' : 'bg-border'}`} />
+              <div key={i} className={`h-1 w-6 rounded-full transition-colors duration-300 ${i < step ? 'bg-primary' : 'bg-border'}`} />
             ))}
           </div>
           <div className="w-10" />
@@ -310,17 +287,14 @@ const Onboarding = () => {
             transition={{ duration: 0.2 }}
             className="pt-4 pb-8"
           >
+            {/* Step 1: Hair type & chemical processing */}
             {step === 1 && (
               <div>
                 <h2 className="text-2xl font-semibold mb-2">Let's personalise your experience</h2>
                 <p className="text-muted-foreground mb-6">Select the option closest to your hair type</p>
                 <div className="space-y-3 mb-8">
                   {hairTypes.map(ht => (
-                    <button
-                      key={ht.id}
-                      onClick={() => setHairType(ht.id)}
-                      className={`selection-card w-full flex items-center gap-4 text-left ${hairType === ht.id ? 'selected' : ''}`}
-                    >
+                    <button key={ht.id} onClick={() => setHairType(ht.id)} className={`selection-card w-full flex items-center gap-4 text-left ${hairType === ht.id ? 'selected' : ''}`}>
                       <div className="w-12 h-12 rounded-xl bg-accent flex items-center justify-center flex-shrink-0">
                         <CurlIcon type={ht.id} />
                       </div>
@@ -331,88 +305,52 @@ const Onboarding = () => {
                     </button>
                   ))}
                 </div>
-
                 <p className="font-medium text-foreground mb-3">Has your hair been chemically processed?</p>
                 <div className="flex flex-wrap gap-2 mb-2">
                   {chemicalOptions.map(opt => (
-                    <button
-                      key={opt}
-                      onClick={() => {
-                        setChemicalProcessing(opt);
-                        if (opt !== 'Multiple') setChemicalMultiple([]);
-                      }}
-                      className={`pill-option ${chemicalProcessing === opt ? 'selected' : ''}`}
-                    >
-                      {opt}
-                    </button>
+                    <button key={opt} onClick={() => { setChemicalProcessing(opt); if (opt !== 'Multiple') setChemicalMultiple([]); }} className={`pill-option ${chemicalProcessing === opt ? 'selected' : ''}`}>{opt}</button>
                   ))}
                 </div>
                 {chemicalProcessing === 'Multiple' && (
                   <div className="flex flex-wrap gap-2 mt-3 p-3 rounded-xl bg-accent">
                     {chemicalMultipleOptions.map(opt => (
-                      <button
-                        key={opt}
-                        onClick={() => toggleChemMulti(opt)}
-                        className={`pill-option ${chemicalMultiple.includes(opt) ? 'selected' : ''}`}
-                      >
-                        {opt}
-                      </button>
+                      <button key={opt} onClick={() => toggleChemMulti(opt)} className={`pill-option ${chemicalMultiple.includes(opt) ? 'selected' : ''}`}>{opt}</button>
                     ))}
                   </div>
                 )}
-                <p className="text-xs text-muted-foreground mt-3">
-                  Chemical processing can affect how your scalp responds to styling and products — this helps us give you more relevant guidance.
-                </p>
+                <p className="text-xs text-muted-foreground mt-3">Chemical processing can affect how your scalp responds to styling and products — this helps us give you more relevant guidance.</p>
               </div>
             )}
 
+            {/* Step 2: Hair styles */}
             {step === 2 && (
               <div>
                 <h2 className="text-2xl font-semibold mb-2">How do you usually wear your hair?</h2>
                 <p className="text-muted-foreground mb-6">Select everything you rotate between</p>
                 <div className="grid grid-cols-2 gap-3">
                   {styleOptions.slice(0, 8).map(s => (
-                    <button
-                      key={s}
-                      onClick={() => toggleStyle(s)}
-                      className={`selection-card text-center py-5 ${styles.includes(s) ? 'selected' : ''}`}
-                    >
+                    <button key={s} onClick={() => toggleStyle(s)} className={`selection-card text-center py-5 ${styles.includes(s) ? 'selected' : ''}`}>
                       <p className="font-medium text-foreground text-sm">{s}</p>
                     </button>
                   ))}
                 </div>
                 {!showMoreStyles && (
-                  <button
-                    onClick={() => setShowMoreStyles(true)}
-                    className="w-full flex items-center justify-center gap-1.5 text-sm font-medium text-primary mt-3 py-2"
-                  >
+                  <button onClick={() => setShowMoreStyles(true)} className="w-full flex items-center justify-center gap-1.5 text-sm font-medium text-primary mt-3 py-2">
                     Show more styles <ChevronDown size={16} strokeWidth={2} />
                   </button>
                 )}
                 {showMoreStyles && (
                   <div className="grid grid-cols-2 gap-3 mt-3">
                     {styleOptions.slice(8).map(s => (
-                      <button
-                        key={s}
-                        onClick={() => toggleStyle(s)}
-                        className={`selection-card text-center py-5 ${styles.includes(s) ? 'selected' : ''}`}
-                      >
+                      <button key={s} onClick={() => toggleStyle(s)} className={`selection-card text-center py-5 ${styles.includes(s) ? 'selected' : ''}`}>
                         <p className="font-medium text-foreground text-sm">{s}</p>
                       </button>
                     ))}
                   </div>
                 )}
                 {styles.includes('Other') && (
-                  <input
-                    type="text"
-                    value={otherStyle}
-                    onChange={e => setOtherStyle(e.target.value)}
-                    placeholder="Describe your style"
-                    className="w-full h-12 px-4 rounded-xl border-2 border-border bg-card text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors mt-3"
-                  />
+                  <input type="text" value={otherStyle} onChange={e => setOtherStyle(e.target.value)} placeholder="Describe your style" className="w-full h-12 px-4 rounded-xl border-2 border-border bg-card text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors mt-3" />
                 )}
-
-                {/* Follow-up: protective style frequency */}
                 {hasProtectiveStyle && styles.length > 0 && (
                   <div className="mt-8">
                     <p className="font-medium text-foreground mb-3">How much of the time are you in a protective or installed style?</p>
@@ -426,6 +364,7 @@ const Onboarding = () => {
               </div>
             )}
 
+            {/* Step 3: Cycle / routine */}
             {step === 3 && !isWornOutOnly && (
               <div>
                 <h2 className="text-2xl font-semibold mb-2">Your cycle</h2>
@@ -440,23 +379,18 @@ const Onboarding = () => {
                     <div>
                       <p className="text-sm font-medium text-foreground mb-2">What's the shortest you'd keep a style in?</p>
                       <div className="flex flex-wrap gap-2">
-                        {cycleLengthMinOptions.map(o => (
-                          <button key={o} onClick={() => setCycleLenMin(o)} className={`pill-option ${cycleLenMin === o ? 'selected' : ''}`}>{o}</button>
-                        ))}
+                        {cycleLengthMinOptions.map(o => (<button key={o} onClick={() => setCycleLenMin(o)} className={`pill-option ${cycleLenMin === o ? 'selected' : ''}`}>{o}</button>))}
                       </div>
                     </div>
                     <div>
                       <p className="text-sm font-medium text-foreground mb-2">What's the longest?</p>
                       <div className="flex flex-wrap gap-2">
-                        {cycleLengthMaxOptions.map(o => (
-                          <button key={o} onClick={() => setCycleLenMax(o)} className={`pill-option ${cycleLenMax === o ? 'selected' : ''}`}>{o}</button>
-                        ))}
+                        {cycleLengthMaxOptions.map(o => (<button key={o} onClick={() => setCycleLenMax(o)} className={`pill-option ${cycleLenMax === o ? 'selected' : ''}`}>{o}</button>))}
                       </div>
                     </div>
                     <p className="text-xs text-muted-foreground">We'll set your check-ins based on your typical range.</p>
                   </div>
                 )}
-
                 <div className="mt-8">
                   <h3 className="text-lg font-semibold mb-1">How do you care for your scalp during a protective style?</h3>
                   <p className="text-muted-foreground text-sm mb-4">How often do you wash or wet your scalp?</p>
@@ -469,29 +403,18 @@ const Onboarding = () => {
                     <div className="rounded-2xl bg-accent p-4 mt-3 space-y-2">
                       <p className="text-sm font-medium text-foreground mb-2">On average, roughly how many times per cycle do you cleanse your scalp?</p>
                       <div className="flex flex-wrap gap-2">
-                        {washPerCycleOptions.map(o => (
-                          <button key={o} onClick={() => setWashFreqPerCycle(o)} className={`pill-option ${washFreqPerCycle === o ? 'selected' : ''}`}>{o}</button>
-                        ))}
+                        {washPerCycleOptions.map(o => (<button key={o} onClick={() => setWashFreqPerCycle(o)} className={`pill-option ${washFreqPerCycle === o ? 'selected' : ''}`}>{o}</button>))}
                       </div>
                     </div>
                   )}
                 </div>
-
                 <div className="mt-8">
                   <p className="text-sm font-medium text-foreground mb-3">Between washes, do you do anything for your scalp?</p>
                   <div className="flex flex-wrap gap-2">
-                    {betweenWashOptions.map(o => (
-                      <button key={o} onClick={() => toggleBetweenWash(o)} className={`pill-option ${betweenWashCare.includes(o) ? 'selected' : ''}`}>{o}</button>
-                    ))}
+                    {betweenWashOptions.map(o => (<button key={o} onClick={() => toggleBetweenWash(o)} className={`pill-option ${betweenWashCare.includes(o) ? 'selected' : ''}`}>{o}</button>))}
                   </div>
                   {betweenWashCare.includes('Other') && (
-                    <input
-                      type="text"
-                      value={otherBetweenWash}
-                      onChange={e => setOtherBetweenWash(e.target.value)}
-                      placeholder="What else do you do?"
-                      className="w-full h-12 px-4 rounded-xl border-2 border-border bg-card text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors mt-3"
-                    />
+                    <input type="text" value={otherBetweenWash} onChange={e => setOtherBetweenWash(e.target.value)} placeholder="What else do you do?" className="w-full h-12 px-4 rounded-xl border-2 border-border bg-card text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors mt-3" />
                   )}
                 </div>
               </div>
@@ -501,27 +424,22 @@ const Onboarding = () => {
               <div>
                 <h2 className="text-2xl font-semibold mb-2">Your hair routine</h2>
                 <p className="text-muted-foreground mb-6">Since you mostly wear your hair out, we'll base your check-ins on your wash routine</p>
-
                 <div className="mb-8">
                   <p className="font-medium text-foreground mb-3">How often do you wash your hair?</p>
                   <div className="flex flex-wrap gap-2">
-                    {wornOutWashOptions.map(o => (
-                      <button key={o} onClick={() => setWornOutWashFreq(o)} className={`pill-option ${wornOutWashFreq === o ? 'selected' : ''}`}>{o}</button>
-                    ))}
+                    {wornOutWashOptions.map(o => (<button key={o} onClick={() => setWornOutWashFreq(o)} className={`pill-option ${wornOutWashFreq === o ? 'selected' : ''}`}>{o}</button>))}
                   </div>
                 </div>
-
                 <div>
                   <p className="font-medium text-foreground mb-3">How often do you restyle or manipulate your hair?</p>
                   <div className="flex flex-wrap gap-2">
-                    {restyleOptions.map(o => (
-                      <button key={o} onClick={() => setRestyleFreq(o)} className={`pill-option ${restyleFreq === o ? 'selected' : ''}`}>{o}</button>
-                    ))}
+                    {restyleOptions.map(o => (<button key={o} onClick={() => setRestyleFreq(o)} className={`pill-option ${restyleFreq === o ? 'selected' : ''}`}>{o}</button>))}
                   </div>
                 </div>
               </div>
             )}
 
+            {/* Step 4: Baseline */}
             {step === 4 && !baselineResultScreen && (
               <div>
                 <h2 className="text-2xl font-semibold mb-2">Quick baseline — how's your scalp right now?</h2>
@@ -529,27 +447,15 @@ const Onboarding = () => {
                 <div className="space-y-6">
                   <div>
                     <p className="font-medium text-foreground mb-3">Any current scalp itching?</p>
-                    <div className="flex flex-wrap gap-2">
-                      {severities.map(s => (
-                        <button key={s} onClick={() => setItch(s)} className={`pill-option ${itch === s ? 'selected' : ''}`}>{s}</button>
-                      ))}
-                    </div>
+                    <div className="flex flex-wrap gap-2">{severities.map(s => (<button key={s} onClick={() => setItch(s)} className={`pill-option ${itch === s ? 'selected' : ''}`}>{s}</button>))}</div>
                   </div>
                   <div>
                     <p className="font-medium text-foreground mb-3">Any tenderness or soreness?</p>
-                    <div className="flex flex-wrap gap-2">
-                      {tendernessSeverities.map(s => (
-                        <button key={s} onClick={() => setTenderness(s)} className={`pill-option ${tenderness === s ? 'selected' : ''}`}>{s}</button>
-                      ))}
-                    </div>
+                    <div className="flex flex-wrap gap-2">{tendernessSeverities.map(s => (<button key={s} onClick={() => setTenderness(s)} className={`pill-option ${tenderness === s ? 'selected' : ''}`}>{s}</button>))}</div>
                   </div>
                   <div>
                     <p className="font-medium text-foreground mb-3">Any concerns about your hairline or edges?</p>
-                    <div className="flex flex-wrap gap-2">
-                      {hairlineConcerns.map(s => (
-                        <button key={s} onClick={() => setHairline(s)} className={`pill-option ${hairline === s ? 'selected' : ''}`}>{s}</button>
-                      ))}
-                    </div>
+                    <div className="flex flex-wrap gap-2">{hairlineConcerns.map(s => (<button key={s} onClick={() => setHairline(s)} className={`pill-option ${hairline === s ? 'selected' : ''}`}>{s}</button>))}</div>
                   </div>
                   <div>
                     <p className="font-medium text-foreground mb-3">How would you describe your hair health right now?</p>
@@ -566,50 +472,30 @@ const Onboarding = () => {
             {step === 4 && baselineResultScreen === 'amber' && (
               <div>
                 <div className="flex justify-center mb-6">
-                  <motion.div
-                    initial={{ scale: 0.8 }}
-                    animate={{ scale: 1 }}
-                    transition={{ duration: 0.5, ease: 'easeOut' }}
-                    className="w-20 h-20 rounded-full bg-warning flex items-center justify-center"
-                  >
+                  <motion.div initial={{ scale: 0.8 }} animate={{ scale: 1 }} transition={{ duration: 0.5, ease: 'easeOut' }} className="w-20 h-20 rounded-full bg-warning flex items-center justify-center">
                     <Eye size={32} className="text-warning-foreground" strokeWidth={1.8} />
                   </motion.div>
                 </div>
                 <h2 className="text-2xl font-semibold text-center mb-2">Thanks for sharing — a couple of things to keep in mind</h2>
                 <p className="text-muted-foreground text-center mb-6">Based on what you've told us, you have some symptoms worth tracking from the start.</p>
-
                 <div className="card-elevated p-5 mb-4">
                   <h3 className="font-semibold mb-3">What happens next</h3>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    We'll factor this into your first check-in so we can see whether things improve, stay the same, or get worse.
-                  </p>
+                  <p className="text-sm text-muted-foreground mb-4">We'll factor this into your first check-in so we can see whether things improve, stay the same, or get worse.</p>
                   <h4 className="font-medium text-foreground text-sm mb-2">In the meantime</h4>
                   <ol className="space-y-2">
                     {getBaselineSevereFlaggedSymptoms(itch, tenderness, hairline).includes('scalp itching') && (
-                      <li className="flex gap-3 text-sm">
-                        <span className="w-5 h-5 rounded-full bg-warning/20 flex items-center justify-center flex-shrink-0 text-xs font-semibold text-warning">•</span>
-                        <span className="text-muted-foreground">Apply a lightweight, non-comedogenic scalp oil to soothe irritation</span>
-                      </li>
+                      <li className="flex gap-3 text-sm"><span className="w-5 h-5 rounded-full bg-warning/20 flex items-center justify-center flex-shrink-0 text-xs font-semibold text-warning">•</span><span className="text-muted-foreground">Apply a lightweight, non-comedogenic scalp oil to soothe irritation</span></li>
                     )}
                     {getBaselineSevereFlaggedSymptoms(itch, tenderness, hairline).includes('tenderness') && (
-                      <li className="flex gap-3 text-sm">
-                        <span className="w-5 h-5 rounded-full bg-warning/20 flex items-center justify-center flex-shrink-0 text-xs font-semibold text-warning">•</span>
-                        <span className="text-muted-foreground">Avoid re-tightening your edges — if they're loose, leave them</span>
-                      </li>
+                      <li className="flex gap-3 text-sm"><span className="w-5 h-5 rounded-full bg-warning/20 flex items-center justify-center flex-shrink-0 text-xs font-semibold text-warning">•</span><span className="text-muted-foreground">Avoid re-tightening your edges — if they're loose, leave them</span></li>
                     )}
                     {getBaselineSevereFlaggedSymptoms(itch, tenderness, hairline).includes('hairline changes') && (
-                      <li className="flex gap-3 text-sm">
-                        <span className="w-5 h-5 rounded-full bg-warning/20 flex items-center justify-center flex-shrink-0 text-xs font-semibold text-warning">•</span>
-                        <span className="text-muted-foreground">Consider loosening or avoiding tension on your hairline for the next style</span>
-                      </li>
+                      <li className="flex gap-3 text-sm"><span className="w-5 h-5 rounded-full bg-warning/20 flex items-center justify-center flex-shrink-0 text-xs font-semibold text-warning">•</span><span className="text-muted-foreground">Consider loosening or avoiding tension on your hairline for the next style</span></li>
                     )}
                   </ol>
                 </div>
-
                 <div className="rounded-2xl bg-accent p-4 mb-6">
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    This isn't a diagnosis — it's a starting point. ScalpSense will help you track how things develop.
-                  </p>
+                  <p className="text-sm text-muted-foreground leading-relaxed">This isn't a diagnosis — it's a starting point. ScalpSense will help you track how things develop.</p>
                 </div>
               </div>
             )}
@@ -617,144 +503,179 @@ const Onboarding = () => {
             {step === 4 && baselineResultScreen === 'red' && (
               <div>
                 <div className="flex justify-center mb-6">
-                  <motion.div
-                    initial={{ scale: 0.8 }}
-                    animate={{ scale: 1 }}
-                    transition={{ duration: 0.5, ease: 'easeOut' }}
-                    className="w-20 h-20 rounded-full bg-destructive flex items-center justify-center"
-                  >
+                  <motion.div initial={{ scale: 0.8 }} animate={{ scale: 1 }} transition={{ duration: 0.5, ease: 'easeOut' }} className="w-20 h-20 rounded-full bg-destructive flex items-center justify-center">
                     <Stethoscope size={32} className="text-destructive-foreground" strokeWidth={1.8} />
                   </motion.div>
                 </div>
                 <h2 className="text-2xl font-semibold text-center mb-2">We'd recommend seeking advice soon</h2>
                 <p className="text-muted-foreground text-center mb-6">The symptoms you've described suggest it's worth speaking to a professional sooner rather than later.</p>
-
                 <div className="card-elevated p-5 mb-4">
                   <h3 className="font-semibold mb-2">What this means</h3>
-                  <p className="text-sm text-muted-foreground">
-                    You don't need to wait for a full cycle of tracking to take action. The symptoms you've described — especially {getBaselineSevereFlaggedSymptoms(itch, tenderness, hairline).join(' and ')} — are worth getting checked.
-                  </p>
+                  <p className="text-sm text-muted-foreground">You don't need to wait for a full cycle of tracking to take action. The symptoms you've described — especially {getBaselineSevereFlaggedSymptoms(itch, tenderness, hairline).join(' and ')} — are worth getting checked.</p>
                 </div>
-
                 <div className="card-elevated p-5 mb-4">
                   <h3 className="font-semibold mb-2">Who to see</h3>
-                  <p className="text-sm text-muted-foreground">
-                    A trichologist specialises in hair and scalp conditions. A dermatologist can investigate further. Your GP can refer you.
-                  </p>
+                  <p className="text-sm text-muted-foreground">A trichologist specialises in hair and scalp conditions. A dermatologist can investigate further. Your GP can refer you.</p>
                 </div>
-
                 <div className="card-elevated p-5 mb-4">
                   <h3 className="font-semibold mb-2">We'll still track with you</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Setting up ScalpSense now means you'll have a symptom timeline to share with whoever you see — that's useful context for any consultation.
-                  </p>
+                  <p className="text-sm text-muted-foreground">Setting up ScalpSense now means you'll have a symptom timeline to share with whoever you see — that's useful context for any consultation.</p>
                 </div>
-
-                <button
-                  onClick={() => navigate('/clinician-summary')}
-                  className="w-full h-12 rounded-xl border-2 border-border font-semibold text-sm btn-press mb-4 flex items-center justify-center gap-2"
-                >
+                <button onClick={() => navigate('/clinician-summary')} className="w-full h-12 rounded-xl border-2 border-border font-semibold text-sm btn-press mb-4 flex items-center justify-center gap-2">
                   <Stethoscope size={16} strokeWidth={1.8} /> View your baseline summary
                 </button>
               </div>
             )}
 
+            {/* Step 5: Baseline photos */}
             {step === 5 && (
               <div>
                 <h2 className="text-2xl font-semibold mb-2">Capture your starting point</h2>
-                <p className="text-muted-foreground mb-6">
-                  A baseline photo helps you spot gradual changes over time that are hard to notice day to day.
-                </p>
-
+                <p className="text-muted-foreground mb-6">A baseline photo helps you spot gradual changes over time that are hard to notice day to day.</p>
                 <div className="space-y-3 mb-6">
                   {baselineAreas.map(area => (
-                    <button
-                      key={area.id}
-                      onClick={() => setCapturedPhotos(prev => ({ ...prev, [area.id]: true }))}
-                      className={`selection-card w-full flex items-center gap-4 text-left ${area.optional ? 'border-dashed opacity-80' : ''} ${capturedPhotos[area.id] ? 'selected' : ''}`}
-                    >
+                    <button key={area.id} onClick={() => setCapturedPhotos(prev => ({ ...prev, [area.id]: true }))} className={`selection-card w-full flex items-center gap-4 text-left ${area.optional ? 'border-dashed opacity-80' : ''} ${capturedPhotos[area.id] ? 'selected' : ''}`}>
                       <div className={`w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 ${capturedPhotos[area.id] ? 'bg-primary/10' : 'bg-accent'}`}>
-                        {capturedPhotos[area.id] ? (
-                          <Check size={22} className="text-primary" strokeWidth={2} />
-                        ) : (
-                          <Camera size={22} className="text-muted-foreground" strokeWidth={1.5} />
-                        )}
+                        {capturedPhotos[area.id] ? <Check size={22} className="text-primary" strokeWidth={2} /> : <Camera size={22} className="text-muted-foreground" strokeWidth={1.5} />}
                       </div>
                       <div className="flex-1">
                         <p className="font-medium text-foreground text-sm">{area.label}</p>
-                        <p className="text-xs text-muted-foreground mt-0.5">
-                          {capturedPhotos[area.id] ? 'Photo captured ✓' : area.desc}
-                        </p>
+                        <p className="text-xs text-muted-foreground mt-0.5">{capturedPhotos[area.id] ? 'Photo captured ✓' : area.desc}</p>
                       </div>
-                      {area.optional && !capturedPhotos[area.id] && (
-                        <span className="text-xs text-muted-foreground bg-accent px-2 py-0.5 rounded-full">Optional</span>
-                      )}
+                      {area.optional && !capturedPhotos[area.id] && (<span className="text-xs text-muted-foreground bg-accent px-2 py-0.5 rounded-full">Optional</span>)}
                     </button>
                   ))}
                 </div>
-
                 <div className="rounded-2xl bg-accent p-4 mb-4">
-                  <p className="text-xs text-muted-foreground leading-relaxed">
-                    🔒 Photos are stored on your device only — never uploaded, never shared unless you choose to. No AI analysis is applied.
-                  </p>
+                  <p className="text-xs text-muted-foreground leading-relaxed">🔒 Photos are stored on your device only — never uploaded, never shared unless you choose to. No AI analysis is applied.</p>
                 </div>
                 <div className="rounded-2xl bg-accent p-4 mb-6">
-                  <p className="text-xs text-muted-foreground leading-relaxed">
-                    💡 For the best baseline, take photos in good natural light with your hair parted or pulled back so your scalp is visible.
-                  </p>
+                  <p className="text-xs text-muted-foreground leading-relaxed">💡 For the best baseline, take photos in good natural light with your hair parted or pulled back so your scalp is visible.</p>
                 </div>
               </div>
             )}
 
+            {/* Step 6: Products */}
             {step === 6 && (
               <div>
                 <h2 className="text-2xl font-semibold mb-2">What products do you use on your scalp?</h2>
                 <p className="text-muted-foreground mb-6">This helps us understand what might be affecting your scalp health</p>
                 <div className="grid grid-cols-2 gap-3">
                   {productOptions.slice(0, 8).map(p => (
-                    <button
-                      key={p}
-                      onClick={() => toggleProduct(p)}
-                      className={`selection-card text-center py-5 ${products.includes(p) ? 'selected' : ''}`}
-                    >
+                    <button key={p} onClick={() => toggleProduct(p)} className={`selection-card text-center py-5 ${products.includes(p) ? 'selected' : ''}`}>
                       <p className="font-medium text-foreground text-sm">{p}</p>
                     </button>
                   ))}
                 </div>
                 {!showMoreProducts && (
-                  <button
-                    onClick={() => setShowMoreProducts(true)}
-                    className="w-full flex items-center justify-center gap-1.5 text-sm font-medium text-primary mt-3 py-2"
-                  >
+                  <button onClick={() => setShowMoreProducts(true)} className="w-full flex items-center justify-center gap-1.5 text-sm font-medium text-primary mt-3 py-2">
                     Show more products <ChevronDown size={16} strokeWidth={2} />
                   </button>
                 )}
                 {showMoreProducts && (
                   <div className="grid grid-cols-2 gap-3 mt-3">
                     {productOptions.slice(8).map(p => (
-                      <button
-                        key={p}
-                        onClick={() => toggleProduct(p)}
-                        className={`selection-card text-center py-5 ${products.includes(p) ? 'selected' : ''}`}
-                      >
+                      <button key={p} onClick={() => toggleProduct(p)} className={`selection-card text-center py-5 ${products.includes(p) ? 'selected' : ''}`}>
                         <p className="font-medium text-foreground text-sm">{p}</p>
                       </button>
                     ))}
                   </div>
                 )}
                 {products.includes('Other') && (
-                  <input
-                    type="text"
-                    value={otherProduct}
-                    onChange={e => setOtherProduct(e.target.value)}
-                    placeholder="What else do you use?"
-                    className="w-full h-12 px-4 rounded-xl border-2 border-border bg-card text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors mb-4"
-                  />
+                  <input type="text" value={otherProduct} onChange={e => setOtherProduct(e.target.value)} placeholder="What else do you use?" className="w-full h-12 px-4 rounded-xl border-2 border-border bg-card text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors mb-4" />
                 )}
                 <p className="text-muted-foreground mb-4">How often do you apply products to your scalp?</p>
                 <div className="flex flex-wrap gap-2">
-                  {productFrequencies.map(f => (
-                    <button key={f} onClick={() => setProdFreq(f)} className={`pill-option ${prodFreq === f ? 'selected' : ''}`}>{f}</button>
+                  {productFrequencies.map(f => (<button key={f} onClick={() => setProdFreq(f)} className={`pill-option ${prodFreq === f ? 'selected' : ''}`}>{f}</button>))}
+                </div>
+              </div>
+            )}
+
+            {/* Step 7: Menstrual cycle */}
+            {step === 7 && (
+              <div>
+                <h2 className="text-2xl font-semibold mb-2">Do you want to link your menstrual cycle?</h2>
+                <p className="text-muted-foreground mb-6">Hormonal changes can affect your scalp — tracking your cycle helps us give smarter insights</p>
+
+                <div className="space-y-3 mb-6">
+                  <button onClick={() => setMenstrualTracking('yes')} className={`selection-card w-full text-left ${menstrualTracking === 'yes' ? 'selected' : ''}`}>
+                    <p className="font-medium text-foreground">Yes, I'd like to track</p>
+                  </button>
+                  <button onClick={() => setMenstrualTracking('no')} className={`selection-card w-full text-left ${menstrualTracking === 'no' ? 'selected' : ''}`}>
+                    <p className="font-medium text-foreground">No thanks</p>
+                  </button>
+                  <button onClick={() => setMenstrualTracking('no-menstruate')} className={`selection-card w-full text-left ${menstrualTracking === 'no-menstruate' ? 'selected' : ''}`}>
+                    <p className="font-medium text-foreground">I don't menstruate</p>
+                  </button>
+                </div>
+
+                {menstrualTracking === 'yes' && (
+                  <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
+                    <div>
+                      <p className="font-medium text-foreground mb-3">When did your last period start?</p>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <button className="w-full h-12 px-4 rounded-xl border-2 border-border bg-card text-left text-sm flex items-center gap-2">
+                            <span className={lastPeriodDate ? 'text-foreground' : 'text-muted-foreground'}>
+                              {lastPeriodDate ? format(lastPeriodDate, 'PPP') : 'Pick a date'}
+                            </span>
+                          </button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={lastPeriodDate}
+                            onSelect={setLastPeriodDate}
+                            initialFocus
+                            className={cn("p-3 pointer-events-auto")}
+                          />
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+
+                    <div>
+                      <p className="font-medium text-foreground mb-3">How long is your typical cycle?</p>
+                      <div className="flex flex-wrap gap-2">
+                        {menstrualCycleLengths.map(o => (
+                          <button key={o} onClick={() => setMenstrualCycleLen(o)} className={`pill-option ${menstrualCycleLen === o ? 'selected' : ''}`}>{o}</button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div>
+                      <p className="font-medium text-foreground mb-3">Are you on hormonal contraception?</p>
+                      <div className="flex flex-wrap gap-2">
+                        {hormonalContraceptionOptions.map(o => (
+                          <button key={o} onClick={() => setHormonalContraception(o)} className={`pill-option ${hormonalContraception === o ? 'selected' : ''}`}>{o}</button>
+                        ))}
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </div>
+            )}
+
+            {/* Step 8: Goals */}
+            {step === 8 && (
+              <div>
+                <h2 className="text-2xl font-semibold mb-2">What matters most to you right now?</h2>
+                <p className="text-muted-foreground mb-6">This helps us focus your check-ins and tips on what you care about. Pick up to 3.</p>
+
+                <div className="space-y-3 mb-6">
+                  {goalOptions.map(g => (
+                    <button
+                      key={g}
+                      onClick={() => toggleGoal(g)}
+                      className={`selection-card w-full text-left ${goals.includes(g) ? 'selected' : ''} ${goals.length >= 3 && !goals.includes(g) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      disabled={goals.length >= 3 && !goals.includes(g)}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${goals.includes(g) ? 'bg-primary border-primary' : 'border-border'}`}>
+                          {goals.includes(g) && <Check size={12} className="text-primary-foreground" strokeWidth={2.5} />}
+                        </div>
+                        <p className="font-medium text-foreground text-sm">{g}</p>
+                      </div>
+                    </button>
                   ))}
                 </div>
               </div>
@@ -764,18 +685,12 @@ const Onboarding = () => {
 
         <div className="pb-8">
           {step === 4 && baselineResultScreen ? (
-            <button
-              onClick={handleNext}
-              className="w-full h-14 rounded-xl font-semibold text-base btn-press transition-colors bg-primary text-primary-foreground"
-            >
+            <button onClick={handleNext} className="w-full h-14 rounded-xl font-semibold text-base btn-press transition-colors bg-primary text-primary-foreground">
               Continue setup
             </button>
           ) : step === 5 ? (
             <div className="space-y-3">
-              <button
-                onClick={handleNext}
-                className="w-full h-14 rounded-xl font-semibold text-base btn-press transition-colors bg-primary text-primary-foreground"
-              >
+              <button onClick={handleNext} className="w-full h-14 rounded-xl font-semibold text-base btn-press transition-colors bg-primary text-primary-foreground">
                 {Object.values(capturedPhotos).some(Boolean) ? 'Continue' : 'Skip for now'}
               </button>
               {!Object.values(capturedPhotos).some(Boolean) && (
@@ -790,7 +705,7 @@ const Onboarding = () => {
                 canProceed() ? 'bg-primary text-primary-foreground' : 'bg-border text-muted-foreground cursor-not-allowed'
               }`}
             >
-              {step === totalSteps ? 'Set up my cycle' : step === 4 ? 'Set up my cycle' : 'Next'}
+              {step === totalSteps ? "Let's go" : step === 4 ? 'Set up my cycle' : 'Next'}
             </button>
           )}
         </div>
