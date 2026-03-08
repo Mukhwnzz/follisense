@@ -680,8 +680,15 @@ const Onboarding = () => {
             {/* Step 7: Menstrual cycle */}
             {step === 7 && (
               <div>
-                <h2 className="text-2xl font-semibold mb-2">Do you want to link your menstrual cycle?</h2>
-                <p className="text-muted-foreground mb-6">Hormonal changes can affect your scalp — tracking this helps us give smarter insights</p>
+                <h2 className="text-lg font-medium text-foreground mb-2">Do you want to link your menstrual cycle?</h2>
+                <p className="text-muted-foreground mb-4">Your hormones have a direct effect on your scalp</p>
+
+                <div className="rounded-2xl bg-secondary/50 p-4 mb-6">
+                  <p className="text-sm text-foreground leading-relaxed">
+                    Oestrogen, progesterone, and testosterone fluctuate throughout your cycle and can affect scalp oiliness, sensitivity, and shedding. Linking your cycle lets us give you context when symptoms change, so you know what's hormonal and what's worth investigating.
+                  </p>
+                </div>
+
                 <div className="space-y-3 mb-6">
                   {["Yes, I'd like to track", 'No thanks', "I don't menstruate"].map(opt => (
                     <button
