@@ -4,12 +4,16 @@ import { Search, Clock } from 'lucide-react';
 import { articles, categories, getArticleById, Article } from '@/data/learnArticles';
 import { useApp } from '@/contexts/AppContext';
 import ArticleView from '@/components/ArticleView';
+import ConditionGuidePage from '@/pages/ConditionGuidePage';
+
+const allCategories = [...categories, 'Know the signs'];
 
 const LearnPage = () => {
   const { onboardingData } = useApp();
   const [activeCategory, setActiveCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedArticleId, setSelectedArticleId] = useState<string | null>(null);
+  const [showConditionGuide, setShowConditionGuide] = useState(false);
   const pillsRef = useRef<HTMLDivElement>(null);
 
   const isMale = onboardingData.gender === 'A man';
@@ -17,12 +21,10 @@ const LearnPage = () => {
   const sortedArticles = useMemo(() => {
     let filtered = articles;
 
-    // Filter by category
-    if (activeCategory !== 'All') {
+    if (activeCategory !== 'All' && activeCategory !== 'Know the signs') {
       filtered = filtered.filter(a => a.category === activeCategory);
     }
 
-    // Filter by search
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       filtered = filtered.filter(
@@ -34,7 +36,6 @@ const LearnPage = () => {
       );
     }
 
-    // Prioritise men's hair for male users
     if (isMale && activeCategory === 'All' && !searchQuery.trim()) {
       const mens = filtered.filter(a => a.category === "Men's hair");
       const rest = filtered.filter(a => a.category !== "Men's hair");
@@ -57,6 +58,14 @@ const LearnPage = () => {
             window.scrollTo({ top: 0, behavior: 'smooth' });
           }}
         />
+      </div>
+    );
+  }
+
+  if (showConditionGuide || activeCategory === 'Know the signs') {
+    return (
+      <div className="page-container pt-6">
+        <ConditionGuidePage onBack={() => { setShowConditionGuide(false); setActiveCategory('All'); }} />
       </div>
     );
   }
@@ -85,7 +94,7 @@ const LearnPage = () => {
           className="flex gap-2 overflow-x-auto pb-4 mb-2 scrollbar-hide -mx-1 px-1"
           style={{ WebkitOverflowScrolling: 'touch' }}
         >
-          {categories.map((cat) => (
+          {allCategories.map((cat) => (
             <button
               key={cat}
               onClick={() => setActiveCategory(cat)}
