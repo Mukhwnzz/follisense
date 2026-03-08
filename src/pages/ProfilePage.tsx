@@ -164,7 +164,7 @@ const ProfilePage = () => {
         )}
 
         {/* Baseline photos */}
-        {!stylistMode && (
+        {(
           <div className="mb-6">
             <h3 className="text-label mb-3">Baseline Photos</h3>
             {baselinePhotos.length > 0 ? (
