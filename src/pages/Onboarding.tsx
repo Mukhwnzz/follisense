@@ -72,10 +72,9 @@ const baselineQuestions = [
 ];
 
 const genderOptions = [
-  { id: 'woman', label: 'A woman' },
-  { id: 'man', label: 'A man' },
-  { id: 'non-binary', label: 'Non-binary' },
-  { id: 'prefer-not-to-say', label: "I'd rather not say" },
+  { id: 'woman', label: 'Female' },
+  { id: 'man', label: 'Male' },
+  { id: 'prefer-not-to-say', label: 'Prefer not to say' },
 ];
 
 // ── "Why we ask" helper text for each section ─────────────────────────────────
