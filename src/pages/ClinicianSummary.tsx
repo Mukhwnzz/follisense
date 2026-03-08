@@ -23,7 +23,6 @@ const ClinicianSummary = () => {
     return cp;
   };
 
-
   const fields = [
     { label: 'Hair type', value: hairTypeLabel[onboardingData.hairType] || 'Not specified' },
     ...(chemLabel() ? [{ label: 'Chemical processing', value: chemLabel()! }] : []),
@@ -32,6 +31,29 @@ const ClinicianSummary = () => {
     { label: 'Current cycle duration', value: '28 days' },
     { label: 'Wash frequency', value: onboardingData.washFrequency || 'Not specified' },
   ];
+
+  // Menstrual data
+  const menstrualFields: { label: string; value: string }[] = [];
+  if (onboardingData.menstrualTracking === "Yes, I'd like to track") {
+    const getCycleDay = (): number | null => {
+      if (!onboardingData.lastPeriodDate) return null;
+      const lastPeriod = new Date(onboardingData.lastPeriodDate);
+      const diffDays = Math.floor((Date.now() - lastPeriod.getTime()) / 86400000);
+      return diffDays > 0 ? diffDays : null;
+    };
+    const getCycleLengthNum = (): number => {
+      const mapping: Record<string, number> = { '21–25 days': 23, '26–30 days': 28, '31–35 days': 33 };
+      return mapping[onboardingData.menstrualCycleLength] || 28;
+    };
+    const cycleDay = getCycleDay();
+    const cycleLen = getCycleLengthNum();
+    if (cycleDay) menstrualFields.push({ label: 'Menstrual cycle', value: `Day ${cycleDay % cycleLen || cycleLen} of ~${cycleLen} day cycle` });
+    if (onboardingData.hormonalContraception) menstrualFields.push({ label: 'Hormonal contraception', value: onboardingData.hormonalContraception });
+    const status = onboardingData.menstrualCycleLength === 'Irregular' ? 'Irregular' : 'Regular';
+    menstrualFields.push({ label: 'Menstrual status', value: status });
+  } else if (onboardingData.menstrualTracking) {
+    menstrualFields.push({ label: 'Menstrual tracking', value: 'Not tracking' });
+  }
 
   const symptoms = [
     { label: 'Itch', value: currentCheckIn?.itch || 'Moderate' },
@@ -60,12 +82,12 @@ const ClinicianSummary = () => {
 
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }} className="pb-8">
           <h2 className="text-2xl font-semibold mb-1">Clinical Summary</h2>
-          <p className="text-muted-foreground text-sm mb-1">Patient-reported scalp symptom summary</p>
+          <p className="text-muted-foreground text-sm mb-1">Patient-reported scalp and hair symptom summary</p>
           <p className="text-muted-foreground text-xs mb-6">Generated {today}</p>
 
           {baselineRisk === 'red' && baselineDate && (
             <div className="rounded-2xl bg-destructive/10 border border-destructive/20 p-4 mb-4">
-              <p className="text-sm text-foreground leading-relaxed"><strong>Note:</strong> Significant symptoms were reported at initial intake on {baselineDate}. This was the patient's first interaction with ScalpSense — no longitudinal trend data is available yet.</p>
+              <p className="text-sm text-foreground leading-relaxed"><strong>Note:</strong> Significant symptoms were reported at initial intake on {baselineDate}. No longitudinal trend data available.</p>
             </div>
           )}
 
@@ -74,9 +96,7 @@ const ClinicianSummary = () => {
             <div className="card-elevated p-4 mb-4">
               <h3 className="text-label mb-3">Patient Goals</h3>
               <ul className="space-y-1">
-                {onboardingData.goals.map(g => (
-                  <li key={g} className="text-sm text-foreground">• {g}</li>
-                ))}
+                {onboardingData.goals.map(g => (<li key={g} className="text-sm text-foreground">• {g}</li>))}
               </ul>
             </div>
           )}
@@ -86,6 +106,12 @@ const ClinicianSummary = () => {
             <h3 className="text-label mb-3">Patient Profile</h3>
             <div className="space-y-2.5">
               {fields.map(f => (
+                <div key={f.label} className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">{f.label}</span>
+                  <span className="font-medium text-foreground text-right max-w-[55%]">{f.value}</span>
+                </div>
+              ))}
+              {menstrualFields.map(f => (
                 <div key={f.label} className="flex justify-between text-sm">
                   <span className="text-muted-foreground">{f.label}</span>
                   <span className="font-medium text-foreground text-right max-w-[55%]">{f.value}</span>
@@ -124,6 +150,19 @@ const ClinicianSummary = () => {
             </div>
           </div>
 
+          {/* Products */}
+          {onboardingData.scalpProducts.length > 0 && (
+            <div className="card-elevated p-4 mb-4">
+              <h3 className="text-label mb-3">Products Used</h3>
+              <div className="space-y-1">
+                {onboardingData.scalpProducts.map(p => (<p key={p} className="text-sm text-foreground">• {p}</p>))}
+                {currentCheckIn?.newProductDetails && (
+                  <p className="text-sm text-foreground mt-2"><strong>New this cycle:</strong> {currentCheckIn.newProductDetails}</p>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Trend */}
           <div className="card-elevated p-4 mb-4">
             <h3 className="text-label mb-3">Symptom Trend</h3>
@@ -134,7 +173,7 @@ const ClinicianSummary = () => {
             </div>
           </div>
 
-          {/* Patient health context */}
+          {/* Health context */}
           {(() => {
             const hp = healthProfile;
             const contextItems: { label: string; value: string }[] = [];
@@ -154,7 +193,7 @@ const ClinicianSummary = () => {
             if (hp.pregnancyStatus === 'Postpartum (within 12 months)') telogenTriggers.push('Postpartum (within 12 months)');
             const validStressors = (hp.recentStressors || []).filter(s => s !== 'None of these' && s !== 'Prefer not to say');
             telogenTriggers.push(...validStressors);
-            if (telogenTriggers.length > 0) contextItems.push({ label: 'Potential telogen effluvium triggers', value: telogenTriggers.join(', ') });
+            if (telogenTriggers.length > 0) contextItems.push({ label: 'Potential TE triggers', value: telogenTriggers.join(', ') });
             if (contextItems.length === 0) return null;
             return (
               <div className="card-elevated p-4 mb-4">
@@ -181,7 +220,7 @@ const ClinicianSummary = () => {
           )}
 
           <div className="rounded-2xl bg-accent p-4 mb-6">
-            <p className="text-xs text-muted-foreground leading-relaxed">ScalpSense is a symptom-tracking and triage tool. This summary does not constitute a medical diagnosis. Report generated {today}. For clinician reference only.</p>
+            <p className="text-xs text-muted-foreground leading-relaxed">ScalpSense is a symptom-tracking and triage tool. This summary does not constitute a medical diagnosis. Report generated {today}.</p>
           </div>
 
           <div className="flex gap-3 mb-3">

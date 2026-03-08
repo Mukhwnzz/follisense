@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown, Minus, ArrowUp, Scissors, Eye } from 'lucide-react';
+import { ChevronDown, Minus, ArrowUp, Scissors, Eye, AlertTriangle } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 
 const HistoryPage = () => {
-  const { history, salonVisits, stylistObservations } = useApp();
+  const { history, salonVisits, stylistObservations, quickLogs } = useApp();
   const [expanded, setExpanded] = useState<string | null>(null);
 
   const trends = [
@@ -12,6 +12,22 @@ const HistoryPage = () => {
     { label: 'Tenderness', status: 'Increasing', icon: ArrowUp, color: 'text-warning' },
     { label: 'Hairline', status: 'Worth monitoring', icon: ArrowUp, color: 'text-warning' },
     { label: 'Shedding', status: 'Normal range', icon: Minus, color: 'text-primary' },
+    { label: 'Hair condition', status: 'Stable', icon: Minus, color: 'text-primary' },
+  ];
+
+  // Build unified timeline
+  type TimelineEntry = {
+    id: string;
+    type: 'cycle' | 'salon' | 'stylist' | 'quicklog';
+    date: string;
+    data: any;
+  };
+
+  const entries: TimelineEntry[] = [
+    ...[...history].reverse().map(e => ({ id: e.id, type: 'cycle' as const, date: e.endDate, data: e })),
+    ...stylistObservations.map(o => ({ id: o.id, type: 'stylist' as const, date: o.date, data: o })),
+    ...salonVisits.map(v => ({ id: v.id, type: 'salon' as const, date: v.date, data: v })),
+    ...quickLogs.map(q => ({ id: q.id, type: 'quicklog' as const, date: q.date, data: q })),
   ];
 
   return (
@@ -43,16 +59,9 @@ const HistoryPage = () => {
                       className={`text-muted-foreground transition-transform ${expanded === entry.id ? 'rotate-180' : ''}`}
                     />
                   </div>
-
                   <AnimatePresence>
                     {expanded === entry.id && entry.checkIn && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.2 }}
-                        className="overflow-hidden"
-                      >
+                      <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} className="overflow-hidden">
                         <div className="pt-3 mt-3 border-t border-border space-y-1.5">
                           {[
                             { label: 'Itch', val: entry.checkIn.itch },
@@ -71,6 +80,22 @@ const HistoryPage = () => {
                     )}
                   </AnimatePresence>
                 </button>
+              </div>
+            ))}
+
+            {/* Quick log entries */}
+            {quickLogs.map(log => (
+              <div key={log.id} className="relative pl-10">
+                <div className="absolute left-[9px] top-5 w-3 h-3 rounded-full border-2 border-card bg-warning" />
+                <div className="card-elevated p-4">
+                  <div className="flex items-center gap-3">
+                    <AlertTriangle size={16} className="text-warning flex-shrink-0" strokeWidth={1.5} />
+                    <div>
+                      <p className="font-medium text-foreground text-sm">Quick log: {log.symptoms.join(', ').toLowerCase()}</p>
+                      <p className="text-xs text-muted-foreground">{log.date} · {log.severity}</p>
+                    </div>
+                  </div>
+                </div>
               </div>
             ))}
 
@@ -94,29 +119,17 @@ const HistoryPage = () => {
                     </div>
                     <div className="flex items-center gap-2">
                       <span className={`status-dot ${obs.risk}`} />
-                      <ChevronDown
-                        size={18}
-                        className={`text-muted-foreground transition-transform ${expanded === obs.id ? 'rotate-180' : ''}`}
-                      />
+                      <ChevronDown size={18} className={`text-muted-foreground transition-transform ${expanded === obs.id ? 'rotate-180' : ''}`} />
                     </div>
                   </div>
-
                   <AnimatePresence>
                     {expanded === obs.id && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.2 }}
-                        className="overflow-hidden"
-                      >
+                      <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} className="overflow-hidden">
                         <div className="pt-3 mt-3 border-t border-border space-y-2">
                           <div>
                             <p className="text-xs text-muted-foreground">Flagged concerns</p>
                             <ul className="mt-1 space-y-0.5">
-                              {obs.observations.map(o => (
-                                <li key={o} className="text-sm text-foreground">• {o}</li>
-                              ))}
+                              {obs.observations.map(o => (<li key={o} className="text-sm text-foreground">• {o}</li>))}
                             </ul>
                           </div>
                           {obs.notes && (
@@ -149,21 +162,11 @@ const HistoryPage = () => {
                         <p className="text-xs text-muted-foreground">{visit.date}{visit.stylistName ? ` · ${visit.stylistName}` : ''}</p>
                       </div>
                     </div>
-                    <ChevronDown
-                      size={18}
-                      className={`text-muted-foreground transition-transform ${expanded === visit.id ? 'rotate-180' : ''}`}
-                    />
+                    <ChevronDown size={18} className={`text-muted-foreground transition-transform ${expanded === visit.id ? 'rotate-180' : ''}`} />
                   </div>
-
                   <AnimatePresence>
                     {expanded === visit.id && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.2 }}
-                        className="overflow-hidden"
-                      >
+                      <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} className="overflow-hidden">
                         <div className="pt-3 mt-3 border-t border-border space-y-1.5">
                           <div className="flex justify-between text-sm">
                             <span className="text-muted-foreground">Services</span>
@@ -187,7 +190,7 @@ const HistoryPage = () => {
 
         {/* Trends */}
         <h3 className="font-semibold mb-4">Trends across your last 5 cycles</h3>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-3 mb-20">
           {trends.map(t => (
             <div key={t.label} className="card-elevated p-4">
               <p className="text-xs text-muted-foreground mb-1">{t.label}</p>

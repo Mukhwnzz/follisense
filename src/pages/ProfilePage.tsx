@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { User, ChevronRight, Shield, Trash2, Leaf, Repeat, Heart, Camera, RefreshCw, Target, Check } from 'lucide-react';
+import { User, ChevronRight, Shield, Trash2, Leaf, Repeat, Heart, Camera, RefreshCw, Target, Check, Calendar } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 
 const goalOptions = [
@@ -29,7 +29,7 @@ const ProfilePage = () => {
     { key: 'dailyTip' as const, label: 'Daily scalp care tip', desc: 'A quick tip or reminder to help your scalp health between check-ins' },
     { key: 'midCycle' as const, label: 'Mid-cycle check-in reminder', desc: "We'll nudge you when it's time for your quick check" },
     { key: 'washDay' as const, label: 'Wash day reminder', desc: "A heads-up when your wash day is approaching" },
-    { key: 'washApproaching' as const, label: 'Wash day is approaching', desc: 'Reminder 2 days before your expected wash day' },
+    { key: 'washApproaching' as const, label: 'Wash day approaching (2 days before)', desc: 'Reminder 2 days before your expected wash day' },
     { key: 'productReminders' as const, label: 'Product reminders', desc: 'Reminders to apply scalp treatments or oils based on your routine' },
     { key: 'weeklySummary' as const, label: 'Weekly scalp health summary', desc: 'A quick recap of your scalp activity this week' },
   ];
@@ -60,6 +60,11 @@ const ProfilePage = () => {
   const saveGoals = () => {
     setOnboardingData({ ...onboardingData, goals: editGoals });
     setShowGoalEditor(false);
+  };
+
+  const toggleMenstrualTracking = () => {
+    const newVal = onboardingData.menstrualTracking === "Yes, I'd like to track" ? 'No thanks' : "Yes, I'd like to track";
+    setOnboardingData({ ...onboardingData, menstrualTracking: newVal });
   };
 
   return (
@@ -181,11 +186,11 @@ const ProfilePage = () => {
             <div className="card-elevated divide-y divide-border">
               {[
                 { label: 'Hair type', value: hairTypeLabel[onboardingData.hairType] || 'Not set' },
+                { label: 'Chemical processing', value: onboardingData.chemicalProcessing || 'Not set' },
                 { label: 'Preferred styles', value: onboardingData.protectiveStyles.join(', ') || 'Not set' },
                 { label: 'Cycle length', value: onboardingData.cycleLength || 'Not set' },
                 { label: 'Wash frequency', value: onboardingData.washFrequency || 'Not set' },
                 { label: 'Products', value: onboardingData.scalpProducts.join(', ') || 'Not set' },
-                { label: 'Product frequency', value: onboardingData.productFrequency || 'Not set' },
               ].map(item => (
                 <div key={item.label} className="flex items-center justify-between p-4">
                   <span className="text-sm text-foreground">{item.label}</span>
@@ -195,6 +200,27 @@ const ProfilePage = () => {
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
+        )}
+
+        {/* Menstrual cycle settings */}
+        {!stylistMode && (
+          <div className="mb-6">
+            <h3 className="text-label mb-3">Menstrual Cycle</h3>
+            <div className="card-elevated p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Calendar size={18} className="text-primary" strokeWidth={1.5} />
+                  <div>
+                    <p className="text-sm font-medium text-foreground">Track menstrual cycle</p>
+                    <p className="text-xs text-muted-foreground">{onboardingData.menstrualTracking === "Yes, I'd like to track" ? 'Tracking enabled' : 'Not tracking'}</p>
+                  </div>
+                </div>
+                <button onClick={toggleMenstrualTracking} className={`w-11 h-6 rounded-full transition-colors relative flex-shrink-0 ${onboardingData.menstrualTracking === "Yes, I'd like to track" ? 'bg-primary' : 'bg-border'}`}>
+                  <div className={`w-5 h-5 rounded-full bg-card shadow-sm absolute top-0.5 transition-transform ${onboardingData.menstrualTracking === "Yes, I'd like to track" ? 'translate-x-[22px]' : 'translate-x-0.5'}`} />
+                </button>
+              </div>
             </div>
           </div>
         )}
