@@ -268,6 +268,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const addSalonVisit = (v: SalonVisit) => setSalonVisits(prev => [v, ...prev]);
   const addClientObservation = (o: ClientObservation) => setClientObservations(prev => [o, ...prev]);
   const addQuickLog = (entry: QuickLogEntry) => setQuickLogs(prev => [entry, ...prev]);
+  const incrementResearchPhotos = () => setResearch(prev => ({ ...prev, photoCount: prev.photoCount + 1 }));
 
   const resetAll = () => {
     setOnboardingComplete(false);
