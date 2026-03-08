@@ -14,7 +14,7 @@ const HealthProfile = () => {
     setHealthProfile({ ...hp, [key]: value });
   };
 
-  const toggleMulti = (key: 'medicalConditions' | 'skinConditions', value: string) => {
+  const toggleMulti = (key: 'medicalConditions' | 'skinConditions' | 'recentStressors', value: string) => {
     const arr = hp[key];
     update(key, arr.includes(value) ? arr.filter(v => v !== value) : [...arr, value]);
   };
