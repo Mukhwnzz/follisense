@@ -542,7 +542,7 @@ const Onboarding = () => {
                         exit={{ opacity: 0, x: -20 }}
                         transition={{ duration: 0.2 }}
                       >
-                        <h3 className="text-lg font-semibold mb-4">{baselineQuestions[baselineStep].q}</h3>
+                        <h3 className="text-base font-medium text-foreground mb-4">{baselineQuestions[baselineStep].q}</h3>
                         <div className="space-y-3">
                           {baselineQuestions[baselineStep].options.map((opt, optIdx) => (
                             <button
