@@ -94,7 +94,7 @@ const getMicroEducation = (step: number, data: {
   baselineHairline?: string; baselineHairHealth?: string; isMale?: boolean;
 }): { title: string; message: string } | null => {
   // After step 3 (routine/cycle)
-  if (step === 3) {
+  if (step === 4) {
     const longWash = data.washFreq === 'Only at takedown' || data.washFreq === 'Every 3 to 4 weeks' || data.washFreq === 'Less than weekly';
     if (longWash) {
       return {
@@ -113,8 +113,8 @@ const getMicroEducation = (step: number, data: {
     }
     return null;
   }
-  // After baseline (step 4 → going to 5)
-  if (step === 4) {
+  // After baseline (step 5 → going to 6)
+  if (step === 5) {
     const hasSymptoms = data.baselineItch && data.baselineItch !== 'None' || data.baselineTenderness && data.baselineTenderness !== 'None' || data.baselineHairline && data.baselineHairline !== 'No concerns';
     if (hasSymptoms) {
       return {
