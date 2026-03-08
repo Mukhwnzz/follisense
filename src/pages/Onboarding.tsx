@@ -551,6 +551,14 @@ const Onboarding = () => {
                       ))}
                     </div>
                   </div>
+                  <div>
+                    <p className="font-medium text-foreground mb-3">How would you describe your hair health right now?</p>
+                    <div className="flex flex-wrap gap-2">
+                      {['Healthy — no concerns', 'Some dryness or breakage but nothing unusual', 'Noticeably dry, brittle, or breaking more than usual', "Concerned about my hair's condition"].map(s => (
+                        <button key={s} onClick={() => setBaselineHairHealth(s)} className={`pill-option ${baselineHairHealth === s ? 'selected' : ''}`}>{s}</button>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
