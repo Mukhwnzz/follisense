@@ -208,7 +208,7 @@ const Onboarding = () => {
         const betweenOk = betweenWashCare.length > 0 && (!betweenWashCare.includes('Other') || otherBetweenWash.trim().length > 0);
         return cycleOk && washOk && betweenOk;
       }
-      case 4: return !!itch && !!tenderness && !!hairline;
+      case 4: return !!itch && !!tenderness && !!hairline && !!baselineHairHealth;
       case 5: return true; // photo step — always can proceed (skip or capture)
       case 6: return products.length > 0 && !!prodFreq && (!products.includes('Other') || otherProduct.trim().length > 0);
       default: return false;
