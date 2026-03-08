@@ -120,6 +120,14 @@ const Onboarding = () => {
 
   const handleNext = () => {
     if (step < totalSteps) {
+      // Save baseline photos when leaving photo step
+      if (step === 5) {
+        const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+        const photos = baselineAreas
+          .filter(a => capturedPhotos[a.id])
+          .map(a => ({ area: a.label, captured: true, date: today }));
+        setBaselinePhotos(photos);
+      }
       setStep(step + 1);
     } else {
       setOnboardingData({
