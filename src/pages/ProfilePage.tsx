@@ -90,7 +90,7 @@ const ProfilePage = () => {
 
 
         {/* My Goals */}
-        {!stylistMode && (
+        {(
           <div className="mb-6">
             <h3 className="text-label mb-3">My Goals</h3>
             {!showGoalEditor ? (
