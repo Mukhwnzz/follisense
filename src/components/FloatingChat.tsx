@@ -24,6 +24,7 @@ const starterQuestions: Record<string, string[]> = {
   red: ["How do I find a specialist?", "What does this mean for my hair?", "Is this reversible?"],
   history: ["What are my trends showing?", "Am I getting better or worse?", "What changed since last cycle?"],
   learn: ["Tell me more about this topic", "Does this apply to me?", "What should I do about this?"],
+  condition: ["Could I have this condition?", "What's the difference between similar conditions?", "What should I tell my doctor about this?"],
 };
 
 const matchResponse = (userMessage: string): { text: string; suggestions: string[] } => {
@@ -79,7 +80,11 @@ const FloatingChat = () => {
       return starterQuestions.amber;
     }
     if (path === '/history') return starterQuestions.history;
-    if (path === '/learn') return starterQuestions.learn;
+    if (path === '/learn') {
+      // If on a condition guide page, show condition-specific prompts
+      if (location.search.includes('condition')) return starterQuestions.condition;
+      return starterQuestions.learn;
+    }
     return starterQuestions.default;
   };
 

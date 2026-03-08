@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, ChevronRight, Eye, ArrowUpRight, AlertTriangle, Shield, BookOpen, Play, Flame, Star, Info, Heart } from 'lucide-react';
+import { ArrowLeft, ChevronRight, Eye, ArrowUpRight, AlertTriangle, Shield, BookOpen, Play, Flame, Star, Info, Heart, ExternalLink, Camera } from 'lucide-react';
 import { stylistConditions, StylistCondition, getConditionById } from '@/data/stylistConditions';
 import ScalpIllustration from '@/components/ScalpIllustration';
 import { toast } from '@/hooks/use-toast';
@@ -15,50 +15,84 @@ const tagColor = (tag: string) => {
   }
 };
 
-const ConditionDetail = ({ condition, onBack }: { condition: StylistCondition; onBack: () => void }) => (
-  <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.2 }}>
-    <button onClick={onBack} className="flex items-center gap-1.5 text-sm text-muted-foreground mb-4 btn-press">
-      <ArrowLeft size={16} /> Back
-    </button>
+const dermnetLinks: Record<string, { name: string; url: string }> = {
+  'traction-alopecia': { name: 'Traction alopecia', url: 'https://dermnetnz.org/topics/traction-alopecia' },
+  'ccca': { name: 'CCCA', url: 'https://dermnetnz.org/topics/central-centrifugal-cicatricial-alopecia' },
+  'seborrheic-dermatitis': { name: 'Seborrheic dermatitis', url: 'https://dermnetnz.org/topics/seborrhoeic-dermatitis' },
+  'scalp-psoriasis': { name: 'Scalp psoriasis', url: 'https://dermnetnz.org/topics/scalp-psoriasis' },
+  'alopecia-areata': { name: 'Alopecia areata', url: 'https://dermnetnz.org/topics/alopecia-areata' },
+  'folliculitis': { name: 'Folliculitis', url: 'https://dermnetnz.org/topics/folliculitis' },
+  'tinea-capitis': { name: 'Tinea capitis', url: 'https://dermnetnz.org/topics/tinea-capitis' },
+  'chemical-damage': { name: 'Chemical burns', url: 'https://dermnetnz.org/topics/chemical-burn' },
+};
 
-    <span className={`inline-block text-[11px] font-medium px-2.5 py-0.5 rounded-full mb-2 ${tagColor(condition.tag)}`}>
-      {condition.tag}
-    </span>
-    <h2 className="text-xl font-semibold text-foreground mb-1">{condition.name}</h2>
-    <p className="text-sm text-muted-foreground mb-5">{condition.summary}</p>
+const ConditionDetail = ({ condition, onBack }: { condition: StylistCondition; onBack: () => void }) => {
+  const link = dermnetLinks[condition.id];
 
-    {/* Illustration carousel */}
-    <div className="flex gap-3 overflow-x-auto pb-3 mb-4 -mx-1 px-1 scrollbar-hide" style={{ WebkitOverflowScrolling: 'touch' }}>
-      {condition.stages.map((stage, i) => (
-        <div key={i} className="flex-shrink-0 w-[160px]">
-          <div className="w-[160px] h-[160px] rounded-xl overflow-hidden mb-2">
-            <ScalpIllustration conditionId={condition.id} stageIndex={i} />
+  return (
+    <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.2 }}>
+      <button onClick={onBack} className="flex items-center gap-1.5 text-sm text-muted-foreground mb-4 btn-press">
+        <ArrowLeft size={16} /> Back
+      </button>
+
+      <span className={`inline-block text-[11px] font-medium px-2.5 py-0.5 rounded-full mb-2 ${tagColor(condition.tag)}`}>
+        {condition.tag}
+      </span>
+      <h2 className="text-xl font-semibold text-foreground mb-1">{condition.name}</h2>
+      <p className="text-sm text-muted-foreground mb-5">{condition.summary}</p>
+
+      {/* Illustrated guide */}
+      <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Illustrated guide</h3>
+      <div className="flex gap-3 overflow-x-auto pb-3 mb-4 -mx-1 px-1 scrollbar-hide" style={{ WebkitOverflowScrolling: 'touch' }}>
+        {condition.stages.map((stage, i) => (
+          <div key={i} className="flex-shrink-0 w-[160px]">
+            <div className="w-[160px] h-[160px] rounded-xl overflow-hidden mb-2">
+              <ScalpIllustration conditionId={condition.id} stageIndex={i} />
+            </div>
+            <p className="text-xs font-medium text-foreground">{stage.label}</p>
+            <p className="text-[11px] text-muted-foreground">{stage.annotation}</p>
           </div>
-          <p className="text-xs font-medium text-foreground">{stage.label}</p>
-          <p className="text-[11px] text-muted-foreground">{stage.annotation}</p>
-        </div>
-      ))}
-    </div>
-
-    {/* Darker skin note */}
-    <div className="rounded-xl bg-secondary/60 border border-secondary p-4 mb-6">
-      <div className="flex items-center gap-2 mb-2">
-        <Eye size={14} className="text-primary" />
-        <h4 className="text-xs font-semibold text-foreground">How it presents on darker skin</h4>
+        ))}
       </div>
-      <p className="text-xs text-muted-foreground leading-relaxed">{condition.darkerSkinNote}</p>
-    </div>
 
-    {/* Detail sections */}
-    <div className="space-y-5 mb-20">
-      <DetailSection icon={<Eye size={16} />} title="What it looks like" content={condition.whatItLooksLike} />
-      <DetailSection icon={<Shield size={16} />} title="Where to look" content={condition.whereToLook} />
-      <DetailSection icon={<BookOpen size={16} />} title="What to tell your client" content={condition.whatToTell} italic />
-      <DetailSection icon={<ArrowUpRight size={16} />} title="What you can do" content={condition.whatYouCanDo} />
-      <DetailSection icon={<AlertTriangle size={16} />} title="Severity guide" content={condition.severityGuide} />
-    </div>
-  </motion.div>
-);
+      {/* Darker skin note */}
+      <div className="rounded-xl bg-secondary/60 border border-secondary p-4 mb-4">
+        <div className="flex items-center gap-2 mb-2">
+          <Eye size={14} className="text-primary" />
+          <h4 className="text-xs font-semibold text-foreground">How it presents on darker skin</h4>
+        </div>
+        <p className="text-xs text-muted-foreground leading-relaxed">{condition.darkerSkinNote}</p>
+      </div>
+
+      {/* Clinical reference link */}
+      {link && (
+        <div className="mb-6">
+          <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Clinical reference photos</h3>
+          <p className="text-xs text-muted-foreground italic mb-3">
+            These clinical photos are sourced from medical references and may not reflect how conditions present on darker skin tones. Use the descriptions and illustrations above as your primary guide for your clients.
+          </p>
+          <a href={link.url} target="_blank" rel="noopener noreferrer" className="card-elevated p-4 flex items-center gap-3">
+            <Camera size={18} className="text-primary flex-shrink-0" />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-foreground">{link.name}</p>
+              <p className="text-xs text-muted-foreground">View clinical reference photos on DermNet NZ</p>
+            </div>
+            <ExternalLink size={14} className="text-muted-foreground flex-shrink-0" />
+          </a>
+        </div>
+      )}
+
+      {/* Detail sections */}
+      <div className="space-y-5 mb-20">
+        <DetailSection icon={<Eye size={16} />} title="What it looks like" content={condition.whatItLooksLike} />
+        <DetailSection icon={<Shield size={16} />} title="Where to look" content={condition.whereToLook} />
+        <DetailSection icon={<BookOpen size={16} />} title="What to tell your client" content={condition.whatToTell} italic />
+        <DetailSection icon={<ArrowUpRight size={16} />} title="What you can do" content={condition.whatYouCanDo} />
+        <DetailSection icon={<AlertTriangle size={16} />} title="Severity guide" content={condition.severityGuide} />
+      </div>
+    </motion.div>
+  );
+};
 
 const DetailSection = ({ icon, title, content, italic }: { icon: React.ReactNode; title: string; content: string; italic?: boolean }) => (
   <div className="card-elevated p-4">
@@ -92,54 +126,44 @@ const ReferralGuide = () => (
           'Any open wounds, scabbing, or signs of burns',
           'Anything the client asks you about or seems worried about',
         ].map((item, i) => (
-          <li key={i} className="flex gap-2">
-            <span className="text-primary mt-1">•</span>
-            <span>{item}</span>
-          </li>
+          <li key={i} className="flex gap-2"><span className="text-primary mt-1">•</span><span>{item}</span></li>
         ))}
       </ul>
     </div>
 
     <div className="card-elevated p-5">
       <h3 className="font-semibold text-foreground mb-2">How to say it</h3>
-      <p className="text-sm text-muted-foreground mb-3">
-        Keep it simple, honest, and kind. You don't need to name a condition. Just describe what you see and suggest they get it looked at.
-      </p>
+      <p className="text-sm text-muted-foreground mb-3">Keep it simple, honest, and kind.</p>
       <p className="text-xs font-medium text-foreground mb-2">Good examples:</p>
       <ul className="space-y-2 text-sm text-muted-foreground mb-4">
-        <li className="italic">"I've noticed your edges look a bit thinner than last time. Have you noticed that? It might be worth getting it checked."</li>
-        <li className="italic">"There's some irritation on your scalp that looks like it might need attention. I'd recommend seeing a dermatologist or trichologist."</li>
-        <li className="italic">"I'm seeing a patch here that looks different from usual. I'm not sure what it is, but I think you should show it to a doctor."</li>
+        <li className="italic">"I've noticed your edges look a bit thinner than last time. Have you noticed that?"</li>
+        <li className="italic">"There's some irritation on your scalp that looks like it might need attention."</li>
+        <li className="italic">"I'm seeing a patch here that looks different from usual."</li>
       </ul>
       <p className="text-xs font-medium text-destructive mb-2">Don't say:</p>
       <ul className="space-y-1.5 text-sm text-muted-foreground">
         <li>"You have traction alopecia" <span className="text-xs text-muted-foreground">(that's a diagnosis)</span></li>
-        <li>"This looks really bad" <span className="text-xs text-muted-foreground">(alarming without being helpful)</span></li>
-        <li>"Just use some oil on it" <span className="text-xs text-muted-foreground">(not your role and potentially harmful)</span></li>
+        <li>"This looks really bad" <span className="text-xs text-muted-foreground">(alarming)</span></li>
+        <li>"Just use some oil on it" <span className="text-xs text-muted-foreground">(not your role)</span></li>
       </ul>
     </div>
 
     <div className="card-elevated p-5">
       <h3 className="font-semibold text-foreground mb-2">How to refer using FolliSense</h3>
-      <p className="text-sm text-muted-foreground leading-relaxed mb-3">When you document an observation in FolliSense:</p>
       <ol className="space-y-2 text-sm text-muted-foreground list-decimal list-inside">
         <li>Capture what you see (photos and notes)</li>
-        <li>Share the observation with your client through the app</li>
-        <li>The client receives it in their personal timeline alongside their own check-in data</li>
-        <li>If they decide to see a professional, they already have a documented history with photos to bring to the appointment</li>
+        <li>Share the observation with your client</li>
+        <li>The client receives it in their personal timeline</li>
+        <li>They'll have documented history to bring to a professional</li>
       </ol>
-      <p className="text-sm text-muted-foreground mt-3">
-        You don't need to manage the referral. Your job is to notice, document, and encourage. FolliSense handles the rest.
-      </p>
     </div>
 
     <div className="card-elevated p-5">
       <h3 className="font-semibold text-foreground mb-2">Who to suggest they see</h3>
       <ul className="space-y-3 text-sm text-muted-foreground">
-        <li><span className="font-medium text-foreground">Trichologist:</span> specialises in hair and scalp conditions. Best first point of contact for hair loss concerns.</li>
-        <li><span className="font-medium text-foreground">Dermatologist:</span> a skin specialist who can diagnose and treat scalp conditions medically. Usually requires a referral from a GP in the UK.</li>
-        <li><span className="font-medium text-foreground">GP:</span> can do initial assessment, blood tests, and refer onwards. Good starting point if the client doesn't know where to go.</li>
-        <li><span className="font-medium text-foreground">In the US:</span> dermatologists can be seen directly. The Skin of Color Society has a directory of dermatologists experienced with darker skin.</li>
+        <li><span className="font-medium text-foreground">Trichologist:</span> specialises in hair and scalp conditions.</li>
+        <li><span className="font-medium text-foreground">Dermatologist:</span> a skin specialist who can diagnose and treat.</li>
+        <li><span className="font-medium text-foreground">GP:</span> can do initial assessment and refer onwards.</li>
       </ul>
     </div>
   </div>
@@ -166,14 +190,14 @@ const StylistLearnPage = () => {
         <h1 className="text-2xl font-semibold mb-1">Stylist Reference Guide</h1>
         <p className="text-muted-foreground text-sm mb-4">Spot it, understand it, refer it</p>
 
-        {/* Disclaimer banner */}
+        {/* Disclaimer */}
         <div className="rounded-xl bg-secondary/50 border border-secondary p-4 mb-5">
           <div className="flex items-start gap-2.5">
             <Info size={16} className="text-primary mt-0.5 flex-shrink-0" />
             <div>
               <p className="text-xs font-semibold text-foreground mb-1">A note on images</p>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                High-quality clinical images of scalp conditions on darker skin tones are still significantly underrepresented in medical resources. Some reference illustrations here are generalised and may not reflect exactly how a condition presents on your clients. We're actively working to build a better visual library. In the meantime, focus on the descriptions of what to look for and where to look. Your eyes on a real scalp will always be more accurate than any reference image.
+                High-quality clinical images of scalp conditions on darker skin tones are still significantly underrepresented in medical resources. Focus on the descriptions and illustrations. Your eyes on a real scalp will always be more accurate than any reference image.
               </p>
             </div>
           </div>
@@ -230,6 +254,30 @@ const StylistLearnPage = () => {
                   </button>
                 ))}
               </div>
+
+              {/* Clinical photo resources */}
+              <div className="mb-8">
+                <h3 className="text-sm font-semibold text-foreground mb-3">More clinical references</h3>
+                <div className="space-y-2">
+                  {[
+                    { name: 'DermNet NZ', desc: 'Comprehensive dermatology image library', url: 'https://dermnetnz.org' },
+                    { name: 'VisualDx', desc: 'Clinical decision support with diverse skin images', url: 'https://www.visualdx.com' },
+                    { name: 'Skin Deep by VisualDx', desc: 'Dermatology images across skin tones', url: 'https://www.visualdx.com/skindeep' },
+                    { name: 'Brown Skin Matters', desc: 'Dermatology on darker skin tones', url: 'https://brownskinmatters.com' },
+                  ].map(r => (
+                    <a key={r.url} href={r.url} target="_blank" rel="noopener noreferrer" className="card-elevated p-4 flex items-center gap-3">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-foreground">{r.name}</p>
+                        <p className="text-xs text-muted-foreground">{r.desc}</p>
+                      </div>
+                      <ExternalLink size={14} className="text-muted-foreground flex-shrink-0" />
+                    </a>
+                  ))}
+                </div>
+                <p className="text-xs text-muted-foreground italic mt-3">
+                  DermNet NZ is a free, trusted dermatology resource used by medical professionals worldwide. Images are provided for educational reference only.
+                </p>
+              </div>
             </motion.div>
           ) : (
             <motion.div key="refer" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }}>
@@ -247,7 +295,7 @@ const StylistLearnPage = () => {
             <h3 className="font-semibold text-foreground text-sm">Why representation matters in clinical education</h3>
           </div>
           <p className="text-sm text-muted-foreground leading-relaxed mb-4">
-            Most medical training materials show skin conditions on lighter skin. That means many stylists and even some clinicians are less confident identifying conditions on darker skin tones. FolliSense is working to change this. If you'd like to contribute to building better visual references for our community, let us know.
+            Most medical training materials show skin conditions on lighter skin. FolliSense is working to change this.
           </p>
           <button
             onClick={() => toast({ title: 'Thank you', description: "We'll be in touch." })}
