@@ -176,12 +176,12 @@ const HomePage = () => {
   const showWashPrompt = !onboardingData.isWornOutOnly && daysUntilWash <= 2 && !dismissedWashPrompt;
 
   const recentEntries = [
-    { label: 'Wash day check-in', date: 'Mar 5', risk: 'amber' as const },
-    { label: 'Quick log: itching (moderate)', date: 'Feb 28', risk: 'amber' as const },
-    { label: 'Salon visit: Wash + Treatment', date: 'Feb 25', risk: 'green' as const, icon: 'scissors' },
-    { label: 'Stylist observation', date: 'Feb 25', risk: 'amber' as const, icon: 'eye' },
-    { label: 'Mid-cycle check-in', date: 'Feb 20', risk: 'green' as const },
-    { label: 'Wash day check-in', date: 'Feb 12', risk: 'green' as const },
+    { label: 'Wash day check-in', date: 'Mar 5', risk: 'amber' as const, nav: '/results?risk=amber' },
+    { label: 'Quick log: itching (moderate)', date: 'Feb 28', risk: 'amber' as const, nav: '/history' },
+    { label: 'Salon visit: Wash + Treatment', date: 'Feb 25', risk: 'green' as const, icon: 'scissors', nav: '/history' },
+    { label: 'Stylist observation', date: 'Feb 25', risk: 'amber' as const, icon: 'eye', nav: '/history' },
+    { label: 'Mid-cycle check-in', date: 'Feb 20', risk: 'green' as const, nav: '/results?risk=green' },
+    { label: 'Wash day check-in', date: 'Feb 12', risk: 'green' as const, nav: '/results?risk=green' },
   ];
 
   const size = 120;
