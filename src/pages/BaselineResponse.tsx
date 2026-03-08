@@ -197,7 +197,7 @@ const BaselineResponse = () => {
     redHeading = copy.heading;
     redBody = copy.body;
   } else {
-    // Female / non-binary first RED
+    // Female / neutral first RED
     const severe = ['Severe', 'Very concerned'];
     const isSevereItch = severe.includes(bItch);
     const isSevereTenderness = severe.includes(bTenderness);

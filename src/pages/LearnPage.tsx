@@ -1,4 +1,5 @@
-import { useState, useMemo, useRef } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Clock } from 'lucide-react';
 import { articles, categories, getArticleById, Article } from '@/data/learnArticles';
@@ -10,11 +11,24 @@ const allCategories = [...categories, 'Know the signs'];
 
 const LearnPage = () => {
   const { onboardingData } = useApp();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [activeCategory, setActiveCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedArticleId, setSelectedArticleId] = useState<string | null>(null);
-  const [showConditionGuide, setShowConditionGuide] = useState(false);
+  const [selectedArticleId, setSelectedArticleId] = useState<string | null>(searchParams.get('article'));
+  const [showConditionGuide, setShowConditionGuide] = useState(!!searchParams.get('condition'));
   const pillsRef = useRef<HTMLDivElement>(null);
+
+  // Handle URL params for deep linking from Spot It
+  useEffect(() => {
+    const condition = searchParams.get('condition');
+    if (condition) {
+      setShowConditionGuide(true);
+    }
+    const article = searchParams.get('article');
+    if (article) {
+      setSelectedArticleId(article);
+    }
+  }, [searchParams]);
 
   const isMale = onboardingData.gender === 'man';
 
@@ -65,7 +79,7 @@ const LearnPage = () => {
   if (showConditionGuide || activeCategory === 'Know the signs') {
     return (
       <div className="page-container pt-6">
-        <ConditionGuidePage onBack={() => { setShowConditionGuide(false); setActiveCategory('All'); }} />
+        <ConditionGuidePage onBack={() => { setShowConditionGuide(false); setActiveCategory('All'); setSearchParams({}); }} />
       </div>
     );
   }
