@@ -979,7 +979,7 @@ const Onboarding = () => {
               return (
                 <div>
                   <h2 className="text-lg font-medium text-foreground mb-1">Let's talk products</h2>
-                  <p className="text-xs text-muted-foreground mb-4">{sectionWhyText[6]}</p>
+                  <p className="text-xs text-muted-foreground mb-4">{sectionWhyText[7]}</p>
                   <p className="text-sm text-muted-foreground mb-1">What do you put on your scalp?</p>
                   <p className="text-xs text-muted-foreground mb-4">Start typing a product or brand name</p>
                   <ProductSearch category="scalp" selectedProducts={products} onProductsChange={setProducts} noneLabel="I don't use anything on my scalp" />
