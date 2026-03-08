@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { Send, Mic, ArrowRight, Leaf } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 import ReactMarkdown from 'react-markdown';
@@ -12,7 +12,7 @@ interface Message {
 }
 
 const suggestedQuestions = [
-  "Why are my edges thinning?",
+  "Why is my scalp itchy?",
   "Is it normal to shed more on wash day?",
   "How do I know if I have traction alopecia?",
   "What should I look for between wash days?",
@@ -40,103 +40,265 @@ const shouldSuggestCheckIn = (content: string): boolean => {
   return lower.includes('concerned') || lower.includes('worried') || lower.includes('getting worse') || lower.includes('significant') || lower.includes('professional');
 };
 
-const shouldLinkLearn = (content: string): { show: boolean; topic: string; } => {
+const shouldLinkLearn = (content: string): { show: boolean; topic: string } => {
   const lower = content.toLowerCase();
-  if (lower.includes('traction alopecia')) return { show: true, topic: 'What is traction alopecia?' };
-  if (lower.includes('telogen effluvium')) return { show: true, topic: 'Understanding telogen effluvium' };
+  if (lower.includes('traction alopecia')) return { show: true, topic: 'Traction alopecia: the basics' };
+  if (lower.includes('telogen effluvium')) return { show: true, topic: 'Telogen effluvium' };
   if (lower.includes('wash cycle') || lower.includes('wash day')) return { show: true, topic: 'Understanding your wash cycle' };
   if (lower.includes('professional') || lower.includes('specialist') || lower.includes('trichologist')) return { show: true, topic: 'When to see a professional' };
+  if (lower.includes('porosity')) return { show: true, topic: 'Understanding hair porosity' };
+  if (lower.includes('protein') || lower.includes('moisture balance')) return { show: true, topic: 'Protein-moisture balance' };
   return { show: false, topic: '' };
 };
 
-// Mock AI responses for prototype (will be replaced with real AI when Cloud is enabled)
-const getMockResponse = (userMessage: string, context: { hairType: string; goals: string[] }): string => {
+interface UserContext {
+  gender: string;
+  hairType: string;
+  chemicalProcessing: string;
+  lastChemicalTreatment: string;
+  styles: string[];
+  cycleLength: string;
+  washFrequency: string;
+  betweenWashCare: string[];
+  scalpProducts: string[];
+  hairProducts: string[];
+  goals: string[];
+  baselineItch: string;
+  baselineTenderness: string;
+  baselineHairline: string;
+  baselineHairHealth: string;
+  lastCheckInRisk: string;
+  medicalConditions: string[];
+  teTriggers: string[];
+  menstrualTracking: string;
+  isWornOutOnly: boolean;
+}
+
+const buildContextAwareResponse = (userMessage: string, ctx: UserContext, history: Message[]): string => {
   const lower = userMessage.toLowerCase();
+  const stylesStr = ctx.styles.length > 0 ? ctx.styles.join(', ').toLowerCase() : '';
+  const hasProtective = stylesStr.includes('braid') || stylesStr.includes('cornrow') || stylesStr.includes('wig') || stylesStr.includes('weave') || stylesStr.includes('loc') || stylesStr.includes('twist') || stylesStr.includes('crochet');
+  const hasWaves = stylesStr.includes('wave');
+  const primaryStyle = ctx.styles[0] || 'your current style';
 
+  // Itchy scalp — personalised
+  if (lower.includes('itch') || lower.includes('itchy') || lower.includes('itching')) {
+    let response = '';
+    if (ctx.baselineItch && ctx.baselineItch !== 'None') {
+      response += `You mentioned ${ctx.baselineItch.toLowerCase()} itching when you first set up ScalpSense, so this is something we're already tracking for you.\n\n`;
+    }
+
+    response += 'Scalp itching can come from a few different things:\n\n';
+
+    if (hasProtective || hasWaves) {
+      response += `- **Product buildup under your style** — since you wear ${primaryStyle.toLowerCase()}, sweat and product can accumulate between washes. ${ctx.washFrequency ? `You wash ${ctx.washFrequency.toLowerCase()}, which` : 'Your wash frequency'} affects how much buildup sits on your scalp.\n`;
+    }
+
+    if (ctx.scalpProducts.some(p => p.toLowerCase().includes('oil') || p.toLowerCase().includes('grease') || p.toLowerCase().includes('pomade'))) {
+      response += `- **Your scalp products** — oils and pomades can sometimes clog follicles if applied too heavily or too often, especially under an installed style.\n`;
+    }
+
+    response += '- **Dry scalp** — if your scalp feels tight and the flakes are small and white, it might just need moisture, not medicated treatment.\n';
+    response += '- **Seborrheic dermatitis** — if the flakes are yellowish and oily, that\'s a different condition that responds to antifungal shampoos.\n\n';
+
+    if (ctx.betweenWashCare.length > 0) {
+      response += `You mentioned you ${ctx.betweenWashCare.map(c => c.toLowerCase()).join(', ')} between washes — that\'s good. `;
+    }
+
+    response += 'If the itching is getting worse or doesn\'t improve with gentle cleansing, it\'s worth mentioning to a dermatologist.';
+    return response;
+  }
+
+  // Edges / hairline
   if (lower.includes('edge') || lower.includes('hairline') || lower.includes('thinning')) {
-    return `Edge thinning is one of the most common concerns for women with textured hair, and it's really good that you're paying attention to it.
+    let response = '';
+    if (ctx.baselineHairline && ctx.baselineHairline !== 'No concerns') {
+      response += `You flagged ${ctx.baselineHairline === 'Slight concern' ? 'some concern' : ctx.baselineHairline === 'Noticeable change' ? 'noticeable changes' : 'concerns'} about your hairline during setup, so this is definitely something we\'re watching.\n\n`;
+    }
 
-The most common cause is **traction alopecia** — gradual hair loss caused by repeated tension on the hair follicles. This can happen from tight braids, ponytails, lace front wigs, or any style that pulls consistently on the hairline.
+    response += 'Edge thinning is one of the most common concerns — and the most common cause is **traction alopecia**, where repeated tension on the follicles gradually weakens them.\n\n';
 
-The good news? If caught early, traction alopecia is often **reversible**. Here are a few things that can help:
+    if (hasProtective) {
+      response += `Since you wear ${primaryStyle.toLowerCase()}, the key question is how tight your installations are, especially around the hairline and temples. `;
+      if (ctx.cycleLength) {
+        response += `With a ${ctx.cycleLength.toLowerCase()} cycle length, your follicles are under tension for a significant period each time.\n\n`;
+      }
+    }
 
-- **Reduce tension** around your edges — ask your stylist to keep the hairline loose
-- **Avoid heavy edge control products** that can clog follicles
-- **Give your hairline regular breaks** between installed styles
-- **Try a lightweight scalp oil** (rosemary or castor) to support circulation
+    if (hasWaves) {
+      response += `If you\'re wearing your durag tightly for waves, that constant compression can contribute to hairline recession too. Try loosening the tie — your wave pattern won\'t disappear from slightly less pressure.\n\n`;
+    }
 
-If you're noticing the thinning getting worse despite changes, it's worth speaking to a trichologist or dermatologist who can assess you in person.`;
+    if (ctx.goals.some(g => g.toLowerCase().includes('hairline') || g.toLowerCase().includes('edge'))) {
+      response += 'Since protecting your hairline is one of your goals, your check-ins are specifically designed to track changes there. ';
+    }
+
+    response += 'The good news: if caught early, traction alopecia is often reversible. The key is reducing tension now, not later.\n\n';
+    response += 'If you\'re seeing active recession, it\'s worth seeing a trichologist or dermatologist sooner rather than later.';
+    return response;
   }
 
-  if (lower.includes('shed') || lower.includes('hair loss') || lower.includes('falling out')) {
-    return `Some shedding is completely normal — most people lose 50–100 hairs per day. With textured hair, especially in protective styles, you might not notice daily shedding, so it can seem like a lot comes out on wash day.
+  // Shedding / hair loss
+  if (lower.includes('shed') || lower.includes('hair loss') || lower.includes('falling out') || lower.includes('losing hair')) {
+    let response = 'Some shedding is completely normal — most people lose 50 to 100 hairs a day. ';
 
-What matters is whether the amount has **changed significantly** from your normal. A few things that can increase temporary shedding:
+    if (hasProtective) {
+      response += `With ${primaryStyle.toLowerCase()}, you might not notice daily shedding while the style is in, so it can seem like a lot comes out on wash day. That\'s usually just accumulated normal shedding.\n\n`;
+    } else {
+      response += 'What matters is whether the amount has changed significantly from your normal.\n\n';
+    }
 
-- **Seasonal changes** — many people shed more in autumn
-- **Hormonal shifts** — around your period, postpartum, or starting/stopping contraception
-- **Stress** — physical or emotional stress can trigger telogen effluvium, a temporary increase in shedding
-- **Nutritional deficiencies** — especially iron, vitamin D, and B12
+    response += 'Things that can increase temporary shedding:\n\n';
 
-${context.goals.some(g => g.includes('hair loss')) ? "Since understanding hair loss is one of your goals, tracking your shedding patterns at each check-in will help you spot trends over time.\n\n" : ""}If the shedding seems excessive or you're seeing patches, it's worth speaking to a trichologist or dermatologist who can assess you in person.`;
+    if (ctx.menstrualTracking) {
+      response += '- **Hormonal shifts** — shedding can increase around your period or with changes to contraception\n';
+    }
+    response += '- **Stress** — physical or emotional stress can trigger telogen effluvium, a temporary increase in shedding 2–4 months later\n';
+    response += '- **Nutritional deficiencies** — especially iron, vitamin D, and B12\n';
+    response += '- **Seasonal changes** — many people shed more in autumn\n\n';
+
+    if (ctx.medicalConditions.length > 0) {
+      response += `Since you\'ve noted some medical history, it\'s worth considering whether any of those factors might be contributing.\n\n`;
+    }
+
+    if (ctx.goals.some(g => g.toLowerCase().includes('hair loss') || g.toLowerCase().includes('thinning'))) {
+      response += 'Understanding your hair loss is one of your goals — your regular check-ins will help you track whether the shedding is changing over time.\n\n';
+    }
+
+    response += 'If the shedding seems excessive or you\'re seeing patches, it\'s worth seeing a trichologist or dermatologist.';
+    return response;
   }
 
-  if (lower.includes('traction alopecia')) {
-    return `**Traction alopecia** is hair loss caused by repeated pulling or tension on the hair. It's particularly common among women who regularly wear tight hairstyles like braids, cornrows, ponytails, or wigs.
-
-**Key facts:**
-- It affects up to **1 in 3 women** who regularly wear tight styles
-- Early stages are **reversible** — the hair can grow back if the tension is removed
-- Late stages can cause **permanent damage** to follicles, making regrowth difficult
-
-**Warning signs to watch for:**
-- Thinning or recession at the hairline, especially around temples
-- Small bumps or pimples around the hairline
-- Tenderness or soreness where the hair is pulled tight
-- A widening part line
-
-**What you can do:**
-- Alternate between tighter and looser styles
-- Ask your stylist to keep the hairline loose during installation
-- Take breaks between installed styles
-- Avoid re-tightening styles as they loosen
-
-If you're concerned, it's worth speaking to a trichologist or dermatologist who can assess you in person.`;
-  }
-
+  // Wash day / between washes
   if (lower.includes('wash') && (lower.includes('how often') || lower.includes('between') || lower.includes('look for'))) {
-    return `Between wash days, your scalp is doing a lot of work — producing oil, shedding skin cells, and potentially reacting to products or tension from your style.
+    let response = '';
 
-Here are some things to keep an eye on:
+    if (hasProtective) {
+      response += `Between wash days with ${primaryStyle.toLowerCase()}, your scalp is doing a lot of work — producing oil, shedding skin cells, and potentially reacting to products or tension.\n\n`;
+      if (ctx.washFrequency) {
+        response += `You currently wash ${ctx.washFrequency.toLowerCase()}. `;
+      }
+    }
 
-- **Itching** — occasional mild itch is normal, but persistent or worsening itching could signal buildup, dryness, or a reaction
-- **Tenderness** — if your scalp hurts, especially around your hairline, your style might be too tight
-- **Flaking** — light flakes can be normal buildup, but heavy flaking could indicate seborrheic dermatitis
-- **Smell** — a musty or unusual smell can indicate bacterial or fungal buildup
+    response += 'Here\'s what to watch for:\n\n';
+    response += '- **Itching** — occasional mild itch is normal, but persistent or worsening itching could signal buildup or a reaction\n';
+    response += '- **Tenderness** — if your scalp hurts, especially around your hairline, your style might be too tight\n';
+    response += '- **Flaking** — light flakes can be normal buildup, but heavy flaking could indicate a condition\n';
+    response += '- **Smell** — a musty or unusual smell can indicate bacterial or fungal buildup\n\n';
 
-${context.hairType ? `With your ${context.hairType} hair type, ` : ""}keeping your scalp clean between washes doesn't mean you need to fully wash — a scalp refresh spray or diluted apple cider vinegar rinse can help.
-
-If you're concerned, it's worth speaking to a trichologist or dermatologist who can assess you in person.`;
+    if (ctx.hairType) {
+      response += `With ${ctx.hairType} hair, `;
+    } else {
+      response += 'With textured hair, ';
+    }
+    response += 'keeping your scalp clean between washes doesn\'t mean you need to fully wash — a scalp refresh spray or water rinse can help.\n\n';
+    response += 'If anything concerns you, it\'s worth doing a mid-cycle check-in to log it.';
+    return response;
   }
 
-  // Default response
-  return `That's a great question! While I can share general guidance about scalp and hair health, every person's situation is unique.
+  // Traction alopecia
+  if (lower.includes('traction alopecia')) {
+    let response = '**Traction alopecia** is hair loss caused by repeated pulling or tension on the hair. ';
 
-Based on what we know about textured hair care, here are some general principles:
+    if (ctx.gender === 'A man' || ctx.gender === 'man') {
+      response += 'It affects men too — especially those who wear cornrows, braids, locs, or tight durags regularly.\n\n';
+    } else {
+      response += 'It\'s particularly common among women who regularly wear tight hairstyles.\n\n';
+    }
 
-- **Listen to your scalp** — symptoms like persistent itching, tenderness, or flaking are worth investigating
-- **Track patterns** — your regular check-ins help spot trends that might be hard to notice day to day
-- **Be gentle** — whether it's styling, washing, or detangling, less tension and manipulation is usually better
-- **Stay consistent** — a simple, regular routine is often more effective than complex treatments
+    response += '**Key facts:**\n';
+    response += '- Early stages are **reversible** — the hair can grow back if tension is removed\n';
+    response += '- Late stages can cause **permanent scarring** of follicles\n';
+    response += '- It affects up to 1 in 3 people who regularly wear tight styles\n\n';
 
-${context.goals.length > 0 ? `Since your goals include ${context.goals[0].toLowerCase()}, your check-ins are designed to track the things that matter most to you.\n\n` : ""}Is there something more specific about your scalp or hair health I can help with?
+    response += '**Warning signs:**\n';
+    response += '- Thinning or recession at the hairline, especially around temples\n';
+    response += '- Small bumps around the hairline after installation\n';
+    response += '- Tenderness where the hair is pulled tight\n\n';
 
-If you're concerned about any symptoms, it's worth speaking to a trichologist or dermatologist who can assess you in person.`;
+    if (hasProtective) {
+      response += `Since you wear ${primaryStyle.toLowerCase()}, the key prevention is making sure your installations aren't too tight — especially around the hairline.\n\n`;
+    }
+
+    response += 'If you\'re concerned, seeing a trichologist or dermatologist early gives you the best chance of recovery.';
+    return response;
+  }
+
+  // Products
+  if (lower.includes('product') || lower.includes('shampoo') || lower.includes('conditioner') || lower.includes('oil')) {
+    let response = '';
+
+    if (ctx.scalpProducts.length > 0 || ctx.hairProducts.length > 0) {
+      response += 'Based on your profile, here\'s what I\'d note about your current routine:\n\n';
+
+      if (ctx.scalpProducts.length > 0) {
+        response += `**Scalp products you use:** ${ctx.scalpProducts.join(', ')}\n`;
+      }
+      if (ctx.hairProducts.length > 0) {
+        response += `**Hair products you use:** ${ctx.hairProducts.join(', ')}\n\n`;
+      }
+    }
+
+    response += 'The most important thing with products isn\'t using more — it\'s using the right ones for your specific needs:\n\n';
+
+    if (ctx.hairType) {
+      const isHighPorosity = ctx.chemicalProcessing && ctx.chemicalProcessing !== 'No, fully natural';
+      response += `With ${ctx.hairType} hair${isHighPorosity ? ' that\'s been chemically processed' : ''}, ${isHighPorosity ? 'your hair is likely higher porosity, so heavier creams and butters sealed with oil work well' : 'focus on lightweight products that won\'t weigh your curls down'}.\n\n`;
+    }
+
+    response += 'If you\'re experiencing specific issues like itching, flaking, or breakage, let me know and I can give more targeted suggestions.';
+    return response;
+  }
+
+  // Breakage
+  if (lower.includes('break') || lower.includes('brittle') || lower.includes('snap') || lower.includes('dry')) {
+    let response = 'Hair breaks for a few different reasons, and the fix depends on which one you\'re dealing with:\n\n';
+
+    if (ctx.chemicalProcessing && ctx.chemicalProcessing !== 'No, fully natural') {
+      response += `Since your hair has been chemically processed${ctx.lastChemicalTreatment ? ` (last treated ${ctx.lastChemicalTreatment.toLowerCase()})` : ''}, the internal structure may be weakened. **Bond repair treatments** like K18 or Olaplex can help restore some of that strength.\n\n`;
+    }
+
+    if (ctx.baselineHairHealth && ctx.baselineHairHealth.includes('dry')) {
+      response += `You mentioned dryness during your baseline assessment, which suggests a **moisture deficit**. Deep conditioning and sealing with an oil or butter can help.\n\n`;
+    }
+
+    response += '- **Mechanical breakage** — from tight styling or rough handling. Fix: gentler detangling, satin accessories.\n';
+    response += '- **Moisture deficit** — hair feels dry and snaps. Fix: deep conditioning, leave-in conditioner.\n';
+    response += '- **Protein deficit** — hair feels mushy and stretchy when wet. Fix: protein treatment.\n';
+    response += '- **Heat damage** — unfortunately permanent. Damaged sections need to be trimmed.\n\n';
+    response += 'If your hair snaps when you gently stretch it, you need moisture. If it stretches and doesn\'t bounce back, you need protein.';
+    return response;
+  }
+
+  // Off-topic
+  if (!lower.includes('hair') && !lower.includes('scalp') && !lower.includes('itch') && !lower.includes('style') && !lower.includes('braid') && !lower.includes('wash') && !lower.includes('shed') && !lower.includes('break') && !lower.includes('product') && !lower.includes('grow') && !lower.includes('thin') && !lower.includes('edge') && !lower.includes('dandruff') && !lower.includes('flak') && !lower.includes('curl') && !lower.includes('loc') && !lower.includes('wig')) {
+    return 'I\'m best at scalp and hair health questions — that\'s where I can give you the most helpful, personalised advice. Is there something about your hair or scalp I can help with?';
+  }
+
+  // Default personalised response
+  let response = 'That\'s a great question! ';
+
+  if (ctx.hairType) {
+    response += `With your ${ctx.hairType} hair type, `;
+  }
+
+  response += 'here are some general principles for healthy hair and scalp:\n\n';
+  response += '- **Listen to your scalp** — symptoms like persistent itching, tenderness, or flaking are worth investigating\n';
+  response += '- **Track patterns** — your regular check-ins help spot trends that might be hard to notice day to day\n';
+  response += '- **Be gentle** — less tension and manipulation is usually better\n';
+  response += '- **Stay consistent** — a simple, regular routine is often more effective than complex treatments\n\n';
+
+  if (ctx.goals.length > 0) {
+    response += `Since your goals include ${ctx.goals[0].toLowerCase()}, your check-ins are designed to track what matters most to you.\n\n`;
+  }
+
+  response += 'Can you tell me more specifically what you\'d like to know? The more specific your question, the more helpful I can be.';
+  return response;
 };
 
 const ChatPage = () => {
   const navigate = useNavigate();
-  const { onboardingData, currentCheckIn, healthProfile, baselineRisk } = useApp();
+  const { onboardingData, currentCheckIn, healthProfile, baselineRisk, history } = useApp();
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -151,6 +313,30 @@ const ChatPage = () => {
     scrollToBottom();
   }, [messages, isTyping]);
 
+  // Build user context from app state
+  const userContext: UserContext = {
+    gender: onboardingData.gender,
+    hairType: onboardingData.hairType,
+    chemicalProcessing: onboardingData.chemicalProcessing,
+    lastChemicalTreatment: onboardingData.lastChemicalTreatment,
+    styles: onboardingData.protectiveStyles,
+    cycleLength: onboardingData.cycleLength,
+    washFrequency: onboardingData.washFrequency || onboardingData.wornOutWashFrequency,
+    betweenWashCare: onboardingData.betweenWashCare,
+    scalpProducts: onboardingData.scalpProducts,
+    hairProducts: onboardingData.hairProducts,
+    goals: onboardingData.goals,
+    baselineItch: onboardingData.baselineItch,
+    baselineTenderness: onboardingData.baselineTenderness,
+    baselineHairline: onboardingData.baselineHairline,
+    baselineHairHealth: onboardingData.baselineHairHealth,
+    lastCheckInRisk: currentCheckIn ? 'Completed' : baselineRisk || 'No check-ins yet',
+    medicalConditions: healthProfile.medicalConditions,
+    teTriggers: healthProfile.recentStressors,
+    menstrualTracking: onboardingData.menstrualTracking,
+    isWornOutOnly: onboardingData.isWornOutOnly,
+  };
+
   const sendMessage = async (text: string) => {
     if (!text.trim()) return;
 
@@ -160,16 +346,14 @@ const ChatPage = () => {
       content: text.trim(),
     };
 
-    setMessages(prev => [...prev, userMsg]);
+    const updatedMessages = [...messages, userMsg];
+    setMessages(updatedMessages);
     setInputValue('');
     setIsTyping(true);
 
-    // Simulate AI response delay
+    // Generate context-aware response
     setTimeout(() => {
-      const response = getMockResponse(text, {
-        hairType: onboardingData.hairType,
-        goals: onboardingData.goals,
-      });
+      const response = buildContextAwareResponse(text, userContext, updatedMessages);
 
       const assistantMsg: Message = {
         id: `assistant-${Date.now()}`,
@@ -179,7 +363,7 @@ const ChatPage = () => {
 
       setMessages(prev => [...prev, assistantMsg]);
       setIsTyping(false);
-    }, 1200 + Math.random() * 800);
+    }, 1000 + Math.random() * 600);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -205,19 +389,24 @@ const ChatPage = () => {
         <div className="flex-1 overflow-y-auto px-6 pb-4">
           {messages.length === 0 ? (
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="pt-4">
-              {/* Welcome message */}
               <div className="card-elevated p-4 mb-6">
                 <div className="flex items-start gap-3">
                   <div className="w-8 h-8 rounded-full bg-sage-light flex items-center justify-center flex-shrink-0 mt-0.5">
                     <Leaf size={16} className="text-primary" strokeWidth={1.8} />
                   </div>
-                  <p className="text-sm text-foreground leading-relaxed">
-                    Hi! I'm here to help with your scalp and hair health questions. I'm not a doctor, but I'm grounded in clinical evidence and I know your profile.
-                  </p>
+                  <div>
+                    <p className="text-sm text-foreground leading-relaxed">
+                      Hi! I'm here to help with your scalp and hair health questions. I'm not a doctor, but I'm grounded in clinical evidence and I know your profile.
+                    </p>
+                    {onboardingData.hairType && (
+                      <p className="text-xs text-muted-foreground mt-2">
+                        {onboardingData.hairType} hair · {onboardingData.protectiveStyles.slice(0, 2).join(', ') || 'No styles set'}{onboardingData.goals.length > 0 ? ` · Goal: ${onboardingData.goals[0].toLowerCase()}` : ''}
+                      </p>
+                    )}
+                  </div>
                 </div>
               </div>
 
-              {/* Suggested questions */}
               <p className="text-xs text-muted-foreground mb-3 font-medium">Try asking...</p>
               <div className="space-y-2">
                 {suggestedQuestions.map(q => (
@@ -257,7 +446,6 @@ const ChatPage = () => {
                     </div>
                   )}
 
-                  {/* Show follow-ups, check-in suggestion, learn link after last assistant message */}
                   {msg.role === 'assistant' && idx === messages.length - 1 && (
                     <div className="mt-3 space-y-2">
                       {checkInSuggestion && (
@@ -297,7 +485,6 @@ const ChatPage = () => {
                 </motion.div>
               ))}
 
-              {/* Typing indicator */}
               {isTyping && (
                 <motion.div
                   initial={{ opacity: 0, y: 8 }}
