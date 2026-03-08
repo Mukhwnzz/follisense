@@ -135,7 +135,8 @@ const HomePage = () => {
   })();
 
   // Determine tip based on user type and menstrual phase
-  const dailyTips = onboardingData.isWornOutOnly ? wornOutTips : protectiveStyleTips;
+  const isMale = onboardingData.gender === 'man';
+  const dailyTips = isMale ? maleTips : onboardingData.isWornOutOnly ? wornOutTips : protectiveStyleTips;
   let todayTip = dailyTips[dayOfYear % dailyTips.length];
   if (cycleDay) {
     if (cycleDay >= 1 && cycleDay <= 5) {
