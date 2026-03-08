@@ -23,6 +23,20 @@ const ClinicianSummary = () => {
     return cp;
   };
 
+  // Menstrual cycle day calculation
+  const getCycleDay = () => {
+    if (onboardingData.menstrualTracking !== 'yes' || !onboardingData.lastPeriodDate) return null;
+    const start = new Date(onboardingData.lastPeriodDate);
+    const now = new Date();
+    const diffDays = Math.floor((now.getTime() - start.getTime()) / 86400000);
+    let total = 28;
+    if (onboardingData.menstrualCycleLength === '21–25 days') total = 23;
+    else if (onboardingData.menstrualCycleLength === '31–35 days') total = 33;
+    return { day: (diffDays % total) + 1, total };
+  };
+
+  const cycleInfo = getCycleDay();
+
   const fields = [
     { label: 'Hair type', value: hairTypeLabel[onboardingData.hairType] || 'Not specified' },
     ...(chemLabel() ? [{ label: 'Chemical processing', value: chemLabel()! }] : []),
@@ -44,25 +58,16 @@ const ClinicianSummary = () => {
 
   const handleShare = async () => {
     if (navigator.share) {
-      try {
-        await navigator.share({ title: 'ScalpSense Clinical Summary', text: 'Patient-reported scalp symptom summary' });
-      } catch { /* cancelled */ }
-    } else {
-      toast('Share feature coming soon');
-    }
+      try { await navigator.share({ title: 'ScalpSense Clinical Summary', text: 'Patient-reported scalp symptom summary' }); } catch { /* cancelled */ }
+    } else { toast('Share feature coming soon'); }
   };
 
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-[430px] mx-auto px-6">
         <div className="flex items-center justify-between py-4">
-          <button onClick={() => navigate(-1)} className="p-2 -ml-2">
-            <ArrowLeft size={22} className="text-foreground" strokeWidth={1.8} />
-          </button>
-          <div className="flex items-center gap-1.5">
-            <Leaf size={16} className="text-primary" strokeWidth={1.8} />
-            <span className="text-xs font-semibold text-muted-foreground">ScalpSense</span>
-          </div>
+          <button onClick={() => navigate(-1)} className="p-2 -ml-2"><ArrowLeft size={22} className="text-foreground" strokeWidth={1.8} /></button>
+          <div className="flex items-center gap-1.5"><Leaf size={16} className="text-primary" strokeWidth={1.8} /><span className="text-xs font-semibold text-muted-foreground">ScalpSense</span></div>
           <div className="w-10" />
         </div>
 
@@ -73,9 +78,19 @@ const ClinicianSummary = () => {
 
           {baselineRisk === 'red' && baselineDate && (
             <div className="rounded-2xl bg-destructive/10 border border-destructive/20 p-4 mb-4">
-              <p className="text-sm text-foreground leading-relaxed">
-                <strong>Note:</strong> Significant symptoms were reported at initial intake on {baselineDate}. This was the patient's first interaction with ScalpSense — no longitudinal trend data is available yet.
-              </p>
+              <p className="text-sm text-foreground leading-relaxed"><strong>Note:</strong> Significant symptoms were reported at initial intake on {baselineDate}. This was the patient's first interaction with ScalpSense — no longitudinal trend data is available yet.</p>
+            </div>
+          )}
+
+          {/* Patient goals */}
+          {onboardingData.goals.length > 0 && (
+            <div className="card-elevated p-4 mb-4">
+              <h3 className="text-label mb-3">Patient Goals</h3>
+              <ul className="space-y-1">
+                {onboardingData.goals.map(g => (
+                  <li key={g} className="text-sm text-foreground">• {g}</li>
+                ))}
+              </ul>
             </div>
           )}
 
@@ -91,6 +106,29 @@ const ClinicianSummary = () => {
               ))}
             </div>
           </div>
+
+          {/* Menstrual cycle info */}
+          {onboardingData.menstrualTracking === 'yes' && (
+            <div className="card-elevated p-4 mb-4">
+              <h3 className="text-label mb-3">Menstrual Cycle</h3>
+              <div className="space-y-2.5">
+                {cycleInfo && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Menstrual cycle</span>
+                    <span className="font-medium text-foreground">Day {cycleInfo.day} of ~{cycleInfo.total} day cycle</span>
+                  </div>
+                )}
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Hormonal contraception</span>
+                  <span className="font-medium text-foreground">{onboardingData.hormonalContraception || 'Not specified'}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Menstrual status</span>
+                  <span className="font-medium text-foreground">{onboardingData.menstrualCycleLength === 'Irregular' ? 'Irregular' : 'Regular'}</span>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Symptoms */}
           <div className="card-elevated p-4 mb-4">
@@ -126,65 +164,35 @@ const ClinicianSummary = () => {
           {/* Trend */}
           <div className="card-elevated p-4 mb-4">
             <h3 className="text-label mb-3">Symptom Trend</h3>
-            <p className="text-sm text-foreground">
-              Itch and tenderness have increased over the last 2 cycles
-            </p>
+            <p className="text-sm text-foreground">Itch and tenderness have increased over the last 2 cycles</p>
             <div className="flex gap-4 mt-3">
-              <div className="flex items-center gap-1.5 text-xs">
-                <span className="text-warning">↑</span>
-                <span className="text-muted-foreground">Itch trending up</span>
-              </div>
-              <div className="flex items-center gap-1.5 text-xs">
-                <span className="text-warning">↑</span>
-                <span className="text-muted-foreground">Tenderness trending up</span>
-              </div>
+              <div className="flex items-center gap-1.5 text-xs"><span className="text-warning">↑</span><span className="text-muted-foreground">Itch trending up</span></div>
+              <div className="flex items-center gap-1.5 text-xs"><span className="text-warning">↑</span><span className="text-muted-foreground">Tenderness trending up</span></div>
             </div>
           </div>
 
-          {/* Patient health context — shown when data exists */}
+          {/* Patient health context */}
           {(() => {
             const hp = healthProfile;
             const contextItems: { label: string; value: string }[] = [];
-
-            if (hp.medicalConditions.length > 0 && !hp.medicalConditions.includes('None of these') && !hp.medicalConditions.includes('Prefer not to say')) {
-              contextItems.push({ label: 'Medical conditions', value: hp.medicalConditions.join(', ') });
-            }
-            if (hp.pregnancyStatus && hp.pregnancyStatus !== 'No' && hp.pregnancyStatus !== 'Prefer not to say') {
-              contextItems.push({ label: 'Reproductive status', value: hp.pregnancyStatus });
-            }
-            if (hp.medications === 'Yes') {
-              contextItems.push({ label: 'Medications', value: hp.medicationDetails || 'Yes (unspecified)' });
-            }
-            // Blood work
-            Object.entries(hp.bloodLevels).forEach(([marker, level]) => {
-              if (level === 'Low') contextItems.push({ label: marker, value: 'Low' });
-            });
-            // Skin conditions
+            if (hp.medicalConditions.length > 0 && !hp.medicalConditions.includes('None of these') && !hp.medicalConditions.includes('Prefer not to say')) contextItems.push({ label: 'Medical conditions', value: hp.medicalConditions.join(', ') });
+            if (hp.pregnancyStatus && hp.pregnancyStatus !== 'No' && hp.pregnancyStatus !== 'Prefer not to say') contextItems.push({ label: 'Reproductive status', value: hp.pregnancyStatus });
+            if (hp.medications === 'Yes') contextItems.push({ label: 'Medications', value: hp.medicationDetails || 'Yes (unspecified)' });
+            Object.entries(hp.bloodLevels).forEach(([marker, level]) => { if (level === 'Low') contextItems.push({ label: marker, value: 'Low' }); });
             if (hp.skinConditions.length > 0 && !hp.skinConditions.includes('None')) {
               const items = hp.skinConditions.filter(s => s !== 'Other');
               if (hp.skinConditions.includes('Other') && hp.skinConditionDetails) items.push(hp.skinConditionDetails);
               if (items.length) contextItems.push({ label: 'Skin conditions', value: items.join(', ') });
             }
-            if (hp.previousHairLoss && hp.previousHairLoss !== 'No') {
-              contextItems.push({ label: 'Previous hair loss', value: hp.previousHairLoss });
-            }
-            if (hp.diagnosedCondition === 'Yes') {
-              contextItems.push({ label: 'Diagnosed condition', value: hp.diagnosedConditionDetails || 'Yes (unspecified)' });
-            }
-            if (hp.familyHistory === 'Yes') {
-              contextItems.push({ label: 'Family history', value: 'Hair loss / thinning' });
-            }
-            // Telogen effluvium triggers
+            if (hp.previousHairLoss && hp.previousHairLoss !== 'No') contextItems.push({ label: 'Previous hair loss', value: hp.previousHairLoss });
+            if (hp.diagnosedCondition === 'Yes') contextItems.push({ label: 'Diagnosed condition', value: hp.diagnosedConditionDetails || 'Yes (unspecified)' });
+            if (hp.familyHistory === 'Yes') contextItems.push({ label: 'Family history', value: 'Hair loss / thinning' });
             const telogenTriggers: string[] = [];
             if (hp.pregnancyStatus === 'Postpartum (within 12 months)') telogenTriggers.push('Postpartum (within 12 months)');
             const validStressors = (hp.recentStressors || []).filter(s => s !== 'None of these' && s !== 'Prefer not to say');
             telogenTriggers.push(...validStressors);
-            if (telogenTriggers.length > 0) {
-              contextItems.push({ label: 'Potential telogen effluvium triggers', value: telogenTriggers.join(', ') });
-            }
-
+            if (telogenTriggers.length > 0) contextItems.push({ label: 'Potential telogen effluvium triggers', value: telogenTriggers.join(', ') });
             if (contextItems.length === 0) return null;
-
             return (
               <div className="card-elevated p-4 mb-4">
                 <h3 className="text-label mb-3">Patient Health Context</h3>
@@ -199,39 +207,25 @@ const ClinicianSummary = () => {
               </div>
             );
           })()}
+
           {negatives.length > 0 && (
             <div className="card-elevated p-4 mb-6">
               <h3 className="text-label mb-3">Relevant Negatives</h3>
               <ul className="space-y-1">
-                {negatives.map(n => (
-                  <li key={n.label} className="text-sm text-muted-foreground">
-                    No {n.label.toLowerCase()} concerns reported
-                  </li>
-                ))}
+                {negatives.map(n => (<li key={n.label} className="text-sm text-muted-foreground">No {n.label.toLowerCase()} concerns reported</li>))}
               </ul>
             </div>
           )}
 
-          {/* Disclaimer */}
           <div className="rounded-2xl bg-accent p-4 mb-6">
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              ScalpSense is a symptom-tracking and triage tool. This summary does not constitute a medical diagnosis.
-              Report generated {today}. For clinician reference only.
-            </p>
+            <p className="text-xs text-muted-foreground leading-relaxed">ScalpSense is a symptom-tracking and triage tool. This summary does not constitute a medical diagnosis. Report generated {today}. For clinician reference only.</p>
           </div>
 
-          {/* Actions */}
           <div className="flex gap-3 mb-3">
-            <button onClick={handleShare} className="flex-1 h-12 rounded-xl border-2 border-border font-medium text-sm btn-press flex items-center justify-center gap-2">
-              <Share2 size={16} strokeWidth={1.8} /> Share
-            </button>
-            <button onClick={() => toast('PDF download coming soon')} className="flex-1 h-12 rounded-xl border-2 border-border font-medium text-sm btn-press flex items-center justify-center gap-2">
-              <Download size={16} strokeWidth={1.8} /> Download PDF
-            </button>
+            <button onClick={handleShare} className="flex-1 h-12 rounded-xl border-2 border-border font-medium text-sm btn-press flex items-center justify-center gap-2"><Share2 size={16} strokeWidth={1.8} /> Share</button>
+            <button onClick={() => toast('PDF download coming soon')} className="flex-1 h-12 rounded-xl border-2 border-border font-medium text-sm btn-press flex items-center justify-center gap-2"><Download size={16} strokeWidth={1.8} /> Download PDF</button>
           </div>
-          <button onClick={() => navigate(-1)} className="w-full h-14 bg-primary text-primary-foreground rounded-xl font-semibold btn-press">
-            Back to results
-          </button>
+          <button onClick={() => navigate(-1)} className="w-full h-14 bg-primary text-primary-foreground rounded-xl font-semibold btn-press">Back to results</button>
         </motion.div>
       </div>
     </div>

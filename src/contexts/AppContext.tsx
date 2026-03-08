@@ -30,6 +30,13 @@ export interface OnboardingData {
   scalpProducts: string[];
   otherProduct: string;
   productFrequency: string;
+  // Menstrual cycle
+  menstrualTracking: string; // 'yes' | 'no' | 'no-menstruate'
+  lastPeriodDate: string;
+  menstrualCycleLength: string;
+  hormonalContraception: string;
+  // Goals
+  goals: string[];
 }
 
 export interface CheckInData {
@@ -86,26 +93,20 @@ export interface StylistObservationEntry {
 }
 
 export interface HealthProfileData {
-  // Scalp environment
   sweat: string;
   exercise: string;
   heatStyling: string;
   satinCovering: string;
-  // Medical history
   medicalConditions: string[];
   pregnancyStatus: string;
   medications: string;
   medicationDetails: string;
-  // Blood work
   lastBloodTest: string;
   bloodLevels: Record<string, string>;
-  // Skin conditions
   skinConditions: string[];
   skinConditionDetails: string;
   sensitiveSkin: string;
-  // Life changes / stressors
   recentStressors: string[];
-  // Hair history
   previousHairLoss: string;
   diagnosedCondition: string;
   diagnosedConditionDetails: string;
@@ -158,7 +159,16 @@ interface AppContextType {
   setBaselineRisk: (r: 'green' | 'amber' | 'red' | null) => void;
   baselineDate: string | null;
   setBaselineDate: (d: string | null) => void;
+  quickLogs: QuickLogEntry[];
+  addQuickLog: (entry: QuickLogEntry) => void;
   resetAll: () => void;
+}
+
+export interface QuickLogEntry {
+  id: string;
+  date: string;
+  symptoms: string[];
+  severity: string;
 }
 
 const defaultOnboarding: OnboardingData = {
@@ -185,6 +195,11 @@ const defaultOnboarding: OnboardingData = {
   scalpProducts: [],
   otherProduct: '',
   productFrequency: '',
+  menstrualTracking: '',
+  lastPeriodDate: '',
+  menstrualCycleLength: '',
+  hormonalContraception: '',
+  goals: [],
 };
 
 const demoHistory: CycleEntry[] = [
@@ -226,9 +241,11 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [baselinePhotos, setBaselinePhotos] = useState<BaselinePhoto[]>([]);
   const [baselineRisk, setBaselineRisk] = useState<'green' | 'amber' | 'red' | null>(null);
   const [baselineDate, setBaselineDate] = useState<string | null>(null);
+  const [quickLogs, setQuickLogs] = useState<QuickLogEntry[]>([]);
 
   const addSalonVisit = (v: SalonVisit) => setSalonVisits(prev => [v, ...prev]);
   const addClientObservation = (o: ClientObservation) => setClientObservations(prev => [o, ...prev]);
+  const addQuickLog = (entry: QuickLogEntry) => setQuickLogs(prev => [entry, ...prev]);
 
   const resetAll = () => {
     setOnboardingComplete(false);
@@ -242,6 +259,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     setBaselinePhotos([]);
     setBaselineRisk(null);
     setBaselineDate(null);
+    setQuickLogs([]);
   };
 
   return (
@@ -259,6 +277,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       baselinePhotos, setBaselinePhotos,
       baselineRisk, setBaselineRisk,
       baselineDate, setBaselineDate,
+      quickLogs, addQuickLog,
       resetAll,
     }}>
       {children}
