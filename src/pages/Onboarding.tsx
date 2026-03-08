@@ -921,9 +921,10 @@ const Onboarding = () => {
 
           </motion.div>
         </AnimatePresence>
+        </div>
 
-        {/* ── Bottom button ── */}
-        <div className="pb-8">
+        {/* ── Bottom button (sticky) ── */}
+        <div className="flex-shrink-0 py-4">
           {step === 4 ? null : step === 5 ? (
             <div className="space-y-3">
               <button onClick={handleNext} className="w-full h-14 rounded-xl font-semibold text-base btn-press transition-colors bg-primary text-primary-foreground">
