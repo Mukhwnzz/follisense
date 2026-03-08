@@ -149,7 +149,7 @@ const HealthProfile = () => {
                   <p className="text-sm font-medium text-foreground mb-2">Do you have any of the following conditions?</p>
                   <MultiSelect
                     selected={hp.medicalConditions}
-                    options={['PCOS', 'Thyroid condition', 'Iron deficiency / anaemia', 'Vitamin D deficiency', 'Autoimmune condition', 'Diabetes', 'Eczema / dermatitis', 'Psoriasis', 'Seborrheic dermatitis', 'None of these', 'Prefer not to say']}
+                    options={['PCOS', 'Thyroid condition', 'Iron deficiency / anaemia', 'Vitamin D deficiency', 'Autoimmune condition', 'Diabetes', 'Eczema / dermatitis', 'Psoriasis', 'Seborrheic dermatitis', 'Androgenetic alopecia (male pattern hair loss)', 'None of these', 'Prefer not to say']}
                     onToggle={v => toggleMulti('medicalConditions', v)}
                   />
                 </div>
