@@ -50,6 +50,7 @@ export const stylistConditions: StylistCondition[] = [
     whatToTell: '"I\'m seeing some thinning at your crown that looks like it might need a professional opinion. A dermatologist can take a closer look. It\'s better to check early."',
     whatYouCanDo: 'Don\'t apply tension to the crown area. Avoid tight styles that pull from the centre. Note the observation in ScalpSense and share with the client.',
     severityGuide: 'Any unexplained crown thinning should be referred. CCCA causes permanent scarring and early treatment is critical.',
+    darkerSkinNote: 'On darker skin: The shiny, smooth appearance of scarring at the crown may be easier to spot than on lighter skin because of the contrast. But early thinning can be subtle. Part the hair at the crown and look straight down. Compare density at the centre to the sides. If the centre is noticeably sparser, flag it.',
   },
   {
     id: 'seborrheic-dermatitis',
