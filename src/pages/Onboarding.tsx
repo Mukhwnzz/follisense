@@ -46,6 +46,8 @@ const hairPhotos: Record<string, Record<string, { src: string; label: string }[]
 
 const locsPhotos: Record<string, { src: string; label: string }> = {
   male: { src: bmLocs, label: 'Locs' },
+  female: { src: bmLocs, label: 'Locs' },
+  both: { src: bmLocs, label: 'Locs' },
 };
 
 // ── Data ──────────────────────────────────────────────────────────────────────
