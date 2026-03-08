@@ -120,17 +120,25 @@ const CurlIcon = ({ type }: { type: string }) => {
   return patterns[type] || null;
 };
 
-const computeBaselineRisk = (itch: string, tenderness: string, hairline: string): 'green' | 'amber' | 'red' => {
+const computeBaselineRisk = (itch: string, tenderness: string, hairline: string, hairHealth: string): 'green' | 'amber' | 'red' => {
   const mildest = ['None', 'No concerns'];
   const severe = ['Severe', 'Very concerned'];
   const moderate = ['Moderate', 'Noticeable change'];
+  const hairMildest = ['Healthy — no concerns'];
+  const hairModerate = ['Noticeably dry, brittle, or breaking more than usual', 'Concerned about my hair\'s condition'];
 
-  const values = [itch, tenderness, hairline];
-  if (values.every(v => mildest.includes(v))) return 'green';
-  if (values.some(v => severe.includes(v))) return 'red';
-  const moderateCount = values.filter(v => moderate.includes(v)).length;
+  const scalpValues = [itch, tenderness, hairline];
+  const allScalpMild = scalpValues.every(v => mildest.includes(v));
+  const allMild = allScalpMild && hairMildest.includes(hairHealth);
+  if (allMild) return 'green';
+  if (scalpValues.some(v => severe.includes(v))) return 'red';
+  const moderateCount = scalpValues.filter(v => moderate.includes(v)).length;
   if (moderateCount >= 2) return 'red';
-  return 'amber';
+  // Hair intensification: green scalp + moderate hair → amber
+  if (allScalpMild && hairModerate.includes(hairHealth)) return 'amber';
+  // Amber scalp + moderate hair → red
+  if (!allScalpMild && hairModerate.includes(hairHealth) && moderateCount >= 1) return 'red';
+  return allScalpMild ? 'green' : 'amber';
 };
 
 const getBaselineSevereFlaggedSymptoms = (itch: string, tenderness: string, hairline: string): string[] => {
@@ -169,6 +177,7 @@ const Onboarding = () => {
   const [itch, setItch] = useState('');
   const [tenderness, setTenderness] = useState('');
   const [hairline, setHairline] = useState('');
+  const [baselineHairHealth, setBaselineHairHealth] = useState('');
   const [products, setProducts] = useState<string[]>([]);
   const [otherProduct, setOtherProduct] = useState('');
   const [prodFreq, setProdFreq] = useState('');
@@ -183,6 +192,7 @@ const Onboarding = () => {
     { id: 'hairline', label: 'Hairline — temples and edges', desc: 'Front-facing', optional: false },
     { id: 'crown', label: 'Crown and vertex', desc: 'Top of head', optional: false },
     { id: 'nape', label: 'Nape / back of neck', desc: 'Optional', optional: true },
+    { id: 'hair-condition', label: 'Hair condition — mid-lengths and ends', desc: 'Helps track breakage patterns and texture changes over time', optional: true },
   ];
 
   const toggleStyle = (s: string) => setStyles(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s]);
@@ -207,7 +217,7 @@ const Onboarding = () => {
         const betweenOk = betweenWashCare.length > 0 && (!betweenWashCare.includes('Other') || otherBetweenWash.trim().length > 0);
         return cycleOk && washOk && betweenOk;
       }
-      case 4: return !!itch && !!tenderness && !!hairline;
+      case 4: return !!itch && !!tenderness && !!hairline && !!baselineHairHealth;
       case 5: return true; // photo step — always can proceed (skip or capture)
       case 6: return products.length > 0 && !!prodFreq && (!products.includes('Other') || otherProduct.trim().length > 0);
       default: return false;
@@ -218,7 +228,7 @@ const Onboarding = () => {
     if (step < totalSteps) {
       // Baseline risk check after Step 4
       if (step === 4 && !baselineResultScreen) {
-        const risk = computeBaselineRisk(itch, tenderness, hairline);
+        const risk = computeBaselineRisk(itch, tenderness, hairline, baselineHairHealth);
         const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
         setBaselineRisk(risk);
         setBaselineDate(today);
@@ -261,6 +271,7 @@ const Onboarding = () => {
         baselineItch: itch,
         baselineTenderness: tenderness,
         baselineHairline: hairline,
+        baselineHairHealth,
         scalpProducts: products,
         otherProduct,
         productFrequency: prodFreq,
@@ -537,6 +548,14 @@ const Onboarding = () => {
                     <div className="flex flex-wrap gap-2">
                       {hairlineConcerns.map(s => (
                         <button key={s} onClick={() => setHairline(s)} className={`pill-option ${hairline === s ? 'selected' : ''}`}>{s}</button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <p className="font-medium text-foreground mb-3">How would you describe your hair health right now?</p>
+                    <div className="flex flex-wrap gap-2">
+                      {['Healthy — no concerns', 'Some dryness or breakage but nothing unusual', 'Noticeably dry, brittle, or breaking more than usual', "Concerned about my hair's condition"].map(s => (
+                        <button key={s} onClick={() => setBaselineHairHealth(s)} className={`pill-option ${baselineHairHealth === s ? 'selected' : ''}`}>{s}</button>
                       ))}
                     </div>
                   </div>

@@ -26,6 +26,7 @@ export interface OnboardingData {
   baselineItch: string;
   baselineTenderness: string;
   baselineHairline: string;
+  baselineHairHealth: string;
   scalpProducts: string[];
   otherProduct: string;
   productFrequency: string;
@@ -37,6 +38,10 @@ export interface CheckInData {
   hairline: string;
   flaking?: string;
   shedding?: string;
+  hairFeel?: string;
+  hairBreakage?: string;
+  hairAppearance?: string;
+  hairConcern?: string;
   newProducts?: string;
   newProductDetails?: string;
   type: 'mid-cycle' | 'wash-day';
@@ -176,6 +181,7 @@ const defaultOnboarding: OnboardingData = {
   baselineItch: '',
   baselineTenderness: '',
   baselineHairline: '',
+  baselineHairHealth: '',
   scalpProducts: [],
   otherProduct: '',
   productFrequency: '',

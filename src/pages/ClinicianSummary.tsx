@@ -105,6 +105,24 @@ const ClinicianSummary = () => {
             </div>
           </div>
 
+          {/* Hair Condition */}
+          <div className="card-elevated p-4 mb-4">
+            <h3 className="text-label mb-3">Hair Condition Observations</h3>
+            <div className="space-y-2.5">
+              {[
+                { label: 'Current texture/feel', value: currentCheckIn?.hairFeel || onboardingData.baselineHairHealth || 'Not assessed' },
+                { label: 'Breakage', value: currentCheckIn?.hairBreakage || 'Not assessed' },
+                { label: 'Overall appearance', value: currentCheckIn?.hairAppearance || 'Not assessed' },
+                { label: 'Trend', value: 'First assessment' },
+              ].map(item => (
+                <div key={item.label} className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">{item.label}</span>
+                  <span className="font-medium text-foreground text-right max-w-[55%]">{item.value}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
           {/* Trend */}
           <div className="card-elevated p-4 mb-4">
             <h3 className="text-label mb-3">Symptom Trend</h3>

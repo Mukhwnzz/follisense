@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, X, Camera } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 
-const symptomSteps = [
+const scalpSteps = [
   {
     key: 'itch',
     q: 'How itchy has your scalp been this cycle?',
@@ -54,19 +54,56 @@ const symptomSteps = [
       { label: 'Alarming amount', desc: "Far more than I've ever seen" },
     ],
   },
+];
+
+const hairHealthSteps = [
   {
-    key: 'newProducts',
-    q: 'Any new products this cycle?',
+    key: 'hairFeel',
+    q: 'How does your hair feel?',
     options: [
-      { label: 'No, same routine', desc: 'No changes to your product lineup' },
-      { label: 'Yes, I tried something new', desc: 'You introduced a new product' },
+      { label: 'Soft and moisturised as usual', desc: '' },
+      { label: 'A bit dry', desc: '' },
+      { label: 'Very dry or brittle', desc: '' },
+      { label: 'Different texture than usual', desc: 'Feels rough, straw-like, or limp' },
+    ],
+  },
+  {
+    key: 'hairBreakage',
+    q: 'Have you noticed any breakage?',
+    options: [
+      { label: 'No breakage', desc: '' },
+      { label: 'A little — mostly at the ends', desc: '' },
+      { label: 'Moderate — breaking along the length', desc: '' },
+      { label: 'Significant — breaking at the root or in patches', desc: '' },
+    ],
+  },
+  {
+    key: 'hairAppearance',
+    q: 'How does your hair look overall compared to your normal?',
+    options: [
+      { label: 'Looks healthy, no changes', desc: '' },
+      { label: 'A bit dull or lacklustre', desc: '' },
+      { label: 'Noticeably thinner or less volume', desc: '' },
+      { label: 'Significant change in appearance or density', desc: '' },
     ],
   },
 ];
 
+const productStep = {
+  key: 'newProducts',
+  q: 'Any new products this cycle?',
+  options: [
+    { label: 'No, same routine', desc: 'No changes to your product lineup' },
+    { label: 'Yes, I tried something new', desc: 'You introduced a new product' },
+  ],
+};
+
+const allSteps = [...scalpSteps, ...hairHealthSteps, productStep];
+
 const photoAreas = [
   { id: 'hairline', label: 'Temples / edges', baselineLabel: 'Hairline — temples and edges' },
   { id: 'crown', label: 'Crown / vertex', baselineLabel: 'Crown and vertex' },
+  { id: 'hair-condition', label: 'Hair condition — mid-lengths and ends', baselineLabel: 'Hair condition — mid-lengths and ends' },
 ];
 
 const WashDayAssessment = () => {
@@ -77,16 +114,19 @@ const WashDayAssessment = () => {
   const [newProductText, setNewProductText] = useState('');
   const [photoSaved, setPhotoSaved] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [showHairIntro, setShowHairIntro] = useState(false);
 
-  const totalSteps = symptomSteps.length + 1; // +1 for photo step
-  const isProductFollowUp = currentStep === 5 && answers.newProducts === 'Yes, I tried something new';
-  const isPhotoStep = currentStep === symptomSteps.length;
-  const currentQ = symptomSteps[currentStep];
+  const totalSteps = allSteps.length + 1; // +1 for photo step
+  const isProductStep = currentStep === allSteps.length - 1;
+  const isProductFollowUp = isProductStep && answers.newProducts === 'Yes, I tried something new';
+  const isPhotoStep = currentStep === allSteps.length;
+  const isHairIntroStep = currentStep === scalpSteps.length && !showHairIntro;
+  const currentQ = allSteps[currentStep];
 
   const selectAnswer = (val: string) => {
     setAnswers(prev => ({ ...prev, [currentQ.key]: val }));
     if (currentQ.key === 'newProducts' && val === 'No, same routine') {
-      setTimeout(() => setCurrentStep(symptomSteps.length), 300);
+      setTimeout(() => setCurrentStep(allSteps.length), 300);
     } else if (currentQ.key === 'newProducts' && val === 'Yes, I tried something new') {
       // Stay on step to show text input
     } else {
@@ -95,7 +135,7 @@ const WashDayAssessment = () => {
   };
 
   const handleProductContinue = () => {
-    setCurrentStep(symptomSteps.length);
+    setCurrentStep(allSteps.length);
   };
 
   const handleSubmit = () => {
@@ -105,6 +145,9 @@ const WashDayAssessment = () => {
       hairline: answers.hairline,
       flaking: answers.flaking,
       shedding: answers.shedding,
+      hairFeel: answers.hairFeel,
+      hairBreakage: answers.hairBreakage,
+      hairAppearance: answers.hairAppearance,
       newProducts: answers.newProducts,
       newProductDetails: newProductText || undefined,
       type: 'wash-day',
@@ -117,12 +160,70 @@ const WashDayAssessment = () => {
     return baselinePhotos.find(p => p.area === baselineLabel);
   };
 
+  // Show hair intro screen when transitioning from scalp to hair questions
+  if (currentStep === scalpSteps.length && !showHairIntro && !isPhotoStep) {
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="max-w-[430px] mx-auto px-6">
+          <div className="flex items-center justify-between py-4">
+            <button onClick={() => setCurrentStep(currentStep - 1)} className="p-2 -ml-2">
+              <ArrowLeft size={22} className="text-foreground" strokeWidth={1.8} />
+            </button>
+            <div className="flex gap-1">
+              {Array.from({ length: totalSteps }).map((_, i) => (
+                <div key={i} className={`h-1 w-5 rounded-full transition-colors duration-300 ${i <= currentStep ? 'bg-primary' : 'bg-border'}`} />
+              ))}
+            </div>
+            <button onClick={() => setShowConfirm(true)} className="p-2 -mr-2">
+              <X size={22} className="text-foreground" strokeWidth={1.8} />
+            </button>
+          </div>
+          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="pt-4">
+            <h2 className="text-xl font-semibold mb-2">And your hair?</h2>
+            <p className="text-muted-foreground text-sm mb-8">Your hair can tell us a lot about what's happening at the scalp</p>
+            <button
+              onClick={() => setShowHairIntro(true)}
+              className="w-full h-14 bg-primary text-primary-foreground rounded-xl font-semibold text-base btn-press"
+            >
+              Continue
+            </button>
+          </motion.div>
+
+          <AnimatePresence>
+            {showConfirm && (
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-foreground/30 z-50 flex items-center justify-center px-6">
+                <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }} className="bg-card rounded-3xl p-6 max-w-sm w-full shadow-card">
+                  <h3 className="font-semibold text-lg mb-2">Are you sure?</h3>
+                  <p className="text-sm text-muted-foreground mb-6">Your progress won't be saved.</p>
+                  <div className="flex gap-3">
+                    <button onClick={() => setShowConfirm(false)} className="flex-1 h-12 rounded-xl border border-border font-medium text-sm btn-press">Continue</button>
+                    <button onClick={() => navigate('/home')} className="flex-1 h-12 rounded-xl bg-primary text-primary-foreground font-medium text-sm btn-press">Leave</button>
+                  </div>
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-[430px] mx-auto px-6">
         {/* Top bar */}
         <div className="flex items-center justify-between py-4">
-          <button onClick={() => currentStep > 0 ? setCurrentStep(currentStep - 1) : setShowConfirm(true)} className="p-2 -ml-2">
+          <button onClick={() => {
+            if (currentStep > 0) {
+              if (currentStep === scalpSteps.length && showHairIntro) {
+                setShowHairIntro(false);
+              } else {
+                setCurrentStep(currentStep - 1);
+              }
+            } else {
+              setShowConfirm(true);
+            }
+          }} className="p-2 -ml-2">
             <ArrowLeft size={22} className="text-foreground" strokeWidth={1.8} />
           </button>
           <div className="flex gap-1">
@@ -155,7 +256,7 @@ const WashDayAssessment = () => {
                     className={`selection-card w-full text-left ${answers[currentQ.key] === opt.label ? 'selected' : ''}`}
                   >
                     <p className="font-medium text-foreground">{opt.label}</p>
-                    <p className="text-sm text-muted-foreground mt-0.5">{opt.desc}</p>
+                    {opt.desc && <p className="text-sm text-muted-foreground mt-0.5">{opt.desc}</p>}
                   </button>
                 ))}
               </div>

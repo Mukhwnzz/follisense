@@ -20,6 +20,11 @@ const questions = [
     q: 'Noticed any changes around your edges or temples?',
     options: ['No change', 'Looks a bit different', 'Noticeable change', "I'm concerned"],
   },
+  {
+    key: 'hairConcern',
+    q: 'Noticed any unusual breakage or dryness since your last check-in?',
+    options: ['No, hair feels normal', 'A little more breakage or dryness than usual', 'Yes, noticeably more', "Yes, I'm concerned"],
+  },
 ];
 
 const MidCycleCheckIn = () => {
@@ -35,6 +40,7 @@ const MidCycleCheckIn = () => {
       itch: answers.itch,
       tenderness: answers.tenderness,
       hairline: answers.hairline,
+      hairConcern: answers.hairConcern,
       type: 'mid-cycle',
       date: new Date().toLocaleDateString('en-GB', { month: 'short', day: 'numeric' }),
     });
@@ -57,7 +63,7 @@ const MidCycleCheckIn = () => {
 
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
           <h2 className="text-2xl font-semibold mb-2">Mid-Cycle Check-In</h2>
-          <p className="text-muted-foreground mb-8">Just 3 quick questions — takes about 1 minute</p>
+          <p className="text-muted-foreground mb-8">Just 4 quick questions — takes about 1 minute</p>
 
           <div className="space-y-8">
             {questions.map((q, i) => (

@@ -2,11 +2,11 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Check, Eye, Stethoscope, ArrowLeft, Leaf } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
-import type { HealthProfileData } from '@/contexts/AppContext';
+import type { HealthProfileData, CheckInData } from '@/contexts/AppContext';
 
 type RiskLevel = 'green' | 'amber' | 'red';
 
-const computeRisk = (checkIn: { itch?: string; tenderness?: string; hairline?: string; flaking?: string; shedding?: string } | null): RiskLevel => {
+const computeScalpRisk = (checkIn: CheckInData | null): RiskLevel => {
   if (!checkIn) return 'amber';
 
   const mildest = ['None', 'No', 'No change', 'Normal'];
@@ -22,6 +22,73 @@ const computeRisk = (checkIn: { itch?: string; tenderness?: string; hairline?: s
   if (secondCount >= 3) return 'red';
 
   return 'amber';
+};
+
+const getHairConcernLevel = (checkIn: CheckInData | null): 'none' | 'mild' | 'moderate' | 'severe' => {
+  if (!checkIn) return 'none';
+  
+  // Wash day hair observations
+  const hairMild = ['Soft and moisturised as usual', 'No breakage', 'Looks healthy, no changes', 'No, hair feels normal'];
+  const hairModerate = ['A bit dry', 'A little — mostly at the ends', 'A bit dull or lacklustre', 'A little more breakage or dryness than usual'];
+  const hairSevere = [
+    'Very dry or brittle', 'Different texture than usual',
+    'Moderate — breaking along the length', 'Significant — breaking at the root or in patches',
+    'Noticeably thinner or less volume', 'Significant change in appearance or density',
+    'Yes, noticeably more', "Yes, I'm concerned",
+  ];
+
+  const hairValues = [checkIn.hairFeel, checkIn.hairBreakage, checkIn.hairAppearance, checkIn.hairConcern].filter(Boolean) as string[];
+  if (hairValues.length === 0) return 'none';
+  
+  if (hairValues.some(v => hairSevere.includes(v))) return 'severe';
+  if (hairValues.some(v => hairModerate.includes(v))) return 'mild';
+  if (hairValues.every(v => hairMild.includes(v))) return 'none';
+  return 'mild';
+};
+
+const computeRisk = (checkIn: CheckInData | null): RiskLevel => {
+  const scalpRisk = computeScalpRisk(checkIn);
+  const hairLevel = getHairConcernLevel(checkIn);
+  
+  // Hair alone never triggers RED
+  // Green scalp + moderate/severe hair → amber
+  if (scalpRisk === 'green' && (hairLevel === 'moderate' || hairLevel === 'severe')) return 'amber';
+  // Amber scalp + moderate-to-severe hair → red
+  if (scalpRisk === 'amber' && (hairLevel === 'moderate' || hairLevel === 'severe')) return 'red';
+  
+  return scalpRisk;
+};
+
+const getHairGuidance = (checkIn: CheckInData | null): { heading: string; content: string }[] => {
+  if (!checkIn) return [];
+  const guidance: { heading: string; content: string }[] = [];
+  
+  const dryValues = ['A bit dry', 'Very dry or brittle'];
+  const breakageValues = ['A little — mostly at the ends', 'Moderate — breaking along the length', 'Significant — breaking at the root or in patches'];
+  const textureValues = ['Different texture than usual'];
+  const midCycleDry = ['A little more breakage or dryness than usual', 'Yes, noticeably more', "Yes, I'm concerned"];
+  
+  const allHairValues = [checkIn.hairFeel, checkIn.hairBreakage, checkIn.hairAppearance, checkIn.hairConcern].filter(Boolean) as string[];
+  
+  if (allHairValues.some(v => dryValues.includes(v)) || allHairValues.some(v => midCycleDry.includes(v))) {
+    guidance.push({
+      heading: 'Dryness',
+      content: "Dry, brittle hair can signal that your scalp isn't getting enough moisture. Try a lightweight scalp hydrator and make sure you're deep conditioning at your next wash.",
+    });
+  }
+  if (allHairValues.some(v => breakageValues.includes(v))) {
+    guidance.push({
+      heading: 'Breakage',
+      content: "Breakage — especially along the length or at the root — can be caused by tension, dryness, or product buildup. If it's concentrated around your hairline, that's worth monitoring closely.",
+    });
+  }
+  if (allHairValues.some(v => textureValues.includes(v))) {
+    guidance.push({
+      heading: 'Texture change',
+      content: "Changes in how your hair feels can indicate protein/moisture imbalance, hormonal changes, or scalp health shifts. If it persists through your next cycle, it's worth investigating.",
+    });
+  }
+  return guidance;
 };
 
 const hasTelogenTriggers = (hp: HealthProfileData): string[] => {
@@ -40,6 +107,8 @@ const RiskOutput = () => {
   const paramRisk = searchParams.get('risk') as RiskLevel | null;
   const risk: RiskLevel = paramRisk || riskOverride || computeRisk(currentCheckIn);
   const telogenTriggers = hasTelogenTriggers(healthProfile);
+  const hairGuidance = getHairGuidance(currentCheckIn);
+  const hairConcernLevel = getHairConcernLevel(currentCheckIn);
 
   const circleColors: Record<RiskLevel, string> = {
     green: 'bg-primary',
@@ -129,6 +198,20 @@ const RiskOutput = () => {
                   ))}
                 </ol>
               </div>
+
+              {/* Hair-specific guidance */}
+              {hairGuidance.length > 0 && (
+                <div className="card-elevated p-5 mb-4">
+                  <h3 className="font-semibold mb-3">About your hair</h3>
+                  <div className="space-y-3">
+                    {hairGuidance.map((g, i) => (
+                      <p key={i} className="text-sm text-muted-foreground">
+                        <strong className="text-foreground">{g.heading}:</strong> {g.content}
+                      </p>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {telogenTriggers.length > 0 && (
                 <div className="rounded-2xl bg-accent p-5 mb-4">
