@@ -35,270 +35,104 @@ const shouldLinkLearn = (content: string): { show: boolean; topic: string } => {
   return { show: false, topic: '' };
 };
 
-interface UserData {
-  gender: string;
-  hairType: string;
-  chemicalProcessing: string;
-  lastChemicalTreatment: string;
-  styles: string[];
-  protectiveStyleFrequency: string;
-  cycleLength: string;
-  washFrequency: string;
-  betweenWashCare: string[];
-  scalpProducts: string[];
-  hairProducts: string[];
-  goals: string[];
-  baseline: {
-    itch: string;
-    tenderness: string;
-    hairline: string;
-    hairHealth: string;
-  };
-  lastCheckInRisk: string;
-  medicalConditions: string[];
-  teTriggers: string[];
-  menstrualTracking: string;
-  cycleDay: number | null;
+interface MatchedResponse {
+  text: string;
+  suggestions: string[];
 }
 
-const buildSystemPrompt = (userData: UserData): string => {
-  return `You are ScalpSense Chat. You talk to women and men with textured hair about their scalp and hair health. You are warm, direct, and genuinely helpful. You sound like a knowledgeable friend who happens to have clinical expertise, not a medical chatbot reading from a textbook.
-
-HOW TO RESPOND:
-
-- Be specific. Never give generic advice. Use what you know about this person.
-- Be concise. 2-3 short paragraphs max. No walls of text.
-- Lead with the answer, not the preamble. Don't start with "Great question!" or "That's a really important topic." Just answer.
-- If you know something relevant from their profile, weave it in naturally. Don't say "Based on your profile..." Just reference it: "Since you're wearing box braids and you mentioned moderate itching at your last check-in, here's what might be going on..."
-- If they describe a symptom, help them understand what it might mean AND give them something actionable to try right now.
-- If something sounds clinically concerning, say so plainly: "That's worth getting looked at by a trichologist or dermatologist. Don't wait on that."
-- Never recommend applying oils directly to the scalp as a default treatment. Most scalp oils have limited clinical evidence. If asked about specific oils, give an evidence-based answer.
-- Never diagnose. Say "this could be" or "this sounds like it might be" not "you have."
-- End clinical responses with a gentle nudge toward professional advice, but don't make it a copy-paste disclaimer every time. Vary it naturally.
-
-WHAT YOU KNOW ABOUT THIS PERSON:
-
-Gender: ${userData.gender || 'Not specified'}
-Hair type: ${userData.hairType || 'Not specified'}
-Chemical processing: ${userData.chemicalProcessing || 'None'}
-Last chemical treatment: ${userData.lastChemicalTreatment || 'Not specified'}
-Styles worn: ${userData.styles?.join(', ') || 'Not specified'}
-Time in protective styles: ${userData.protectiveStyleFrequency || 'Not specified'}
-Typical cycle length: ${userData.cycleLength || 'Not specified'}
-Wash frequency: ${userData.washFrequency || 'Not specified'}
-Between-wash care: ${userData.betweenWashCare?.join(', ') || 'Not specified'}
-Scalp products: ${userData.scalpProducts?.join(', ') || 'None'}
-Hair products: ${userData.hairProducts?.join(', ') || 'None'}
-Goals: ${userData.goals?.join(', ') || 'Not specified'}
-Baseline symptoms: Itch: ${userData.baseline?.itch || 'N/A'}, Tenderness: ${userData.baseline?.tenderness || 'N/A'}, Hairline: ${userData.baseline?.hairline || 'N/A'}, Hair health: ${userData.baseline?.hairHealth || 'N/A'}
-Most recent check-in: Risk level: ${userData.lastCheckInRisk || 'No check-ins yet'}
-Medical conditions: ${userData.medicalConditions?.join(', ') || 'None reported'}
-Stress or TE triggers: ${userData.teTriggers?.join(', ') || 'None reported'}
-Menstrual cycle: ${userData.menstrualTracking ? 'Day ' + (userData.cycleDay || '?') + ' of cycle' : 'Not tracking'}
-
-USE THIS CONTEXT. If someone asks "why is my scalp itchy" and you know they're 2 weeks into box braids and reported moderate itching at baseline, your answer should reference that specifically. If you don't have relevant context, just answer the question well.
-
-TOPICS YOU HANDLE:
-
-Scalp conditions (traction alopecia, CCCA, seborrheic dermatitis, psoriasis, alopecia areata, folliculitis)
-Hair health (breakage, porosity, protein-moisture balance, shedding vs breakage, growth and retention)
-Nutrition and hair (iron, vitamin D, zinc, B12, biotin, protein, crash diets)
-Styling and protection (tension, heat damage, chemical damage, protective styling)
-Products (what ingredients do, what's evidence-based, what's marketing)
-Hormones and hair (menstrual cycle effects, postpartum shedding, TE triggers, PCOS)
-Men's specific concerns (androgenetic alopecia, durag tension, barber hygiene, loc care)
-When to see a professional and what type
-
-TOPICS YOU REDIRECT:
-
-Anything not related to scalp, hair, or closely related health. Politely say: "I'm best with scalp and hair questions — is there something about your hair I can help with?"
-
-FOLLOW-UP SUGGESTIONS:
-
-After every response, you must include exactly 3 follow-up question suggestions in a JSON block at the very end of your response, formatted like this:
-
-|||SUGGESTIONS|||["question 1", "question 2", "question 3"]|||END|||
-
-These suggestions MUST be:
-- Directly related to what was just discussed in this specific message, not generic
-- Progressive, meaning they go deeper into the topic or explore a related next step
-- Phrased as things the user would naturally want to know next
-- Short, 10 words or less each
-
-Examples of GOOD follow-ups after discussing itchy scalp during braids:
-["Could this be seborrheic dermatitis?", "Should I wash my scalp mid-cycle?", "When should I see a trichologist about this?"]
-
-Examples of BAD follow-ups (too generic, not related):
-["What is traction alopecia?", "How do I care for my hair?", "Tell me about nutrition"]`;
-};
-
-const parseResponse = (responseText: string): { text: string; suggestions: string[] } => {
-  const suggestionsMatch = responseText.match(/\|\|\|SUGGESTIONS\|\|\|(.*?)\|\|\|END\|\|\|/s);
-  let suggestions: string[] = [];
-  let cleanText = responseText;
-
-  if (suggestionsMatch) {
-    try {
-      suggestions = JSON.parse(suggestionsMatch[1]);
-    } catch {
-      suggestions = ["Tell me more about this", "What should I do next?", "Should I see a specialist?"];
-    }
-    cleanText = responseText.replace(/\|\|\|SUGGESTIONS\|\|\|.*?\|\|\|END\|\|\|/s, '').trim();
-  }
-
-  return { text: cleanText, suggestions };
-};
-
-// Offline fallback response builder (used when no API is available)
-const buildOfflineResponse = (userMessage: string, userData: UserData): string => {
+const matchResponse = (userMessage: string): MatchedResponse => {
   const lower = userMessage.toLowerCase();
-  const primaryStyle = userData.styles?.[0] || 'your current style';
-  const hasProtective = userData.styles?.some(s => {
-    const sl = s.toLowerCase();
-    return sl.includes('braid') || sl.includes('cornrow') || sl.includes('wig') || sl.includes('weave') || sl.includes('loc') || sl.includes('twist') || sl.includes('crochet');
-  });
 
   if (lower.includes('itch') || lower.includes('itchy') || lower.includes('itching')) {
-    let r = '';
-    if (userData.baseline?.itch && userData.baseline.itch !== 'None') {
-      r += `You mentioned ${userData.baseline.itch.toLowerCase()} itching when you set up ScalpSense, so this is already on our radar.\n\n`;
-    }
-    if (hasProtective) {
-      r += `Since you're wearing ${primaryStyle.toLowerCase()}, sweat and product can build up between washes. `;
-      if (userData.washFrequency) r += `Washing ${userData.washFrequency.toLowerCase()} means buildup has time to accumulate.\n\n`;
-      else r += '\n\n';
-    }
-    r += 'A few things could be going on:\n\n';
-    r += '- **Product buildup** — especially under an installed style where you can\'t cleanse easily\n';
-    r += '- **Dry scalp** — small white flakes, tight feeling. Needs gentle hydration, not medicated treatment\n';
-    r += '- **Seborrheic dermatitis** — yellowish, oily flakes. Responds to antifungal shampoos like ketoconazole\n\n';
-    r += 'Try pressing gently with a fingertip instead of scratching. If it\'s getting worse or doesn\'t improve with gentle cleansing, worth mentioning to a dermatologist.';
-    r += '\n\n|||SUGGESTIONS|||["Could this be seborrheic dermatitis?", "Should I wash my scalp mid-cycle?", "When should I see a trichologist?"]|||END|||';
-    return r;
+    return {
+      text: "Itching under a protective style is really common, especially from week 2 onwards. Sweat, product buildup, and reduced washing all contribute. The key question is whether it's mild and manageable or getting worse over time.\n\nTry a scalp refresh spray or diluted apple cider vinegar rinse between washes. If the itching is constant or comes with soreness, that's worth flagging at your next check-in.",
+      suggestions: ["Could this be seborrheic dermatitis?", "Best way to cleanse under braids?", "When is itching a red flag?"],
+    };
   }
 
   if (lower.includes('edge') || lower.includes('hairline') || lower.includes('thinning')) {
-    let r = '';
-    if (userData.baseline?.hairline && userData.baseline.hairline !== 'No concerns') {
-      r += `You flagged some concern about your hairline during setup, so this is something we're already tracking.\n\n`;
-    }
-    r += 'The most common cause of edge thinning is **traction alopecia** — repeated tension on the follicles from tight styling.\n\n';
-    if (hasProtective) {
-      r += `With ${primaryStyle.toLowerCase()}, the key question is how tight your installations are around the hairline and temples. `;
-      if (userData.cycleLength) r += `Keeping styles in for ${userData.cycleLength.toLowerCase()} means sustained tension each cycle.\n\n`;
-      else r += '\n\n';
-    }
-    if (userData.goals?.some(g => g.toLowerCase().includes('hairline') || g.toLowerCase().includes('edge'))) {
-      r += 'Since protecting your hairline is one of your goals, your check-ins are specifically tracking changes there. ';
-    }
-    r += 'The good news: caught early, traction alopecia is often reversible. The key is reducing tension now.\n\nIf you\'re seeing active recession, a trichologist or dermatologist can assess whether the follicles are still viable.';
-    r += '\n\n|||SUGGESTIONS|||["Is traction alopecia reversible?", "How tight is too tight?", "Should I take a break from braids?"]|||END|||';
-    return r;
+    return {
+      text: "Hairline thinning is one of the earliest signs of traction alopecia, which happens when styles pull too tightly on the follicles around your temples and edges. The good news is it's reversible if caught early.\n\nThe most important thing right now: reduce tension on those areas. If your current style is pulling, loosen the front or remove it. Give your edges a break between installations. If you've noticed progressive thinning over several months, a trichologist can assess whether the follicles are still active.",
+      suggestions: ["Can my edges grow back?", "How do I know if it's traction?", "Should I stop wearing braids?"],
+    };
   }
 
-  if (lower.includes('wash') && (lower.includes('how often') || lower.includes('should i') || lower.includes('protective'))) {
-    let r = '';
-    if (hasProtective) {
-      r += `With ${primaryStyle.toLowerCase()}, your scalp is producing oil, shedding skin cells, and potentially reacting to products — all under a style you can't easily access.\n\n`;
-      if (userData.washFrequency) r += `You currently wash ${userData.washFrequency.toLowerCase()}. `;
-    }
-    r += 'Most dermatologists recommend cleansing at least every 2 weeks in a protective style, even if it\'s just a diluted shampoo or scalp-focused rinse. You don\'t need to take the whole style down to clean your scalp.\n\n';
-    r += 'Between washes, a scalp refresh spray or rinse with water can help manage buildup without disturbing your style.';
-    r += '\n\n|||SUGGESTIONS|||["What should I use to cleanse mid-cycle?", "Can I co-wash in braids?", "How do I know if I have buildup?"]|||END|||';
-    return r;
+  if (lower.includes('breakage') || lower.includes('breaking')) {
+    return {
+      text: "Breakage happens for a few different reasons and the fix depends on the cause. If your hair is snapping and feels dry and brittle, it's probably a moisture issue. Deep condition and seal with a butter or cream. If it feels mushy or stretchy when wet, you might need protein. If the breakage is concentrated where your style grips, that's mechanical damage from tension.\n\nCheck where it's breaking: at the ends (normal wear), along the length (moisture or protein issue), or at the root (tension problem).",
+      suggestions: ["Moisture vs protein: how to tell?", "Best deep conditioner for breakage?", "Is root breakage serious?"],
+    };
   }
 
-  if (lower.includes('eat') || lower.includes('food') || lower.includes('diet') || lower.includes('nutrition') || lower.includes('vitamin')) {
-    let r = 'Your hair is built from protein and fuelled by nutrients carried in your blood. If your diet is lacking, hair is one of the first places to show it.\n\n';
-    r += 'The nutrients that matter most for hair:\n\n';
-    r += '- **Iron** — carries oxygen to follicles. Low iron is one of the most common causes of shedding\n';
-    r += '- **Vitamin D** — low levels are linked to hair loss. Supplementation is often needed, especially with darker skin\n';
-    r += '- **Zinc** — supports hair tissue growth. Found in pumpkin seeds, chickpeas, beef\n';
-    r += '- **B12** — essential for red blood cells that feed follicles\n';
-    r += '- **Protein** — your hair is literally made of it\n\n';
-    r += 'Get a blood test before spending money on supplements. They fix deficiencies — they don\'t override genetics or styling damage.';
-    r += '\n\n|||SUGGESTIONS|||["Should I take biotin supplements?", "Can crash diets cause hair loss?", "What blood tests should I ask for?"]|||END|||';
-    return r;
+  if (lower.includes('wash') || lower.includes('cleanse') || lower.includes('shampoo')) {
+    return {
+      text: "How often to wash depends on your style and your scalp. If you're in braids or twists for 4+ weeks, aim to cleanse your scalp at least every 2 weeks. You don't need to do a full wash.\n\nDilute a gentle shampoo, apply it directly to the scalp between braids, massage gently, and rinse. Some people use a scalp applicator bottle to get product directly to the scalp without disturbing the style. The goal is removing buildup without unravelling your installation.",
+      suggestions: ["Can I just use water?", "Best way to dry after washing?", "What about co-washing?"],
+    };
   }
 
-  if (lower.includes('shed') || lower.includes('hair loss') || lower.includes('falling out') || lower.includes('losing hair')) {
-    let r = 'Some shedding is completely normal — 50 to 100 hairs a day. ';
-    if (hasProtective) {
-      r += `With ${primaryStyle.toLowerCase()}, you might not notice daily shedding until takedown, so it can seem like a lot all at once. That\'s usually just accumulated normal shedding.\n\n`;
-    } else {
-      r += 'What matters is whether the amount has changed significantly.\n\n';
-    }
-    r += 'Things that increase temporary shedding:\n\n';
-    r += '- **Stress** — physical or emotional stress can trigger telogen effluvium 2–4 months later\n';
-    r += '- **Nutritional deficiencies** — especially iron, vitamin D, B12\n';
-    r += '- **Hormonal changes** — postpartum, contraception changes, thyroid issues\n';
-    r += '- **Seasonal** — many people shed more in autumn\n\n';
-    if (userData.teTriggers && userData.teTriggers.length > 0 && !userData.teTriggers.includes('None of these')) {
-      r += `You\'ve noted some stress factors in your profile, which could be contributing.\n\n`;
-    }
-    r += 'If the shedding seems excessive or you\'re seeing patches, a trichologist can help figure out what\'s going on.';
-    r += '\n\n|||SUGGESTIONS|||["Is this shedding or breakage?", "Could this be telogen effluvium?", "What blood tests check for hair loss?"]|||END|||';
-    return r;
+  if (lower.includes('shedding') || lower.includes('hair loss') || lower.includes('losing hair') || lower.includes('falling out')) {
+    return {
+      text: "First, let's separate shedding from breakage. Shedding is full strands falling from the root — with a small white bulb at the end. That's your hair's natural cycle and 50–100 strands a day is normal.\n\nAfter a protective style, several weeks of shedding comes out at once during wash day, which looks alarming but is usually just accumulated normal shed. If you're seeing significantly more than usual, or if it's happening outside of wash day, it could be telogen effluvium from stress, hormonal changes, or nutritional deficiency. Track it over your next 2–3 wash cycles to see if there's a pattern.",
+      suggestions: ["Is this normal after braids?", "Could it be telogen effluvium?", "Should I get blood work done?"],
+    };
   }
 
-  if (lower.includes('product') || lower.includes('shampoo') || lower.includes('conditioner')) {
-    let r = '';
-    if (userData.scalpProducts?.length > 0 && userData.scalpProducts[0] !== 'None') {
-      r += `You\'re currently using ${userData.scalpProducts.slice(0, 3).join(', ')} on your scalp. `;
-    }
-    r += 'The most important thing with products isn\'t using more — it\'s using the right ones for your specific situation.\n\n';
-    if (userData.hairType) {
-      const isHighPorosity = userData.chemicalProcessing && userData.chemicalProcessing !== 'No, fully natural';
-      r += `With ${userData.hairType} hair${isHighPorosity ? ' that\'s been chemically processed' : ''}, ${isHighPorosity ? 'your hair is likely higher porosity — heavier creams and butters on the hair shaft work well' : 'lighter products that won\'t weigh your curls down tend to work best'}.\n\n`;
-    }
-    r += 'If you\'re dealing with a specific issue like itching, flaking, or breakage, tell me more and I can give you targeted advice.';
-    r += '\n\n|||SUGGESTIONS|||["What ingredients should I avoid?", "Do I need a clarifying shampoo?", "How do I know my porosity?"]|||END|||';
-    return r;
+  if (lower.includes('dandruff') || lower.includes('flaking') || lower.includes('flakes')) {
+    return {
+      text: "Flaking has two main causes and they need different treatments. Dandruff (seborrheic dermatitis) produces oily, yellowish flakes and is caused by yeast overgrowth. It responds to antifungal shampoos like ketoconazole or zinc pyrithione.\n\nDry scalp produces smaller, white, dry flakes and needs gentle moisturising and less frequent washing. Under protective styles, buildup from products can also look like flaking but is actually residue. If you're not sure which you have, try a medicated shampoo for 2–3 washes. If it helps, it was dandruff. If not, focus on hydration.",
+      suggestions: ["How to treat under braids?", "Is dandruff worse in winter?", "Could it be psoriasis?"],
+    };
   }
 
-  if (lower.includes('oil') && (lower.includes('scalp') || lower.includes('castor') || lower.includes('coconut') || lower.includes('rosemary'))) {
-    let r = 'Most scalp oils marketed for growth have limited clinical evidence behind them. A few things to know:\n\n';
-    r += '- **Rosemary oil** has some clinical evidence for supporting hair growth, comparable to minoxidil in one small study. Should be diluted and used sparingly.\n';
-    r += '- **Peppermint oil** showed promise in animal studies for follicle stimulation, but human evidence is limited.\n';
-    r += '- **Castor oil and coconut oil** are heavy and can clog follicles, especially under installed styles. They can worsen conditions like seborrheic dermatitis.\n\n';
-    r += 'If you want to use an oil, keep it light, diluted, and infrequent. But don\'t feel like you need to — a healthy scalp doesn\'t require oil application.';
-    r += '\n\n|||SUGGESTIONS|||["Is rosemary oil worth trying?", "What actually helps hair growth?", "Can oils make dandruff worse?"]|||END|||';
-    return r;
+  if (lower.includes('oil') || lower.includes('oils') || lower.includes('castor')) {
+    return {
+      text: "This might be an unpopular opinion, but most scalp oils have very limited clinical evidence behind them. Heavy oils like castor oil can actually clog follicles and worsen buildup, especially under protective styles where the scalp isn't being regularly cleansed.\n\nThe two with some research support are rosemary oil and peppermint oil — both diluted — and the evidence is still modest. If you're using oil on your scalp and it feels good, keep it light and infrequent. But if you're dealing with a scalp issue, adding oil is often not the answer and can make things worse.",
+      suggestions: ["What about rosemary oil specifically?", "What should I use instead?", "Can oil clog hair follicles?"],
+    };
   }
 
-  if (lower.includes('break') || lower.includes('brittle') || lower.includes('dry')) {
-    let r = 'Hair breaks for different reasons, and the fix depends on which one:\n\n';
-    if (userData.chemicalProcessing && userData.chemicalProcessing !== 'No, fully natural') {
-      r += `Since your hair has been chemically processed${userData.lastChemicalTreatment ? ` (last treated ${userData.lastChemicalTreatment.toLowerCase()})` : ''}, the internal structure may be weakened. Bond repair treatments like K18 or Olaplex can help.\n\n`;
-    }
-    r += '- **Mechanical** — from tight styling or rough handling. Fix: gentler detangling, satin accessories\n';
-    r += '- **Moisture deficit** — dry, snaps easily. Fix: deep conditioning, leave-in\n';
-    r += '- **Protein deficit** — mushy, stretchy when wet. Fix: protein treatment\n';
-    r += '- **Heat damage** — permanent. Damaged sections need trimming\n\n';
-    r += 'Quick test: gently stretch a wet strand. Snaps = needs moisture. Stretches without bouncing back = needs protein.';
-    r += '\n\n|||SUGGESTIONS|||["Do I need protein or moisture?", "How often should I deep condition?", "Is my breakage from styling?"]|||END|||';
-    return r;
+  if (lower.includes('diet') || lower.includes('nutrition') || lower.includes('eat') || lower.includes('food') || lower.includes('vitamin')) {
+    return {
+      text: "Your hair is built from protein and fuelled by nutrients delivered through your blood supply to the follicle. The big ones for hair health: iron (carries oxygen to follicles — low iron is a top cause of shedding in women), vitamin D (low levels linked to hair loss, common in people with darker skin), zinc (supports growth and repair), B12 (essential for the red blood cells that feed follicles), and protein itself.\n\nBefore buying supplements, get a blood test. Supplements fix deficiencies but they don't override genetics, hormones, or mechanical damage.",
+      suggestions: ["Should I take biotin?", "Best foods for hair growth?", "How do I get tested?"],
+    };
   }
 
-  // Off-topic
-  if (!lower.match(/hair|scalp|itch|style|braid|wash|shed|break|product|grow|thin|edge|dandruff|flak|curl|loc|wig|wave|barber/)) {
-    return 'I\'m best with scalp and hair questions — is there something about your hair I can help with?\n\n|||SUGGESTIONS|||["My scalp has been itchy lately", "I\'m worried about thinning", "What should my wash routine be?"]|||END|||';
+  if (lower.includes('exercise') || lower.includes('sweat') || lower.includes('gym') || lower.includes('workout')) {
+    return {
+      text: "Sweat itself isn't harmful to your scalp. The problem is when sweat mixes with product and buildup and sits under a style for days or weeks. You don't need to wash after every workout.\n\nQuick options: a scalp refresh spray, blotting with a microfibre cloth, or a water-only rinse focusing on the scalp. If you exercise daily and wear protective styles, consider a mid-cycle scalp cleanse to prevent irritation from accumulated sweat.",
+      suggestions: ["Best scalp spray after gym?", "Should I avoid working out in braids?", "Sweat causing bumps on scalp?"],
+    };
+  }
+
+  if (lower.includes('locs') || lower.includes('dreadlocks') || lower.includes('retwist')) {
+    return {
+      text: "The most common scalp issue with locs is traction from retwists that are too tight. Your retwist should never hurt. If it does, your loctician is going too tight and that's damaging your follicles, especially along the hairline and part lines.\n\nYou can and should wash your scalp with locs. Diluted shampoo or a scalp-specific cleanser applied between locs works well. Avoid heavy waxes or products that create buildup at the root. And give your loc line some breathing room — consistently tight retwists in the same spots will cause thinning over time.",
+      suggestions: ["How often should I retwist?", "Best way to wash with locs?", "Thinning at my part line"],
+    };
+  }
+
+  if (lower.includes('durag') || lower.includes('waves') || lower.includes('wave cap')) {
+    return {
+      text: "Durags and wave caps work by compressing your hair to train the curl pattern. That compression — especially if it's tight and worn for long hours every day — applies constant low-level tension to your hairline.\n\nIf you're noticing your temples looking thinner, the durag might be contributing. Try loosening the tie so there's less pressure on the hairline. Give your scalp a break from compression for a few hours each day. And if you're seeing consistent recession, it's worth getting assessed — because catching it early makes the difference between reversible and permanent.",
+      suggestions: ["How tight is too tight?", "Am I losing hair from my durag?", "Waves vs hairline health"],
+    };
+  }
+
+  // Off-topic check
+  if (!lower.match(/hair|scalp|itch|style|braid|wash|shed|break|product|grow|thin|edge|dandruff|flak|curl|loc|wig|wave|barber|routine|moisture|protein|dry|brittle|bump|follicle/)) {
+    return {
+      text: "I'm best with scalp and hair questions — is there something about your hair I can help with?",
+      suggestions: ["My scalp has been itchy", "I'm worried about thinning", "Help me build a routine"],
+    };
   }
 
   // Default
-  let r = '';
-  if (userData.hairType) r += `With your ${userData.hairType} hair, `;
-  else r += 'With textured hair, ';
-  r += 'here are some principles that hold true:\n\n';
-  r += '- **Listen to your scalp** — persistent itching, tenderness, or flaking are worth investigating\n';
-  r += '- **Track patterns** — your check-ins help spot trends that are hard to notice day to day\n';
-  r += '- **Be gentle** — less tension and manipulation is almost always better\n\n';
-  if (userData.goals?.length > 0) {
-    r += `Since your goal is to ${userData.goals[0].toLowerCase()}, your check-ins are designed to track what matters most to you.\n\n`;
-  }
-  r += 'Can you be more specific about what you\'d like to know? The more detail you give me, the more useful I can be.';
-  r += '\n\n|||SUGGESTIONS|||["My scalp is itchy under my style", "I\'m seeing more shedding than usual", "What products should I use?"]|||END|||';
-  return r;
+  return {
+    text: "I'm not sure I have a specific answer for that, but I'd love to help. Could you tell me a bit more about what you're experiencing? For example: are you dealing with a scalp issue like itching or tenderness, a hair concern like breakage or thinning, or looking for advice on your routine?",
+    suggestions: ["My scalp has been itchy", "I'm worried about thinning", "Help me build a routine"],
+  };
 };
 
 const ChatPage = () => {
