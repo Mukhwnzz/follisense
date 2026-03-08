@@ -458,16 +458,16 @@ const HomePage = () => {
           <h3 className="font-semibold text-foreground mb-3">Recent</h3>
           <div className="space-y-2">
             {recentEntries.map((entry, i) => (
-              <div key={i} className="card-elevated p-4 flex items-center justify-between">
+              <button key={i} onClick={() => navigate(entry.nav)} className="card-elevated p-4 w-full flex items-center justify-between btn-press">
                 <div className="flex items-center gap-3">
                   <span className={`status-dot ${entry.risk}`} />
-                  <div>
+                  <div className="text-left">
                     <p className="text-sm font-medium text-foreground">{entry.label}</p>
                     <p className="text-xs text-muted-foreground">{entry.date}</p>
                   </div>
                 </div>
                 <ChevronRight size={18} className="text-muted-foreground" />
-              </div>
+              </button>
             ))}
           </div>
         </div>
