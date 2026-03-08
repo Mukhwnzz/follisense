@@ -80,11 +80,12 @@ const genderOptions = [
 // ── "Why we ask" helper text for each section ─────────────────────────────────
 const sectionWhyText: Record<number, string> = {
   1: "This helps us tailor scalp check-in questions to your hair's needs.",
-  2: "Different styles create different tension and coverage patterns. This helps us know what to watch for.",
-  3: "We use this to time your reminders and mid-cycle check-ins.",
-  4: "This sets your baseline so we can track changes over time.",
-  6: "Knowing what you use helps us flag potential irritants or gaps.",
-  7: "Hormonal changes affect your scalp and hair cycle. This helps us give you relevant guidance.",
+  2: "Chemical processing changes how your scalp and hair respond to products and styling tension. This helps us tailor your check-ins.",
+  3: "Different styles create different tension and coverage patterns. This helps us know what to watch for.",
+  4: "We use this to time your reminders and mid-cycle check-ins.",
+  5: "This sets your baseline so we can track changes over time.",
+  7: "Knowing what you use helps us flag potential irritants or gaps.",
+  8: "Hormonal changes affect your scalp and hair cycle. This helps us give you relevant guidance.",
 };
 
 // ── Micro-education transitional messages ──────────────────────────────────────
