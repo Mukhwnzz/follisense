@@ -424,7 +424,7 @@ const Onboarding = () => {
   const canProceed = () => {
     switch (step) {
       case 0: return !!gender;
-      case 1: return !!hairType && !!chemicalProcessing && (chemicalProcessing !== 'Multiple' || chemicalMultiple.length > 0) && (!showChemicalFollowUp || !!lastChemicalTreatment);
+      case 1: return !!hairType && !!chemicalProcessing && (chemicalProcessing !== 'Yes' || !!chemicalSubSelection) && (chemicalSubSelection !== 'Multiple' || chemicalMultiple.length > 0) && (!showChemicalFollowUp || !!lastChemicalTreatment);
       case 2: {
         const stylesOk = styles.length > 0 && (!styles.includes('Other') || otherStyle.trim().length > 0);
         const freqOk = isWornOutOnly || !!protectiveFreq;
