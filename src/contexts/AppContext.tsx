@@ -283,6 +283,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     setBaselineRisk(null);
     setBaselineDate(null);
     setQuickLogs([]);
+    setResearch({ consented: false, consentDate: null, photoCount: 0, dismissed: false });
+    setCheckInCount(0);
   };
 
   return (
