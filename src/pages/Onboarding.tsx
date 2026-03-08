@@ -169,6 +169,7 @@ const Onboarding = () => {
   const [itch, setItch] = useState('');
   const [tenderness, setTenderness] = useState('');
   const [hairline, setHairline] = useState('');
+  const [baselineHairHealth, setBaselineHairHealth] = useState('');
   const [products, setProducts] = useState<string[]>([]);
   const [otherProduct, setOtherProduct] = useState('');
   const [prodFreq, setProdFreq] = useState('');

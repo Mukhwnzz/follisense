@@ -181,6 +181,7 @@ const defaultOnboarding: OnboardingData = {
   baselineItch: '',
   baselineTenderness: '',
   baselineHairline: '',
+  baselineHairHealth: '',
   scalpProducts: [],
   otherProduct: '',
   productFrequency: '',
