@@ -614,17 +614,66 @@ const Onboarding = () => {
               <div>
                 <h2 className="text-lg font-medium text-foreground mb-1">Let's get to know your hair</h2>
                 <p className="text-xs text-muted-foreground mb-5">{sectionWhyText[1]}</p>
-                <p className="text-muted-foreground mb-6">Select the option closest to your hair type</p>
-                <div className="space-y-3">
-                  {hairTypes.map(ht => (
-                    <button key={ht.id} onClick={() => setHairType(ht.id)} className={`selection-card w-full flex items-center gap-4 text-left ${hairType === ht.id ? 'selected' : ''}`}>
-                      <div className="w-12 h-12 rounded-xl bg-accent flex items-center justify-center flex-shrink-0"><CurlIcon type={ht.id} /></div>
-                      <div>
-                        <p className="font-semibold text-foreground">{ht.label}</p>
-                        <p className="text-sm text-muted-foreground">{ht.desc}</p>
-                      </div>
-                    </button>
-                  ))}
+                <p className="text-muted-foreground mb-4">Which best describes your hair texture?</p>
+                <p className="text-xs text-muted-foreground mb-6 italic">
+                  Type 3 curls wrap around a finger. Type 4 coils are tighter than a pen spring.
+                </p>
+                <div className="space-y-4">
+                  {hairTypes.map(ht => {
+                    const showPhotos = ht.photoLabels !== null;
+                    const genderKey = isMale ? 'male' : isNeutral ? 'both' : 'female';
+                    return (
+                      <button
+                        key={ht.id}
+                        onClick={() => setHairType(ht.id)}
+                        className={`selection-card w-full text-left ${hairType === ht.id ? 'selected' : ''}`}
+                      >
+                        <div className="flex items-center gap-4 mb-2">
+                          <div className="w-12 h-12 rounded-xl bg-accent flex items-center justify-center flex-shrink-0">
+                            <CurlIcon type={ht.id} />
+                          </div>
+                          <div>
+                            <p className="font-semibold text-foreground">{ht.label}</p>
+                            <p className="text-sm text-muted-foreground">{ht.desc}</p>
+                          </div>
+                        </div>
+                        {showPhotos && ht.photoLabels && (
+                          <div className={`grid gap-2 mt-3 ${genderKey === 'both' ? 'grid-cols-2' : 'grid-cols-2'}`}>
+                            {/* Illustration */}
+                            <div className="rounded-lg bg-accent/50 border border-border p-3 flex flex-col items-center justify-center min-h-[80px]">
+                              <CurlIcon type={ht.id} />
+                              <span className="text-[10px] text-muted-foreground mt-1.5 text-center">Pattern illustration</span>
+                            </div>
+                            {/* Photo placeholders based on gender */}
+                            {genderKey === 'female' && (
+                              <div className="rounded-lg bg-accent/30 border-2 border-dashed border-border p-3 flex flex-col items-center justify-center min-h-[80px]">
+                                <Camera size={20} className="text-muted-foreground mb-1" />
+                                <span className="text-[10px] text-muted-foreground text-center leading-tight">{ht.photoLabels.female}</span>
+                              </div>
+                            )}
+                            {genderKey === 'male' && (
+                              <div className="rounded-lg bg-accent/30 border-2 border-dashed border-border p-3 flex flex-col items-center justify-center min-h-[80px]">
+                                <Camera size={20} className="text-muted-foreground mb-1" />
+                                <span className="text-[10px] text-muted-foreground text-center leading-tight">{ht.photoLabels.male}</span>
+                              </div>
+                            )}
+                            {genderKey === 'both' && (
+                              <div className="space-y-2">
+                                <div className="rounded-lg bg-accent/30 border-2 border-dashed border-border p-2 flex flex-col items-center justify-center min-h-[36px]">
+                                  <Camera size={14} className="text-muted-foreground mb-0.5" />
+                                  <span className="text-[9px] text-muted-foreground text-center leading-tight">{ht.photoLabels.female}</span>
+                                </div>
+                                <div className="rounded-lg bg-accent/30 border-2 border-dashed border-border p-2 flex flex-col items-center justify-center min-h-[36px]">
+                                  <Camera size={14} className="text-muted-foreground mb-0.5" />
+                                  <span className="text-[9px] text-muted-foreground text-center leading-tight">{ht.photoLabels.male}</span>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             )}
