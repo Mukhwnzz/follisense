@@ -29,11 +29,12 @@ const StylistOnboarding = () => {
   const totalSteps = 4;
   const progress = ((step + 1) / totalSteps) * 100;
 
+  const toggleRole = (r: string) => setProfile(p => ({ ...p, role: p.role.includes(r) ? p.role.filter(x => x !== r) : [...p.role, r] }));
   const toggleService = (s: string) => setProfile(p => ({ ...p, services: p.services.includes(s) ? p.services.filter(x => x !== s) : [...p.services, s] }));
   const toggleGoal = (g: string) => setProfile(p => ({ ...p, goals: p.goals.includes(g) ? p.goals.filter(x => x !== g) : [...p.goals, g] }));
 
   const canNext = () => {
-    if (step === 0) return profile.role && (profile.role !== 'Other' || profile.otherRole.trim()) && profile.experience;
+    if (step === 0) return profile.role.length > 0 && (!profile.role.includes('Other') || profile.otherRole.trim()) && profile.experience;
     if (step === 1) return profile.workplace && profile.clientCount;
     if (step === 2) return profile.services.length > 0;
     if (step === 3) return profile.goals.length > 0;
