@@ -644,7 +644,7 @@ const Onboarding = () => {
             {/* Step 6: Products */}
             {step === 6 && (
               <div>
-                <h2 className="text-2xl font-semibold mb-2">What products do you use on your scalp?</h2>
+                <h2 className="text-lg font-medium text-foreground mb-2">What products do you use on your scalp?</h2>
                 <p className="text-muted-foreground mb-6">This helps us understand what might be affecting your scalp health</p>
                 <div className="grid grid-cols-2 gap-3">
                   {productOptions.slice(0, 8).map(p => (
