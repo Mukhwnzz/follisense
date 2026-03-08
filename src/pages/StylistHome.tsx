@@ -86,10 +86,15 @@ const StylistHome = () => {
         )}
         <p className="text-muted-foreground text-sm mb-6">Document scalp observations for your clients</p>
 
-        {/* New observation button */}
-        <button onClick={() => navigate('/stylist/observation')} className="w-full h-14 bg-primary text-primary-foreground rounded-xl font-semibold text-base btn-press flex items-center justify-center gap-2 mb-5">
-          <Plus size={20} strokeWidth={2} /> New client observation
-        </button>
+        {/* Action buttons */}
+        <div className="flex gap-2 mb-5">
+          <button onClick={() => navigate('/stylist/quick-intake')} className="flex-1 h-14 bg-primary text-primary-foreground rounded-xl font-semibold text-sm btn-press flex items-center justify-center gap-2">
+            <Target size={18} strokeWidth={2} /> Quick Intake
+          </button>
+          <button onClick={() => navigate('/stylist/observation')} className="flex-1 h-14 bg-card border-2 border-border text-foreground rounded-xl font-semibold text-sm btn-press flex items-center justify-center gap-2">
+            <Plus size={18} strokeWidth={2} /> Full Observation
+          </button>
+        </div>
 
         {/* === HERO QUIZ CARD — primary CTA === */}
         <motion.div
