@@ -90,6 +90,7 @@ const Onboarding = () => {
   const [products, setProducts] = useState<string[]>([]);
   const [otherProduct, setOtherProduct] = useState('');
   const [prodFreq, setProdFreq] = useState('');
+  const [showMoreStyles, setShowMoreStyles] = useState(false);
 
   const totalSteps = 5;
 
