@@ -414,13 +414,25 @@ const HomePage = () => {
         )}
 
         {/* Salon visit card */}
-        <button onClick={() => setShowSalonForm(true)} className="card-elevated p-4 mb-4 w-full flex items-center gap-3 text-left">
+        <button onClick={() => setShowSalonForm(true)} className="card-elevated p-4 mb-3 w-full flex items-center gap-3 text-left">
           <div className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center flex-shrink-0">
             <Scissors size={20} className="text-foreground" strokeWidth={1.5} />
           </div>
           <div className="flex-1">
             <p className="font-medium text-foreground text-sm">{isMale ? 'Log a salon or barber visit' : 'Log a salon visit'}</p>
             <p className="text-xs text-muted-foreground">Track appointments and services</p>
+          </div>
+          <ChevronRight size={18} className="text-muted-foreground" />
+        </button>
+
+        {/* Salon Check-in card */}
+        <button onClick={() => navigate('/salon-checkin')} className="card-elevated p-4 mb-4 w-full flex items-center gap-3 text-left border-l-4 border-l-primary">
+          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+            <Stethoscope size={20} className="text-primary" strokeWidth={1.5} />
+          </div>
+          <div className="flex-1">
+            <p className="font-medium text-foreground text-sm">Salon Check-in</p>
+            <p className="text-xs text-muted-foreground">Let your stylist capture your scalp during an appointment</p>
           </div>
           <ChevronRight size={18} className="text-muted-foreground" />
         </button>
