@@ -325,8 +325,8 @@ const ScalpQuiz = () => {
               {shuffledOptions.map((option) => {
                 let bg = 'bg-card border border-border';
                 if (selectedAnswer) {
-                  if (option === currentQuestion.correctAnswer) bg = 'bg-[hsl(140,25%,88%)] border border-[hsl(140,25%,70%)] text-foreground';
-                  else if (option === selectedAnswer && !isCorrect) bg = 'bg-[hsl(0,30%,90%)] border border-[hsl(0,30%,75%)] text-foreground';
+                  if (option === currentQuestion.correctAnswer) bg = 'bg-primary/15 border border-primary/40 text-foreground';
+                  else if (option === selectedAnswer && !isCorrect) bg = 'bg-destructive/10 border border-destructive/30 text-foreground';
                 }
                 return (
                   <button
