@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Leaf, Eye, EyeOff, Lock, Shield } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
+import { toast } from '@/hooks/use-toast';
 
 const SignUpPage = () => {
   const navigate = useNavigate();

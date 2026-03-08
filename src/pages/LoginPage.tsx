@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Leaf, Eye, EyeOff, CheckCircle } from 'lucide-react';
+import { Leaf, Eye, EyeOff } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
+import { toast } from '@/hooks/use-toast';
 
 const LoginPage = () => {
   const navigate = useNavigate();

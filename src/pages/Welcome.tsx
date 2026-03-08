@@ -28,7 +28,7 @@ const Welcome = () => {
           <Leaf size={28} className="text-primary" strokeWidth={1.8} />
           <h1 className="text-3xl font-semibold text-foreground tracking-tight">ScalpSense</h1>
         </div>
-        <p className="text-muted-foreground text-lg mb-12">Scalp health, in sync with your cycle</p>
+        <p className="text-muted-foreground text-lg mb-12">Smart scalp care, built around you</p>
 
         <div className="space-y-4 mb-12">
           {features.map(({ icon: Icon, text }, i) => (
