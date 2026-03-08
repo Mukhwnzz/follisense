@@ -798,6 +798,13 @@ const Onboarding = () => {
               const symptoms = buildBaselineFlaggedSymptoms(bItch, bTenderness, bHairline, bHairHealth);
               const tips = getBaselineTips(bItch, bTenderness, bHairline, bHairHealth);
 
+              const severe = ['Severe', 'Very concerned', "Concerned about my hair's condition"];
+              const isSevereItch = severe.includes(bItch);
+              const isSevereTenderness = severe.includes(bTenderness);
+              const isSevereHairline = severe.includes(bHairline);
+              const isSevereHairHealth = severe.includes(bHairHealth) || bHairHealth === "Concerned about my hair's condition";
+              const severeCount = [isSevereItch, isSevereTenderness, isSevereHairline, isSevereHairHealth].filter(Boolean).length;
+
               if (risk === 'green') return (
                 <div>
                   <div className="flex justify-center mb-6 pt-8">
@@ -832,7 +839,27 @@ const Onboarding = () => {
                 </div>
               );
 
-              // Red
+              // Red — warm, varied copy based on specific severe answers
+              let redHeading = "Let's get you the right help";
+              let redBody = "You've flagged several things that are bothering you, and we take all of them seriously. Rather than trying to figure this out alone, we'd really recommend speaking to a trichologist or dermatologist who can look at the full picture. In the meantime, ScalpSense will track everything so you have a clear history to bring to your appointment.";
+
+              if (severeCount <= 1) {
+                if (isSevereItch && isSevereTenderness) {
+                  redHeading = "That sounds really uncomfortable";
+                  redBody = "Constant itching and pain aren't something you should just push through. Your scalp is trying to tell you something, and the fact that you're here means you're already taking the right step. Let's get you some support.";
+                } else if (isSevereItch || isSevereTenderness) {
+                  redHeading = "That sounds really uncomfortable";
+                  redBody = "Constant itching and pain aren't something you should just push through. Your scalp is trying to tell you something, and the fact that you're here means you're already taking the right step. Let's get you some support.";
+                } else if (isSevereHairline) {
+                  redHeading = "We're glad you're paying attention to this";
+                  redBody = "Hairline changes can feel scary, but noticing them is the first and most important step. The earlier you get a professional opinion, the more options you'll have. Many hairline concerns are reversible when caught early.";
+                } else if (isSevereHairHealth) {
+                  redHeading = "Your hair is telling you something";
+                  redBody = "When your hair changes significantly in texture, density, or strength, it's often a signal that something is going on underneath — whether that's your scalp, your nutrition, your hormones, or your styling routine. A specialist can help pinpoint the cause.";
+                }
+              }
+              // If severeCount > 1, use the default "multiple" copy above
+
               return (
                 <div>
                   <div className="flex justify-center mb-6 pt-8">
@@ -840,10 +867,8 @@ const Onboarding = () => {
                       <Stethoscope size={32} className="text-destructive" strokeWidth={1.8} />
                     </motion.div>
                   </div>
-                  <h2 className="text-xl font-semibold text-foreground text-center mb-3">We hear you, and we're glad you're here</h2>
-                  <p className="text-muted-foreground text-center mb-6 leading-relaxed">
-                    {buildBaselineRedBody(symptoms)}
-                  </p>
+                  <h2 className="text-xl font-semibold text-foreground text-center mb-3">{redHeading}</h2>
+                  <p className="text-muted-foreground text-center mb-6 leading-relaxed">{redBody}</p>
                   <div className="card-elevated p-5 mb-4">
                     <h3 className="font-semibold mb-3">Who can help</h3>
                     <div className="space-y-2">
@@ -874,26 +899,51 @@ const Onboarding = () => {
             {step === 6 && (
               <div>
                 <h2 className="text-lg font-medium text-foreground mb-2">Capture your starting point</h2>
-                <p className="text-muted-foreground mb-6">A baseline photo helps you spot gradual changes that are hard to notice day to day</p>
+                <p className="text-muted-foreground mb-4">A baseline photo helps you spot gradual changes that are hard to notice day to day</p>
+                
+                {/* Collapsible photo guide */}
+                <details className="mb-5 rounded-xl border border-border overflow-hidden">
+                  <summary className="px-4 py-3 text-sm font-medium text-foreground cursor-pointer hover:bg-accent/50 transition-colors">
+                    📸 How to take good baseline photos
+                  </summary>
+                  <div className="px-4 pb-4 space-y-3 text-xs text-muted-foreground leading-relaxed border-t border-border pt-3">
+                    <p><strong className="text-foreground">Lighting:</strong> Natural light is best. Face a window or go outside. Avoid overhead bathroom lighting which creates shadows.</p>
+                    <p><strong className="text-foreground">Hairline and temples:</strong> Pull your hair back from your face. Hold the camera about 15cm away. Capture from your forehead down to your ears on both sides.</p>
+                    <p><strong className="text-foreground">Crown and vertex:</strong> Part your hair at the crown. Use a second mirror or ask someone to help. Capture straight down from above.</p>
+                    <p><strong className="text-foreground">Nape:</strong> Pull your hair forward or up. Capture the back of your neck and lower hairline.</p>
+                    <p><strong className="text-foreground">Hair condition:</strong> Hold a section of hair against a plain background. Capture the mid-lengths and ends.</p>
+                    <p><strong className="text-foreground">General tips:</strong> Keep the camera steady. Make sure the scalp is visible, not just hair. Take multiple shots and pick the clearest one.</p>
+                  </div>
+                </details>
+
                 <div className="space-y-3 mb-6">
                   {baselineAreas.map(area => (
-                    <button key={area.id} onClick={() => setCapturedPhotos(prev => ({ ...prev, [area.id]: true }))} className={`selection-card w-full flex items-center gap-4 text-left ${area.optional ? 'border-dashed opacity-80' : ''} ${capturedPhotos[area.id] ? 'selected' : ''}`}>
+                    <div key={area.id} className={`selection-card w-full flex items-center gap-4 text-left ${area.optional ? 'border-dashed opacity-80' : ''} ${capturedPhotos[area.id] ? 'selected' : ''}`}>
                       <div className={`w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 ${capturedPhotos[area.id] ? 'bg-primary/10' : 'bg-accent'}`}>
                         {capturedPhotos[area.id] ? <Check size={22} className="text-primary" strokeWidth={2} /> : <Camera size={22} className="text-muted-foreground" strokeWidth={1.5} />}
                       </div>
                       <div className="flex-1">
                         <p className="font-medium text-foreground text-sm">{area.label}</p>
                         <p className="text-xs text-muted-foreground mt-0.5">{capturedPhotos[area.id] ? 'Photo captured ✓' : area.desc}</p>
+                        {!capturedPhotos[area.id] && (
+                          <div className="flex gap-2 mt-2">
+                            <label className="text-xs font-medium text-primary cursor-pointer flex items-center gap-1">
+                              <Camera size={12} /> Take photo
+                              <input type="file" accept="image/*" capture="environment" className="hidden" onChange={() => setCapturedPhotos(prev => ({ ...prev, [area.id]: true }))} />
+                            </label>
+                            <label className="text-xs font-medium text-primary cursor-pointer flex items-center gap-1">
+                              ↑ Upload
+                              <input type="file" accept="image/*" className="hidden" onChange={() => setCapturedPhotos(prev => ({ ...prev, [area.id]: true }))} />
+                            </label>
+                          </div>
+                        )}
                       </div>
                       {area.optional && !capturedPhotos[area.id] && (<span className="text-xs text-muted-foreground bg-accent px-2 py-0.5 rounded-full">Optional</span>)}
-                    </button>
+                    </div>
                   ))}
                 </div>
                 <div className="rounded-2xl bg-accent p-4 mb-4">
                   <p className="text-xs text-muted-foreground leading-relaxed">🔒 Photos are stored on your device only — never uploaded, never shared unless you choose to.</p>
-                </div>
-                <div className="rounded-2xl bg-accent p-4 mb-6">
-                  <p className="text-xs text-muted-foreground leading-relaxed">💡 For the best baseline, take photos in good natural light with your hair parted or pulled back so your scalp is visible.</p>
                 </div>
               </div>
             )}
