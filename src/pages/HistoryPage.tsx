@@ -1,11 +1,27 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown, Minus, ArrowUp, Scissors, Eye, AlertTriangle, MapPin } from 'lucide-react';
+import { ChevronDown, Minus, ArrowUp, Scissors, Eye, AlertTriangle, MapPin, ClipboardCheck } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
+
+interface SalonCheckInEntry {
+  id: string;
+  date: string;
+  photos: number;
+  observations: string[];
+  note?: string;
+}
 
 const HistoryPage = () => {
   const { history, salonVisits, stylistObservations, quickLogs } = useApp();
   const [expanded, setExpanded] = useState<string | null>(null);
+  const [salonCheckIns, setSalonCheckIns] = useState<SalonCheckInEntry[]>([]);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('follisense-salon-checkins');
+      if (saved) setSalonCheckIns(JSON.parse(saved));
+    } catch {}
+  }, []);
 
   const trends = [
     { label: 'Itch', status: 'Stable', icon: Minus, color: 'text-primary' },
