@@ -64,6 +64,7 @@ const App = () => (
               <Route path="/stylist" element={<StylistHome />} />
               <Route path="/stylist/learn" element={<StylistLearnPage />} />
               <Route path="/stylist/observation" element={<StylistObservation />} />
+              <Route path="/stylist/quiz" element={<ScalpQuiz />} />
               <Route path="/stylist/clients" element={<StylistClients />} />
               <Route path="/stylist/profile" element={<ProfilePage />} />
               <Route path="*" element={<NotFound />} />
