@@ -483,10 +483,11 @@ const StylistObservation = () => {
             )}
           </motion.div>
         </AnimatePresence>
+        </div>
 
-        {/* Next button for steps 1-6 */}
+        {/* Next button for steps 1-6 (sticky) */}
         {step < 7 && (
-          <div className="pb-8">
+          <div className="flex-shrink-0 py-4">
             <button
               onClick={() => setStep(step + 1)}
               disabled={!canProceed()}
