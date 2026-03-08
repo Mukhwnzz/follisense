@@ -891,8 +891,8 @@ const Onboarding = () => {
               </div>
             )}
 
-            {/* ── Step 4: Baseline ── */}
-            {step === 4 && (
+            {/* ── Step 5: Baseline ── */}
+            {step === 5 && (
               <div>
                 {baselineAck ? (
                   <motion.div key="ack" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="pt-16 text-center">
