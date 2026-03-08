@@ -107,7 +107,56 @@ const ClinicianSummary = () => {
             </div>
           </div>
 
-          {/* Negatives */}
+          {/* Patient health context — shown when data exists */}
+          {(() => {
+            const hp = healthProfile;
+            const contextItems: { label: string; value: string }[] = [];
+
+            if (hp.medicalConditions.length > 0 && !hp.medicalConditions.includes('None of these') && !hp.medicalConditions.includes('Prefer not to say')) {
+              contextItems.push({ label: 'Medical conditions', value: hp.medicalConditions.join(', ') });
+            }
+            if (hp.pregnancyStatus && hp.pregnancyStatus !== 'No' && hp.pregnancyStatus !== 'Prefer not to say') {
+              contextItems.push({ label: 'Reproductive status', value: hp.pregnancyStatus });
+            }
+            if (hp.medications === 'Yes') {
+              contextItems.push({ label: 'Medications', value: hp.medicationDetails || 'Yes (unspecified)' });
+            }
+            // Blood work
+            Object.entries(hp.bloodLevels).forEach(([marker, level]) => {
+              if (level === 'Low') contextItems.push({ label: marker, value: 'Low' });
+            });
+            // Skin conditions
+            if (hp.skinConditions.length > 0 && !hp.skinConditions.includes('None')) {
+              const items = hp.skinConditions.filter(s => s !== 'Other');
+              if (hp.skinConditions.includes('Other') && hp.skinConditionDetails) items.push(hp.skinConditionDetails);
+              if (items.length) contextItems.push({ label: 'Skin conditions', value: items.join(', ') });
+            }
+            if (hp.previousHairLoss && hp.previousHairLoss !== 'No') {
+              contextItems.push({ label: 'Previous hair loss', value: hp.previousHairLoss });
+            }
+            if (hp.diagnosedCondition === 'Yes') {
+              contextItems.push({ label: 'Diagnosed condition', value: hp.diagnosedConditionDetails || 'Yes (unspecified)' });
+            }
+            if (hp.familyHistory === 'Yes') {
+              contextItems.push({ label: 'Family history', value: 'Hair loss / thinning' });
+            }
+
+            if (contextItems.length === 0) return null;
+
+            return (
+              <div className="card-elevated p-4 mb-4">
+                <h3 className="text-label mb-3">Patient Health Context</h3>
+                <div className="space-y-2.5">
+                  {contextItems.map(item => (
+                    <div key={item.label} className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">{item.label}</span>
+                      <span className="font-medium text-foreground text-right max-w-[55%]">{item.value}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
           {negatives.length > 0 && (
             <div className="card-elevated p-4 mb-6">
               <h3 className="text-label mb-3">Relevant Negatives</h3>
