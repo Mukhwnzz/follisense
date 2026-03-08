@@ -525,41 +525,33 @@ const HomePage = () => {
               exit={{ scale: 0.95, opacity: 0 }}
               className="bg-card rounded-3xl p-6 max-w-sm w-full shadow-card"
             >
-              {!onboardingData.isWornOutOnly ? (
+            {isMale ? (
                 <>
                   <p className="text-foreground leading-relaxed mb-6">
-                    Hey — your braids have been in for 14 days. Quick scalp check? Takes about a minute.
+                    {onboardingData.barberFrequency
+                      ? "It's been a few weeks since your last barber visit. Quick scalp check? Takes about a minute."
+                      : onboardingData.locRetwistFrequency
+                      ? "Your locs have been in for 2 weeks. Quick scalp check?"
+                      : "Ready for a quick scalp check? Takes about a minute."}
                   </p>
-                  <button
-                    onClick={() => { dismissCheckIn(); navigate('/mid-cycle'); }}
-                    className="w-full h-14 bg-primary text-primary-foreground rounded-xl font-semibold text-base btn-press mb-3"
-                  >
-                    Start check-in
-                  </button>
-                  <button
-                    onClick={dismissCheckIn}
-                    className="w-full text-center text-sm text-muted-foreground py-2"
-                  >
-                    Remind me later
-                  </button>
+                  <button onClick={() => { dismissCheckIn(); navigate('/wash-day?mode=regular'); }} className="w-full h-14 bg-primary text-primary-foreground rounded-xl font-semibold text-base btn-press mb-3">Start check-in</button>
+                  <button onClick={dismissCheckIn} className="w-full text-center text-sm text-muted-foreground py-2">Remind me later</button>
+                </>
+              ) : !onboardingData.isWornOutOnly ? (
+                <>
+                  <p className="text-foreground leading-relaxed mb-6">
+                    Hey — your {(onboardingData.protectiveStyles[0] || 'braids').toLowerCase()} have been in for 14 days. Quick scalp check? Takes about a minute.
+                  </p>
+                  <button onClick={() => { dismissCheckIn(); navigate('/mid-cycle'); }} className="w-full h-14 bg-primary text-primary-foreground rounded-xl font-semibold text-base btn-press mb-3">Start check-in</button>
+                  <button onClick={dismissCheckIn} className="w-full text-center text-sm text-muted-foreground py-2">Remind me later</button>
                 </>
               ) : (
                 <>
                   <p className="text-foreground leading-relaxed mb-6">
                     It's been 2 weeks — ready for a quick scalp check? Takes about 2 minutes.
                   </p>
-                  <button
-                    onClick={() => { dismissCheckIn(); navigate('/wash-day?mode=regular'); }}
-                    className="w-full h-14 bg-primary text-primary-foreground rounded-xl font-semibold text-base btn-press mb-3"
-                  >
-                    Start check-in
-                  </button>
-                  <button
-                    onClick={dismissCheckIn}
-                    className="w-full text-center text-sm text-muted-foreground py-2"
-                  >
-                    Remind me later
-                  </button>
+                  <button onClick={() => { dismissCheckIn(); navigate('/wash-day?mode=regular'); }} className="w-full h-14 bg-primary text-primary-foreground rounded-xl font-semibold text-base btn-press mb-3">Start check-in</button>
+                  <button onClick={dismissCheckIn} className="w-full text-center text-sm text-muted-foreground py-2">Remind me later</button>
                 </>
               )}
             </motion.div>
