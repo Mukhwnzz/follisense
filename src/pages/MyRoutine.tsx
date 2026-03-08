@@ -22,92 +22,117 @@ interface Routine {
 }
 
 const generateMockRoutine = (data: any): Routine => {
-  const hairType = data.hairType || '4c';
-  const styles = data.protectiveStyles?.length > 0 ? data.protectiveStyles : ['braids'];
-  const washFreq = data.washFrequency || data.wornOutWashFrequency || 'Every 7–10 days';
-  const goals = data.goals?.length > 0 ? data.goals : ['General scalp and hair health'];
-  const hasItch = data.baselineItch === 'Moderate' || data.baselineItch === 'Severe';
+  const isProtectiveStyle = data.protectiveStyleFrequency === 'Most of the time' || data.protectiveStyleFrequency === 'About half the time';
   const isMale = data.gender === 'man';
+  const styles = data.protectiveStyles?.length > 0 ? data.protectiveStyles : ['braids'];
 
   return {
-    summary: `A ${isMale ? '' : 'wash-cycle-based '}scalp care routine for your ${hairType} hair, focused on ${goals[0]?.toLowerCase() || 'scalp health'}.`,
+    summary: isProtectiveStyle
+      ? `A ${data.cycleLength || '4-week'} cycle routine built around your ${styles[0] || 'protective style'}`
+      : `A weekly scalp and hair care routine for your ${styles[0] || 'hair'}`,
     wash_day: [
       {
-        step: 'Pre-wash scalp massage',
-        detail: `Use your fingertips to gently massage your scalp for circulation before wetting your hair. No product needed for this step.`,
-        duration: '3 mins',
-      },
-      {
-        step: 'Cleanse with sulphate-free shampoo',
-        detail: `Focus the shampoo on your scalp, not your lengths. Work it in with your fingertips, not your nails. Rinse thoroughly.`,
+        step: 'Scalp cleanse',
+        detail: isProtectiveStyle
+          ? `Part your ${styles[0] || 'style'} gently and apply diluted sulphate-free shampoo directly to the scalp. Massage with fingertips, not nails.`
+          : 'Use a gentle, sulphate-free shampoo. Focus on the scalp, not the lengths. Massage for 2–3 minutes to loosen buildup.',
         duration: '5 mins',
       },
       {
-        step: 'Condition mid-lengths to ends',
-        detail: `Apply conditioner from mid-length down. Your scalp doesn't need conditioner — it can cause buildup.`,
+        step: 'Condition',
+        detail: 'Apply conditioner to your lengths and ends only. Leave for 3–5 minutes. Detangle gently with a wide-tooth comb starting from the ends.',
         duration: '5 mins',
       },
       {
-        step: 'Moisturise and seal lengths',
-        detail: `Apply a water-based leave-in to damp hair. Seal with a light cream or butter on your lengths only — keep your scalp clear.`,
+        step: 'Scalp check',
+        detail: 'While your hair is parted for washing, look at your hairline, temples, and crown. Note any redness, bumps, flaking, or thinning. This is your best visibility moment.',
+        duration: '2 mins',
+      },
+      {
+        step: 'Complete your ScalpSense check-in',
+        detail: 'Log your wash day assessment while everything is fresh. Take comparison photos if you can.',
         duration: '3 mins',
       },
     ],
-    mid_cycle: [
+    mid_cycle: isProtectiveStyle ? [
       {
-        step: hasItch ? 'Scalp relief check' : 'Scalp check',
-        detail: hasItch
-          ? `If your scalp feels itchy or tight, use a fragrance-free scalp mist or hydrating spray. Avoid scratching — press gently with a fingertip instead.`
-          : `Part your hair in a few places and check for flaking, redness, or buildup. No product needed — just observation.`,
-        frequency: 'Every 3–4 days',
+        step: 'Scalp refresh',
+        detail: 'Use a lightweight scalp spray or diluted witch hazel to manage buildup between washes.',
+        frequency: 'Every 5–7 days',
       },
       {
-        step: 'Refresh your style',
-        detail: styles.includes('Box braids') || styles.includes('Cornrows') || styles.includes('Twists')
-          ? `Spritz edges and hairline with water or a light refresher spray. Re-tie your satin scarf at night.`
-          : `Detangle gently from ends to roots. Reapply leave-in if hair feels dry on the lengths.`,
+        step: 'Tension check',
+        detail: `Feel around your hairline and where your ${styles[0] || 'style'} grips. If anything feels sore or tight, loosen or remove those sections.`,
+        frequency: 'Every few days',
+      },
+      {
+        step: 'Mid-cycle check-in',
+        detail: 'Complete your ScalpSense mid-cycle questions. Takes 1 minute.',
+        frequency: 'Once mid-cycle',
+      },
+    ] : [
+      {
+        step: 'Scalp massage',
+        detail: 'Gentle fingertip massage for 3–4 minutes to support circulation. No product needed.',
+        frequency: '2–3 times per week',
+      },
+      {
+        step: 'Moisture check',
+        detail: "Feel your ends. If they're dry or rough, apply a small amount of leave-in conditioner or a light cream.",
         frequency: 'As needed',
       },
     ],
     daily: [
       {
-        step: 'Satin protection at night',
+        step: isMale ? 'Satin or silk pillowcase' : 'Satin protection',
         detail: isMale
-          ? `Use a satin-lined durag or wave cap. Make sure the tie isn't too tight around your hairline.`
-          : `Sleep on a satin pillowcase or wear a satin bonnet. This reduces friction and breakage overnight.`,
+          ? 'Sleep on a satin pillowcase to reduce friction on your hairline.'
+          : 'Sleep with a satin bonnet or on a satin pillowcase to reduce friction on your edges and preserve your style.',
       },
       {
-        step: 'Hydration',
-        detail: `Drink at least 2 litres of water. Your scalp is skin — it needs hydration from the inside too.`,
+        step: 'Hydrate',
+        detail: 'Aim for at least 2 litres of water. Your scalp is skin and it benefits from hydration like the rest of your body.',
       },
       {
-        step: 'Leave your scalp alone',
-        detail: `Resist the urge to scratch, pick at flakes, or apply products between washes unless there's a specific reason to.`,
+        step: 'Hands off',
+        detail: "Resist the urge to scratch, pick, or constantly touch your scalp. If it itches, press gently with a fingertip instead.",
       },
     ],
     weekly_nutrition: [
-      { tip: 'Include iron-rich foods like spinach, lentils, or red meat — iron deficiency is a common cause of hair shedding.' },
-      { tip: 'Get adequate vitamin D through sunlight or supplementation, especially in winter. Low levels are linked to hair loss.' },
-      { tip: 'Eat protein at every meal — hair is made of keratin, which requires amino acids from dietary protein.' },
-      ...(data.baselineHairHealth === 'Dry or brittle'
-        ? [{ tip: 'Add omega-3 fatty acids (oily fish, walnuts, flaxseed) to support scalp hydration from within.' }]
-        : []),
+      {
+        tip: data.medicalConditions?.includes('Iron deficiency / anaemia')
+          ? 'Your iron levels need attention. Include red meat, spinach, or lentils daily. Pair with vitamin C for better absorption. Consider a supplement if your levels are clinically low.'
+          : 'Include iron-rich foods regularly: red meat, spinach, lentils, fortified cereals. Iron carries oxygen to your hair follicles.',
+      },
+      {
+        tip: 'Make sure you\'re getting enough protein at every meal. Your hair is made of keratin, which is a protein. Low protein intake directly affects hair growth.',
+      },
+      {
+        tip: data.medicalConditions?.includes('Vitamin D deficiency')
+          ? 'You mentioned low vitamin D. Consider supplementing 1000–2000 IU daily, especially if you have darker skin or limited sun exposure.'
+          : 'Vitamin D supports hair follicle health. Sources: sunlight, oily fish, fortified foods. People with darker skin synthesise less from sunlight and may benefit from supplementation.',
+      },
     ],
     avoid: [
-      { item: `Heavy oils or butters directly on the scalp — these can clog follicles, worsen buildup, and aggravate conditions like seborrheic dermatitis.` },
-      ...(styles.some((s: string) => ['Box braids', 'Cornrows', 'Twists'].includes(s))
-        ? [{ item: `Re-tightening edges or hairline braids — if they're loose, leave them. Traction damage is cumulative and often permanent.` }]
-        : []),
-      ...(data.chemicalProcessing && data.chemicalProcessing !== 'None'
-        ? [{ item: `Overlapping chemical treatments on previously processed hair — this causes breakage at the demarcation line.` }]
-        : []),
-      { item: `Scratching your scalp with your nails — it damages the skin barrier and can introduce bacteria.` },
+      {
+        item: isProtectiveStyle
+          ? `Avoid re-tightening your ${styles[0] || 'style'} if it loosens around the hairline. Loose edges are safer than tight ones.`
+          : 'Avoid daily heat styling. Every heat pass weakens the protein bonds in your hair. If you use heat, always use a protectant and keep the temperature under 190°C.',
+      },
+      {
+        item: 'Avoid heavy oils or greases directly on your scalp. They can clog follicles and trap buildup, especially under protective styles.',
+      },
+      {
+        item: data.chemicalProcessing !== 'No, fully natural'
+          ? 'With chemically processed hair, avoid overlapping chemical treatments on previously processed sections. Focus new applications on new growth only.'
+          : 'Avoid tight styles in the same position repeatedly. Alternate where tension falls to give follicles recovery time.',
+      },
     ],
-    notes: goals.includes('Protect my edges / grow my hairline back')
-      ? 'Your goal of protecting your edges is important. Traction alopecia is the most common cause of hairline thinning in people with textured hair, and it\'s largely preventable. Keep tension low, avoid tight styles at the hairline, and monitor for early signs like bumps or tenderness.'
-      : goals.includes('Understand my hair loss or thinning')
-      ? 'Hair loss can have many causes — hormonal, nutritional, or related to styling practices. Track your symptoms consistently so you can identify patterns. If thinning is progressive or concentrated in specific areas, a trichologist or dermatologist can help with diagnosis.'
-      : 'Consistency matters more than complexity. Follow this routine for 4–6 weeks before expecting visible changes. If symptoms worsen or new concerns arise, consider booking a consultation with a trichologist.',
+    notes: data.teTriggers?.length > 0 && !data.teTriggers?.includes('None of these')
+      ? `You mentioned some recent life changes (${data.teTriggers.join(', ')}). Increased shedding in the next few months could be related to this and is often temporary. Monitor it through your check-ins and see a specialist if it persists beyond 6 months.`
+      : data.baselineHairline === 'Very concerned' || data.baselineHairline === 'Noticeable change'
+        ? 'You flagged hairline concerns at your baseline. This is something to actively monitor. If you don\'t see improvement after reducing tension for 2–3 cycles, book a consultation with a trichologist.'
+        : '',
   };
 };
 
