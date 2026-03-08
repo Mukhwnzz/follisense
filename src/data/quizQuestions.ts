@@ -8,6 +8,7 @@ export interface QuizQuestion {
   incorrectExplanationTemplate: string;
   options: string[];
   learnMoreId: string;
+  skinToneTip: string;
 }
 
 export const quizQuestions: QuizQuestion[] = [
