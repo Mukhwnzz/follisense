@@ -157,16 +157,11 @@ const Onboarding = () => {
   const [capturedPhotos, setCapturedPhotos] = useState<Record<string, boolean>>({});
   const [baselineResultScreen, setBaselineResultScreen] = useState<'amber' | 'red' | null>(null);
 
-  // Menstrual cycle state
-  const [menstrualTracking, setMenstrualTracking] = useState('');
-  const [lastPeriodDate, setLastPeriodDate] = useState<Date | undefined>();
-  const [menstrualCycleLen, setMenstrualCycleLen] = useState('');
-  const [hormonalContraception, setHormonalContraception] = useState('');
 
   // Goals state
   const [goals, setGoals] = useState<string[]>([]);
 
-  const totalSteps = 8; // was 6, now +2 for menstrual + goals
+  const totalSteps = 7; // 6 original + goals
 
   const baselineAreas = [
     { id: 'hairline', label: 'Hairline — temples and edges', desc: 'Front-facing', optional: false },
