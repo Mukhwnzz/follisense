@@ -4,10 +4,19 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, X } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 
-const questions = [
+interface QuestionDef {
+  key: string;
+  q: string;
+  qMale?: string;
+  options: string[];
+  maleOptions?: string[];
+}
+
+const baseQuestions: QuestionDef[] = [
   {
     key: 'itch',
-    q: "How's the itching been this cycle?",
+    q: "How's the itching been since your last check-in?",
+    qMale: "Any scalp itching since your last check-in?",
     options: ['None', 'Mild', 'Moderate', 'Severe'],
   },
   {
@@ -16,13 +25,23 @@ const questions = [
     options: ['None', 'A little', 'Yes, noticeably', 'Yes, painful'],
   },
   {
+    key: 'irritation',
+    q: 'Any bumps or irritation?',
+    qMale: 'Any razor bumps, ingrown hairs, or irritation?',
+    options: ['None', 'A few bumps', 'Moderate — several areas', 'Significant — widespread'],
+    maleOptions: ['None', 'Minor razor bumps', 'Ingrown hairs', 'Folliculitis — clusters of bumps'],
+  },
+  {
     key: 'hairline',
     q: 'How are your edges looking?',
+    qMale: 'How does your hairline look?',
     options: ['No change', 'Looks a bit different', 'Noticeable change', "I'm concerned"],
+    maleOptions: ['No change', 'Slight recession at temples', 'Noticeable thinning', "I'm concerned"],
   },
   {
     key: 'hairConcern',
     q: 'Any unusual breakage or dryness since last time?',
+    qMale: 'Any unusual shedding, thinning, or dryness?',
     options: ['No, hair feels normal', 'A little more than usual', 'Yes, noticeably more', "Yes, I'm concerned"],
   },
 ];
@@ -46,11 +65,29 @@ const getAcknowledgment = (optionIndex: number): string => {
 
 const MidCycleCheckIn = () => {
   const navigate = useNavigate();
-  const { setCurrentCheckIn } = useApp();
+  const { onboardingData, setCurrentCheckIn } = useApp();
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [currentStep, setCurrentStep] = useState(0);
   const [showConfirm, setShowConfirm] = useState(false);
   const [acknowledgment, setAcknowledgment] = useState<string | null>(null);
+
+  const isMale = onboardingData.gender === 'man';
+  const questions = baseQuestions;
+  const currentStyle = onboardingData.protectiveStyles[0] || (isMale ? 'your style' : 'Braids');
+
+  // Build context label
+  const getContextLabel = (): string => {
+    if (isMale) {
+      if (onboardingData.barberFrequency) return 'Quick scalp check — between barber visits';
+      if (onboardingData.locRetwistFrequency) return 'Loc check-in — Day 14 since retwist';
+      if (onboardingData.maleStyleFrequency) return `${currentStyle} check-in`;
+      return 'Scalp check-in';
+    }
+    return `Day 14 of your ${currentStyle.toLowerCase()} cycle`;
+  };
+
+  const getQuestion = (q: QuestionDef): string => (isMale && q.qMale) ? q.qMale : q.q;
+  const getOptions = (q: QuestionDef): string[] => (isMale && q.maleOptions) ? q.maleOptions : q.options;
 
   const isLastStep = currentStep === questions.length - 1;
   const allAnswered = questions.every(q => answers[q.key]);
@@ -58,17 +95,14 @@ const MidCycleCheckIn = () => {
 
   const selectAnswer = (opt: string, optIndex: number) => {
     setAnswers(prev => ({ ...prev, [currentQ.key]: opt }));
-    const ack = getAcknowledgment(optIndex);
-    setAcknowledgment(ack);
+    setAcknowledgment(getAcknowledgment(optIndex));
   };
 
   useEffect(() => {
     if (!acknowledgment) return;
     const timer = setTimeout(() => {
       setAcknowledgment(null);
-      if (!isLastStep) {
-        setCurrentStep(prev => prev + 1);
-      }
+      if (!isLastStep) setCurrentStep(prev => prev + 1);
     }, 1200);
     return () => clearTimeout(timer);
   }, [acknowledgment, isLastStep]);
@@ -88,12 +122,8 @@ const MidCycleCheckIn = () => {
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-[430px] mx-auto px-6">
-        {/* Top bar */}
         <div className="flex items-center justify-between py-4">
-          <button onClick={() => {
-            if (currentStep > 0) setCurrentStep(prev => prev - 1);
-            else setShowConfirm(true);
-          }} className="p-2 -ml-2">
+          <button onClick={() => { if (currentStep > 0) setCurrentStep(prev => prev - 1); else setShowConfirm(true); }} className="p-2 -ml-2">
             <ArrowLeft size={22} className="text-foreground" strokeWidth={1.8} />
           </button>
           <div className="flex gap-1">
@@ -109,34 +139,17 @@ const MidCycleCheckIn = () => {
         <div className="flex-1 overflow-y-auto min-h-0">
           <AnimatePresence mode="wait">
             {acknowledgment ? (
-              <motion.div
-                key="ack"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="pt-16 text-center"
-              >
+              <motion.div key="ack" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="pt-16 text-center">
                 <p className="text-lg font-medium text-foreground">{acknowledgment}</p>
               </motion.div>
             ) : (
-              <motion.div
-                key={currentStep}
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                transition={{ duration: 0.2 }}
-                className="pt-4 pb-8"
-              >
-                <p className="text-label mb-2">Day 14 of your braids cycle</p>
-                <h2 className="text-xl font-semibold mb-6">{currentQ.q}</h2>
+              <motion.div key={currentStep} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.2 }} className="pt-4 pb-8">
+                <p className="text-label mb-2">{getContextLabel()}</p>
+                <h2 className="text-xl font-semibold mb-6">{getQuestion(currentQ)}</h2>
 
                 <div className="space-y-3">
-                  {currentQ.options.map((opt, optIdx) => (
-                    <button
-                      key={opt}
-                      onClick={() => selectAnswer(opt, optIdx)}
-                      className={`selection-card w-full text-left ${answers[currentQ.key] === opt ? 'selected' : ''}`}
-                    >
+                  {getOptions(currentQ).map((opt, optIdx) => (
+                    <button key={opt} onClick={() => selectAnswer(opt, optIdx)} className={`selection-card w-full text-left ${answers[currentQ.key] === opt ? 'selected' : ''}`}>
                       <p className="font-medium text-foreground">{opt}</p>
                     </button>
                   ))}
@@ -148,36 +161,20 @@ const MidCycleCheckIn = () => {
 
         {isLastStep && allAnswered && !acknowledgment && (
           <div className="flex-shrink-0 py-4">
-            <button
-              onClick={handleSubmit}
-              className="w-full h-14 rounded-xl font-semibold text-base btn-press bg-primary text-primary-foreground"
-            >
-              See results
-            </button>
+            <button onClick={handleSubmit} className="w-full h-14 rounded-xl font-semibold text-base btn-press bg-primary text-primary-foreground">See results</button>
           </div>
         )}
       </div>
 
-      {/* Confirm exit modal */}
       <AnimatePresence>
         {showConfirm && (
-          <motion.div
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-foreground/30 z-50 flex items-center justify-center px-6"
-          >
-            <motion.div
-              initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }}
-              className="bg-card rounded-3xl p-6 max-w-sm w-full shadow-card"
-            >
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-foreground/30 z-50 flex items-center justify-center px-6">
+            <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} exit={{ scale: 0.95 }} className="bg-card rounded-3xl p-6 max-w-sm w-full shadow-card">
               <h3 className="font-semibold text-lg text-foreground mb-2">Are you sure?</h3>
               <p className="text-sm text-muted-foreground mb-6">Your progress won't be saved.</p>
               <div className="flex gap-3">
-                <button onClick={() => setShowConfirm(false)} className="flex-1 h-12 rounded-xl border border-border font-medium text-sm btn-press">
-                  Continue
-                </button>
-                <button onClick={() => navigate('/home')} className="flex-1 h-12 rounded-xl bg-primary text-primary-foreground font-medium text-sm btn-press">
-                  Leave
-                </button>
+                <button onClick={() => setShowConfirm(false)} className="flex-1 h-12 rounded-xl border border-border font-medium text-sm btn-press">Continue</button>
+                <button onClick={() => navigate('/home')} className="flex-1 h-12 rounded-xl bg-primary text-primary-foreground font-medium text-sm btn-press">Leave</button>
               </div>
             </motion.div>
           </motion.div>

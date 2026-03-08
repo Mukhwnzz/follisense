@@ -21,13 +21,14 @@ const protectiveStyleTips = [
 ];
 
 const maleTips = [
-  "Wearing your durag tonight? Make sure your hairline isn't under too much tension from the tie",
-  "If your barber is lining you up every week, give your edges a break now and then",
+  "If your barber is lining you up every week, give your hairline a break now and then — constant clipping causes irritation",
+  "Razor bumps at the nape? Keep the area clean and try a bump-reducing aftershave balm",
   "Cornrows feeling tight? Don't tough it out. Loosen the front ones to protect your hairline",
-  "Sweat buildup under a wave cap can irritate your scalp. A quick rinse or scalp wipe helps",
+  "Sweat buildup under a wave cap or durag can irritate your scalp. A quick rinse or scalp wipe helps",
   "If your locs are pulling at the root, that's traction. Talk to your loctician about lighter retwists",
   "Staying hydrated helps your scalp too — aim for 2 litres today",
-  "Try pressing gently with a fingertip instead of scratching — it relieves itch without damaging the scalp",
+  "Ingrown hairs after a fade? Exfoliate gently between cuts and avoid shaving against the grain",
+  "If you're noticing thinning at the crown or temples, it's worth tracking — early action makes a difference",
 ];
 
 const wornOutTips = [
@@ -49,7 +50,7 @@ const menstruationTips = [
 ];
 
 const quickLogSymptoms = [
-  'Itching', 'Tenderness / soreness', 'Flaking', 'Thinning / shedding', 'Breakage', 'Bumps or irritation', 'Something else',
+  'Itching', 'Tenderness / soreness', 'Flaking', 'Thinning / shedding', 'Breakage', 'Bumps or irritation', 'Razor bumps / ingrown hairs', 'Something else',
 ];
 
 const quickLogSeverities = [
@@ -58,21 +59,23 @@ const quickLogSeverities = [
   { label: 'Severe', desc: 'I need to do something about this' },
 ];
 
-const getQuickLogTip = (symptoms: string[]): string => {
+const getQuickLogTip = (symptoms: string[], isMaleUser: boolean): string => {
+  if (symptoms.includes('Razor bumps / ingrown hairs')) return 'Avoid shaving against the grain. Use a bump-reducing aftershave and keep the area clean. If bumps persist or become infected, see a dermatologist.';
   if (symptoms.includes('Itching')) return 'Try pressing gently with a fingertip instead of scratching. If your scalp feels dry or tight, a fragrance-free scalp moisturiser or hydrating mist may help.';
-  if (symptoms.includes('Tenderness / soreness')) return "If your style feels tight, loosen the edges. Don't tough it out — tension damage is preventable.";
+  if (symptoms.includes('Tenderness / soreness')) return isMaleUser ? "If you've had a recent cut, soreness should settle in 24-48 hours. Persistent tenderness could signal irritation or folliculitis." : "If your style feels tight, loosen the edges. Don't tough it out — tension damage is preventable.";
   if (symptoms.includes('Flaking')) return 'A gentle sulphate-free rinse can help clear buildup without disturbing your style.';
-  if (symptoms.includes('Thinning / shedding')) return 'Avoid re-tightening edges. If shedding is concentrated at the hairline, consider loosening or removing tension.';
+  if (symptoms.includes('Thinning / shedding')) return isMaleUser ? 'If thinning is concentrated at the crown or temples, it could be early male pattern hair loss. Tracking over time helps — start with photos.' : 'Avoid re-tightening edges. If shedding is concentrated at the hairline, consider loosening or removing tension.';
   if (symptoms.includes('Bumps or irritation')) return 'Keep the area clean and avoid heavy products. If bumps persist, they could indicate folliculitis — worth monitoring.';
   return 'Note taken. Keep an eye on it and mention it at your next check-in.';
 };
 
-const getQuickLogTips = (symptoms: string[]): string[] => {
+const getQuickLogTips = (symptoms: string[], isMaleUser: boolean): string[] => {
   const tips: string[] = [];
+  if (symptoms.includes('Razor bumps / ingrown hairs')) tips.push('Exfoliate gently between cuts and use a bump-reducing product on the affected areas');
   if (symptoms.includes('Itching')) tips.push('If your scalp feels dry or tight, a fragrance-free scalp moisturiser or hydrating mist may help. Avoid heavy oils or butters directly on the scalp.');
-  if (symptoms.includes('Tenderness / soreness')) tips.push('Avoid re-tightening your edges — if they\'re loose, leave them');
-  if (symptoms.includes('Flaking')) tips.push('Gently cleanse your scalp mid-cycle with a sulphate-free rinse');
-  if (symptoms.includes('Thinning / shedding')) tips.push('Consider loosening or avoiding tension on your hairline for the next style');
+  if (symptoms.includes('Tenderness / soreness')) tips.push(isMaleUser ? 'Persistent soreness after a cut may indicate irritation — keep the area clean' : 'Avoid re-tightening your edges — if they\'re loose, leave them');
+  if (symptoms.includes('Flaking')) tips.push('Gently cleanse your scalp with a sulphate-free rinse');
+  if (symptoms.includes('Thinning / shedding')) tips.push(isMaleUser ? 'Track changes at your hairline and crown with photos — early monitoring helps' : 'Consider loosening or avoiding tension on your hairline for the next style');
   if (symptoms.includes('Bumps or irritation')) tips.push('Keep the affected area clean and avoid heavy product application');
   if (tips.length === 0) tips.push('Monitor the symptom and mention it at your next check-in');
   return tips.slice(0, 3);
@@ -359,8 +362,8 @@ const HomePage = () => {
           </button>
         </div>
 
-        {/* Pre-wash day prompt */}
-        {showWashPrompt && (
+        {/* Pre-wash day / barber visit prompt */}
+        {!isMale && showWashPrompt && (
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="card-elevated p-5 mb-4 border-l-4 border-l-warning">
             <h3 className="font-semibold text-foreground mb-1">Wash day is coming up</h3>
             <p className="text-sm text-muted-foreground mb-4">When you take down your style, take a moment to check your scalp.</p>
@@ -444,14 +447,24 @@ const HomePage = () => {
             <div className="w-8 h-8 rounded-lg bg-sage-light flex items-center justify-center">
               <Leaf size={18} className="text-primary" strokeWidth={1.8} />
             </div>
-            <h3 className="font-semibold text-foreground">{onboardingData.isWornOutOnly ? 'Scalp check-in' : 'Mid-cycle check-in'}</h3>
+            <h3 className="font-semibold text-foreground">
+              {isMale
+                ? (onboardingData.barberFrequency ? 'Scalp check-in' : 'Scalp check-in')
+                : (onboardingData.isWornOutOnly ? 'Scalp check-in' : 'Mid-cycle check-in')}
+            </h3>
           </div>
           <p className="text-sm text-muted-foreground mb-4">
-            {onboardingData.isWornOutOnly
-              ? "It's been 2 weeks — ready for a quick scalp check?"
-              : "Hey — it's been 2 weeks since your braids went in. Quick check-in? Takes about a minute."}
+            {isMale
+              ? (onboardingData.barberFrequency
+                ? "It's been a couple of weeks since your last barber visit. Quick scalp check?"
+                : onboardingData.locRetwistFrequency
+                ? "Your locs have been in for 2 weeks — time for a quick scalp check?"
+                : "Ready for a quick scalp check? Takes about a minute.")
+              : (onboardingData.isWornOutOnly
+                ? "It's been 2 weeks — ready for a quick scalp check?"
+                : `Hey — it's been 2 weeks since your ${(onboardingData.protectiveStyles[0] || 'braids').toLowerCase()} went in. Quick check-in? Takes about a minute.`)}
           </p>
-          <button onClick={() => navigate(onboardingData.isWornOutOnly ? '/wash-day?mode=regular' : '/mid-cycle')} className="w-full h-12 bg-primary text-primary-foreground rounded-xl font-semibold text-sm btn-press">Start check-in</button>
+          <button onClick={() => navigate(isMale ? '/wash-day?mode=regular' : (onboardingData.isWornOutOnly ? '/wash-day?mode=regular' : '/mid-cycle'))} className="w-full h-12 bg-primary text-primary-foreground rounded-xl font-semibold text-sm btn-press">Start check-in</button>
         </div>
 
         {/* Got a question? - points to Learn since chat is floating */}
@@ -514,41 +527,33 @@ const HomePage = () => {
               exit={{ scale: 0.95, opacity: 0 }}
               className="bg-card rounded-3xl p-6 max-w-sm w-full shadow-card"
             >
-              {!onboardingData.isWornOutOnly ? (
+            {isMale ? (
                 <>
                   <p className="text-foreground leading-relaxed mb-6">
-                    Hey — your braids have been in for 14 days. Quick scalp check? Takes about a minute.
+                    {onboardingData.barberFrequency
+                      ? "It's been a few weeks since your last barber visit. Quick scalp check? Takes about a minute."
+                      : onboardingData.locRetwistFrequency
+                      ? "Your locs have been in for 2 weeks. Quick scalp check?"
+                      : "Ready for a quick scalp check? Takes about a minute."}
                   </p>
-                  <button
-                    onClick={() => { dismissCheckIn(); navigate('/mid-cycle'); }}
-                    className="w-full h-14 bg-primary text-primary-foreground rounded-xl font-semibold text-base btn-press mb-3"
-                  >
-                    Start check-in
-                  </button>
-                  <button
-                    onClick={dismissCheckIn}
-                    className="w-full text-center text-sm text-muted-foreground py-2"
-                  >
-                    Remind me later
-                  </button>
+                  <button onClick={() => { dismissCheckIn(); navigate('/wash-day?mode=regular'); }} className="w-full h-14 bg-primary text-primary-foreground rounded-xl font-semibold text-base btn-press mb-3">Start check-in</button>
+                  <button onClick={dismissCheckIn} className="w-full text-center text-sm text-muted-foreground py-2">Remind me later</button>
+                </>
+              ) : !onboardingData.isWornOutOnly ? (
+                <>
+                  <p className="text-foreground leading-relaxed mb-6">
+                    Hey — your {(onboardingData.protectiveStyles[0] || 'braids').toLowerCase()} have been in for 14 days. Quick scalp check? Takes about a minute.
+                  </p>
+                  <button onClick={() => { dismissCheckIn(); navigate('/mid-cycle'); }} className="w-full h-14 bg-primary text-primary-foreground rounded-xl font-semibold text-base btn-press mb-3">Start check-in</button>
+                  <button onClick={dismissCheckIn} className="w-full text-center text-sm text-muted-foreground py-2">Remind me later</button>
                 </>
               ) : (
                 <>
                   <p className="text-foreground leading-relaxed mb-6">
                     It's been 2 weeks — ready for a quick scalp check? Takes about 2 minutes.
                   </p>
-                  <button
-                    onClick={() => { dismissCheckIn(); navigate('/wash-day?mode=regular'); }}
-                    className="w-full h-14 bg-primary text-primary-foreground rounded-xl font-semibold text-base btn-press mb-3"
-                  >
-                    Start check-in
-                  </button>
-                  <button
-                    onClick={dismissCheckIn}
-                    className="w-full text-center text-sm text-muted-foreground py-2"
-                  >
-                    Remind me later
-                  </button>
+                  <button onClick={() => { dismissCheckIn(); navigate('/wash-day?mode=regular'); }} className="w-full h-14 bg-primary text-primary-foreground rounded-xl font-semibold text-base btn-press mb-3">Start check-in</button>
+                  <button onClick={dismissCheckIn} className="w-full text-center text-sm text-muted-foreground py-2">Remind me later</button>
                 </>
               )}
             </motion.div>
@@ -658,7 +663,7 @@ const HomePage = () => {
                         <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4"><Leaf size={22} className="text-primary" strokeWidth={1.8} /></div>
                         <h4 className="font-semibold text-center mb-2">Thanks for sharing that</h4>
                         <p className="text-sm text-muted-foreground text-center mb-6">We'll keep an eye on this. In the meantime:</p>
-                        <div className="rounded-2xl bg-accent p-4 mb-6"><p className="text-sm text-foreground">{getQuickLogTip(quickSymptoms)}</p></div>
+                        <div className="rounded-2xl bg-accent p-4 mb-6"><p className="text-sm text-foreground">{getQuickLogTip(quickSymptoms, isMale)}</p></div>
                       </div>
                     )}
                     {quickSeverity === 'Moderate' && (
@@ -668,7 +673,7 @@ const HomePage = () => {
                         <p className="text-sm text-muted-foreground text-center mb-4">Here are some things to try. If it gets worse, you can do a full check-in anytime.</p>
                         <div className="card-elevated p-4 mb-6">
                           <ol className="space-y-3">
-                            {getQuickLogTips(quickSymptoms).map((tip, i) => (
+                            {getQuickLogTips(quickSymptoms, isMale).map((tip, i) => (
                               <li key={i} className="flex gap-3 text-sm">
                                 <span className="w-5 h-5 rounded-full bg-warning/15 flex items-center justify-center flex-shrink-0 text-xs font-semibold text-warning">{i + 1}</span>
                                 <span className="text-muted-foreground">{tip}</span>

@@ -22,10 +22,21 @@ const getAcknowledgment = (optionIndex: number, totalOptions: number): string =>
   return msgs[Math.floor(Math.random() * msgs.length)];
 };
 
-const scalpSteps = [
+interface StepDef {
+  key: string;
+  q: string;
+  qMale?: string;
+  qRegular?: string;
+  qMaleRegular?: string;
+  options: { label: string; desc: string }[];
+  maleOptions?: { label: string; desc: string }[];
+}
+
+const scalpSteps: StepDef[] = [
   {
     key: 'itch',
     q: "How's the itching been this cycle?",
+    qMale: "How's your scalp been feeling? Any itching?",
     options: [
       { label: 'None', desc: 'No itching at all' },
       { label: 'Mild', desc: 'Occasional, not bothersome' },
@@ -53,20 +64,47 @@ const scalpSteps = [
     ],
   },
   {
+    key: 'irritation',
+    q: 'Any bumps, razor bumps, or irritation?',
+    qMale: 'Any razor bumps, ingrown hairs, or irritation?',
+    options: [
+      { label: 'None', desc: 'Scalp looks clear' },
+      { label: 'A few bumps', desc: 'Minor irritation in one area' },
+      { label: 'Moderate', desc: 'Multiple bumps or inflamed areas' },
+      { label: 'Significant', desc: 'Widespread bumps, painful or infected-looking' },
+    ],
+    maleOptions: [
+      { label: 'None', desc: 'No bumps or irritation' },
+      { label: 'Minor razor bumps', desc: 'A few bumps at hairline or nape' },
+      { label: 'Ingrown hairs', desc: 'Painful ingrowns, possibly inflamed' },
+      { label: 'Folliculitis', desc: 'Clusters of bumps, pus-filled or spreading' },
+    ],
+  },
+  {
     key: 'hairline',
     q: 'How are your edges and temples looking?',
+    qMale: 'Noticed any changes at your hairline or temples?',
     qRegular: 'Noticed any changes around your hairline, temples, or parting?',
+    qMaleRegular: 'Any changes around your hairline, temples, or crown?',
     options: [
       { label: 'No change', desc: 'Edges look the same as usual' },
       { label: 'Looks a bit thinner', desc: 'Slight difference, not sure' },
       { label: 'Noticeable thinning', desc: 'Visible thinning or recession' },
       { label: "I'm concerned", desc: 'Significant change, worried' },
     ],
+    maleOptions: [
+      { label: 'No change', desc: 'Hairline looks the same' },
+      { label: 'Slight recession', desc: 'Temples seem a bit higher than before' },
+      { label: 'Noticeable thinning', desc: 'Visible thinning at hairline or crown' },
+      { label: "I'm concerned", desc: 'Significant change, want to address it' },
+    ],
   },
   {
     key: 'shedding',
     q: 'How much hair came out at wash time?',
+    qMale: 'Noticed any unusual shedding or thinning?',
     qRegular: 'How much shedding have you noticed recently — in the shower, on your pillow, or while styling?',
+    qMaleRegular: 'Any unusual shedding — in the shower, on your pillow, or after a cut?',
     options: [
       { label: 'Normal', desc: "About what I'd expect" },
       { label: 'More than usual', desc: 'A bit more than usual' },
@@ -76,25 +114,39 @@ const scalpSteps = [
   },
 ];
 
-const hairHealthSteps = [
+const hairHealthSteps: StepDef[] = [
   {
     key: 'hairFeel',
     q: "How's your hair feeling?",
+    qMale: "How's your scalp and hair feeling overall?",
     options: [
       { label: 'Soft and moisturised as usual', desc: '' },
       { label: 'A bit dry', desc: '' },
       { label: 'Very dry or brittle', desc: '' },
       { label: 'Different texture than usual', desc: 'Feels rough, straw-like, or limp' },
     ],
+    maleOptions: [
+      { label: 'Feels normal', desc: '' },
+      { label: 'A bit dry or tight', desc: '' },
+      { label: 'Very dry, flaky, or oily', desc: '' },
+      { label: 'Different than usual', desc: 'Something feels off' },
+    ],
   },
   {
     key: 'hairBreakage',
     q: 'Any breakage?',
+    qMale: 'Any breakage or thinning?',
     options: [
       { label: 'No breakage', desc: '' },
       { label: 'A little — mostly at the ends', desc: '' },
       { label: 'Moderate — breaking along the length', desc: '' },
       { label: 'Significant — breaking at the root or in patches', desc: '' },
+    ],
+    maleOptions: [
+      { label: 'No breakage', desc: '' },
+      { label: 'A little — at the ends or edges', desc: '' },
+      { label: 'Moderate — noticeable thinning', desc: '' },
+      { label: 'Significant — patches or widespread', desc: '' },
     ],
   },
   {
@@ -109,28 +161,33 @@ const hairHealthSteps = [
   },
 ];
 
-const productStep = {
+const productStep: StepDef = {
   key: 'newProducts',
-  q: 'Any new products this cycle?',
+  q: 'Any new products since last time?',
   options: [
     { label: 'No, same routine', desc: 'No changes to your product lineup' },
     { label: 'Yes, I tried something new', desc: 'You introduced a new product' },
   ],
 };
 
-const allSteps = [...scalpSteps, ...hairHealthSteps, productStep];
-
-const photoAreas = [
+const photoAreasFemale = [
   { id: 'hairline', label: 'Temples / edges', baselineLabel: 'Hairline — temples and edges' },
   { id: 'crown', label: 'Crown / vertex', baselineLabel: 'Crown and vertex' },
   { id: 'hair-condition', label: 'Hair condition — mid-lengths and ends', baselineLabel: 'Hair condition — mid-lengths and ends' },
+];
+
+const photoAreasMale = [
+  { id: 'hairline', label: 'Hairline / temples', baselineLabel: 'Hairline — temples and edges' },
+  { id: 'crown', label: 'Crown / top', baselineLabel: 'Crown and vertex' },
+  { id: 'nape', label: 'Nape / back of neck', baselineLabel: 'Nape — clipper line' },
+  { id: 'areas-of-concern', label: 'Any areas of concern', baselineLabel: 'Areas of concern' },
 ];
 
 const WashDayAssessment = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const isRegularCheckIn = searchParams.get('mode') === 'regular';
-  const { setCurrentCheckIn, baselinePhotos, research, incrementResearchPhotos, checkInCount, setCheckInCount } = useApp();
+  const { onboardingData, setCurrentCheckIn, baselinePhotos, research, incrementResearchPhotos, checkInCount, setCheckInCount } = useApp();
   const [currentStep, setCurrentStep] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [newProductText, setNewProductText] = useState('');
@@ -141,23 +198,59 @@ const WashDayAssessment = () => {
   const [acknowledgment, setAcknowledgment] = useState<string | null>(null);
   const [includeInResearch, setIncludeInResearch] = useState(research.consented);
 
-  const totalSteps = allSteps.length + 1; // +1 for photo step
+  const isMale = onboardingData.gender === 'man';
+  const allSteps = [...scalpSteps, ...hairHealthSteps, productStep];
+  const photoAreas = isMale ? photoAreasMale : photoAreasFemale;
+  const currentStyle = onboardingData.protectiveStyles[0] || (isMale ? 'your style' : 'Braids');
+
+  // Build context label
+  const getContextLabel = (): string => {
+    if (isRegularCheckIn) return 'Scalp check-in';
+    if (isMale) {
+      if (onboardingData.barberFrequency) return 'Barber check-in';
+      if (onboardingData.locRetwistFrequency) return 'Loc check-in';
+      return `${currentStyle} — scalp check`;
+    }
+    return `${currentStyle} — Day 28 of 28`;
+  };
+
+  const getContextSubtext = (): string => {
+    if (isRegularCheckIn) return "Time for your scalp check-in — takes about 2 minutes";
+    if (isMale) {
+      if (onboardingData.barberFrequency) return "Quick check on how your scalp is doing since your last cut";
+      return "Let's see how your scalp is doing";
+    }
+    return "Let's see how your scalp did this cycle";
+  };
+
+  const getQuestion = (step: StepDef): string => {
+    if (isRegularCheckIn) {
+      if (isMale && step.qMaleRegular) return step.qMaleRegular;
+      if (step.qRegular) return step.qRegular;
+    }
+    if (isMale && step.qMale) return step.qMale;
+    return step.q;
+  };
+
+  const getOptions = (step: StepDef) => {
+    if (isMale && step.maleOptions) return step.maleOptions;
+    return step.options;
+  };
+
+  const totalSteps = allSteps.length + 1;
   const isProductStep = currentStep === allSteps.length - 1;
   const isProductFollowUp = isProductStep && answers.newProducts === 'Yes, I tried something new';
   const isPhotoStep = currentStep === allSteps.length;
-  const isHairIntroStep = currentStep === scalpSteps.length && !showHairIntro;
   const currentQ = allSteps[currentStep];
 
   const selectAnswer = (val: string, optIndex: number) => {
     setAnswers(prev => ({ ...prev, [currentQ.key]: val }));
     if (currentQ.key === 'newProducts' && val === 'No, same routine') {
-      const ack = getAcknowledgment(0, 2);
-      setAcknowledgment(ack);
+      setAcknowledgment(getAcknowledgment(0, 2));
     } else if (currentQ.key === 'newProducts' && val === 'Yes, I tried something new') {
-      // Stay on step to show text input — no acknowledgment
+      // Stay on step
     } else {
-      const ack = getAcknowledgment(optIndex, currentQ.options.length);
-      setAcknowledgment(ack);
+      setAcknowledgment(getAcknowledgment(optIndex, getOptions(currentQ).length));
     }
   };
 
@@ -175,9 +268,7 @@ const WashDayAssessment = () => {
     return () => clearTimeout(timer);
   }, [acknowledgment]);
 
-  const handleProductContinue = () => {
-    setCurrentStep(allSteps.length);
-  };
+  const handleProductContinue = () => setCurrentStep(allSteps.length);
 
   const handleSubmit = () => {
     setCurrentCheckIn({
@@ -194,18 +285,14 @@ const WashDayAssessment = () => {
       type: 'wash-day',
       date: new Date().toLocaleDateString('en-GB', { month: 'short', day: 'numeric' }),
     });
-    if (photoSaved && includeInResearch && research.consented) {
-      incrementResearchPhotos();
-    }
+    if (photoSaved && includeInResearch && research.consented) incrementResearchPhotos();
     setCheckInCount(checkInCount + 1);
     navigate('/results');
   };
 
-  const getBaselineForArea = (baselineLabel: string) => {
-    return baselinePhotos.find(p => p.area === baselineLabel);
-  };
+  const getBaselineForArea = (baselineLabel: string) => baselinePhotos.find(p => p.area === baselineLabel);
 
-  // Show hair intro screen when transitioning from scalp to hair questions
+  // Hair intro transition
   if (currentStep === scalpSteps.length && !showHairIntro && !isPhotoStep) {
     return (
       <div className="min-h-screen bg-background">
@@ -226,14 +313,8 @@ const WashDayAssessment = () => {
           <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="pt-4">
             <h2 className="text-xl font-semibold mb-2">And your hair?</h2>
             <p className="text-muted-foreground text-sm mb-8">Your hair can tell us a lot about what's happening at the scalp</p>
-            <button
-              onClick={() => setShowHairIntro(true)}
-              className="w-full h-14 bg-primary text-primary-foreground rounded-xl font-semibold text-base btn-press"
-            >
-              Continue
-            </button>
+            <button onClick={() => setShowHairIntro(true)} className="w-full h-14 bg-primary text-primary-foreground rounded-xl font-semibold text-base btn-press">Continue</button>
           </motion.div>
-
           <AnimatePresence>
             {showConfirm && (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-foreground/30 z-50 flex items-center justify-center px-6">
@@ -256,18 +337,12 @@ const WashDayAssessment = () => {
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-[430px] mx-auto px-6">
-        {/* Top bar */}
         <div className="flex items-center justify-between py-4">
           <button onClick={() => {
             if (currentStep > 0) {
-              if (currentStep === scalpSteps.length && showHairIntro) {
-                setShowHairIntro(false);
-              } else {
-                setCurrentStep(currentStep - 1);
-              }
-            } else {
-              setShowConfirm(true);
-            }
+              if (currentStep === scalpSteps.length && showHairIntro) setShowHairIntro(false);
+              else setCurrentStep(currentStep - 1);
+            } else setShowConfirm(true);
           }} className="p-2 -ml-2">
             <ArrowLeft size={22} className="text-foreground" strokeWidth={1.8} />
           </button>
@@ -283,34 +358,17 @@ const WashDayAssessment = () => {
 
         <AnimatePresence mode="wait">
           {acknowledgment ? (
-            <motion.div
-              key="ack"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              className="pt-16 text-center"
-            >
+            <motion.div key="ack" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="pt-16 text-center">
               <p className="text-lg font-medium text-foreground">{acknowledgment}</p>
             </motion.div>
           ) : !isPhotoStep && currentQ ? (
-            <motion.div
-              key={currentStep}
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.2 }}
-              className="pt-4"
-            >
-              <p className="text-label mb-2">{isRegularCheckIn ? 'Scalp check-in' : 'Braids — Day 28 of 28'}</p>
-              <p className="text-sm text-muted-foreground mb-1">{isRegularCheckIn ? "Time for your scalp check-in — takes about 2 minutes" : "Let's see how your scalp did this cycle"}</p>
-              <h2 className="text-xl font-semibold mb-6">{(currentQ as any).qRegular && isRegularCheckIn ? (currentQ as any).qRegular : currentQ.q}</h2>
+            <motion.div key={currentStep} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.2 }} className="pt-4">
+              <p className="text-label mb-2">{getContextLabel()}</p>
+              <p className="text-sm text-muted-foreground mb-1">{getContextSubtext()}</p>
+              <h2 className="text-xl font-semibold mb-6">{getQuestion(currentQ)}</h2>
               <div className="space-y-3">
-                {currentQ.options.map((opt, optIdx) => (
-                  <button
-                    key={opt.label}
-                    onClick={() => selectAnswer(opt.label, optIdx)}
-                    className={`selection-card w-full text-left ${answers[currentQ.key] === opt.label ? 'selected' : ''}`}
-                  >
+                {getOptions(currentQ).map((opt, optIdx) => (
+                  <button key={opt.label} onClick={() => selectAnswer(opt.label, optIdx)} className={`selection-card w-full text-left ${answers[currentQ.key] === opt.label ? 'selected' : ''}`}>
                     <p className="font-medium text-foreground">{opt.label}</p>
                     {opt.desc && <p className="text-sm text-muted-foreground mt-0.5">{opt.desc}</p>}
                   </button>
@@ -318,40 +376,17 @@ const WashDayAssessment = () => {
               </div>
 
               {isProductFollowUp && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="mt-6"
-                >
-                  <label className="text-sm font-medium text-foreground mb-3 block">What new products did you use this cycle?</label>
-                  <ProductSearch
-                    category="hair"
-                    selectedProducts={newProductsList}
-                    onProductsChange={setNewProductsList}
-                    placeholder="Search products..."
-                  />
-                  <button
-                    onClick={handleProductContinue}
-                    className="w-full h-12 mt-4 bg-primary text-primary-foreground rounded-xl font-semibold text-sm btn-press"
-                  >
-                    Continue
-                  </button>
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mt-6">
+                  <label className="text-sm font-medium text-foreground mb-3 block">What new products did you use?</label>
+                  <ProductSearch category="hair" selectedProducts={newProductsList} onProductsChange={setNewProductsList} placeholder="Search products..." />
+                  <button onClick={handleProductContinue} className="w-full h-12 mt-4 bg-primary text-primary-foreground rounded-xl font-semibold text-sm btn-press">Continue</button>
                 </motion.div>
               )}
             </motion.div>
           ) : (
-            <motion.div
-              key="photo"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.2 }}
-              className="pt-4"
-            >
+            <motion.div key="photo" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.2 }} className="pt-4">
               <h2 className="text-xl font-semibold mb-2">Want to add photos?</h2>
-              <p className="text-muted-foreground text-sm mb-1">
-                Tracking visually helps you spot gradual changes.
-              </p>
+              <p className="text-muted-foreground text-sm mb-1">Tracking visually helps you spot gradual changes.</p>
               <p className="text-xs text-muted-foreground mb-6">Photos stay on your device only.</p>
 
               {!photoSaved ? (
@@ -360,18 +395,13 @@ const WashDayAssessment = () => {
                     const baseline = getBaselineForArea(area.baselineLabel);
                     return (
                       <div key={area.id}>
-                        <button
-                          onClick={() => setPhotoSaved(true)}
-                          className="selection-card w-full flex items-center gap-4"
-                        >
+                        <button onClick={() => setPhotoSaved(true)} className="selection-card w-full flex items-center gap-4">
                           <div className="w-12 h-12 rounded-xl bg-accent flex items-center justify-center">
                             <Camera size={22} className="text-muted-foreground" strokeWidth={1.5} />
                           </div>
                           <div className="flex-1 text-left">
                             <p className="font-medium text-foreground">{area.label}</p>
-                            {baseline && (
-                              <p className="text-xs text-primary mt-0.5">Compare with your baseline from {baseline.date}</p>
-                            )}
+                            {baseline && <p className="text-xs text-primary mt-0.5">Compare with your baseline from {baseline.date}</p>}
                           </div>
                         </button>
                         {baseline && (
@@ -396,40 +426,25 @@ const WashDayAssessment = () => {
                 </div>
               )}
 
-              {/* Research toggle */}
               {research.consented && photoSaved && (
                 <div className="flex items-center justify-between rounded-2xl bg-accent p-4 mb-6">
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-foreground">Include in research programme</p>
                     <p className="text-xs text-muted-foreground mt-0.5">Anonymised only. You can change this anytime in settings.</p>
                   </div>
-                  <button
-                    onClick={() => setIncludeInResearch(!includeInResearch)}
-                    className={`w-11 h-6 rounded-full transition-colors relative flex-shrink-0 ml-3 ${includeInResearch ? 'bg-primary' : 'bg-border'}`}
-                  >
+                  <button onClick={() => setIncludeInResearch(!includeInResearch)} className={`w-11 h-6 rounded-full transition-colors relative flex-shrink-0 ml-3 ${includeInResearch ? 'bg-primary' : 'bg-border'}`}>
                     <div className={`w-5 h-5 rounded-full bg-card shadow-sm absolute top-0.5 transition-transform ${includeInResearch ? 'translate-x-[22px]' : 'translate-x-0.5'}`} />
                   </button>
                 </div>
               )}
 
-              <button
-                onClick={handleSubmit}
-                className="w-full h-14 bg-primary text-primary-foreground rounded-xl font-semibold text-base btn-press mb-3"
-              >
-                See my results
-              </button>
-              <button
-                onClick={handleSubmit}
-                className="w-full text-center text-sm text-muted-foreground py-2"
-              >
-                Skip
-              </button>
+              <button onClick={handleSubmit} className="w-full h-14 bg-primary text-primary-foreground rounded-xl font-semibold text-base btn-press mb-3">See my results</button>
+              <button onClick={handleSubmit} className="w-full text-center text-sm text-muted-foreground py-2">Skip</button>
             </motion.div>
           )}
         </AnimatePresence>
       </div>
 
-      {/* Confirm exit */}
       <AnimatePresence>
         {showConfirm && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-foreground/30 z-50 flex items-center justify-center px-6">
