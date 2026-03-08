@@ -676,35 +676,47 @@ const Onboarding = () => {
             {/* Step 6: Products */}
             {step === 6 && (
               <div>
-                <h2 className="text-lg font-medium text-foreground mb-2">What products do you use on your scalp?</h2>
+                <h2 className="text-lg font-medium text-foreground mb-2">What do you use on your scalp and hair?</h2>
                 <p className="text-muted-foreground mb-6">This helps us understand what might be affecting your scalp health</p>
-                <div className="grid grid-cols-2 gap-3">
-                  {productOptions.slice(0, 8).map(p => (
-                    <button key={p} onClick={() => toggleProduct(p)} className={`selection-card text-center py-5 ${products.includes(p) ? 'selected' : ''}`}>
-                      <p className="font-medium text-foreground text-sm">{p}</p>
+
+                {/* Scalp products */}
+                <h3 className="text-base font-medium text-foreground mb-1">Scalp products</h3>
+                <p className="text-sm text-muted-foreground mb-4">Anything you apply directly to your scalp</p>
+                <div className="grid grid-cols-2 gap-2 mb-2">
+                  {scalpProductOptions.map(p => (
+                    <button key={p} onClick={() => toggleProduct(p)} className={`selection-card text-center py-4 ${products.includes(p) ? 'selected' : ''}`}>
+                      <p className="font-medium text-foreground text-xs leading-snug">{p}</p>
                     </button>
                   ))}
                 </div>
-                {!showMoreProducts && (
-                  <button onClick={() => setShowMoreProducts(true)} className="w-full flex items-center justify-center gap-1.5 text-sm font-medium text-primary mt-3 py-2">
-                    Show more products <ChevronDown size={16} strokeWidth={2} />
-                  </button>
-                )}
-                {showMoreProducts && (
-                  <div className="grid grid-cols-2 gap-3 mt-3">
-                    {productOptions.slice(8).map(p => (
-                      <button key={p} onClick={() => toggleProduct(p)} className={`selection-card text-center py-5 ${products.includes(p) ? 'selected' : ''}`}>
-                        <p className="font-medium text-foreground text-sm">{p}</p>
-                      </button>
-                    ))}
-                  </div>
-                )}
                 {products.includes('Other') && (
-                  <input type="text" value={otherProduct} onChange={e => setOtherProduct(e.target.value)} placeholder="What else do you use?" className="w-full h-12 px-4 rounded-xl border-2 border-border bg-card text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors mb-4" />
+                  <input type="text" value={otherProduct} onChange={e => setOtherProduct(e.target.value)} placeholder="What else do you use on your scalp?" className="w-full h-12 px-4 rounded-xl border-2 border-border bg-card text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors mb-2" />
                 )}
-                <p className="text-muted-foreground mb-4 mt-6">How often do you apply products to your scalp?</p>
-                <div className="flex flex-wrap gap-2">
+                <button onClick={() => navigate('/products?from=onboarding&type=scalp')} className="text-xs font-medium text-primary mb-6 py-1">Browse products →</button>
+
+                <p className="text-sm text-muted-foreground mb-3">How often do you apply products to your scalp?</p>
+                <div className="flex flex-wrap gap-2 mb-8">
                   {productFrequencies.map(f => (<button key={f} onClick={() => setProdFreq(f)} className={`pill-option ${prodFreq === f ? 'selected' : ''}`}>{f}</button>))}
+                </div>
+
+                {/* Hair products */}
+                <h3 className="text-base font-medium text-foreground mb-1">Hair products</h3>
+                <p className="text-sm text-muted-foreground mb-4">Anything you apply to your hair (lengths and ends)</p>
+                <div className="grid grid-cols-2 gap-2 mb-2">
+                  {hairProductOptions.map(p => (
+                    <button key={p} onClick={() => toggleHairProd(p)} className={`selection-card text-center py-4 ${hairProds.includes(p) ? 'selected' : ''}`}>
+                      <p className="font-medium text-foreground text-xs leading-snug">{p}</p>
+                    </button>
+                  ))}
+                </div>
+                {hairProds.includes('Other') && (
+                  <input type="text" value={otherHairProd} onChange={e => setOtherHairProd(e.target.value)} placeholder="What else do you use on your hair?" className="w-full h-12 px-4 rounded-xl border-2 border-border bg-card text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors mb-2" />
+                )}
+                <button onClick={() => navigate('/products?from=onboarding&type=hair')} className="text-xs font-medium text-primary mb-6 py-1">Browse products →</button>
+
+                <p className="text-sm text-muted-foreground mb-3">How often do you apply products to your hair?</p>
+                <div className="flex flex-wrap gap-2">
+                  {productFrequencies.map(f => (<button key={f} onClick={() => setHairProdFreq(f)} className={`pill-option ${hairProdFreq === f ? 'selected' : ''}`}>{f}</button>))}
                 </div>
               </div>
             )}
