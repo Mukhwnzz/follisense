@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, HelpCircle, ChevronDown, Camera, Check } from 'lucide-react';
+import { ArrowLeft, HelpCircle, ChevronDown, Camera, Check, Leaf } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
@@ -78,6 +78,63 @@ const genderOptions = [
   { id: 'prefer-not-to-say', label: "I'd rather not say" },
 ];
 
+// ── "Why we ask" helper text for each section ─────────────────────────────────
+const sectionWhyText: Record<number, string> = {
+  1: "This helps us tailor scalp check-in questions to your hair's needs.",
+  2: "Different styles create different tension and coverage patterns. This helps us know what to watch for.",
+  3: "We use this to time your reminders and mid-cycle check-ins.",
+  4: "This sets your baseline so we can track changes over time.",
+  6: "Knowing what you use helps us flag potential irritants or gaps.",
+  7: "Hormonal changes affect your scalp and hair cycle. This helps us give you relevant guidance.",
+};
+
+// ── Micro-education transitional messages ──────────────────────────────────────
+const getMicroEducation = (step: number, data: {
+  washFreq?: string; styles?: string[]; baselineItch?: string; baselineTenderness?: string;
+  baselineHairline?: string; baselineHairHealth?: string; isMale?: boolean;
+}): { title: string; message: string } | null => {
+  // After step 3 (routine/cycle)
+  if (step === 3) {
+    const longWash = data.washFreq === 'Only at takedown' || data.washFreq === 'Every 3 to 4 weeks' || data.washFreq === 'Less than weekly';
+    if (longWash) {
+      return {
+        title: 'Got it',
+        message: "Extended wash cycles are common with protective styles. Your ScalpSense check-ins will be timed around your cycle so you stay ahead of any buildup or irritation.",
+      };
+    }
+    const tightStyles = (data.styles || []).some(s =>
+      ['Box braids', 'Knotless braids', 'Cornrows / flat twists', 'Cornrows or flat twists', 'Weave / sew-in', 'Hair extensions (k-tips, micro links, etc.)'].includes(s)
+    );
+    if (tightStyles) {
+      return {
+        title: 'Noted',
+        message: "Some styles put more tension on the hairline and edges. We'll keep an eye on those areas in your scalp checks.",
+      };
+    }
+    return null;
+  }
+  // After baseline (step 4 → going to 5)
+  if (step === 4) {
+    const hasSymptoms = data.baselineItch && data.baselineItch !== 'None' || data.baselineTenderness && data.baselineTenderness !== 'None' || data.baselineHairline && data.baselineHairline !== 'No concerns';
+    if (hasSymptoms) {
+      return {
+        title: "Thanks for sharing that",
+        message: "Tracking this over time will help you spot patterns and know when to take action.",
+      };
+    }
+    return null;
+  }
+  return null;
+};
+
+// ── Skippable steps ────────────────────────────────────────────────────────────
+const isSkippableStep = (step: number, skipMenstrual: boolean): boolean => {
+  // Products (step 6), menstrual (step 7 for non-male)
+  if (step === 6) return true; // products
+  if (step === 7 && !skipMenstrual) return true; // menstrual
+  return false;
+};
+
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 const getBaselineAcknowledgment = (optionIndex: number): string => {
@@ -128,6 +185,21 @@ const SlideIn = ({ show, children }: { show: boolean; children: React.ReactNode 
   </AnimatePresence>
 );
 
+// ── Micro-education transition screen ────────────────────────────────────────
+
+const MicroEducationScreen = ({ title, message, onContinue }: { title: string; message: string; onContinue: () => void }) => (
+  <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="flex flex-col items-center justify-center text-center px-4 py-16">
+    <div className="w-14 h-14 rounded-full bg-sage-light flex items-center justify-center mb-5">
+      <Leaf size={24} className="text-primary" strokeWidth={1.8} />
+    </div>
+    <h3 className="text-lg font-medium text-foreground mb-3">{title}</h3>
+    <p className="text-sm text-muted-foreground leading-relaxed max-w-[320px] mb-8">{message}</p>
+    <button onClick={onContinue} className="w-full max-w-[280px] h-14 bg-primary text-primary-foreground rounded-xl font-semibold text-base btn-press">
+      Continue
+    </button>
+  </motion.div>
+);
+
 // ── Component ────────────────────────────────────────────────────────────────
 
 const Onboarding = () => {
@@ -170,6 +242,8 @@ const Onboarding = () => {
   const [hormonalContraception, setHormonalContraception] = useState('');
   const [goals, setGoals] = useState<string[]>([]);
   const [showMoreStyles, setShowMoreStyles] = useState(false);
+  const [showMicroEducation, setShowMicroEducation] = useState<{ title: string; message: string } | null>(null);
+  const [skippedSections, setSkippedSections] = useState<number[]>([]);
 
   // Male-specific
   const [barberFreq, setBarberFreq] = useState('');
@@ -206,20 +280,19 @@ const Onboarding = () => {
   const hasMaleInstalledStyles = isMale && styles.some(s => maleInstalledStyles.includes(s));
 
   /*
-   * STEP MAP (after baseline response is a separate route):
+   * STEP MAP:
+   * -1 = Intro ("why we ask")
    * 0 = Gender
    * 1 = Hair type + chemical
    * 2 = Styles
    * 3 = Cycle / routine
-   * 4 = Baseline check (conversational step-through) → navigates to /onboarding/baseline-response
-   * 5 = Photos (baseline-response navigates here via ?step=5)
-   * 6 = Products
-   * 7 = Menstrual (skipped for male)
+   * 4 = Baseline check → navigates to /onboarding/baseline-response
+   * 5 = Photos
+   * 6 = Products (skippable)
+   * 7 = Menstrual (skipped for male; skippable for others)
    * 8 = Goals
-   * 
-   * Total segments: female=9 (0-8), male=8 (skip step 7)
    */
-  const totalSegments = skipMenstrual ? 8 : 9;
+  const totalSegments = skipMenstrual ? 9 : 10; // +1 for intro
 
   const baselineAreas = [
     { id: 'hairline', label: 'Hairline — temples and edges', desc: 'Front-facing', optional: false },
@@ -283,6 +356,7 @@ const Onboarding = () => {
 
   // ── canProceed ──
   const canProceed = () => {
+    if (step === -1) return true; // intro
     switch (step) {
       case 0: return !!gender;
       case 1: {
@@ -311,9 +385,9 @@ const Onboarding = () => {
         const betweenOk = betweenWashCare.length > 0 && (!betweenWashCare.includes('Other') || otherBetweenWash.trim().length > 0);
         return cycleOk && washOk && betweenOk;
       }
-      case 4: return false; // baseline uses auto-advance, no Next button
-      case 5: return true; // photos
-      case 6: { // products
+      case 4: return false;
+      case 5: return true;
+      case 6: {
         const scalpNone = products.length === 1 && products[0] === 'None';
         const hairNone = hairProds.length === 1 && hairProds[0] === 'None';
         const scalpOk = scalpNone || (products.length > 0 && !!prodFreq);
@@ -321,7 +395,7 @@ const Onboarding = () => {
         return scalpOk && hairOk;
       }
       case 7: {
-        if (skipMenstrual) return goals.length > 0; // goals step for men
+        if (skipMenstrual) return goals.length > 0;
         return !!menstrualTracking && (menstrualTracking !== "Yes, I'd like to track" || (!!menstrualCycleLength && !!hormonalContraception));
       }
       case 8: return goals.length > 0;
@@ -331,16 +405,42 @@ const Onboarding = () => {
 
   const isLastStep = skipMenstrual ? step === 7 : step === 8;
 
+  const handleSkip = () => {
+    setSkippedSections(prev => [...prev, step]);
+    if (skipMenstrual && step === 6) {
+      setStep(7);
+    } else {
+      setStep(step + 1);
+    }
+  };
+
   const handleNext = () => {
+    if (step === -1) {
+      setStep(0);
+      return;
+    }
+
+    // Check for micro-education transition
+    if (step === 3 && !showMicroEducation) {
+      const edu = getMicroEducation(3, {
+        washFreq: washFreqDetail || wornOutWashFreq || maleWashFreq,
+        styles,
+        isMale,
+      });
+      if (edu) {
+        setShowMicroEducation(edu);
+        return;
+      }
+    }
+
     if (!isLastStep) {
       if (step === 5) {
         const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
         const photos = baselineAreas.filter(a => capturedPhotos[a.id]).map(a => ({ area: a.label, captured: true, date: today }));
         setBaselinePhotos(photos);
       }
-      // For male users: skip step 7 (menstrual) — jump from 6 to 7 (which is goals for them)
       if (skipMenstrual && step === 6) {
-        setStep(7); // 7 = goals for men
+        setStep(7);
       } else {
         setStep(step + 1);
       }
@@ -367,36 +467,77 @@ const Onboarding = () => {
         locRetwistFrequency: locRetwistFreq,
         maleStyleFrequency: maleStyleDuration,
       });
+      // Save skipped sections for profile completion card
+      if (skippedSections.length > 0) {
+        sessionStorage.setItem('follisense-skipped-sections', JSON.stringify(skippedSections));
+      }
+      sessionStorage.setItem('follisense-just-onboarded', 'true');
       setOnboardingComplete(true);
       navigate('/home');
     }
   };
 
   const handleBack = () => {
+    if (showMicroEducation) {
+      setShowMicroEducation(null);
+      return;
+    }
     if (step === 4 && baselineStep > 0) { setBaselineStep(prev => prev - 1); return; }
+    if (step === -1) { navigate('/'); return; }
     if (step > 0) {
-      // For male users: going back from 7 (goals) should go to 6 (products), not 7 (menstrual)
       if (skipMenstrual && step === 7) { setStep(6); return; }
       setStep(step - 1);
-    } else navigate('/');
+    } else if (step === 0) {
+      setStep(-1);
+    } else {
+      navigate('/');
+    }
   };
 
-  // Progress bar mapping: map current step to segment index
   const getProgressIndex = () => {
-    if (!skipMenstrual) return step;
-    // For male: steps 0-6 map 1:1, step 7 (goals) maps to segment 7
-    if (step <= 6) return step;
-    return 7; // goals
+    if (step === -1) return 0;
+    if (!skipMenstrual) return step + 1;
+    if (step <= 6) return step + 1;
+    return 8;
   };
 
   // ── Render ─────────────────────────────────────────────────────────────────
+
+  // Show micro-education transition
+  if (showMicroEducation) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col">
+        <div className="max-w-[430px] mx-auto px-6 flex-1 flex flex-col">
+          <div className="flex items-center justify-between py-4">
+            <button onClick={() => setShowMicroEducation(null)} className="p-2 -ml-2 text-foreground"><ArrowLeft size={22} strokeWidth={1.8} /></button>
+            <div className="flex gap-1.5">
+              {Array.from({ length: totalSegments }).map((_, i) => (
+                <div key={i} className={`h-1 w-5 rounded-full transition-colors duration-300 ${i <= getProgressIndex() ? 'bg-primary' : 'bg-border'}`} />
+              ))}
+            </div>
+            <div className="w-10" />
+          </div>
+          <div className="flex-1 flex items-center">
+            <MicroEducationScreen
+              title={showMicroEducation.title}
+              message={showMicroEducation.message}
+              onContinue={() => {
+                setShowMicroEducation(null);
+                setStep(step + 1);
+              }}
+            />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <div className="max-w-[430px] mx-auto px-6 flex-1 flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between py-4">
-          {step > 0 ? (
+          {step > -1 ? (
             <button onClick={handleBack} className="p-2 -ml-2 text-foreground"><ArrowLeft size={22} strokeWidth={1.8} /></button>
           ) : (
             <div className="w-10" />
@@ -420,6 +561,20 @@ const Onboarding = () => {
             className="pt-4 pb-8"
           >
 
+            {/* ── Step -1: Intro ── */}
+            {step === -1 && (
+              <div className="flex flex-col items-center text-center px-2 pt-8">
+                <div className="w-16 h-16 rounded-full bg-sage-light flex items-center justify-center mb-6">
+                  <Leaf size={28} className="text-primary" strokeWidth={1.8} />
+                </div>
+                <h2 className="text-xl font-semibold text-foreground mb-3">Before we start</h2>
+                <p className="text-sm text-muted-foreground leading-relaxed mb-6 max-w-[340px]">
+                  We'll ask you a few questions about your hair, scalp, and routine. This helps ScalpSense personalise your check-ins, time your reminders to your actual cycle, and flag what matters most for your scalp health.
+                </p>
+                <p className="text-xs text-muted-foreground mb-8">You can skip anything you're not comfortable sharing.</p>
+              </div>
+            )}
+
             {/* ── Step 0: Gender ── */}
             {step === 0 && (
               <div>
@@ -437,10 +592,11 @@ const Onboarding = () => {
               </div>
             )}
 
-            {/* ── Step 1: Hair type + chemical processing (progressive reveal) ── */}
+            {/* ── Step 1: Hair type + chemical processing ── */}
             {step === 1 && (
               <div>
-                <h2 className="text-lg font-medium text-foreground mb-2">Let's get to know your hair</h2>
+                <h2 className="text-lg font-medium text-foreground mb-1">Let's get to know your hair</h2>
+                <p className="text-xs text-muted-foreground mb-5">{sectionWhyText[1]}</p>
                 <p className="text-muted-foreground mb-6">Select the option closest to your hair type</p>
                 <div className="space-y-3">
                   {hairTypes.map(ht => (
@@ -500,7 +656,8 @@ const Onboarding = () => {
             {/* ── Step 2: Styles ── */}
             {step === 2 && (
               <div>
-                <h2 className="text-lg font-medium text-foreground mb-2">How do you usually wear your hair?</h2>
+                <h2 className="text-lg font-medium text-foreground mb-1">How do you usually wear your hair?</h2>
+                <p className="text-xs text-muted-foreground mb-3">{sectionWhyText[2]}</p>
                 <p className="text-muted-foreground mb-6">Select everything you rotate between</p>
                 {(() => {
                   const defaultCount = isMale ? 6 : 8;
@@ -561,7 +718,8 @@ const Onboarding = () => {
             {/* ── Step 3: Routine / Cycle ── */}
             {step === 3 && isMale && (
               <div>
-                <h2 className="text-lg font-medium text-foreground mb-6">Your routine</h2>
+                <h2 className="text-lg font-medium text-foreground mb-1">Your routine</h2>
+                <p className="text-xs text-muted-foreground mb-6">{sectionWhyText[3]}</p>
 
                 {hasFadeOrShortMale && !hasLocsMale && !hasBraidsMale && (
                   <>
@@ -628,7 +786,8 @@ const Onboarding = () => {
 
             {step === 3 && !isMale && !isWornOutOnly && (
               <div>
-                <h2 className="text-lg font-medium text-foreground mb-2">Your cycle</h2>
+                <h2 className="text-lg font-medium text-foreground mb-1">Your cycle</h2>
+                <p className="text-xs text-muted-foreground mb-3">{sectionWhyText[3]}</p>
                 <p className="text-muted-foreground mb-6">How long do you typically keep a style in?</p>
                 <div className="flex flex-wrap gap-2 mb-2">
                   {cycleLengths.map(c => (
@@ -712,7 +871,8 @@ const Onboarding = () => {
 
             {step === 3 && !isMale && isWornOutOnly && (
               <div>
-                <h2 className="text-lg font-medium text-foreground mb-2">Your routine</h2>
+                <h2 className="text-lg font-medium text-foreground mb-1">Your routine</h2>
+                <p className="text-xs text-muted-foreground mb-3">{sectionWhyText[3]}</p>
                 <p className="text-muted-foreground mb-6">How often do you wash your hair?</p>
                 <div className="mb-8">
                   <div className="flex flex-wrap gap-2">
@@ -728,7 +888,7 @@ const Onboarding = () => {
               </div>
             )}
 
-            {/* ── Step 4: Baseline (conversational step-through) ── */}
+            {/* ── Step 4: Baseline ── */}
             {step === 4 && (
               <div>
                 {baselineAck ? (
@@ -737,7 +897,8 @@ const Onboarding = () => {
                   </motion.div>
                 ) : (
                   <div>
-                    <h2 className="text-lg font-medium text-foreground mb-2">How are things right now?</h2>
+                    <h2 className="text-lg font-medium text-foreground mb-1">How are things right now?</h2>
+                    <p className="text-xs text-muted-foreground mb-2">{sectionWhyText[4]}</p>
                     <p className="text-muted-foreground mb-6">Just a few questions so we know where you're starting from</p>
                     <div className="flex gap-1 mb-6">
                       {baselineQuestions.map((_, i) => (
@@ -808,13 +969,14 @@ const Onboarding = () => {
               </div>
             )}
 
-            {/* ── Step 6: Products ── */}
+            {/* ── Step 6: Products (skippable) ── */}
             {step === 6 && (() => {
               const scalpIsNone = products.length === 1 && products[0] === 'None';
               const hairIsNone = hairProds.length === 1 && hairProds[0] === 'None';
               return (
                 <div>
-                  <h2 className="text-lg font-medium text-foreground mb-2">Let's talk products</h2>
+                  <h2 className="text-lg font-medium text-foreground mb-1">Let's talk products</h2>
+                  <p className="text-xs text-muted-foreground mb-4">{sectionWhyText[6]}</p>
                   <p className="text-sm text-muted-foreground mb-1">What do you put on your scalp?</p>
                   <p className="text-xs text-muted-foreground mb-4">Start typing a product or brand name</p>
                   <ProductSearch category="scalp" selectedProducts={products} onProductsChange={setProducts} noneLabel="I don't use anything on my scalp" />
@@ -845,9 +1007,10 @@ const Onboarding = () => {
             {/* ── Step 7: Menstrual (skipped for men — this step is goals for men) ── */}
             {step === 7 && !skipMenstrual && (
               <div>
-                <h2 className="text-lg font-medium text-foreground mb-2">
+                <h2 className="text-lg font-medium text-foreground mb-1">
                   {isNeutral ? 'Do you want to track your hormonal cycle?' : 'Do you want to link your menstrual cycle?'}
                 </h2>
+                <p className="text-xs text-muted-foreground mb-3">{sectionWhyText[7]}</p>
                 <p className="text-muted-foreground mb-4">
                   {isNeutral ? 'Some people find it useful to track their hormonal cycle alongside scalp health' : 'Your hormones have a direct effect on your scalp'}
                 </p>
@@ -925,7 +1088,11 @@ const Onboarding = () => {
 
         {/* ── Bottom button (sticky) ── */}
         <div className="flex-shrink-0 py-4">
-          {step === 4 ? null : step === 5 ? (
+          {step === -1 ? (
+            <button onClick={handleNext} className="w-full h-14 rounded-xl font-semibold text-base btn-press transition-colors bg-primary text-primary-foreground">
+              Let's get started
+            </button>
+          ) : step === 4 ? null : step === 5 ? (
             <div className="space-y-3">
               <button onClick={handleNext} className="w-full h-14 rounded-xl font-semibold text-base btn-press transition-colors bg-primary text-primary-foreground">
                 {Object.values(capturedPhotos).some(Boolean) ? 'Continue' : 'Skip for now'}
@@ -935,9 +1102,16 @@ const Onboarding = () => {
               )}
             </div>
           ) : (
-            <button onClick={handleNext} disabled={!canProceed()} className={`w-full h-14 rounded-xl font-semibold text-base btn-press transition-colors ${canProceed() ? 'bg-primary text-primary-foreground' : 'bg-border text-muted-foreground cursor-not-allowed'}`}>
-              {isLastStep ? "Let's go" : 'Next'}
-            </button>
+            <div className="space-y-2">
+              <button onClick={handleNext} disabled={!canProceed()} className={`w-full h-14 rounded-xl font-semibold text-base btn-press transition-colors ${canProceed() ? 'bg-primary text-primary-foreground' : 'bg-border text-muted-foreground cursor-not-allowed'}`}>
+                {isLastStep ? "Let's go" : 'Next'}
+              </button>
+              {isSkippableStep(step, skipMenstrual) && (
+                <button onClick={handleSkip} className="w-full text-center text-sm text-muted-foreground py-2 hover:text-foreground transition-colors">
+                  Skip for now
+                </button>
+              )}
+            </div>
           )}
         </div>
       </div>
