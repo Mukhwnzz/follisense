@@ -69,7 +69,7 @@ const StylistOnboarding = () => {
         </div>
         <Progress value={progress} className="h-1.5 mb-6" />
 
-        <motion.div key={step} initial={{ opacity: 0, x: 15 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.2 }} className="flex-1">
+        <motion.div key={step} initial={{ opacity: 0, x: 15 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.2 }} className="flex-1 overflow-y-auto min-h-0">
           {step === 0 && (
             <div>
               <h1 className="text-xl font-semibold mb-6">Tell us about you</h1>
@@ -78,7 +78,7 @@ const StylistOnboarding = () => {
                 {roles.map(r => <SelectButton key={r} selected={profile.role === r} label={r} onClick={() => setProfile(p => ({ ...p, role: r }))} />)}
               </div>
               <p className="text-sm font-medium text-foreground mb-3">How long have you been practising?</p>
-              <div className="space-y-2">
+              <div className="space-y-2 pb-2">
                 {experience.map(e => <SelectButton key={e} selected={profile.experience === e} label={e} onClick={() => setProfile(p => ({ ...p, experience: e }))} />)}
               </div>
             </div>
@@ -96,14 +96,14 @@ const StylistOnboarding = () => {
               <p className="text-sm font-medium text-foreground mb-3">Do you work from:</p>
               <div className="space-y-2 mb-6">{workplaces.map(w => <SelectButton key={w} selected={profile.workplace === w} label={w} onClick={() => setProfile(p => ({ ...p, workplace: w }))} />)}</div>
               <p className="text-sm font-medium text-foreground mb-3">How many clients do you see per week?</p>
-              <div className="space-y-2">{clientCounts.map(c => <SelectButton key={c} selected={profile.clientCount === c} label={c} onClick={() => setProfile(p => ({ ...p, clientCount: c }))} />)}</div>
+              <div className="space-y-2 pb-2">{clientCounts.map(c => <SelectButton key={c} selected={profile.clientCount === c} label={c} onClick={() => setProfile(p => ({ ...p, clientCount: c }))} />)}</div>
             </div>
           )}
           {step === 2 && (
             <div>
               <h1 className="text-xl font-semibold mb-1">What services do you offer?</h1>
               <p className="text-sm text-muted-foreground mb-5">Select all that apply</p>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-2 pb-2">
                 {services.map(s => (
                   <button key={s} onClick={() => toggleService(s)} className={`p-3 rounded-xl border-2 text-left text-xs font-medium transition-colors ${profile.services.includes(s) ? 'border-primary bg-primary/5 text-foreground' : 'border-border text-muted-foreground'}`}>{s}</button>
                 ))}
@@ -114,7 +114,7 @@ const StylistOnboarding = () => {
             <div>
               <h1 className="text-xl font-semibold mb-1">What do you want from FolliSense?</h1>
               <p className="text-sm text-muted-foreground mb-5">Pick all that apply</p>
-              <div className="space-y-2">
+              <div className="space-y-2 pb-2">
                 {goals.map(g => (
                   <button key={g} onClick={() => toggleGoal(g)} className={`w-full text-left p-3 rounded-xl border-2 transition-colors ${profile.goals.includes(g) ? 'border-primary bg-primary/5' : 'border-border'}`}>
                     <div className="flex items-center gap-2">
