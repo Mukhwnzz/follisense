@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Search, X, Plus } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { searchProducts, getProductDisplayName, type Product } from '@/data/productDatabase';
 
 interface ProductSearchProps {
@@ -15,7 +16,7 @@ const ProductSearch = ({ category, selectedProducts, onProductsChange, placehold
   const [showDropdown, setShowDropdown] = useState(false);
   const [showCustomInput, setShowCustomInput] = useState(false);
   const [customProduct, setCustomProduct] = useState('');
-  const [noneSelected, setNoneSelected] = useState(false);
+  const noneSelected = selectedProducts.length === 1 && selectedProducts[0] === 'None';
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -34,11 +35,10 @@ const ProductSearch = ({ category, selectedProducts, onProductsChange, placehold
 
   const addProduct = (displayName: string) => {
     if (!selectedProducts.includes(displayName)) {
-      onProductsChange([...selectedProducts, displayName]);
+      onProductsChange([...selectedProducts.filter(p => p !== 'None'), displayName]);
     }
     setQuery('');
     setShowDropdown(false);
-    setNoneSelected(false);
   };
 
   const removeProduct = (name: string) => {
@@ -47,10 +47,8 @@ const ProductSearch = ({ category, selectedProducts, onProductsChange, placehold
 
   const handleNone = () => {
     if (noneSelected) {
-      setNoneSelected(false);
       onProductsChange([]);
     } else {
-      setNoneSelected(true);
       onProductsChange(['None']);
     }
   };
@@ -71,7 +69,7 @@ const ProductSearch = ({ category, selectedProducts, onProductsChange, placehold
     <div className="space-y-3">
       {/* Search input */}
       <div className="relative">
-        <div className="flex items-center h-12 px-4 rounded-xl border-2 border-border bg-card transition-colors focus-within:border-primary">
+        <div className={`flex items-center h-12 px-4 rounded-xl border-2 border-border bg-card transition-colors focus-within:border-primary ${noneSelected ? 'opacity-40 pointer-events-none' : ''}`}>
           <Search size={16} className="text-muted-foreground mr-2 flex-shrink-0" strokeWidth={1.8} />
           <input
             ref={inputRef}
@@ -163,7 +161,7 @@ const ProductSearch = ({ category, selectedProducts, onProductsChange, placehold
       )}
 
       {/* Selected products chips */}
-      {selectedProducts.length > 0 && (
+      {selectedProducts.length > 0 && !noneSelected && (
         <div className="flex flex-wrap gap-2">
           {selectedProducts.map(name => (
             <div key={name} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20">
@@ -176,13 +174,17 @@ const ProductSearch = ({ category, selectedProducts, onProductsChange, placehold
         </div>
       )}
 
-      {/* None option */}
+      {/* None option — styled as comfortable opt-out card */}
       {noneLabel && (
         <button
           onClick={handleNone}
-          className={`w-full text-left px-4 py-3 rounded-xl border-2 transition-colors ${noneSelected ? 'border-primary bg-primary/5' : 'border-border'}`}
+          className={`w-full text-center py-3.5 rounded-xl border transition-all duration-200 ${
+            noneSelected
+              ? 'border-primary bg-primary/5 text-foreground font-medium'
+              : 'border-border/60 bg-secondary/30 text-muted-foreground hover:bg-secondary/50'
+          }`}
         >
-          <p className="text-sm text-foreground">{noneLabel}</p>
+          <p className={`text-sm ${noneSelected ? 'font-medium' : ''}`}>{noneLabel}</p>
         </button>
       )}
     </div>
