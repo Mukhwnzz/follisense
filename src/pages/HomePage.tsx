@@ -209,7 +209,48 @@ const HomePage = () => {
         </div>
 
         {/* Cycle status card */}
-        {!onboardingData.isWornOutOnly ? (
+        {isMale ? (
+          /* Male-specific dashboard cards */
+          <div className="card-elevated p-5 mb-4 border-l-4 border-l-primary">
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 rounded-2xl bg-sage-light flex flex-col items-center justify-center flex-shrink-0">
+                <Scissors size={22} className="text-primary mb-0.5" strokeWidth={1.8} />
+                <span className="text-[10px] text-muted-foreground leading-tight">Tracker</span>
+              </div>
+              <div className="flex-1">
+                {onboardingData.barberFrequency && !onboardingData.locRetwistFrequency && !onboardingData.maleStyleFrequency && (
+                  <>
+                    <p className="font-semibold text-foreground mb-1">Barber tracker</p>
+                    <p className="text-sm text-muted-foreground">Last barber visit: Feb 28</p>
+                    <p className="text-sm text-muted-foreground">Next check-in: {new Date(Date.now() + 5 * 86400000).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}</p>
+                  </>
+                )}
+                {onboardingData.locRetwistFrequency && (
+                  <>
+                    <p className="font-semibold text-foreground mb-1">Loc tracker</p>
+                    <p className="text-sm text-muted-foreground">Last retwist: Feb 20</p>
+                    <p className="text-sm text-muted-foreground">Day {currentDay} since retwist</p>
+                    <p className="text-sm text-muted-foreground">Next check-in: {new Date(Date.now() + 3 * 86400000).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}</p>
+                  </>
+                )}
+                {onboardingData.maleStyleFrequency && !onboardingData.locRetwistFrequency && (
+                  <>
+                    <p className="font-semibold text-foreground mb-1">Style tracker</p>
+                    <p className="text-sm text-muted-foreground">Day {currentDay} of {currentStyle}</p>
+                    <p className="text-sm text-muted-foreground">Next check-in: {new Date(Date.now() + 4 * 86400000).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}</p>
+                  </>
+                )}
+                {!onboardingData.barberFrequency && !onboardingData.locRetwistFrequency && !onboardingData.maleStyleFrequency && (
+                  <>
+                    <p className="font-semibold text-foreground mb-1">Scalp health tracker</p>
+                    <p className="text-sm text-muted-foreground">Next check-in: {new Date(Date.now() + 4 * 86400000).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}</p>
+                  </>
+                )}
+                <p className="text-xs text-primary font-medium mt-1">{checkInCount} check-ins completed</p>
+              </div>
+            </div>
+          </div>
+        ) : !onboardingData.isWornOutOnly ? (
           <div className="card-elevated p-5 mb-4 border-l-4 border-l-primary">
             <div className="flex items-center gap-5">
               <div className="relative flex-shrink-0">

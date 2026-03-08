@@ -20,12 +20,10 @@ const hairTypes = [
 
 const chemicalOptionsSimple = [
   'No, fully natural',
-  'Previously processed, growing out',
   'Yes',
-  'Not sure',
+  'Previously processed, currently growing out',
 ];
-const chemicalSubOptions = ['Relaxed or permed', 'Texturised', 'Colour treated', 'Bleached', 'Multiple'];
-const chemicalMultipleOptions = ['Relaxed', 'Texturised', 'Colour treated', 'Bleached'];
+const chemicalTypeOptions = ['Relaxed or permed', 'Texturised', 'Colour treated', 'Bleached'];
 
 const lastChemicalTreatmentOptions = [
   'Within the last month', '1 to 3 months ago', '3 to 6 months ago',
@@ -61,8 +59,11 @@ const wornOutOnlyStylesMale = [
   'Waves (with durag or wave cap)', 'Free-form (no manipulation)',
 ];
 
-const protectiveFrequencyOptions = [
+const protectiveFrequencyOptionsFemale = [
   'Most of the time', 'About half the time', 'Occasionally', 'Rarely — I mostly wear my hair out',
+];
+const protectiveFrequencyOptionsMale = [
+  'This is my everyday look', 'Most of the time', 'I switch it up regularly', 'Occasionally',
 ];
 const wornOutWashOptions = ['More than once a week', 'About once a week', 'Every 2 weeks', 'Less than every 2 weeks'];
 const restyleOptions = ['Daily', 'Every few days', 'Weekly', 'Less often'];
@@ -301,7 +302,6 @@ const Onboarding = () => {
   const [gender, setGender] = useState('');
   const [hairType, setHairType] = useState('');
   const [chemicalProcessing, setChemicalProcessing] = useState('');
-  const [chemicalSubSelection, setChemicalSubSelection] = useState('');
   const [chemicalMultiple, setChemicalMultiple] = useState<string[]>([]);
   const [lastChemicalTreatment, setLastChemicalTreatment] = useState('');
   const [styles, setStyles] = useState<string[]>([]);
@@ -317,6 +317,15 @@ const Onboarding = () => {
   const [betweenWashCare, setBetweenWashCare] = useState<string[]>([]);
   const [otherBetweenWash, setOtherBetweenWash] = useState('');
 
+  // Male-specific routine state
+  const [barberFreq, setBarberFreq] = useState('');
+  const [locRetwistFreq, setLocRetwistFreq] = useState('');
+  const [maleStyleDuration, setMaleStyleDuration] = useState('');
+  const [maleScalpWashFreq, setMaleScalpWashFreq] = useState('');
+  const [maleWashFreq, setMaleWashFreq] = useState('');
+  const [maleBetweenCare, setMaleBetweenCare] = useState<string[]>([]);
+  const [otherMaleBetweenCare, setOtherMaleBetweenCare] = useState('');
+
   const isMale = gender === 'man';
   const isNeutral = gender === 'non-binary' || gender === 'prefer-not-to-say';
 
@@ -329,6 +338,15 @@ const Onboarding = () => {
 
   const isWornOutOnly = styles.length > 0 && styles.every(s => wornOutOnlyStyles.includes(s));
   const hasProtectiveOrStretchedStyle = styles.length > 0 && styles.some(s => !wornOutOnlyStyles.includes(s) && s !== 'Other');
+
+  // Male style categorization
+  const maleInstalledStyles = ['Locs or faux locs', 'Box braids', 'Cornrows or flat twists', 'Twists (two-strand)'];
+  const maleNonInstalledStyles = ['Fade or low cut (barber-maintained)', 'Free-form (no manipulation)', 'Waves (with durag or wave cap)', 'High top or frohawk', 'Short natural (TWA, tapered)'];
+  const hasLocsMale = isMale && styles.some(s => s === 'Locs or faux locs');
+  const hasBraidsMale = isMale && styles.some(s => ['Box braids', 'Cornrows or flat twists', 'Twists (two-strand)'].includes(s));
+  const hasFadeOrShortMale = isMale && styles.some(s => maleNonInstalledStyles.includes(s));
+  const hasMaleInstalledStyles = isMale && styles.some(s => maleInstalledStyles.includes(s));
+  const toggleMaleBetweenCare = (v: string) => setMaleBetweenCare(prev => prev.includes(v) ? prev.filter(x => x !== v) : [...prev, v]);
 
   // Baseline — conversational step-through
   const [baselineStep, setBaselineStep] = useState(0);
@@ -412,7 +430,7 @@ const Onboarding = () => {
 
   const allBaselineAnswered = baselineQuestions.every(q => baselineAnswers[q.key]);
 
-  const showChemicalFollowUp = chemicalProcessing === 'Yes' || chemicalProcessing === 'Previously processed, growing out';
+  const showChemicalFollowUp = chemicalProcessing === 'Yes' || chemicalProcessing === 'Previously processed, currently growing out';
 
   // Map actual step to logical step (accounting for menstrual skip)
   const getLogicalStep = (s: number) => {
@@ -424,13 +442,24 @@ const Onboarding = () => {
   const canProceed = () => {
     switch (step) {
       case 0: return !!gender;
-      case 1: return !!hairType && !!chemicalProcessing && (chemicalProcessing !== 'Yes' || !!chemicalSubSelection) && (chemicalSubSelection !== 'Multiple' || chemicalMultiple.length > 0) && (!showChemicalFollowUp || !!lastChemicalTreatment);
+      case 1: return !!hairType && !!chemicalProcessing && (chemicalProcessing !== 'Yes' || chemicalMultiple.length > 0) && (!showChemicalFollowUp || !!lastChemicalTreatment);
       case 2: {
         const stylesOk = styles.length > 0 && (!styles.includes('Other') || otherStyle.trim().length > 0);
+        if (isMale) {
+          const freqOk = !hasMaleInstalledStyles || !!protectiveFreq;
+          return stylesOk && freqOk;
+        }
         const freqOk = isWornOutOnly || !!protectiveFreq;
         return stylesOk && freqOk;
       }
       case 3: {
+        if (isMale) {
+          const betweenOk = maleBetweenCare.length > 0 && (!maleBetweenCare.includes('Other') || otherMaleBetweenCare.trim().length > 0);
+          if (hasFadeOrShortMale && !hasLocsMale && !hasBraidsMale) return !!barberFreq && !!maleWashFreq && betweenOk;
+          if (hasLocsMale) return !!locRetwistFreq && !!maleScalpWashFreq && betweenOk;
+          if (hasBraidsMale) return !!maleStyleDuration && !!maleScalpWashFreq && betweenOk;
+          return betweenOk;
+        }
         if (isWornOutOnly) return !!wornOutWashFreq && !!restyleFreq;
         const cycleOk = !!cycleLen && (cycleLen !== 'It varies' || (!!cycleLenMin && !!cycleLenMax));
         const washOk = !!washFreq && (washFreq !== 'It depends on the style' || !!washFreqPerCycle);
@@ -471,12 +500,12 @@ const Onboarding = () => {
       nextCheckIn.setDate(nextCheckIn.getDate() + 7);
 
       setOnboardingData({
-        gender, hairType, chemicalProcessing: chemicalProcessing === 'Yes' ? `Yes, ${chemicalSubSelection.toLowerCase()}` : chemicalProcessing, lastChemicalTreatment,
+        gender, hairType, chemicalProcessing, lastChemicalTreatment,
         chemicalProcessingMultiple: chemicalMultiple,
         protectiveStyles: styles, otherStyle, protectiveStyleFrequency: protectiveFreq,
         isWornOutOnly, cycleLength: cycleLen, cycleLengthMin: cycleLenMin, cycleLengthMax: cycleLenMax,
         washFrequency: washFreq, washFrequencyPerCycle: washFreqPerCycle,
-        betweenWashCare, otherBetweenWashCare: otherBetweenWash,
+        betweenWashCare: isMale ? maleBetweenCare : betweenWashCare, otherBetweenWashCare: isMale ? otherMaleBetweenCare : otherBetweenWash,
         wornOutWashFrequency: wornOutWashFreq, restyleFrequency: restyleFreq,
         baselineItch: baselineAnswers.itch || '', baselineTenderness: baselineAnswers.tenderness || '',
         baselineHairline: baselineAnswers.hairline || '', baselineHairHealth: baselineAnswers.hairHealth || '',
@@ -488,9 +517,9 @@ const Onboarding = () => {
         menstrualCycleLength: skipMenstrual ? '' : menstrualCycleLength,
         hormonalContraception: skipMenstrual ? '' : hormonalContraception,
         goals,
-        barberFrequency: '',
-        locRetwistFrequency: '',
-        maleStyleFrequency: '',
+        barberFrequency: barberFreq,
+        locRetwistFrequency: locRetwistFreq,
+        maleStyleFrequency: maleStyleDuration,
       });
       setOnboardingComplete(true);
       navigate('/home');
@@ -581,8 +610,8 @@ const Onboarding = () => {
                   {chemicalOptionsSimple.map(opt => (
                     <button key={opt} onClick={() => {
                       setChemicalProcessing(opt);
-                      if (opt !== 'Yes') { setChemicalSubSelection(''); setChemicalMultiple([]); }
-                      if (opt === 'No, fully natural' || opt === 'Not sure') setLastChemicalTreatment('');
+                      if (opt === 'No, fully natural') { setChemicalMultiple([]); setLastChemicalTreatment(''); }
+                      if (opt !== 'Yes') setChemicalMultiple([]);
                     }} className={`selection-card w-full text-left ${chemicalProcessing === opt ? 'selected' : ''}`}>
                       <p className="font-medium text-foreground text-sm">{opt}</p>
                     </button>
@@ -590,17 +619,12 @@ const Onboarding = () => {
                 </div>
                 {chemicalProcessing === 'Yes' && (
                   <div className="mt-3 p-3 rounded-xl bg-accent space-y-2">
-                    <p className="text-xs text-muted-foreground mb-2">What kind of processing?</p>
-                    {chemicalSubOptions.map(opt => (
-                      <button key={opt} onClick={() => { setChemicalSubSelection(opt); if (opt !== 'Multiple') setChemicalMultiple([]); }} className={`pill-option ${chemicalSubSelection === opt ? 'selected' : ''}`}>{opt}</button>
-                    ))}
-                  </div>
-                )}
-                {chemicalSubSelection === 'Multiple' && (
-                  <div className="flex flex-wrap gap-2 mt-3 p-3 rounded-xl bg-accent">
-                    {chemicalMultipleOptions.map(opt => (
-                      <button key={opt} onClick={() => toggleChemMulti(opt)} className={`pill-option ${chemicalMultiple.includes(opt) ? 'selected' : ''}`}>{opt}</button>
-                    ))}
+                    <p className="text-xs text-muted-foreground mb-2">What type of processing?</p>
+                    <div className="flex flex-wrap gap-2">
+                      {chemicalTypeOptions.map(opt => (
+                        <button key={opt} onClick={() => toggleChemMulti(opt)} className={`pill-option ${chemicalMultiple.includes(opt) ? 'selected' : ''}`}>{opt}</button>
+                      ))}
+                    </div>
                   </div>
                 )}
                 {showChemicalFollowUp && (
@@ -653,11 +677,21 @@ const Onboarding = () => {
                 {styles.includes('Other') && (
                   <input type="text" value={otherStyle} onChange={e => setOtherStyle(e.target.value)} placeholder="Describe your style" className="w-full h-12 px-4 rounded-xl border-2 border-border bg-card text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors mt-3" />
                 )}
-                {hasProtectiveOrStretchedStyle && styles.length > 0 && (
+                {isMale && hasMaleInstalledStyles && styles.length > 0 && (
                   <div className="mt-8">
-                    <p className="font-medium text-foreground mb-3">How much of the time are you in a protective or installed style?</p>
+                    <p className="font-medium text-foreground mb-3">How often do you wear this style?</p>
                     <div className="flex flex-wrap gap-2">
-                      {protectiveFrequencyOptions.map(o => (
+                      {protectiveFrequencyOptionsMale.map(o => (
+                        <button key={o} onClick={() => setProtectiveFreq(o)} className={`pill-option ${protectiveFreq === o ? 'selected' : ''}`}>{o}</button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {!isMale && hasProtectiveOrStretchedStyle && styles.length > 0 && (
+                  <div className="mt-8">
+                    <p className="font-medium text-foreground mb-3">How often are you in an installed or protective style?</p>
+                    <div className="flex flex-wrap gap-2">
+                      {protectiveFrequencyOptionsFemale.map(o => (
                         <button key={o} onClick={() => setProtectiveFreq(o)} className={`pill-option ${protectiveFreq === o ? 'selected' : ''}`}>{o}</button>
                       ))}
                     </div>
@@ -666,8 +700,82 @@ const Onboarding = () => {
               </div>
             )}
 
-            {/* Step 3: Cycle / routine */}
-            {step === 3 && !isWornOutOnly && (
+            {/* Step 3: Male-specific routine */}
+            {step === 3 && isMale && (
+              <div>
+                <h2 className="text-lg font-medium text-foreground mb-2">Your routine</h2>
+
+                {/* Fade / short natural / waves / free-form path */}
+                {hasFadeOrShortMale && !hasLocsMale && !hasBraidsMale && (
+                  <>
+                    <p className="font-medium text-foreground mb-3">How often do you go to the barber?</p>
+                    <div className="flex flex-wrap gap-2 mb-6">
+                      {['Every week', 'Every 2 weeks', 'Every 3 to 4 weeks', 'Monthly or less', 'I cut my own hair'].map(o => (
+                        <button key={o} onClick={() => setBarberFreq(o)} className={`pill-option ${barberFreq === o ? 'selected' : ''}`}>{o}</button>
+                      ))}
+                    </div>
+                    <p className="font-medium text-foreground mb-3">How often do you wash your hair?</p>
+                    <div className="flex flex-wrap gap-2 mb-6">
+                      {['Daily', 'Every few days', 'Weekly', 'Less than weekly'].map(o => (
+                        <button key={o} onClick={() => setMaleWashFreq(o)} className={`pill-option ${maleWashFreq === o ? 'selected' : ''}`}>{o}</button>
+                      ))}
+                    </div>
+                  </>
+                )}
+
+                {/* Locs path */}
+                {hasLocsMale && (
+                  <>
+                    <p className="font-medium text-foreground mb-3">How often do you get your locs retwisted?</p>
+                    <div className="flex flex-wrap gap-2 mb-6">
+                      {['Every 2 weeks', 'Every 3 to 4 weeks', 'Every 6 to 8 weeks', 'Less often than that', 'I do it myself'].map(o => (
+                        <button key={o} onClick={() => setLocRetwistFreq(o)} className={`pill-option ${locRetwistFreq === o ? 'selected' : ''}`}>{o}</button>
+                      ))}
+                    </div>
+                    <p className="font-medium text-foreground mb-3">How often do you wash your scalp?</p>
+                    <div className="flex flex-wrap gap-2 mb-6">
+                      {['Weekly', 'Every 2 weeks', 'Every 3 to 4 weeks', 'Less often'].map(o => (
+                        <button key={o} onClick={() => setMaleScalpWashFreq(o)} className={`pill-option ${maleScalpWashFreq === o ? 'selected' : ''}`}>{o}</button>
+                      ))}
+                    </div>
+                  </>
+                )}
+
+                {/* Braids / cornrows / twists path */}
+                {hasBraidsMale && !hasLocsMale && (
+                  <>
+                    <p className="font-medium text-foreground mb-3">How long do you usually keep them in?</p>
+                    <div className="flex flex-wrap gap-2 mb-6">
+                      {['Less than a week', '1 to 2 weeks', '2 to 4 weeks', 'Longer than 4 weeks'].map(o => (
+                        <button key={o} onClick={() => setMaleStyleDuration(o)} className={`pill-option ${maleStyleDuration === o ? 'selected' : ''}`}>{o}</button>
+                      ))}
+                    </div>
+                    <p className="font-medium text-foreground mb-3">How often do you wash or cleanse your scalp while they're in?</p>
+                    <div className="flex flex-wrap gap-2 mb-6">
+                      {['Every few days', 'Weekly', 'Only when I take them out', "I don't"].map(o => (
+                        <button key={o} onClick={() => setMaleScalpWashFreq(o)} className={`pill-option ${maleScalpWashFreq === o ? 'selected' : ''}`}>{o}</button>
+                      ))}
+                    </div>
+                  </>
+                )}
+
+                {/* Between-care for all male users */}
+                <div className="mt-2">
+                  <p className="font-medium text-foreground mb-3">Between barber visits or washes, do you do anything for your scalp?</p>
+                  <div className="flex flex-wrap gap-2">
+                    {['Moisturise or oil my scalp', 'Use a scalp spray or tonic', 'Brush (for waves)', 'Wear a durag or wave cap', 'Nothing really', 'Other'].map(o => (
+                      <button key={o} onClick={() => toggleMaleBetweenCare(o)} className={`pill-option ${maleBetweenCare.includes(o) ? 'selected' : ''}`}>{o}</button>
+                    ))}
+                  </div>
+                  {maleBetweenCare.includes('Other') && (
+                    <input type="text" value={otherMaleBetweenCare} onChange={e => setOtherMaleBetweenCare(e.target.value)} placeholder="What else do you do?" className="w-full h-12 px-4 rounded-xl border-2 border-border bg-card text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors mt-3" />
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Step 3: Cycle / routine (non-male, protective styles) */}
+            {step === 3 && !isMale && !isWornOutOnly && (
               <div>
                 <h2 className="text-lg font-medium text-foreground mb-2">Your cycle</h2>
                 <p className="text-muted-foreground mb-6">How long do you typically keep a style in?</p>
@@ -722,7 +830,8 @@ const Onboarding = () => {
               </div>
             )}
 
-            {step === 3 && isWornOutOnly && (
+            {/* Step 3: Worn-out-only routine (non-male) */}
+            {step === 3 && !isMale && isWornOutOnly && (
               <div>
                 <h2 className="text-lg font-medium text-foreground mb-2">Your routine</h2>
                 <p className="text-muted-foreground mb-6">How often do you wash your hair?</p>
