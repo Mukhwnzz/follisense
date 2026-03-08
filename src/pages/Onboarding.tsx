@@ -494,7 +494,7 @@ const Onboarding = () => {
 
             {step === 3 && isWornOutOnly && (
               <div>
-                <h2 className="text-2xl font-semibold mb-2">Your routine</h2>
+                <h2 className="text-lg font-medium text-foreground mb-2">Your routine</h2>
                 <p className="text-muted-foreground mb-6">How often do you wash your hair?</p>
                 <div className="mb-8">
                   <div className="flex flex-wrap gap-2">
