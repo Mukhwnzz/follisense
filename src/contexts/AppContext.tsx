@@ -218,6 +218,8 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [clientObservations, setClientObservations] = useState<ClientObservation[]>(demoClientObservations);
   const [healthProfile, setHealthProfile] = useState<HealthProfileData>(defaultHealthProfile);
   const [baselinePhotos, setBaselinePhotos] = useState<BaselinePhoto[]>([]);
+  const [baselineRisk, setBaselineRisk] = useState<'green' | 'amber' | 'red' | null>(null);
+  const [baselineDate, setBaselineDate] = useState<string | null>(null);
 
   const addSalonVisit = (v: SalonVisit) => setSalonVisits(prev => [v, ...prev]);
   const addClientObservation = (o: ClientObservation) => setClientObservations(prev => [o, ...prev]);
