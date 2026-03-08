@@ -59,11 +59,12 @@ const quickLogSeverities = [
   { label: 'Severe', desc: 'I need to do something about this' },
 ];
 
-const getQuickLogTip = (symptoms: string[]): string => {
+const getQuickLogTip = (symptoms: string[], isMaleUser: boolean): string => {
+  if (symptoms.includes('Razor bumps / ingrown hairs')) return 'Avoid shaving against the grain. Use a bump-reducing aftershave and keep the area clean. If bumps persist or become infected, see a dermatologist.';
   if (symptoms.includes('Itching')) return 'Try pressing gently with a fingertip instead of scratching. If your scalp feels dry or tight, a fragrance-free scalp moisturiser or hydrating mist may help.';
-  if (symptoms.includes('Tenderness / soreness')) return "If your style feels tight, loosen the edges. Don't tough it out — tension damage is preventable.";
+  if (symptoms.includes('Tenderness / soreness')) return isMaleUser ? "If you've had a recent cut, soreness should settle in 24-48 hours. Persistent tenderness could signal irritation or folliculitis." : "If your style feels tight, loosen the edges. Don't tough it out — tension damage is preventable.";
   if (symptoms.includes('Flaking')) return 'A gentle sulphate-free rinse can help clear buildup without disturbing your style.';
-  if (symptoms.includes('Thinning / shedding')) return 'Avoid re-tightening edges. If shedding is concentrated at the hairline, consider loosening or removing tension.';
+  if (symptoms.includes('Thinning / shedding')) return isMaleUser ? 'If thinning is concentrated at the crown or temples, it could be early male pattern hair loss. Tracking over time helps — start with photos.' : 'Avoid re-tightening edges. If shedding is concentrated at the hairline, consider loosening or removing tension.';
   if (symptoms.includes('Bumps or irritation')) return 'Keep the area clean and avoid heavy products. If bumps persist, they could indicate folliculitis — worth monitoring.';
   return 'Note taken. Keep an eye on it and mention it at your next check-in.';
 };
