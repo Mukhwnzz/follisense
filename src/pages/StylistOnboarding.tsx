@@ -1,9 +1,18 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Leaf, Check } from 'lucide-react';
+import { Leaf, Check, ChevronDown } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 import { Progress } from '@/components/ui/progress';
+
+const countries = [
+  'United Kingdom', 'United States', 'Nigeria', 'Ghana', 'South Africa', 'Jamaica', 'Canada',
+  'Kenya', 'Tanzania', 'Uganda', 'Zimbabwe', 'Cameroon', 'Senegal', 'Ethiopia', 'France',
+  'Germany', 'Netherlands', 'Ireland', 'Australia', 'New Zealand', 'Brazil', 'Trinidad and Tobago',
+  'Barbados', 'Bahamas', 'Bermuda', 'India', 'Pakistan', 'Bangladesh', 'United Arab Emirates',
+  'Saudi Arabia', 'Italy', 'Spain', 'Portugal', 'Belgium', 'Sweden', 'Norway', 'Denmark',
+  'Switzerland', 'Austria', 'Other',
+];
 
 const roles = ['Hairstylist', 'Braider', 'Barber', 'Loctician', 'Salon owner', 'Salon assistant or apprentice', 'Mobile or home-visit stylist', 'Other'];
 const experience = ['Less than 1 year', '1 to 3 years', '3 to 5 years', '5 to 10 years', '10+ years'];
