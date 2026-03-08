@@ -48,17 +48,17 @@ const Welcome = () => {
         </div>
 
         <button
-          onClick={() => navigate('/onboarding')}
+          onClick={() => navigate('/signup')}
           className="w-full h-14 bg-primary text-primary-foreground rounded-xl font-semibold text-base btn-press"
         >
           Get started
         </button>
 
         <button
-          onClick={() => navigate('/home')}
+          onClick={() => navigate('/login')}
           className="mt-4 text-muted-foreground text-sm hover:text-foreground transition-colors"
         >
-          Already set up? Continue to dashboard
+          Already have an account? Log in
         </button>
       </motion.div>
     </div>

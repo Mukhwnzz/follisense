@@ -80,7 +80,7 @@ const getQuickLogTips = (symptoms: string[]): string[] => {
 
 const HomePage = () => {
   const navigate = useNavigate();
-  const { onboardingData, history, salonVisits, addSalonVisit, healthProfile, addQuickLog, research, setResearch, checkInCount } = useApp();
+  const { onboardingData, history, salonVisits, addSalonVisit, healthProfile, addQuickLog, research, setResearch, checkInCount, userName } = useApp();
   const [showSalonForm, setShowSalonForm] = useState(false);
   const [visitDate, setVisitDate] = useState<Date>(new Date());
   const [services, setServices] = useState<string[]>([]);
@@ -200,7 +200,7 @@ const HomePage = () => {
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-semibold">{greeting}</h1>
+            <h1 className="text-2xl font-semibold">{greeting}{userName ? `, ${userName}` : ''}</h1>
             <p className="text-muted-foreground text-sm">{new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
           </div>
           <button onClick={() => navigate('/profile')} className="w-10 h-10 rounded-full bg-accent flex items-center justify-center">

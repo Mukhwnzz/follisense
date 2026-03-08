@@ -155,6 +155,8 @@ const defaultHealthProfile: HealthProfileData = {
 };
 
 interface AppContextType {
+  userName: string;
+  setUserName: (n: string) => void;
   onboardingComplete: boolean;
   setOnboardingComplete: (v: boolean) => void;
   onboardingData: OnboardingData;
@@ -254,6 +256,7 @@ const demoStylistObservations: StylistObservationEntry[] = [
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider = ({ children }: { children: ReactNode }) => {
+  const [userName, setUserName] = useState('');
   const [onboardingComplete, setOnboardingComplete] = useState(false);
   const [onboardingData, setOnboardingData] = useState<OnboardingData>(defaultOnboarding);
   const [currentCheckIn, setCurrentCheckIn] = useState<CheckInData | null>(null);
@@ -275,6 +278,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const incrementResearchPhotos = () => setResearch(prev => ({ ...prev, photoCount: prev.photoCount + 1 }));
 
   const resetAll = () => {
+    setUserName('');
     setOnboardingComplete(false);
     setOnboardingData(defaultOnboarding);
     setCurrentCheckIn(null);
@@ -293,6 +297,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <AppContext.Provider value={{
+      userName, setUserName,
       onboardingComplete, setOnboardingComplete,
       onboardingData, setOnboardingData,
       currentCheckIn, setCurrentCheckIn,
