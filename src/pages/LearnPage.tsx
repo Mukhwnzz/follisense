@@ -79,7 +79,7 @@ const LearnPage = () => {
   if (showConditionGuide || activeCategory === 'Know the signs') {
     return (
       <div className="page-container pt-6">
-        <ConditionGuidePage onBack={() => { setShowConditionGuide(false); setActiveCategory('All'); }} />
+        <ConditionGuidePage onBack={() => { setShowConditionGuide(false); setActiveCategory('All'); setSearchParams({}); }} />
       </div>
     );
   }
