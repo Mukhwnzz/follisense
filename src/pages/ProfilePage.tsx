@@ -395,7 +395,7 @@ const ProfilePage = () => {
             <div className="flex items-start gap-3">
               <div className="flex items-center gap-1.5 mt-0.5"><Leaf size={16} className="text-primary" strokeWidth={1.8} /></div>
               <div>
-                <p className="text-sm text-foreground font-medium">ScalpSense</p>
+                <p className="text-sm text-foreground font-medium">FolliSense</p>
                 <p className="text-xs text-muted-foreground mt-1">A symptom-tracking and triage tool. It does not provide medical diagnoses.</p>
                 <p className="text-xs text-muted-foreground mt-2">Version 1.0</p>
               </div>

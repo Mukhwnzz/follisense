@@ -77,7 +77,7 @@ const HealthProfile = () => {
           </button>
           <div className="flex items-center gap-1.5">
             <Leaf size={16} className="text-primary" strokeWidth={1.8} />
-            <span className="text-xs font-semibold text-muted-foreground">ScalpSense</span>
+            <span className="text-xs font-semibold text-muted-foreground">FolliSense</span>
           </div>
           <div className="w-10" />
         </div>

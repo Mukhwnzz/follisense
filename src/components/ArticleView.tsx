@@ -79,7 +79,7 @@ const ArticleView = ({ article, onBack, onNavigate }: ArticleViewProps) => {
           </div>
           <div>
             <p className="text-sm font-medium text-foreground">Got more questions?</p>
-            <p className="text-xs text-muted-foreground">Ask ScalpSense</p>
+            <p className="text-xs text-muted-foreground">Ask FolliSense</p>
           </div>
         </button>
       </div>

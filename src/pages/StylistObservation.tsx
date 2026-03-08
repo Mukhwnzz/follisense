@@ -79,11 +79,11 @@ const StylistObservation = () => {
   };
 
   const handleShare = async () => {
-    const text = `ScalpSense Client Observation\n\nClient: ${clientName}\nDate: ${new Date().toLocaleDateString()}\n\nObservations:\n${observations.map(o => `• ${o}`).join('\n')}\n${notes ? `\nNotes: ${notes}` : ''}\n\nThis observation does not constitute a medical diagnosis.`;
+    const text = `FolliSense Client Observation\n\nClient: ${clientName}\nDate: ${new Date().toLocaleDateString()}\n\nObservations:\n${observations.map(o => `• ${o}`).join('\n')}\n${notes ? `\nNotes: ${notes}` : ''}\n\nThis observation does not constitute a medical diagnosis.`;
     
     if (navigator.share) {
       try {
-        await navigator.share({ title: 'ScalpSense Observation', text });
+        await navigator.share({ title: 'FolliSense Observation', text });
       } catch {
         toast.info('Sharing cancelled');
       }

@@ -43,7 +43,7 @@ const StylistOnboarding = () => {
   const handleNext = () => {
     if (step < 3) { setStep(step + 1); return; }
     // Save profile to localStorage for the prototype
-    localStorage.setItem('scalpsense-stylist-profile', JSON.stringify(profile));
+    localStorage.setItem('follisense-stylist-profile', JSON.stringify(profile));
     setStylistMode(true);
     navigate('/stylist');
   };
@@ -64,7 +64,7 @@ const StylistOnboarding = () => {
       <div className="max-w-[430px] w-full mx-auto flex-1 flex flex-col">
         <div className="flex items-center gap-2 mb-4">
           <Leaf size={20} className="text-primary" strokeWidth={1.8} />
-          <span className="text-sm font-semibold text-foreground">ScalpSense</span>
+          <span className="text-sm font-semibold text-foreground">FolliSense</span>
           <span className="text-[10px] font-medium bg-secondary text-foreground px-2 py-0.5 rounded-full">Stylist</span>
         </div>
         <Progress value={progress} className="h-1.5 mb-6" />
@@ -112,7 +112,7 @@ const StylistOnboarding = () => {
           )}
           {step === 3 && (
             <div>
-              <h1 className="text-xl font-semibold mb-1">What do you want from ScalpSense?</h1>
+              <h1 className="text-xl font-semibold mb-1">What do you want from FolliSense?</h1>
               <p className="text-sm text-muted-foreground mb-5">Pick all that apply</p>
               <div className="space-y-2">
                 {goals.map(g => (

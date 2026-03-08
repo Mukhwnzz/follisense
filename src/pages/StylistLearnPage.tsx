@@ -120,8 +120,8 @@ const ReferralGuide = () => (
     </div>
 
     <div className="card-elevated p-5">
-      <h3 className="font-semibold text-foreground mb-2">How to refer using ScalpSense</h3>
-      <p className="text-sm text-muted-foreground leading-relaxed mb-3">When you document an observation in ScalpSense:</p>
+      <h3 className="font-semibold text-foreground mb-2">How to refer using FolliSense</h3>
+      <p className="text-sm text-muted-foreground leading-relaxed mb-3">When you document an observation in FolliSense:</p>
       <ol className="space-y-2 text-sm text-muted-foreground list-decimal list-inside">
         <li>Capture what you see (photos and notes)</li>
         <li>Share the observation with your client through the app</li>
@@ -129,7 +129,7 @@ const ReferralGuide = () => (
         <li>If they decide to see a professional, they already have a documented history with photos to bring to the appointment</li>
       </ol>
       <p className="text-sm text-muted-foreground mt-3">
-        You don't need to manage the referral. Your job is to notice, document, and encourage. ScalpSense handles the rest.
+        You don't need to manage the referral. Your job is to notice, document, and encourage. FolliSense handles the rest.
       </p>
     </div>
 
@@ -182,7 +182,7 @@ const StylistLearnPage = () => {
         {/* Quiz card */}
         {(() => {
           let quiz = { totalPoints: 0, currentStreak: 0 };
-          try { const s = localStorage.getItem('scalpsense-quiz'); if (s) quiz = JSON.parse(s); } catch {}
+          try { const s = localStorage.getItem('follisense-quiz'); if (s) quiz = JSON.parse(s); } catch {}
           return (
             <button onClick={() => navigate('/stylist/quiz')} className="card-elevated p-4 w-full text-left flex items-center justify-between mb-5 btn-press">
               <div>
@@ -247,7 +247,7 @@ const StylistLearnPage = () => {
             <h3 className="font-semibold text-foreground text-sm">Why representation matters in clinical education</h3>
           </div>
           <p className="text-sm text-muted-foreground leading-relaxed mb-4">
-            Most medical training materials show skin conditions on lighter skin. That means many stylists and even some clinicians are less confident identifying conditions on darker skin tones. ScalpSense is working to change this. If you'd like to contribute to building better visual references for our community, let us know.
+            Most medical training materials show skin conditions on lighter skin. That means many stylists and even some clinicians are less confident identifying conditions on darker skin tones. FolliSense is working to change this. If you'd like to contribute to building better visual references for our community, let us know.
           </p>
           <button
             onClick={() => toast({ title: 'Thank you', description: "We'll be in touch." })}

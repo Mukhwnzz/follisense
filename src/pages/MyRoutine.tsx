@@ -49,7 +49,7 @@ const generateMockRoutine = (data: any): Routine => {
         duration: '2 mins',
       },
       {
-        step: 'Complete your ScalpSense check-in',
+        step: 'Complete your FolliSense check-in',
         detail: 'Log your wash day assessment while everything is fresh. Take comparison photos if you can.',
         duration: '3 mins',
       },
@@ -67,7 +67,7 @@ const generateMockRoutine = (data: any): Routine => {
       },
       {
         step: 'Mid-cycle check-in',
-        detail: 'Complete your ScalpSense mid-cycle questions. Takes 1 minute.',
+        detail: 'Complete your FolliSense mid-cycle questions. Takes 1 minute.',
         frequency: 'Once mid-cycle',
       },
     ] : [

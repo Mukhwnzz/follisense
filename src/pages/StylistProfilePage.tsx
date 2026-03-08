@@ -35,14 +35,14 @@ const StylistProfilePage = () => {
 
   useEffect(() => {
     try {
-      const saved = localStorage.getItem('scalpsense-stylist-profile');
+      const saved = localStorage.getItem('follisense-stylist-profile');
       if (saved) setProfile(JSON.parse(saved));
     } catch {}
   }, []);
 
   const saveProfile = (updated: StylistProfile) => {
     setProfile(updated);
-    localStorage.setItem('scalpsense-stylist-profile', JSON.stringify(updated));
+    localStorage.setItem('follisense-stylist-profile', JSON.stringify(updated));
   };
 
   const toggleService = (s: string) => {
@@ -214,7 +214,7 @@ const StylistProfilePage = () => {
             <div className="flex items-start gap-3">
               <Leaf size={16} className="text-primary mt-0.5" strokeWidth={1.8} />
               <div>
-                <p className="text-sm text-foreground font-medium">ScalpSense for Stylists</p>
+                <p className="text-sm text-foreground font-medium">FolliSense for Stylists</p>
                 <p className="text-xs text-muted-foreground mt-1">A professional tool for documenting and tracking client scalp health.</p>
                 <p className="text-xs text-muted-foreground mt-2">Version 1.0</p>
               </div>

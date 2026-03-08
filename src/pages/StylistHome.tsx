@@ -11,7 +11,7 @@ interface StylistProfile {
 
 const loadStylistProfile = (): StylistProfile | null => {
   try {
-    const saved = localStorage.getItem('scalpsense-stylist-profile');
+    const saved = localStorage.getItem('follisense-stylist-profile');
     if (saved) return JSON.parse(saved);
   } catch {}
   return null;
@@ -19,7 +19,7 @@ const loadStylistProfile = (): StylistProfile | null => {
 
 const loadQuizState = () => {
   try {
-    const saved = localStorage.getItem('scalpsense-quiz');
+    const saved = localStorage.getItem('follisense-quiz');
     if (saved) return JSON.parse(saved);
   } catch {}
   return { totalPoints: 0, currentStreak: 0, bestStreak: 0 };
@@ -41,7 +41,7 @@ const StylistHome = () => {
   const userEntry = { rank: 5, name: 'You', points: quiz.totalPoints, bestStreak: quiz.bestStreak };
   const leaderboard = [...dummyLeaderboard, userEntry].sort((a, b) => b.points - a.points).map((e, i) => ({ ...e, rank: i + 1 }));
   const userRank = leaderboard.find(e => e.name === 'You')?.rank || 5;
-  const motivation = userRank <= 3 ? "You're one of the most scalp-savvy stylists on ScalpSense" : userRank <= 10 ? "You're building real clinical knowledge. Keep going." : "Every quiz makes you better at spotting problems early. Keep playing.";
+  const motivation = userRank <= 3 ? "You're one of the most scalp-savvy stylists on FolliSense" : userRank <= 10 ? "You're building real clinical knowledge. Keep going." : "Every quiz makes you better at spotting problems early. Keep playing.";
 
   return (
     <div className="page-container pt-6">
@@ -49,7 +49,7 @@ const StylistHome = () => {
         {/* Header */}
         <div className="flex items-center gap-2 mb-1">
           <Leaf size={20} className="text-primary" strokeWidth={1.8} />
-          <span className="text-sm font-semibold text-foreground">ScalpSense</span>
+          <span className="text-sm font-semibold text-foreground">FolliSense</span>
           <span className="text-[10px] font-medium bg-secondary text-foreground px-2 py-0.5 rounded-full">Stylist</span>
         </div>
         <h1 className="text-2xl font-semibold mb-0.5">Hi {userName || 'there'}</h1>
@@ -115,7 +115,7 @@ const StylistHome = () => {
             <Trophy size={16} className="text-primary" />
             <h3 className="font-semibold text-foreground">Leaderboard</h3>
           </div>
-          <p className="text-xs text-muted-foreground mb-3">Top stylists in the ScalpSense community</p>
+          <p className="text-xs text-muted-foreground mb-3">Top stylists in the FolliSense community</p>
           <div className="space-y-2 mb-3">
             {leaderboard.slice(0, 5).map(entry => (
               <div key={entry.name} className={`flex items-center justify-between py-2 px-3 rounded-lg text-sm ${entry.name === 'You' ? 'bg-primary/10 font-semibold' : ''}`}>

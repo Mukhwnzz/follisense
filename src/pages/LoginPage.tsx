@@ -36,7 +36,7 @@ const LoginPage = () => {
       >
         <div className="flex items-center justify-center gap-2 mb-8">
           <Leaf size={24} className="text-primary" strokeWidth={1.8} />
-          <span className="text-xl font-semibold text-foreground">ScalpSense</span>
+          <span className="text-xl font-semibold text-foreground">FolliSense</span>
         </div>
 
         <h1 className="text-2xl font-semibold text-foreground text-center mb-8">Welcome back</h1>
@@ -86,7 +86,7 @@ const LoginPage = () => {
           <button
             type="button"
             onClick={() => {
-              setEmail('test@scalpsense.app');
+              setEmail('test@follisense.app');
               setPassword('demo1234');
               setUserName('Ama');
               navigate(onboardingComplete ? '/home' : '/onboarding');

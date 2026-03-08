@@ -26,7 +26,7 @@ const Welcome = () => {
       >
         <div className="flex items-center justify-center gap-2 mb-4">
           <Leaf size={28} className="text-primary" strokeWidth={1.8} />
-          <h1 className="text-3xl font-semibold text-foreground tracking-tight">ScalpSense</h1>
+          <h1 className="text-3xl font-semibold text-foreground tracking-tight">FolliSense</h1>
         </div>
         <p className="text-muted-foreground text-lg mb-12">Smart scalp care, built around you</p>
 

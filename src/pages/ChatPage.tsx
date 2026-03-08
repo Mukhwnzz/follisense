@@ -194,7 +194,7 @@ const ChatPage = () => {
       <div className="max-w-[430px] mx-auto w-full flex flex-col h-screen">
         {/* Header */}
         <div className="px-6 pt-6 pb-4">
-          <h1 className="text-xl font-semibold text-foreground">Ask ScalpSense</h1>
+          <h1 className="text-xl font-semibold text-foreground">Ask FolliSense</h1>
           <p className="text-sm text-muted-foreground">Your personal scalp and hair health guide</p>
         </div>
 

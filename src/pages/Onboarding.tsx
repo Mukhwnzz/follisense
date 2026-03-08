@@ -841,7 +841,7 @@ const Onboarding = () => {
 
               // Red — warm, varied copy based on specific severe answers
               let redHeading = "Let's get you the right help";
-              let redBody = "You've flagged several things that are bothering you, and we take all of them seriously. Rather than trying to figure this out alone, we'd really recommend speaking to a trichologist or dermatologist who can look at the full picture. In the meantime, ScalpSense will track everything so you have a clear history to bring to your appointment.";
+              let redBody = "You've flagged several things that are bothering you, and we take all of them seriously. Rather than trying to figure this out alone, we'd really recommend speaking to a trichologist or dermatologist who can look at the full picture. In the meantime, FolliSense will track everything so you have a clear history to bring to your appointment.";
 
               if (severeCount <= 1) {
                 if (isSevereItch && isSevereTenderness) {
@@ -886,7 +886,7 @@ const Onboarding = () => {
                     </div>
                   </div>
                   <div className="rounded-2xl bg-accent p-4 mb-4">
-                    <p className="text-sm text-muted-foreground leading-relaxed">Setting up ScalpSense now means you'll be building a symptom timeline that's really useful to bring to any consultation.</p>
+                    <p className="text-sm text-muted-foreground leading-relaxed">Setting up FolliSense now means you'll be building a symptom timeline that's really useful to bring to any consultation.</p>
                   </div>
                   <button onClick={() => navigate('/clinician-summary')} className="w-full h-12 rounded-xl border-2 border-border font-semibold text-sm btn-press mb-4 flex items-center justify-center gap-2">
                     <Stethoscope size={16} strokeWidth={1.8} /> View your baseline summary

@@ -23,7 +23,7 @@ const ForgotPasswordPage = () => {
       >
         <div className="flex items-center justify-center gap-2 mb-8">
           <Leaf size={24} className="text-primary" strokeWidth={1.8} />
-          <span className="text-xl font-semibold text-foreground">ScalpSense</span>
+          <span className="text-xl font-semibold text-foreground">FolliSense</span>
         </div>
 
         {!submitted ? (

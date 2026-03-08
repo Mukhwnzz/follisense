@@ -114,7 +114,7 @@ const ClinicianSummary = () => {
 
   const handleShare = async () => {
     if (navigator.share) {
-      try { await navigator.share({ title: 'ScalpSense Clinical Summary', text: 'Patient-reported scalp symptom summary' }); } catch { /* cancelled */ }
+      try { await navigator.share({ title: 'FolliSense Clinical Summary', text: 'Patient-reported scalp symptom summary' }); } catch { /* cancelled */ }
     } else { toast('Share feature coming soon'); }
   };
 
@@ -130,7 +130,7 @@ const ClinicianSummary = () => {
       <div className="max-w-[430px] mx-auto px-6">
         <div className="flex items-center justify-between py-4">
           <button onClick={() => navigate(-1)} className="p-2 -ml-2"><ArrowLeft size={22} className="text-foreground" strokeWidth={1.8} /></button>
-          <div className="flex items-center gap-1.5"><Leaf size={16} className="text-primary" strokeWidth={1.8} /><span className="text-xs font-semibold text-muted-foreground">ScalpSense</span></div>
+          <div className="flex items-center gap-1.5"><Leaf size={16} className="text-primary" strokeWidth={1.8} /><span className="text-xs font-semibold text-muted-foreground">FolliSense</span></div>
           <div className="w-10" />
         </div>
 
@@ -238,7 +238,7 @@ const ClinicianSummary = () => {
           )}
 
           <div className="rounded-2xl bg-accent p-4 mb-6">
-            <p className="text-xs text-muted-foreground leading-relaxed">ScalpSense is a symptom-tracking and triage tool. This summary does not constitute a medical diagnosis. Report generated {today}.</p>
+            <p className="text-xs text-muted-foreground leading-relaxed">FolliSense is a symptom-tracking and triage tool. This summary does not constitute a medical diagnosis. Report generated {today}.</p>
           </div>
 
           <div className="flex gap-3 mb-3">
