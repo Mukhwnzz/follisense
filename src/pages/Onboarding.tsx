@@ -20,7 +20,7 @@ const hairTypes = [
   { id: 'unsure', label: 'Not sure', desc: "That's okay, lots of us have a mix of patterns" },
 ];
 
-const chemicalOptionsSimple = ['No, fully natural', 'Yes', 'Previously processed, currently growing out'];
+const chemicalOptionsSimple = ['Yes, currently', 'Previously but not now', 'Never', 'Not sure'];
 const chemicalTypeOptions = ['Relaxed or permed', 'Texturised', 'Colour treated', 'Bleached'];
 const lastChemicalTreatmentOptions = ['Within the last month', '1 to 3 months ago', '3 to 6 months ago', '6 to 12 months ago', 'Over a year ago', 'Not sure'];
 
