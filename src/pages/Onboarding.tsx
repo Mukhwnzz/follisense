@@ -285,7 +285,7 @@ const Onboarding = () => {
       case 1: return !!hairType && !!chemicalProcessing && (chemicalProcessing !== 'Multiple' || chemicalMultiple.length > 0);
       case 2: {
         const stylesOk = styles.length > 0 && (!styles.includes('Other') || otherStyle.trim().length > 0);
-        const freqOk = !hasProtectiveStyle || !!protectiveFreq;
+        const freqOk = isWornOutOnly || !!protectiveFreq;
         return stylesOk && freqOk;
       }
       case 3: {
