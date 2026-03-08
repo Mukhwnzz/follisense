@@ -118,6 +118,7 @@ export const stylistConditions: StylistCondition[] = [
     whatToTell: '"You\'ve got some bumps that look like folliculitis, which is inflammation of the hair follicles. It usually clears up on its own if the area isn\'t irritated further. If it gets worse or doesn\'t clear up in a week or two, see a doctor."',
     whatYouCanDo: 'Don\'t install tightly over affected areas. Ensure your tools are sanitised between clients. Recommend the client keep the area clean and avoid touching it.',
     severityGuide: 'Mild (a few bumps) = usually self-resolving. Moderate (spreading, painful, pus-filled) = refer. Recurrent = refer.',
+    darkerSkinNote: 'On darker skin: Bumps may appear darker than surrounding skin rather than red. They can also leave dark marks (post-inflammatory hyperpigmentation) after they heal. In severe cases, you may see keloid scarring at the nape, especially in male clients after lineups.',
   },
   {
     id: 'tinea-capitis',
