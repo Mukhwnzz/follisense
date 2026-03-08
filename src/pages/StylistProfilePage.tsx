@@ -35,7 +35,7 @@ const StylistProfilePage = () => {
 
   useEffect(() => {
     try {
-      const saved = localStorage.getItem('scalpsense-stylist-profile');
+      const saved = localStorage.getItem('follisense-stylist-profile');
       if (saved) setProfile(JSON.parse(saved));
     } catch {}
   }, []);
