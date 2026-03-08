@@ -223,7 +223,7 @@ const demoClientObservations: ClientObservation[] = [
 ];
 
 const demoStylistObservations: StylistObservationEntry[] = [
-  { id: 'so1', date: 'Mar 5', stylistName: 'Ama', observations: ['Thinning at hairline / edges', 'Signs of traction damage'], notes: 'Recommended loosening edges on next install', risk: 'amber' },
+  { id: 'so1', date: 'Feb 25', stylistName: 'Ama', observations: ['Thinning at hairline / edges', 'Signs of traction damage'], notes: 'Stylist noted: slight thinning at temples', risk: 'amber' },
   { id: 'so2', date: 'Feb 2', stylistName: 'Ama', observations: ['Nothing of concern'], risk: 'green' },
 ];
 
