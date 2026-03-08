@@ -27,7 +27,7 @@ const loadQuizState = () => {
 
 const StylistHome = () => {
   const navigate = useNavigate();
-  const { clientObservations } = useApp();
+  const { clientObservations, userName } = useApp();
   const [quiz, setQuiz] = useState(loadQuizState);
 
   useEffect(() => {
