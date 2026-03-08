@@ -150,7 +150,7 @@ const ProfilePage = () => {
         )}
 
         {/* Health profile link */}
-        {!stylistMode && (
+        {(
           <div className="mb-6">
             <button onClick={() => navigate('/health-profile')} className="card-elevated w-full p-4 flex items-center gap-3 text-left">
               <div className="w-10 h-10 rounded-xl bg-sage-light flex items-center justify-center flex-shrink-0"><Heart size={20} className="text-primary" strokeWidth={1.5} /></div>
