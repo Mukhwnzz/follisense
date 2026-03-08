@@ -69,12 +69,13 @@ const getQuickLogTip = (symptoms: string[], isMaleUser: boolean): string => {
   return 'Note taken. Keep an eye on it and mention it at your next check-in.';
 };
 
-const getQuickLogTips = (symptoms: string[]): string[] => {
+const getQuickLogTips = (symptoms: string[], isMaleUser: boolean): string[] => {
   const tips: string[] = [];
+  if (symptoms.includes('Razor bumps / ingrown hairs')) tips.push('Exfoliate gently between cuts and use a bump-reducing product on the affected areas');
   if (symptoms.includes('Itching')) tips.push('If your scalp feels dry or tight, a fragrance-free scalp moisturiser or hydrating mist may help. Avoid heavy oils or butters directly on the scalp.');
-  if (symptoms.includes('Tenderness / soreness')) tips.push('Avoid re-tightening your edges — if they\'re loose, leave them');
-  if (symptoms.includes('Flaking')) tips.push('Gently cleanse your scalp mid-cycle with a sulphate-free rinse');
-  if (symptoms.includes('Thinning / shedding')) tips.push('Consider loosening or avoiding tension on your hairline for the next style');
+  if (symptoms.includes('Tenderness / soreness')) tips.push(isMaleUser ? 'Persistent soreness after a cut may indicate irritation — keep the area clean' : 'Avoid re-tightening your edges — if they\'re loose, leave them');
+  if (symptoms.includes('Flaking')) tips.push('Gently cleanse your scalp with a sulphate-free rinse');
+  if (symptoms.includes('Thinning / shedding')) tips.push(isMaleUser ? 'Track changes at your hairline and crown with photos — early monitoring helps' : 'Consider loosening or avoiding tension on your hairline for the next style');
   if (symptoms.includes('Bumps or irritation')) tips.push('Keep the affected area clean and avoid heavy product application');
   if (tips.length === 0) tips.push('Monitor the symptom and mention it at your next check-in');
   return tips.slice(0, 3);
