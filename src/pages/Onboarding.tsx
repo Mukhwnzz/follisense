@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, HelpCircle, ChevronDown, Camera, Check, Eye, Stethoscope } from 'lucide-react';
+import { ArrowLeft, HelpCircle, ChevronDown, Camera, Check, Eye, Stethoscope, Sparkles } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
