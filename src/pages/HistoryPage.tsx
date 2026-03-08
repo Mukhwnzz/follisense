@@ -1,17 +1,10 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown, Minus, ArrowUp, Scissors } from 'lucide-react';
+import { ChevronDown, Minus, ArrowUp, Scissors, Eye } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 
-type TimelineItem = {
-  type: 'cycle' | 'salon';
-  id: string;
-  date: string;
-  sortKey: string;
-};
-
 const HistoryPage = () => {
-  const { history, salonVisits } = useApp();
+  const { history, salonVisits, stylistObservations } = useApp();
   const [expanded, setExpanded] = useState<string | null>(null);
 
   const trends = [
@@ -20,18 +13,6 @@ const HistoryPage = () => {
     { label: 'Hairline', status: 'Worth monitoring', icon: ArrowUp, color: 'text-warning' },
     { label: 'Shedding', status: 'Normal range', icon: Minus, color: 'text-primary' },
   ];
-
-  // Build a merged timeline
-  const cycleItems: TimelineItem[] = [...history].reverse().map(e => ({
-    type: 'cycle', id: e.id, date: e.startDate, sortKey: e.id,
-  }));
-
-  const salonItems: TimelineItem[] = salonVisits.map(v => ({
-    type: 'salon', id: v.id, date: v.date, sortKey: v.id,
-  }));
-
-  // Interleave: cycles first, then salons inserted by position
-  const allItems = [...cycleItems, ...salonItems];
 
   return (
     <div className="page-container pt-6">
@@ -85,6 +66,65 @@ const HistoryPage = () => {
                               <span className="text-foreground">{r.val}</span>
                             </div>
                           ))}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </button>
+              </div>
+            ))}
+
+            {/* Stylist observation entries */}
+            {stylistObservations.map(obs => (
+              <div key={obs.id} className="relative pl-10">
+                <div className={`absolute left-[9px] top-5 w-3 h-3 rounded-full border-2 border-card ${
+                  obs.risk === 'green' ? 'bg-primary' : obs.risk === 'amber' ? 'bg-warning' : 'bg-destructive'
+                }`} />
+                <button
+                  onClick={() => setExpanded(expanded === obs.id ? null : obs.id)}
+                  className="card-elevated p-4 w-full text-left border-l-4 border-l-warning"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <Eye size={16} className="text-warning flex-shrink-0" strokeWidth={1.5} />
+                      <div>
+                        <p className="font-medium text-foreground">Stylist observation — {obs.date}</p>
+                        <p className="text-xs text-muted-foreground">by {obs.stylistName}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className={`status-dot ${obs.risk}`} />
+                      <ChevronDown
+                        size={18}
+                        className={`text-muted-foreground transition-transform ${expanded === obs.id ? 'rotate-180' : ''}`}
+                      />
+                    </div>
+                  </div>
+
+                  <AnimatePresence>
+                    {expanded === obs.id && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="pt-3 mt-3 border-t border-border space-y-2">
+                          <div>
+                            <p className="text-xs text-muted-foreground">Flagged concerns</p>
+                            <ul className="mt-1 space-y-0.5">
+                              {obs.observations.map(o => (
+                                <li key={o} className="text-sm text-foreground">• {o}</li>
+                              ))}
+                            </ul>
+                          </div>
+                          {obs.notes && (
+                            <div>
+                              <p className="text-xs text-muted-foreground">Stylist notes</p>
+                              <p className="text-sm text-foreground">{obs.notes}</p>
+                            </div>
+                          )}
                         </div>
                       </motion.div>
                     )}

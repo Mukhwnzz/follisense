@@ -153,6 +153,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       riskOverride, setRiskOverride,
       stylistMode, setStylistMode,
       clientObservations, addClientObservation,
+      stylistObservations: demoStylistObservations,
       resetAll,
     }}>
       {children}
