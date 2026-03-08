@@ -82,7 +82,7 @@ export const articles: Article[] = [
     content: [
       'Dandruff (seborrheic dermatitis) produces oily, yellowish flakes and is caused by an overgrowth of a yeast called Malassezia. Dry scalp produces smaller, white, dry flakes and is caused by lack of moisture.',
       'The treatments are completely different. Dandruff responds to antifungal ingredients like ketoconazole, zinc pyrithione, or selenium sulfide. Dry scalp responds to gentle moisturising and less frequent washing.',
-      'If you\'re treating one but it\'s actually the other, you\'ll make it worse. Antifungal shampoo on a dry scalp will strip it further. Heavy oils on a dandruff scalp will feed the yeast. Figuring out which one you have is the first step.',
+      'If you\'re treating one but it\'s actually the other, you\'ll make it worse. Antifungal shampoo on a dry scalp will strip it further. Heavy oils on a dandruff scalp will feed the yeast and worsen the condition. Figuring out which one you have is the first step.',
     ],
     relatedIds: ['seb-derm', 'scalp-ph', 'scalp-microbiome'],
   },
