@@ -754,21 +754,22 @@ const Onboarding = () => {
               </div>
             )}
 
-            {step === 4 && baselineResultScreen === 'green' && (
+            {/* Step 5: Baseline Response — dedicated full page */}
+            {step === 5 && baselineResultScreen === 'green' && (
               <div>
-                <div className="flex justify-center mb-6">
+                <div className="flex justify-center mb-6 pt-8">
                   <motion.div initial={{ scale: 0.8 }} animate={{ scale: 1 }} transition={{ duration: 0.5, ease: 'easeOut' }} className="w-20 h-20 rounded-full bg-primary/15 flex items-center justify-center">
                     <Check size={32} className="text-primary" strokeWidth={1.8} />
                   </motion.div>
                 </div>
                 <h2 className="text-xl font-semibold text-foreground text-center mb-3">Everything looks good</h2>
-                <p className="text-muted-foreground text-center mb-6 leading-relaxed">Your scalp and hair seem to be in a healthy place. We'll use this as your baseline and track how things change over time.</p>
+                <p className="text-muted-foreground text-center mb-8 leading-relaxed">Your scalp and hair seem to be in a healthy place right now. We'll use this as your baseline and track how things change over time.</p>
               </div>
             )}
 
-            {step === 4 && baselineResultScreen === 'amber' && (
+            {step === 5 && baselineResultScreen === 'amber' && (
               <div>
-                <div className="flex justify-center mb-6">
+                <div className="flex justify-center mb-6 pt-8">
                   <motion.div initial={{ scale: 0.8 }} animate={{ scale: 1 }} transition={{ duration: 0.5, ease: 'easeOut' }} className="w-20 h-20 rounded-full bg-warning/15 flex items-center justify-center">
                     <Eye size={32} className="text-warning" strokeWidth={1.8} />
                   </motion.div>
@@ -777,7 +778,7 @@ const Onboarding = () => {
                 <p className="text-muted-foreground text-center mb-6 leading-relaxed">
                   You've flagged a few things we'll want to keep an eye on. We've noted {getBaselineModerateSymptoms(itch, tenderness, hairline, baselineAnswers.hairHealth || '').join(', ')} as your starting point. As you check in over the coming weeks, we'll track whether these improve, stay the same, or need attention.
                 </p>
-                <div className="card-elevated p-5 mb-6">
+                <div className="card-elevated p-5 mb-8">
                   <div className="flex items-start gap-3">
                     <div className="w-8 h-8 rounded-full bg-warning/15 flex items-center justify-center flex-shrink-0 mt-0.5">
                       <Sparkles size={16} className="text-warning" strokeWidth={1.8} />
@@ -788,9 +789,9 @@ const Onboarding = () => {
               </div>
             )}
 
-            {step === 4 && baselineResultScreen === 'red' && (
+            {step === 5 && baselineResultScreen === 'red' && (
               <div>
-                <div className="flex justify-center mb-6">
+                <div className="flex justify-center mb-6 pt-8">
                   <motion.div initial={{ scale: 0.8 }} animate={{ scale: 1 }} transition={{ duration: 0.5, ease: 'easeOut' }} className="w-20 h-20 rounded-full bg-destructive/15 flex items-center justify-center">
                     <Stethoscope size={32} className="text-destructive" strokeWidth={1.8} />
                   </motion.div>
