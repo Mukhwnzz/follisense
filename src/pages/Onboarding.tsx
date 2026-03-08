@@ -601,27 +601,34 @@ const Onboarding = () => {
               <div>
                 <h2 className="text-lg font-medium text-foreground mb-2">How do you usually wear your hair?</h2>
                 <p className="text-muted-foreground mb-6">Select everything you rotate between</p>
-                <div className="grid grid-cols-2 gap-3">
-                  {styleOptions.slice(0, 8).map(s => (
-                    <button key={s} onClick={() => toggleStyle(s)} className={`selection-card text-center py-5 ${styles.includes(s) ? 'selected' : ''}`}>
-                      <p className="font-medium text-foreground text-sm">{s}</p>
-                    </button>
-                  ))}
-                </div>
-                {styleOptions.length > 8 && !showMoreStyles && (
-                  <button onClick={() => setShowMoreStyles(true)} className="w-full flex items-center justify-center gap-1.5 text-sm font-medium text-primary mt-3 py-2">
-                    Show more styles <ChevronDown size={16} strokeWidth={2} />
-                  </button>
-                )}
-                {showMoreStyles && styleOptions.length > 8 && (
-                  <div className="grid grid-cols-2 gap-3 mt-3">
-                    {styleOptions.slice(8).map(s => (
-                      <button key={s} onClick={() => toggleStyle(s)} className={`selection-card text-center py-5 ${styles.includes(s) ? 'selected' : ''}`}>
-                        <p className="font-medium text-foreground text-sm">{s}</p>
-                      </button>
-                    ))}
-                  </div>
-                )}
+                {(() => {
+                  const defaultCount = isMale ? 6 : 8;
+                  return (
+                    <>
+                      <div className="grid grid-cols-2 gap-3">
+                        {styleOptions.slice(0, defaultCount).map(s => (
+                          <button key={s} onClick={() => toggleStyle(s)} className={`selection-card text-center py-5 ${styles.includes(s) ? 'selected' : ''}`}>
+                            <p className="font-medium text-foreground text-sm">{s}</p>
+                          </button>
+                        ))}
+                      </div>
+                      {styleOptions.length > defaultCount && !showMoreStyles && (
+                        <button onClick={() => setShowMoreStyles(true)} className="w-full flex items-center justify-center gap-1.5 text-sm font-medium text-primary mt-3 py-2">
+                          Show more styles <ChevronDown size={16} strokeWidth={2} />
+                        </button>
+                      )}
+                      {showMoreStyles && styleOptions.length > defaultCount && (
+                        <div className="grid grid-cols-2 gap-3 mt-3">
+                          {styleOptions.slice(defaultCount).map(s => (
+                            <button key={s} onClick={() => toggleStyle(s)} className={`selection-card text-center py-5 ${styles.includes(s) ? 'selected' : ''}`}>
+                              <p className="font-medium text-foreground text-sm">{s}</p>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </>
+                  );
+                })()}
                 {styles.includes('Other') && (
                   <input type="text" value={otherStyle} onChange={e => setOtherStyle(e.target.value)} placeholder="Describe your style" className="w-full h-12 px-4 rounded-xl border-2 border-border bg-card text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors mt-3" />
                 )}
