@@ -49,7 +49,7 @@ const generateMockRoutine = (data: any): Routine => {
         duration: '2 mins',
       },
       {
-        step: 'Complete your ScalpSense check-in',
+        step: 'Complete your FolliSense check-in',
         detail: 'Log your wash day assessment while everything is fresh. Take comparison photos if you can.',
         duration: '3 mins',
       },
