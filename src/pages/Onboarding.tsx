@@ -841,7 +841,7 @@ const Onboarding = () => {
 
               // Red — warm, varied copy based on specific severe answers
               let redHeading = "Let's get you the right help";
-              let redBody = "You've flagged several things that are bothering you, and we take all of them seriously. Rather than trying to figure this out alone, we'd really recommend speaking to a trichologist or dermatologist who can look at the full picture. In the meantime, ScalpSense will track everything so you have a clear history to bring to your appointment.";
+              let redBody = "You've flagged several things that are bothering you, and we take all of them seriously. Rather than trying to figure this out alone, we'd really recommend speaking to a trichologist or dermatologist who can look at the full picture. In the meantime, FolliSense will track everything so you have a clear history to bring to your appointment.";
 
               if (severeCount <= 1) {
                 if (isSevereItch && isSevereTenderness) {
