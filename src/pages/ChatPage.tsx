@@ -95,7 +95,7 @@ const buildContextAwareResponse = (userMessage: string, ctx: UserContext, histor
     }
 
     if (ctx.scalpProducts.some(p => p.toLowerCase().includes('oil') || p.toLowerCase().includes('grease') || p.toLowerCase().includes('pomade'))) {
-      response += `- **Your scalp products** — oils and pomades can sometimes clog follicles if applied too heavily or too often, especially under an installed style.\n`;
+      response += `- **Your scalp products** — oils and pomades can sometimes clog follicles if applied too heavily or too often, especially under an installed style. Most scalp oils have limited clinical evidence, and heavy oils like castor oil or coconut oil can worsen buildup.\n`;
     }
 
     response += '- **Dry scalp** — if your scalp feels tight and the flakes are small and white, it might just need moisture, not medicated treatment.\n';
@@ -243,7 +243,7 @@ const buildContextAwareResponse = (userMessage: string, ctx: UserContext, histor
 
     if (ctx.hairType) {
       const isHighPorosity = ctx.chemicalProcessing && ctx.chemicalProcessing !== 'No, fully natural';
-      response += `With ${ctx.hairType} hair${isHighPorosity ? ' that\'s been chemically processed' : ''}, ${isHighPorosity ? 'your hair is likely higher porosity, so heavier creams and butters sealed with oil work well' : 'focus on lightweight products that won\'t weigh your curls down'}.\n\n`;
+      response += `With ${ctx.hairType} hair${isHighPorosity ? ' that\'s been chemically processed' : ''}, ${isHighPorosity ? 'your hair is likely higher porosity, so heavier creams and butters on the hair shaft (not the scalp) work well' : 'focus on lightweight products that won\'t weigh your curls down'}.\n\n`;
     }
 
     response += 'If you\'re experiencing specific issues like itching, flaking, or breakage, let me know and I can give more targeted suggestions.';
@@ -259,7 +259,7 @@ const buildContextAwareResponse = (userMessage: string, ctx: UserContext, histor
     }
 
     if (ctx.baselineHairHealth && ctx.baselineHairHealth.includes('dry')) {
-      response += `You mentioned dryness during your baseline assessment, which suggests a **moisture deficit**. Deep conditioning and sealing with an oil or butter can help.\n\n`;
+      response += `You mentioned dryness during your baseline assessment, which suggests a **moisture deficit**. Deep conditioning can help restore hydration.\n\n`;
     }
 
     response += '- **Mechanical breakage** — from tight styling or rough handling. Fix: gentler detangling, satin accessories.\n';

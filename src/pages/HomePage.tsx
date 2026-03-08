@@ -12,7 +12,7 @@ const serviceOptions = ['Wash', 'Treatment', 'Style installation', 'Style remova
 
 const protectiveStyleTips = [
   "Quick thought — a satin pillowcase tonight could help protect your edges while you sleep",
-  "A light scalp oil massage today can help with circulation — even over your protective style",
+  "A gentle scalp massage with your fingertips can help with circulation. You don't need to add product for this to work.",
   "If your braids feel tight around the hairline, don't tough it out — loosen or remove the ones causing pain",
   "Staying hydrated helps your scalp too — aim for 2 litres today",
   "Try pressing gently with a fingertip instead of scratching — it relieves itch without damaging the scalp",
@@ -59,7 +59,7 @@ const quickLogSeverities = [
 ];
 
 const getQuickLogTip = (symptoms: string[]): string => {
-  if (symptoms.includes('Itching')) return 'Try pressing gently with a fingertip instead of scratching. A lightweight scalp oil can help soothe irritation.';
+  if (symptoms.includes('Itching')) return 'Try pressing gently with a fingertip instead of scratching. If your scalp feels dry or tight, a fragrance-free scalp moisturiser or hydrating mist may help.';
   if (symptoms.includes('Tenderness / soreness')) return "If your style feels tight, loosen the edges. Don't tough it out — tension damage is preventable.";
   if (symptoms.includes('Flaking')) return 'A gentle sulphate-free rinse can help clear buildup without disturbing your style.';
   if (symptoms.includes('Thinning / shedding')) return 'Avoid re-tightening edges. If shedding is concentrated at the hairline, consider loosening or removing tension.';
@@ -69,7 +69,7 @@ const getQuickLogTip = (symptoms: string[]): string => {
 
 const getQuickLogTips = (symptoms: string[]): string[] => {
   const tips: string[] = [];
-  if (symptoms.includes('Itching')) tips.push('Apply a lightweight, non-comedogenic scalp oil to soothe irritation');
+  if (symptoms.includes('Itching')) tips.push('If your scalp feels dry or tight, a fragrance-free scalp moisturiser or hydrating mist may help. Avoid heavy oils or butters directly on the scalp.');
   if (symptoms.includes('Tenderness / soreness')) tips.push('Avoid re-tightening your edges — if they\'re loose, leave them');
   if (symptoms.includes('Flaking')) tips.push('Gently cleanse your scalp mid-cycle with a sulphate-free rinse');
   if (symptoms.includes('Thinning / shedding')) tips.push('Consider loosening or avoiding tension on your hairline for the next style');

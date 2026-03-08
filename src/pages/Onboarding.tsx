@@ -276,7 +276,7 @@ const buildBaselineRedBody = (symptoms: string[]): string => {
 
 const getBaselineTips = (itch: string, tenderness: string, hairline: string, hairHealth: string): string[] => {
   const tips: string[] = [];
-  if (itch === 'Moderate' || itch === 'Mild' || itch === 'Severe') tips.push('A gentle, fragrance-free scalp oil can help soothe irritation between washes.');
+  if (itch === 'Moderate' || itch === 'Mild' || itch === 'Severe') tips.push('Try pressing gently with a fingertip instead of scratching — it relieves itch without damaging the scalp. If your scalp feels dry or tight, a fragrance-free scalp moisturiser or hydrating mist may help.');
   if (tenderness === 'Moderate' || tenderness === 'Mild' || tenderness === 'Severe') tips.push('If your current style feels tight, don\'t re-tighten loose areas — let them be. It\'s okay to take it down early.');
   if (hairline === 'Noticeable change' || hairline === 'Slight concern' || hairline === 'Very concerned') tips.push('Give your hairline a break from tension — consider asking your stylist to keep installations looser around your edges.');
   if (hairHealth.includes('dry') || hairHealth.includes('brittle') || hairHealth.includes('breakage') || hairHealth.includes('Concerned')) tips.push('A deep conditioning treatment can help restore moisture and reduce breakage over time.');

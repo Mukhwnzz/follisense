@@ -82,7 +82,7 @@ export const articles: Article[] = [
     content: [
       'Dandruff (seborrheic dermatitis) produces oily, yellowish flakes and is caused by an overgrowth of a yeast called Malassezia. Dry scalp produces smaller, white, dry flakes and is caused by lack of moisture.',
       'The treatments are completely different. Dandruff responds to antifungal ingredients like ketoconazole, zinc pyrithione, or selenium sulfide. Dry scalp responds to gentle moisturising and less frequent washing.',
-      'If you\'re treating one but it\'s actually the other, you\'ll make it worse. Antifungal shampoo on a dry scalp will strip it further. Heavy oils on a dandruff scalp will feed the yeast. Figuring out which one you have is the first step.',
+      'If you\'re treating one but it\'s actually the other, you\'ll make it worse. Antifungal shampoo on a dry scalp will strip it further. Heavy oils on a dandruff scalp will feed the yeast and worsen the condition. Figuring out which one you have is the first step.',
     ],
     relatedIds: ['seb-derm', 'scalp-ph', 'scalp-microbiome'],
   },
@@ -110,7 +110,7 @@ export const articles: Article[] = [
     content: [
       'Hair breaks for a few main reasons, and knowing which one you\'re dealing with changes the solution.',
       'Mechanical breakage is caused by manipulation, tight styling, rough detangling, or friction from cotton pillowcases and towel drying. The fix: gentler handling, satin accessories, finger detangling or a wide-tooth comb on conditioned hair.',
-      'Moisture deficit breakage means hair feels dry, straw-like, and snaps easily. The fix: deep conditioning, leave-in conditioner, sealing with an oil or butter.',
+      'Moisture deficit breakage means hair feels dry, straw-like, and snaps easily. The fix: deep conditioning, leave-in conditioner, and ensuring your hair retains moisture between washes.',
       'Protein deficit breakage means hair feels limp, stretchy, and mushy when wet. The fix: a protein treatment like Aphogee, rice water rinse, or a protein-based deep conditioner. Be careful though — too much protein causes the opposite problem.',
       'Chemical breakage comes from relaxers, colour, or bleach weakening the hair\'s internal structure. The fix: bond repair treatments like K18 or Olaplex, and time. Severely chemically damaged hair may need to be cut.',
       'Heat damage comes from flat irons, blow dryers, or hot combs used too frequently or at too high a temperature. This is usually permanent — damaged sections need to be trimmed out over time.',
@@ -126,7 +126,7 @@ export const articles: Article[] = [
     content: [
       'Porosity is how easily your hair absorbs and holds moisture. Low porosity hair repels water and product tends to sit on top. High porosity hair absorbs quickly but loses moisture fast.',
       'Most chemically processed or heat damaged hair is high porosity. Knowing your porosity helps you choose the right products.',
-      'Low porosity: use lighter products, apply to damp warm hair, avoid heavy butters. High porosity: use heavier creams and butters, seal with oils, layer products using the LOC or LCO method.',
+      'Low porosity: use lighter products, apply to damp warm hair, avoid heavy butters. High porosity: use heavier creams and butters on the hair shaft, layer products using the LOC or LCO method.',
     ],
     relatedIds: ['hair-breakage', 'protein-moisture', 'dry-ends'],
   },
@@ -177,7 +177,7 @@ export const articles: Article[] = [
     readTime: 1,
     content: [
       'The ends of your hair are the oldest part. A strand at shoulder length might be 2 to 3 years old. It\'s been through thousands of washes, styling sessions, environmental exposure, and manipulation. Of course it\'s drier and more fragile than the hair near your root.',
-      'This is why protective styling works: it reduces daily manipulation on those fragile ends. Sealing your ends with a butter or oil, tucking them away, and trimming when they start to split are the best things you can do.',
+      'This is why protective styling works: it reduces daily manipulation on those fragile ends. Keeping your ends moisturised, tucking them away, and trimming when they start to split are the best things you can do.',
     ],
     relatedIds: ['hair-breakage', 'hair-growth-rate', 'protective-styling-truth'],
   },

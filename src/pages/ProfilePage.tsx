@@ -26,6 +26,7 @@ const ProfilePage = () => {
   const [showGoalEditor, setShowGoalEditor] = useState(false);
   const [editGoals, setEditGoals] = useState<string[]>(onboardingData.goals || []);
   const [showProductEditor, setShowProductEditor] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   const notificationOptions = [
     { key: 'dailyTip' as const, label: 'Daily scalp care tip', desc: 'A quick tip or reminder to help your scalp health between check-ins' },
@@ -254,8 +255,8 @@ const ProfilePage = () => {
           </div>
         )}
 
-        {/* Menstrual cycle settings */}
-        {!stylistMode && (
+        {/* Menstrual cycle settings — hidden for male users */}
+        {!stylistMode && onboardingData.gender !== 'man' && (
           <div className="mb-6">
             <h3 className="text-label mb-3">Menstrual Cycle</h3>
             <div className="card-elevated p-4">
@@ -345,7 +346,7 @@ const ProfilePage = () => {
         </div>
 
         {/* About */}
-        <div className="mb-20">
+        <div className="mb-6">
           <h3 className="text-label mb-3">About</h3>
           <div className="card-elevated p-4">
             <div className="flex items-start gap-3">
@@ -357,6 +358,23 @@ const ProfilePage = () => {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Log out */}
+        <div className="mb-20 flex justify-center">
+          {!showLogoutConfirm ? (
+            <button onClick={() => setShowLogoutConfirm(true)} className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+              Log out
+            </button>
+          ) : (
+            <div className="card-elevated p-5 w-full text-center">
+              <p className="text-sm font-medium text-foreground mb-4">Are you sure you want to log out?</p>
+              <div className="flex gap-3">
+                <button onClick={() => setShowLogoutConfirm(false)} className="flex-1 h-10 rounded-xl border border-border font-medium text-sm btn-press text-muted-foreground">Cancel</button>
+                <button onClick={() => { resetAll(); navigate('/'); }} className="flex-1 h-10 rounded-xl font-medium text-sm btn-press bg-muted text-foreground">Yes, log out</button>
+              </div>
+            </div>
+          )}
         </div>
       </motion.div>
     </div>
