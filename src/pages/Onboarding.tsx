@@ -238,10 +238,6 @@ const Onboarding = () => {
         wornOutWashFrequency: wornOutWashFreq, restyleFrequency: restyleFreq,
         baselineItch: itch, baselineTenderness: tenderness, baselineHairline: hairline, baselineHairHealth,
         scalpProducts: products, otherProduct, productFrequency: prodFreq,
-        menstrualTracking,
-        lastPeriodDate: lastPeriodDate ? format(lastPeriodDate, 'yyyy-MM-dd') : '',
-        menstrualCycleLength: menstrualCycleLen,
-        hormonalContraception,
         goals,
       });
       setOnboardingComplete(true);
