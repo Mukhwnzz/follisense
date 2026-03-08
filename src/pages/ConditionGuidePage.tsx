@@ -7,17 +7,6 @@ import { stylistConditions, getConditionById as getStylistCondition } from '@/da
 import ScalpIllustration from '@/components/ScalpIllustration';
 import ImageViewer, { useImageViewer } from '@/components/ImageViewer';
 
-const dermnetLinks: Record<string, string> = {
-  'traction-alopecia': 'https://dermnetnz.org/topics/traction-alopecia',
-  'ccca': 'https://dermnetnz.org/topics/central-centrifugal-cicatricial-alopecia',
-  'seborrheic-dermatitis': 'https://dermnetnz.org/topics/seborrhoeic-dermatitis',
-  'scalp-psoriasis': 'https://dermnetnz.org/topics/scalp-psoriasis',
-  'alopecia-areata': 'https://dermnetnz.org/topics/alopecia-areata',
-  'folliculitis': 'https://dermnetnz.org/topics/folliculitis',
-  'tinea-capitis': 'https://dermnetnz.org/topics/tinea-capitis',
-  'chemical-damage': 'https://dermnetnz.org/topics/chemical-burn',
-};
-
 const ConditionDetail = ({ condition, onBack }: { condition: ConsumerCondition; onBack: () => void }) => {
   const navigate = useNavigate();
   const [answers, setAnswers] = useState<Record<number, boolean>>({});
@@ -100,18 +89,8 @@ const ConditionDetail = ({ condition, onBack }: { condition: ConsumerCondition; 
             <div key={i} className="card-elevated p-4">
               <p className="text-sm text-foreground mb-3">{q.question}</p>
               <div className="flex gap-2">
-                <button
-                  onClick={() => setAnswers(prev => ({ ...prev, [i]: true }))}
-                  className={`flex-1 py-2 rounded-xl text-sm font-medium border-2 transition-colors ${answers[i] === true ? 'border-primary bg-sage-light text-primary' : 'border-border text-muted-foreground'}`}
-                >
-                  Yes
-                </button>
-                <button
-                  onClick={() => setAnswers(prev => ({ ...prev, [i]: false }))}
-                  className={`flex-1 py-2 rounded-xl text-sm font-medium border-2 transition-colors ${answers[i] === false ? 'border-primary bg-sage-light text-primary' : 'border-border text-muted-foreground'}`}
-                >
-                  No
-                </button>
+                <button onClick={() => setAnswers(prev => ({ ...prev, [i]: true }))} className={`flex-1 py-2 rounded-xl text-sm font-medium border-2 transition-colors ${answers[i] === true ? 'border-primary bg-sage-light text-primary' : 'border-border text-muted-foreground'}`}>Yes</button>
+                <button onClick={() => setAnswers(prev => ({ ...prev, [i]: false }))} className={`flex-1 py-2 rounded-xl text-sm font-medium border-2 transition-colors ${answers[i] === false ? 'border-primary bg-sage-light text-primary' : 'border-border text-muted-foreground'}`}>No</button>
               </div>
             </div>
           ))}
@@ -121,12 +100,8 @@ const ConditionDetail = ({ condition, onBack }: { condition: ConsumerCondition; 
           <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className={`rounded-xl p-4 mt-4 ${getResultMessage().bg}`}>
             <p className={`text-sm leading-relaxed ${getResultMessage().color}`}>{getResultMessage().text}</p>
             <div className="flex gap-2 mt-4">
-              <button onClick={() => navigate('/find-specialist')} className="flex-1 h-10 rounded-xl bg-primary text-primary-foreground text-sm font-medium btn-press">
-                Find a specialist
-              </button>
-              <button onClick={() => navigate('/wash-day')} className="flex-1 h-10 rounded-xl border border-border text-sm font-medium text-foreground btn-press">
-                Log in a check-in
-              </button>
+              <button onClick={() => navigate('/find-specialist')} className="flex-1 h-10 rounded-xl bg-primary text-primary-foreground text-sm font-medium btn-press">Find a specialist</button>
+              <button onClick={() => navigate('/wash-day')} className="flex-1 h-10 rounded-xl border border-border text-sm font-medium text-foreground btn-press">Log in a check-in</button>
             </div>
           </motion.div>
         )}
@@ -157,7 +132,7 @@ const ConditionDetail = ({ condition, onBack }: { condition: ConsumerCondition; 
       </div>
 
       {/* Section 5: Learn more */}
-      <div className="space-y-2 mb-20">
+      <div className="space-y-2 mb-6">
         <h3 className="text-sm font-semibold text-foreground mb-3">Learn more</h3>
         {condition.relatedArticleId && (
           <button onClick={() => navigate(`/learn?article=${condition.relatedArticleId}`)} className="card-elevated p-4 w-full text-left flex items-center gap-3 btn-press">
@@ -176,6 +151,13 @@ const ConditionDetail = ({ condition, onBack }: { condition: ConsumerCondition; 
           <div className="flex-1"><p className="text-sm font-medium text-foreground">DermNet NZ — Clinical reference</p><p className="text-xs text-muted-foreground">Opens in your browser</p></div>
           <ExternalLink size={14} className="text-muted-foreground" />
         </a>
+      </div>
+
+      {/* Bottom back button */}
+      <div className="pt-4 border-t border-border mb-20">
+        <button onClick={onBack} className="w-full h-12 rounded-xl border-2 border-border text-foreground font-medium text-sm btn-press flex items-center justify-center gap-2">
+          <ArrowLeft size={16} /> Back
+        </button>
       </div>
     </motion.div>
   );
@@ -222,10 +204,17 @@ const ConditionGuidePage = ({ onBack }: { onBack: () => void }) => {
       </div>
 
       {/* DermNet NZ note */}
-      <div className="rounded-xl bg-secondary/40 border border-secondary p-4 mb-20">
+      <div className="rounded-xl bg-secondary/40 border border-secondary p-4 mb-6">
         <p className="text-xs text-muted-foreground leading-relaxed italic">
           DermNet NZ is a free, trusted dermatology resource used by medical professionals worldwide. Images are provided for educational reference only.
         </p>
+      </div>
+
+      {/* Bottom back button */}
+      <div className="pt-4 border-t border-border mb-20">
+        <button onClick={onBack} className="w-full h-12 rounded-xl border-2 border-border text-foreground font-medium text-sm btn-press flex items-center justify-center gap-2">
+          <ArrowLeft size={16} /> Back to Learn
+        </button>
       </div>
     </motion.div>
   );

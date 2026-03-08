@@ -71,6 +71,13 @@ const ArticleView = ({ article, onBack, onNavigate }: ArticleViewProps) => {
         <p className="text-xs text-muted-foreground mb-2">Got more questions about this topic?</p>
         <p className="text-sm text-primary font-medium">Tap the chat button to ask FolliSense</p>
       </div>
+
+      {/* Bottom back button */}
+      <div className="mt-8 pt-4 border-t border-border">
+        <button onClick={onBack} className="w-full h-12 rounded-xl border-2 border-border text-foreground font-medium text-sm btn-press flex items-center justify-center gap-2">
+          <ArrowLeft size={16} /> Back to articles
+        </button>
+      </div>
     </motion.div>
   );
 };
