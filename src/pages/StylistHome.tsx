@@ -19,7 +19,7 @@ const loadStylistProfile = (): StylistProfile | null => {
 
 const loadQuizState = () => {
   try {
-    const saved = localStorage.getItem('scalpsense-quiz');
+    const saved = localStorage.getItem('follisense-quiz');
     if (saved) return JSON.parse(saved);
   } catch {}
   return { totalPoints: 0, currentStreak: 0, bestStreak: 0 };
