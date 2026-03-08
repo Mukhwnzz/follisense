@@ -49,6 +49,8 @@ const ProfilePage = () => {
   const [showNewPw, setShowNewPw] = useState(false);
   const [showConfirmPw, setShowConfirmPw] = useState(false);
 
+  const isMale = onboardingData.gender === 'man';
+
   const notificationOptions = isMale ? [
     { key: 'dailyTip' as const, label: 'Daily scalp care tip', desc: 'A quick tip to help your scalp health between check-ins' },
     { key: 'midCycle' as const, label: 'Check-in reminder', desc: "We'll nudge you when it's time for your next scalp check" },
@@ -63,8 +65,6 @@ const ProfilePage = () => {
     { key: 'productReminders' as const, label: 'Product reminders', desc: 'Reminders to apply scalp treatments or oils based on your routine' },
     { key: 'weeklySummary' as const, label: 'Weekly scalp health summary', desc: 'A quick recap of your scalp activity this week' },
   ];
-
-  const isMale = onboardingData.gender === 'man';
 
   const handleDelete = () => { resetAll(); navigate('/'); };
   const handleRetakePhoto = (area: string) => {
