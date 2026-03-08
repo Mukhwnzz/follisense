@@ -1,6 +1,5 @@
-import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Clock, MessageCircle } from 'lucide-react';
+import { ArrowLeft, Clock } from 'lucide-react';
 import { Article, getRelatedArticles } from '@/data/learnArticles';
 
 interface ArticleViewProps {
