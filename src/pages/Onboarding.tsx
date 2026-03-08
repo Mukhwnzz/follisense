@@ -93,7 +93,7 @@ const getMicroEducation = (step: number, data: {
   washFreq?: string; styles?: string[]; baselineItch?: string; baselineTenderness?: string;
   baselineHairline?: string; baselineHairHealth?: string; isMale?: boolean;
 }): { title: string; message: string } | null => {
-  // After step 3 (routine/cycle)
+  // After step 4 (routine/cycle)
   if (step === 4) {
     const longWash = data.washFreq === 'Only at takedown' || data.washFreq === 'Every 3 to 4 weeks' || data.washFreq === 'Less than weekly';
     if (longWash) {
