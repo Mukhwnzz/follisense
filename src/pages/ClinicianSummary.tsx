@@ -35,9 +35,10 @@ const ClinicianSummary = () => {
   if (onboardingData.washFrequency) fields.push({ label: 'Wash frequency', value: onboardingData.washFrequency });
   if (onboardingData.wornOutWashFrequency) fields.push({ label: 'Wash frequency', value: onboardingData.wornOutWashFrequency });
 
-  // Menstrual data
+  // Menstrual data — hidden for male users
+  const isMale = onboardingData.gender === 'man';
   const menstrualFields: { label: string; value: string }[] = [];
-  if (onboardingData.menstrualTracking === "Yes, I'd like to track") {
+  if (!isMale && onboardingData.menstrualTracking === "Yes, I'd like to track") {
     const getCycleDay = (): number | null => {
       if (!onboardingData.lastPeriodDate) return null;
       const lastPeriod = new Date(onboardingData.lastPeriodDate);
