@@ -20,7 +20,7 @@ const hairTypes = [
   { id: 'unsure', label: 'Not sure', desc: "That's okay, lots of us have a mix of patterns" },
 ];
 
-const chemicalOptionsSimple = ['No, fully natural', 'Yes', 'Previously processed, currently growing out'];
+const chemicalOptionsSimple = ['Yes, currently', 'Previously but not now', 'Never', 'Not sure'];
 const chemicalTypeOptions = ['Relaxed or permed', 'Texturised', 'Colour treated', 'Bleached'];
 const lastChemicalTreatmentOptions = ['Within the last month', '1 to 3 months ago', '3 to 6 months ago', '6 to 12 months ago', 'Over a year ago', 'Not sure'];
 
@@ -80,11 +80,12 @@ const genderOptions = [
 // ── "Why we ask" helper text for each section ─────────────────────────────────
 const sectionWhyText: Record<number, string> = {
   1: "This helps us tailor scalp check-in questions to your hair's needs.",
-  2: "Different styles create different tension and coverage patterns. This helps us know what to watch for.",
-  3: "We use this to time your reminders and mid-cycle check-ins.",
-  4: "This sets your baseline so we can track changes over time.",
-  6: "Knowing what you use helps us flag potential irritants or gaps.",
-  7: "Hormonal changes affect your scalp and hair cycle. This helps us give you relevant guidance.",
+  2: "Chemical processing changes how your scalp and hair respond to products and styling tension. This helps us tailor your check-ins.",
+  3: "Different styles create different tension and coverage patterns. This helps us know what to watch for.",
+  4: "We use this to time your reminders and mid-cycle check-ins.",
+  5: "This sets your baseline so we can track changes over time.",
+  7: "Knowing what you use helps us flag potential irritants or gaps.",
+  8: "Hormonal changes affect your scalp and hair cycle. This helps us give you relevant guidance.",
 };
 
 // ── Micro-education transitional messages ──────────────────────────────────────
@@ -92,8 +93,8 @@ const getMicroEducation = (step: number, data: {
   washFreq?: string; styles?: string[]; baselineItch?: string; baselineTenderness?: string;
   baselineHairline?: string; baselineHairHealth?: string; isMale?: boolean;
 }): { title: string; message: string } | null => {
-  // After step 3 (routine/cycle)
-  if (step === 3) {
+  // After step 4 (routine/cycle)
+  if (step === 4) {
     const longWash = data.washFreq === 'Only at takedown' || data.washFreq === 'Every 3 to 4 weeks' || data.washFreq === 'Less than weekly';
     if (longWash) {
       return {
@@ -112,8 +113,8 @@ const getMicroEducation = (step: number, data: {
     }
     return null;
   }
-  // After baseline (step 4 → going to 5)
-  if (step === 4) {
+  // After baseline (step 5 → going to 6)
+  if (step === 5) {
     const hasSymptoms = data.baselineItch && data.baselineItch !== 'None' || data.baselineTenderness && data.baselineTenderness !== 'None' || data.baselineHairline && data.baselineHairline !== 'No concerns';
     if (hasSymptoms) {
       return {
@@ -128,9 +129,9 @@ const getMicroEducation = (step: number, data: {
 
 // ── Skippable steps ────────────────────────────────────────────────────────────
 const isSkippableStep = (step: number, skipMenstrual: boolean): boolean => {
-  // Products (step 6), menstrual (step 7 for non-male)
-  if (step === 6) return true; // products
-  if (step === 7 && !skipMenstrual) return true; // menstrual
+  // Products (step 7), menstrual (step 8 for non-male)
+  if (step === 7) return true; // products
+  if (step === 8 && !skipMenstrual) return true; // menstrual
   return false;
 };
 
@@ -282,16 +283,17 @@ const Onboarding = () => {
    * STEP MAP:
    * -1 = Intro ("why we ask")
    * 0 = Gender
-   * 1 = Hair type + chemical
-   * 2 = Styles
-   * 3 = Cycle / routine
-   * 4 = Baseline check → navigates to /onboarding/baseline-response
-   * 5 = Photos
-   * 6 = Products (skippable)
-   * 7 = Menstrual (skipped for male; skippable for others)
-   * 8 = Goals
+   * 1 = Hair type (get to know your hair)
+   * 2 = Chemical processing (separate clinical question)
+   * 3 = Styles
+   * 4 = Cycle / routine
+   * 5 = Baseline check → navigates to /onboarding/baseline-response
+   * 6 = Photos
+   * 7 = Products (skippable)
+   * 8 = Menstrual (skipped for male; skippable for others)
+   * 9 = Goals
    */
-  const totalSegments = skipMenstrual ? 9 : 10; // +1 for intro
+  const totalSegments = skipMenstrual ? 10 : 11; // +1 for intro
 
   const baselineAreas = [
     { id: 'hairline', label: 'Hairline — temples and edges', desc: 'Front-facing', optional: false },
@@ -358,19 +360,20 @@ const Onboarding = () => {
     if (step === -1) return true; // intro
     switch (step) {
       case 0: return !!gender;
-      case 1: {
-        if (!hairType || !chemicalProcessing) return false;
-        if (chemicalProcessing === 'No, fully natural') return true;
-        if (chemicalProcessing === 'Yes') return chemicalMultiple.length > 0 && !!lastChemicalTreatment;
-        if (chemicalProcessing === 'Previously processed, currently growing out') return !!lastChemicalTreatment;
+      case 1: return !!hairType;
+      case 2: {
+        if (!chemicalProcessing) return false;
+        if (chemicalProcessing === 'Never' || chemicalProcessing === 'Not sure') return true;
+        if (chemicalProcessing === 'Yes, currently') return chemicalMultiple.length > 0 && !!lastChemicalTreatment;
+        if (chemicalProcessing === 'Previously but not now') return !!lastChemicalTreatment;
         return false;
       }
-      case 2: {
+      case 3: {
         const stylesOk = styles.length > 0 && (!styles.includes('Other') || otherStyle.trim().length > 0);
         if (isMale) return stylesOk && (!hasMaleInstalledStyles || !!protectiveFreq);
         return stylesOk && (isWornOutOnly || !!protectiveFreq);
       }
-      case 3: {
+      case 4: {
         if (isMale) {
           const betweenOk = maleBetweenCare.length > 0 && (!maleBetweenCare.includes('Other') || otherMaleBetweenCare.trim().length > 0);
           if (hasFadeOrShortMale && !hasLocsMale && !hasBraidsMale) return !!barberFreq && !!maleWashFreq && betweenOk;
@@ -384,30 +387,30 @@ const Onboarding = () => {
         const betweenOk = betweenWashCare.length > 0 && (!betweenWashCare.includes('Other') || otherBetweenWash.trim().length > 0);
         return cycleOk && washOk && betweenOk;
       }
-      case 4: return false;
-      case 5: return true;
-      case 6: {
+      case 5: return false;
+      case 6: return true;
+      case 7: {
         const scalpNone = products.length === 1 && products[0] === 'None';
         const hairNone = hairProds.length === 1 && hairProds[0] === 'None';
         const scalpOk = scalpNone || (products.length > 0 && !!prodFreq);
         const hairOk = hairNone || (hairProds.length > 0 && !!hairProdFreq);
         return scalpOk && hairOk;
       }
-      case 7: {
+      case 8: {
         if (skipMenstrual) return goals.length > 0;
         return !!menstrualTracking && (menstrualTracking !== "Yes, I'd like to track" || (!!menstrualCycleLength && !!hormonalContraception));
       }
-      case 8: return goals.length > 0;
+      case 9: return goals.length > 0;
       default: return false;
     }
   };
 
-  const isLastStep = skipMenstrual ? step === 7 : step === 8;
+  const isLastStep = skipMenstrual ? step === 8 : step === 9;
 
   const handleSkip = () => {
     setSkippedSections(prev => [...prev, step]);
-    if (skipMenstrual && step === 6) {
-      setStep(7);
+    if (skipMenstrual && step === 7) {
+      setStep(8);
     } else {
       setStep(step + 1);
     }
@@ -420,8 +423,8 @@ const Onboarding = () => {
     }
 
     // Check for micro-education transition
-    if (step === 3 && !showMicroEducation) {
-      const edu = getMicroEducation(3, {
+    if (step === 4 && !showMicroEducation) {
+      const edu = getMicroEducation(4, {
         washFreq: washFreqDetail || wornOutWashFreq || maleWashFreq,
         styles,
         isMale,
@@ -433,13 +436,13 @@ const Onboarding = () => {
     }
 
     if (!isLastStep) {
-      if (step === 5) {
+      if (step === 6) {
         const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
         const photos = baselineAreas.filter(a => capturedPhotos[a.id]).map(a => ({ area: a.label, captured: true, date: today }));
         setBaselinePhotos(photos);
       }
-      if (skipMenstrual && step === 6) {
-        setStep(7);
+      if (skipMenstrual && step === 7) {
+        setStep(8);
       } else {
         setStep(step + 1);
       }
@@ -481,10 +484,10 @@ const Onboarding = () => {
       setShowMicroEducation(null);
       return;
     }
-    if (step === 4 && baselineStep > 0) { setBaselineStep(prev => prev - 1); return; }
+    if (step === 5 && baselineStep > 0) { setBaselineStep(prev => prev - 1); return; }
     if (step === -1) { navigate('/'); return; }
     if (step > 0) {
-      if (skipMenstrual && step === 7) { setStep(6); return; }
+      if (skipMenstrual && step === 8) { setStep(7); return; }
       setStep(step - 1);
     } else if (step === 0) {
       setStep(-1);
@@ -496,8 +499,8 @@ const Onboarding = () => {
   const getProgressIndex = () => {
     if (step === -1) return 0;
     if (!skipMenstrual) return step + 1;
-    if (step <= 6) return step + 1;
-    return 8;
+    if (step <= 7) return step + 1;
+    return 9;
   };
 
   // ── Render ─────────────────────────────────────────────────────────────────
@@ -552,7 +555,7 @@ const Onboarding = () => {
         <div className="flex-1 overflow-y-auto min-h-0">
         <AnimatePresence mode="wait">
           <motion.div
-            key={step === 4 ? `4-${baselineStep}-${baselineAck ? 'ack' : 'q'}` : step}
+            key={step === 5 ? `5-${baselineStep}-${baselineAck ? 'ack' : 'q'}` : step}
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
@@ -591,7 +594,7 @@ const Onboarding = () => {
               </div>
             )}
 
-            {/* ── Step 1: Hair type + chemical processing ── */}
+            {/* ── Step 1: Hair type ── */}
             {step === 1 && (
               <div>
                 <h2 className="text-lg font-medium text-foreground mb-1">Let's get to know your hair</h2>
@@ -608,25 +611,28 @@ const Onboarding = () => {
                     </button>
                   ))}
                 </div>
+              </div>
+            )}
 
-                <SlideIn show={!!hairType}>
-                  <div className="mt-8">
-                    <p className="font-medium text-foreground mb-3">Has your hair been chemically processed?</p>
-                    <div className="space-y-2">
-                      {chemicalOptionsSimple.map(opt => (
-                        <button key={opt} onClick={() => {
-                          setChemicalProcessing(opt);
-                          if (opt === 'No, fully natural') { setChemicalMultiple([]); setLastChemicalTreatment(''); }
-                          if (opt !== 'Yes') setChemicalMultiple([]);
-                        }} className={`selection-card w-full text-left ${chemicalProcessing === opt ? 'selected' : ''}`}>
-                          <p className="font-medium text-foreground text-sm">{opt}</p>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </SlideIn>
+            {/* ── Step 2: Chemical processing ── */}
+            {step === 2 && (
+              <div>
+                <h2 className="text-lg font-medium text-foreground mb-1">A quick question about your hair history</h2>
+                <p className="text-xs text-muted-foreground mb-5">{sectionWhyText[2]}</p>
+                <p className="font-medium text-foreground mb-3">Is your hair chemically processed?</p>
+                <div className="space-y-2">
+                  {chemicalOptionsSimple.map(opt => (
+                    <button key={opt} onClick={() => {
+                      setChemicalProcessing(opt);
+                      if (opt === 'Never' || opt === 'Not sure') { setChemicalMultiple([]); setLastChemicalTreatment(''); }
+                      if (opt !== 'Yes, currently') setChemicalMultiple([]);
+                    }} className={`selection-card w-full text-left ${chemicalProcessing === opt ? 'selected' : ''}`}>
+                      <p className="font-medium text-foreground text-sm">{opt}</p>
+                    </button>
+                  ))}
+                </div>
 
-                <SlideIn show={chemicalProcessing === 'Yes'}>
+                <SlideIn show={chemicalProcessing === 'Yes, currently'}>
                   <div className="mt-4 p-3 rounded-xl bg-accent space-y-2">
                     <p className="text-sm font-medium text-foreground mb-2">What type of processing?</p>
                     <div className="flex flex-wrap gap-2">
@@ -637,7 +643,7 @@ const Onboarding = () => {
                   </div>
                 </SlideIn>
 
-                <SlideIn show={(chemicalProcessing === 'Yes' && chemicalMultiple.length > 0) || chemicalProcessing === 'Previously processed, currently growing out'}>
+                <SlideIn show={(chemicalProcessing === 'Yes, currently' && chemicalMultiple.length > 0) || chemicalProcessing === 'Previously but not now'}>
                   <div className="mt-4">
                     <p className="text-sm font-medium text-foreground mb-3">When was your last chemical treatment?</p>
                     <div className="flex flex-wrap gap-2">
@@ -647,16 +653,14 @@ const Onboarding = () => {
                     </div>
                   </div>
                 </SlideIn>
-
-                <p className="text-xs text-muted-foreground mt-4">Chemical processing can affect how your scalp responds to styling — this helps us personalise your experience.</p>
               </div>
             )}
 
-            {/* ── Step 2: Styles ── */}
-            {step === 2 && (
+            {/* ── Step 3: Styles ── */}
+            {step === 3 && (
               <div>
                 <h2 className="text-lg font-medium text-foreground mb-1">How do you usually wear your hair?</h2>
-                <p className="text-xs text-muted-foreground mb-3">{sectionWhyText[2]}</p>
+                <p className="text-xs text-muted-foreground mb-3">{sectionWhyText[3]}</p>
                 <p className="text-muted-foreground mb-6">Select everything you rotate between</p>
                 {(() => {
                   const defaultCount = isMale ? 6 : 8;
@@ -714,11 +718,11 @@ const Onboarding = () => {
               </div>
             )}
 
-            {/* ── Step 3: Routine / Cycle ── */}
-            {step === 3 && isMale && (
+            {/* ── Step 4: Routine / Cycle ── */}
+            {step === 4 && isMale && (
               <div>
                 <h2 className="text-lg font-medium text-foreground mb-1">Your routine</h2>
-                <p className="text-xs text-muted-foreground mb-6">{sectionWhyText[3]}</p>
+                <p className="text-xs text-muted-foreground mb-6">{sectionWhyText[4]}</p>
 
                 {hasFadeOrShortMale && !hasLocsMale && !hasBraidsMale && (
                   <>
@@ -783,10 +787,10 @@ const Onboarding = () => {
               </div>
             )}
 
-            {step === 3 && !isMale && !isWornOutOnly && (
+            {step === 4 && !isMale && !isWornOutOnly && (
               <div>
                 <h2 className="text-lg font-medium text-foreground mb-1">Your cycle</h2>
-                <p className="text-xs text-muted-foreground mb-3">{sectionWhyText[3]}</p>
+                <p className="text-xs text-muted-foreground mb-3">{sectionWhyText[4]}</p>
                 <p className="text-muted-foreground mb-6">How long do you typically keep a style in?</p>
                 <div className="flex flex-wrap gap-2 mb-2">
                   {cycleLengths.map(c => (
@@ -868,10 +872,10 @@ const Onboarding = () => {
               </div>
             )}
 
-            {step === 3 && !isMale && isWornOutOnly && (
+            {step === 4 && !isMale && isWornOutOnly && (
               <div>
                 <h2 className="text-lg font-medium text-foreground mb-1">Your routine</h2>
-                <p className="text-xs text-muted-foreground mb-3">{sectionWhyText[3]}</p>
+                <p className="text-xs text-muted-foreground mb-3">{sectionWhyText[4]}</p>
                 <p className="text-muted-foreground mb-6">How often do you wash your hair?</p>
                 <div className="mb-8">
                   <div className="flex flex-wrap gap-2">
@@ -887,8 +891,8 @@ const Onboarding = () => {
               </div>
             )}
 
-            {/* ── Step 4: Baseline ── */}
-            {step === 4 && (
+            {/* ── Step 5: Baseline ── */}
+            {step === 5 && (
               <div>
                 {baselineAck ? (
                   <motion.div key="ack" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="pt-16 text-center">
@@ -897,7 +901,7 @@ const Onboarding = () => {
                 ) : (
                   <div>
                     <h2 className="text-lg font-medium text-foreground mb-1">How are things right now?</h2>
-                    <p className="text-xs text-muted-foreground mb-2">{sectionWhyText[4]}</p>
+                    <p className="text-xs text-muted-foreground mb-2">{sectionWhyText[5]}</p>
                     <p className="text-muted-foreground mb-6">Just a few questions so we know where you're starting from</p>
                     <div className="flex gap-1 mb-6">
                       {baselineQuestions.map((_, i) => (
@@ -921,8 +925,8 @@ const Onboarding = () => {
               </div>
             )}
 
-            {/* ── Step 5: Photos ── */}
-            {step === 5 && (
+            {/* ── Step 6: Photos ── */}
+            {step === 6 && (
               <div>
                 <h2 className="text-lg font-medium text-foreground mb-2">Capture your starting point</h2>
                 <p className="text-muted-foreground mb-4">A baseline photo helps you spot gradual changes that are hard to notice day to day</p>
@@ -968,14 +972,14 @@ const Onboarding = () => {
               </div>
             )}
 
-            {/* ── Step 6: Products (skippable) ── */}
-            {step === 6 && (() => {
+            {/* ── Step 7: Products (skippable) ── */}
+            {step === 7 && (() => {
               const scalpIsNone = products.length === 1 && products[0] === 'None';
               const hairIsNone = hairProds.length === 1 && hairProds[0] === 'None';
               return (
                 <div>
                   <h2 className="text-lg font-medium text-foreground mb-1">Let's talk products</h2>
-                  <p className="text-xs text-muted-foreground mb-4">{sectionWhyText[6]}</p>
+                  <p className="text-xs text-muted-foreground mb-4">{sectionWhyText[7]}</p>
                   <p className="text-sm text-muted-foreground mb-1">What do you put on your scalp?</p>
                   <p className="text-xs text-muted-foreground mb-4">Start typing a product or brand name</p>
                   <ProductSearch category="scalp" selectedProducts={products} onProductsChange={setProducts} noneLabel="I don't use anything on my scalp" />
@@ -1003,13 +1007,13 @@ const Onboarding = () => {
               );
             })()}
 
-            {/* ── Step 7: Menstrual (skipped for men — this step is goals for men) ── */}
-            {step === 7 && !skipMenstrual && (
+            {/* ── Step 8: Menstrual (skipped for men — this step is goals for men) ── */}
+            {step === 8 && !skipMenstrual && (
               <div>
                 <h2 className="text-lg font-medium text-foreground mb-1">
                   {isNeutral ? 'Do you want to track your hormonal cycle?' : 'Do you want to link your menstrual cycle?'}
                 </h2>
-                <p className="text-xs text-muted-foreground mb-3">{sectionWhyText[7]}</p>
+                <p className="text-xs text-muted-foreground mb-3">{sectionWhyText[8]}</p>
                 <p className="text-muted-foreground mb-4">
                   {isNeutral ? 'Some people find it useful to track their hormonal cycle alongside scalp health' : 'Your hormones have a direct effect on your scalp'}
                 </p>
@@ -1061,8 +1065,8 @@ const Onboarding = () => {
               </div>
             )}
 
-            {/* ── Goals step: 7 for men, 8 for others ── */}
-            {((skipMenstrual && step === 7) || (!skipMenstrual && step === 8)) && (
+            {/* ── Goals step: 8 for men, 9 for others ── */}
+            {((skipMenstrual && step === 8) || (!skipMenstrual && step === 9)) && (
               <div>
                 <h2 className="text-lg font-medium text-foreground mb-2">What matters most to you right now?</h2>
                 <p className="text-muted-foreground mb-6">Pick up to 3 — this helps us focus your experience</p>
@@ -1091,7 +1095,7 @@ const Onboarding = () => {
             <button onClick={handleNext} className="w-full h-14 rounded-xl font-semibold text-base btn-press transition-colors bg-primary text-primary-foreground">
               Let's get started
             </button>
-          ) : step === 4 ? null : step === 5 ? (
+          ) : step === 5 ? null : step === 6 ? (
             <div className="space-y-3">
               <button onClick={handleNext} className="w-full h-14 rounded-xl font-semibold text-base btn-press transition-colors bg-primary text-primary-foreground">
                 {Object.values(capturedPhotos).some(Boolean) ? 'Continue' : 'Skip for now'}
