@@ -343,8 +343,8 @@ const Onboarding = () => {
 
   // Skip menstrual step for men
   const skipMenstrual = isMale;
-  // Steps: 0=gender, 1=hair, 2=styles, 3=cycle, 4=baseline, 5=photos, 6=products, 7=menstrual (maybe skip), 8=goals
-  const totalSteps = skipMenstrual ? 8 : 9;
+  // Steps: 0=gender, 1=hair, 2=styles, 3=cycle, 4=baseline, 5=baseline response, 6=photos, 7=products, 8=menstrual (maybe skip), 9=goals
+  const totalSteps = skipMenstrual ? 9 : 10;
 
   const baselineAreas = [
     { id: 'hairline', label: 'Hairline — temples and edges', desc: 'Front-facing', optional: false },
