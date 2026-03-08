@@ -52,6 +52,60 @@ export interface CycleEntry {
   checkIn?: CheckInData;
 }
 
+export interface StylistObservationEntry {
+  id: string;
+  date: string;
+  stylistName: string;
+  observations: string[];
+  notes?: string;
+  risk: 'green' | 'amber' | 'red';
+}
+
+export interface HealthProfileData {
+  // Scalp environment
+  sweat: string;
+  exercise: string;
+  heatStyling: string;
+  satinCovering: string;
+  // Medical history
+  medicalConditions: string[];
+  pregnancyStatus: string;
+  medications: string;
+  medicationDetails: string;
+  // Blood work
+  lastBloodTest: string;
+  bloodLevels: Record<string, string>;
+  // Skin conditions
+  skinConditions: string[];
+  skinConditionDetails: string;
+  sensitiveSkin: string;
+  // Hair history
+  previousHairLoss: string;
+  diagnosedCondition: string;
+  diagnosedConditionDetails: string;
+  familyHistory: string;
+}
+
+const defaultHealthProfile: HealthProfileData = {
+  sweat: '',
+  exercise: '',
+  heatStyling: '',
+  satinCovering: '',
+  medicalConditions: [],
+  pregnancyStatus: '',
+  medications: '',
+  medicationDetails: '',
+  lastBloodTest: '',
+  bloodLevels: {},
+  skinConditions: [],
+  skinConditionDetails: '',
+  sensitiveSkin: '',
+  previousHairLoss: '',
+  diagnosedCondition: '',
+  diagnosedConditionDetails: '',
+  familyHistory: '',
+};
+
 interface AppContextType {
   onboardingComplete: boolean;
   setOnboardingComplete: (v: boolean) => void;
@@ -69,6 +123,8 @@ interface AppContextType {
   clientObservations: ClientObservation[];
   addClientObservation: (o: ClientObservation) => void;
   stylistObservations: StylistObservationEntry[];
+  healthProfile: HealthProfileData;
+  setHealthProfile: (d: HealthProfileData) => void;
   resetAll: () => void;
 }
 
@@ -104,16 +160,6 @@ const demoClientObservations: ClientObservation[] = [
   { id: 'co4', clientName: 'R.B.', date: 'Feb 20', observations: ['Thinning at crown / vertex', 'Tender or sore areas'], photos: ['Crown / vertex', 'Hairline / edges'], risk: 'red' },
 ];
 
-// Dummy stylist observations visible in consumer History
-export interface StylistObservationEntry {
-  id: string;
-  date: string;
-  stylistName: string;
-  observations: string[];
-  notes?: string;
-  risk: 'green' | 'amber' | 'red';
-}
-
 const demoStylistObservations: StylistObservationEntry[] = [
   { id: 'so1', date: 'Mar 5', stylistName: 'Ama', observations: ['Thinning at hairline / edges', 'Signs of traction damage'], notes: 'Recommended loosening edges on next install', risk: 'amber' },
   { id: 'so2', date: 'Feb 2', stylistName: 'Ama', observations: ['Nothing of concern'], risk: 'green' },
@@ -129,6 +175,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [stylistMode, setStylistMode] = useState(false);
   const [salonVisits, setSalonVisits] = useState<SalonVisit[]>(demoSalonVisits);
   const [clientObservations, setClientObservations] = useState<ClientObservation[]>(demoClientObservations);
+  const [healthProfile, setHealthProfile] = useState<HealthProfileData>(defaultHealthProfile);
 
   const addSalonVisit = (v: SalonVisit) => setSalonVisits(prev => [v, ...prev]);
   const addClientObservation = (o: ClientObservation) => setClientObservations(prev => [o, ...prev]);
@@ -141,6 +188,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     setStylistMode(false);
     setSalonVisits(demoSalonVisits);
     setClientObservations(demoClientObservations);
+    setHealthProfile(defaultHealthProfile);
   };
 
   return (
@@ -154,6 +202,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       stylistMode, setStylistMode,
       clientObservations, addClientObservation,
       stylistObservations: demoStylistObservations,
+      healthProfile, setHealthProfile,
       resetAll,
     }}>
       {children}

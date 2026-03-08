@@ -39,6 +39,7 @@ const App = () => (
               <Route path="/wash-day" element={<WashDayAssessment />} />
               <Route path="/results" element={<RiskOutput />} />
               <Route path="/clinician-summary" element={<ClinicianSummary />} />
+              <Route path="/health-profile" element={<HealthProfile />} />
               <Route path="/history" element={<HistoryPage />} />
               <Route path="/learn" element={<LearnPage />} />
               <Route path="/profile" element={<ProfilePage />} />
