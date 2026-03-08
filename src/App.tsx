@@ -35,6 +35,7 @@ import MyRoutine from "./pages/MyRoutine";
 import StylistLearnPage from "./pages/StylistLearnPage";
 import ScalpQuiz from "./pages/ScalpQuiz";
 import SalonCheckIn from "./pages/SalonCheckIn";
+import StylistQuickIntake from "./pages/StylistQuickIntake";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -76,6 +77,7 @@ const App = () => (
               <Route path="/stylist/learn" element={<StylistLearnPage />} />
               <Route path="/stylist/observation" element={<StylistObservation />} />
               <Route path="/stylist/quiz" element={<ScalpQuiz />} />
+              <Route path="/stylist/quick-intake" element={<StylistQuickIntake />} />
               <Route path="/stylist/clients" element={<StylistClients />} />
               <Route path="/stylist/profile" element={<StylistProfilePage />} />
               <Route path="*" element={<NotFound />} />
