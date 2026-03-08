@@ -71,6 +71,14 @@ const ClinicianSummary = () => {
           <p className="text-muted-foreground text-sm mb-1">Patient-reported scalp symptom summary</p>
           <p className="text-muted-foreground text-xs mb-6">Generated {today}</p>
 
+          {baselineRisk === 'red' && baselineDate && (
+            <div className="rounded-2xl bg-destructive/10 border border-destructive/20 p-4 mb-4">
+              <p className="text-sm text-foreground leading-relaxed">
+                <strong>Note:</strong> Significant symptoms were reported at initial intake on {baselineDate}. This was the patient's first interaction with ScalpSense — no longitudinal trend data is available yet.
+              </p>
+            </div>
+          )}
+
           {/* Profile */}
           <div className="card-elevated p-4 mb-4">
             <h3 className="text-label mb-3">Patient Profile</h3>
