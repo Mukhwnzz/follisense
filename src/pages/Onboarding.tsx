@@ -360,19 +360,20 @@ const Onboarding = () => {
     if (step === -1) return true; // intro
     switch (step) {
       case 0: return !!gender;
-      case 1: {
-        if (!hairType || !chemicalProcessing) return false;
-        if (chemicalProcessing === 'No, fully natural') return true;
-        if (chemicalProcessing === 'Yes') return chemicalMultiple.length > 0 && !!lastChemicalTreatment;
-        if (chemicalProcessing === 'Previously processed, currently growing out') return !!lastChemicalTreatment;
+      case 1: return !!hairType;
+      case 2: {
+        if (!chemicalProcessing) return false;
+        if (chemicalProcessing === 'Never' || chemicalProcessing === 'Not sure') return true;
+        if (chemicalProcessing === 'Yes, currently') return chemicalMultiple.length > 0 && !!lastChemicalTreatment;
+        if (chemicalProcessing === 'Previously but not now') return !!lastChemicalTreatment;
         return false;
       }
-      case 2: {
+      case 3: {
         const stylesOk = styles.length > 0 && (!styles.includes('Other') || otherStyle.trim().length > 0);
         if (isMale) return stylesOk && (!hasMaleInstalledStyles || !!protectiveFreq);
         return stylesOk && (isWornOutOnly || !!protectiveFreq);
       }
-      case 3: {
+      case 4: {
         if (isMale) {
           const betweenOk = maleBetweenCare.length > 0 && (!maleBetweenCare.includes('Other') || otherMaleBetweenCare.trim().length > 0);
           if (hasFadeOrShortMale && !hasLocsMale && !hasBraidsMale) return !!barberFreq && !!maleWashFreq && betweenOk;
@@ -386,20 +387,20 @@ const Onboarding = () => {
         const betweenOk = betweenWashCare.length > 0 && (!betweenWashCare.includes('Other') || otherBetweenWash.trim().length > 0);
         return cycleOk && washOk && betweenOk;
       }
-      case 4: return false;
-      case 5: return true;
-      case 6: {
+      case 5: return false;
+      case 6: return true;
+      case 7: {
         const scalpNone = products.length === 1 && products[0] === 'None';
         const hairNone = hairProds.length === 1 && hairProds[0] === 'None';
         const scalpOk = scalpNone || (products.length > 0 && !!prodFreq);
         const hairOk = hairNone || (hairProds.length > 0 && !!hairProdFreq);
         return scalpOk && hairOk;
       }
-      case 7: {
+      case 8: {
         if (skipMenstrual) return goals.length > 0;
         return !!menstrualTracking && (menstrualTracking !== "Yes, I'd like to track" || (!!menstrualCycleLength && !!hormonalContraception));
       }
-      case 8: return goals.length > 0;
+      case 9: return goals.length > 0;
       default: return false;
     }
   };
