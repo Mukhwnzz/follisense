@@ -41,7 +41,7 @@ const StylistHome = () => {
   const userEntry = { rank: 5, name: 'You', points: quiz.totalPoints, bestStreak: quiz.bestStreak };
   const leaderboard = [...dummyLeaderboard, userEntry].sort((a, b) => b.points - a.points).map((e, i) => ({ ...e, rank: i + 1 }));
   const userRank = leaderboard.find(e => e.name === 'You')?.rank || 5;
-  const motivation = userRank <= 3 ? "You're one of the most scalp-savvy stylists on ScalpSense" : userRank <= 10 ? "You're building real clinical knowledge. Keep going." : "Every quiz makes you better at spotting problems early. Keep playing.";
+  const motivation = userRank <= 3 ? "You're one of the most scalp-savvy stylists on FolliSense" : userRank <= 10 ? "You're building real clinical knowledge. Keep going." : "Every quiz makes you better at spotting problems early. Keep playing.";
 
   return (
     <div className="page-container pt-6">
