@@ -256,6 +256,7 @@ const demoStylistObservations: StylistObservationEntry[] = [
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider = ({ children }: { children: ReactNode }) => {
+  const [userName, setUserName] = useState('');
   const [onboardingComplete, setOnboardingComplete] = useState(false);
   const [onboardingData, setOnboardingData] = useState<OnboardingData>(defaultOnboarding);
   const [currentCheckIn, setCurrentCheckIn] = useState<CheckInData | null>(null);
