@@ -11,13 +11,13 @@ import { format } from 'date-fns';
 const serviceOptions = ['Wash', 'Treatment', 'Style installation', 'Style removal/takedown', 'Trim', 'Colour', 'Other'];
 
 const dailyTips = [
-  "Tip: Sleeping on a satin pillowcase reduces friction on your edges while in braids",
-  "Reminder: A light scalp oil massage today can help with circulation — even over your protective style",
-  "Tip: If your braids feel tight around the hairline, don't tough it out — loosen or remove the ones causing pain",
-  "Reminder: Staying hydrated helps your scalp too — aim for 2 litres today",
-  "Tip: Resist the urge to scratch — try pressing gently with a fingertip instead to relieve itch without damaging the scalp",
-  "Reminder: Your wash day is in 5 days — start thinking about whether you'll reinstall or give your hair a break",
-  "Tip: If you're exercising today, a light spritz of scalp refresh spray afterwards can help with sweat buildup under your style",
+  "Quick thought — a satin pillowcase tonight could help protect your edges while you sleep",
+  "A light scalp oil massage today can help with circulation — even over your protective style",
+  "If your braids feel tight around the hairline, don't tough it out — loosen or remove the ones causing pain",
+  "Staying hydrated helps your scalp too — aim for 2 litres today",
+  "Try pressing gently with a fingertip instead of scratching — it relieves itch without damaging the scalp",
+  "Your wash day is coming up in about 5 days — start thinking about whether you'll reinstall or give your hair a break",
+  "If you're exercising today, a light spritz of scalp refresh spray afterwards can help with sweat buildup under your style",
 ];
 
 
