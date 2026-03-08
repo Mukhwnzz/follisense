@@ -228,7 +228,7 @@ const Onboarding = () => {
     if (step < totalSteps) {
       // Baseline risk check after Step 4
       if (step === 4 && !baselineResultScreen) {
-        const risk = computeBaselineRisk(itch, tenderness, hairline);
+        const risk = computeBaselineRisk(itch, tenderness, hairline, baselineHairHealth);
         const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
         setBaselineRisk(risk);
         setBaselineDate(today);
