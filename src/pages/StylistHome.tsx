@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Plus, Leaf, Flame, Star, Play, Trophy } from 'lucide-react';
+import { Plus, Leaf, Flame, Star, Play, Trophy, Zap, Timer } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 import { dummyLeaderboard } from '@/data/quizQuestions';
 import { useState, useEffect } from 'react';
@@ -65,9 +65,29 @@ const StylistHome = () => {
             <span className="flex items-center gap-1"><Flame size={13} className="text-primary" />Streak: {quiz.currentStreak}</span>
             <span className="flex items-center gap-1"><Star size={13} className="text-primary" />Points: {quiz.totalPoints}</span>
           </div>
-          <button onClick={() => navigate('/stylist/quiz')} className="w-full h-10 bg-primary text-primary-foreground rounded-lg font-semibold text-sm btn-press">
-            Play
-          </button>
+          <div className="flex gap-2">
+            <button onClick={() => navigate('/stylist/quiz')} className="flex-1 h-10 bg-primary text-primary-foreground rounded-lg font-semibold text-sm btn-press">
+              Play
+            </button>
+            <button onClick={() => navigate('/stylist/quiz?mode=challenge')} className="flex-1 h-10 bg-accent text-accent-foreground rounded-lg font-semibold text-sm btn-press flex items-center justify-center gap-1.5">
+              <Zap size={14} /> Challenge
+            </button>
+          </div>
+        </div>
+
+        {/* Weekly Challenge card */}
+        <div className="card-elevated p-4 mb-4 border-l-4 border-l-primary">
+          <div className="flex items-center gap-2 mb-1">
+            <Timer size={15} className="text-primary" />
+            <h3 className="font-semibold text-foreground text-sm">Weekly Challenge</h3>
+          </div>
+          <p className="text-xs text-muted-foreground mb-2">10 seconds per question. Faster = more points. Can you beat your high score?</p>
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-muted-foreground">High score: <span className="font-semibold text-foreground">{quiz.challengeHighScore || 0}</span></span>
+            <button onClick={() => navigate('/stylist/quiz?mode=challenge')} className="text-xs font-semibold text-primary flex items-center gap-1 btn-press">
+              Play now <Zap size={11} />
+            </button>
+          </div>
         </div>
 
         {/* Leaderboard card */}
