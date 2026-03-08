@@ -59,8 +59,11 @@ const wornOutOnlyStylesMale = [
   'Waves (with durag or wave cap)', 'Free-form (no manipulation)',
 ];
 
-const protectiveFrequencyOptions = [
+const protectiveFrequencyOptionsFemale = [
   'Most of the time', 'About half the time', 'Occasionally', 'Rarely — I mostly wear my hair out',
+];
+const protectiveFrequencyOptionsMale = [
+  'This is my everyday look', 'Most of the time', 'I switch it up regularly', 'Occasionally',
 ];
 const wornOutWashOptions = ['More than once a week', 'About once a week', 'Every 2 weeks', 'Less than every 2 weeks'];
 const restyleOptions = ['Daily', 'Every few days', 'Weekly', 'Less often'];
