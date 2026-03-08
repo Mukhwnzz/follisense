@@ -683,12 +683,12 @@ const Onboarding = () => {
             {/* Step 6: Products */}
             {step === 6 && (
               <div>
-                <h2 className="text-lg font-medium text-foreground mb-2">What do you use on your scalp and hair?</h2>
+                <h2 className="text-lg font-medium text-foreground mb-2">Let's talk products</h2>
                 <p className="text-muted-foreground mb-6">This helps us understand what might be affecting your scalp health</p>
 
                 {/* Scalp products */}
-                <h3 className="text-base font-medium text-foreground mb-1">Scalp products</h3>
-                <p className="text-sm text-muted-foreground mb-4">Anything you apply directly to your scalp</p>
+                <h3 className="text-base font-medium text-foreground mb-1">What do you put on your scalp?</h3>
+                <p className="text-sm text-muted-foreground mb-4">Even if it's just oil every now and then</p>
                 <div className="grid grid-cols-2 gap-2 mb-2">
                   {scalpProductOptions.map(p => (
                     <button key={p} onClick={() => toggleProduct(p)} className={`selection-card text-center py-4 ${products.includes(p) ? 'selected' : ''}`}>
