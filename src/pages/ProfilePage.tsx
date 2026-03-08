@@ -189,8 +189,9 @@ const ProfilePage = () => {
                 { label: 'Chemical processing', value: onboardingData.chemicalProcessing || 'Not set' },
                 { label: 'Preferred styles', value: onboardingData.protectiveStyles.join(', ') || 'Not set' },
                 { label: 'Cycle length', value: onboardingData.cycleLength || 'Not set' },
-                { label: 'Wash frequency', value: onboardingData.washFrequency || 'Not set' },
-                { label: 'Products', value: onboardingData.scalpProducts.join(', ') || 'Not set' },
+                { label: 'Wash frequency', value: onboardingData.washFrequency || onboardingData.wornOutWashFrequency || 'Not set' },
+                { label: 'Scalp products', value: onboardingData.scalpProducts.join(', ') || 'Not set' },
+                { label: 'Hair products', value: onboardingData.hairProducts.join(', ') || 'Not set' },
               ].map(item => (
                 <div key={item.label} className="flex items-center justify-between p-4">
                   <span className="text-sm text-foreground">{item.label}</span>
@@ -201,6 +202,7 @@ const ProfilePage = () => {
                 </div>
               ))}
             </div>
+            <button onClick={() => navigate('/products')} className="text-sm font-medium text-primary mt-3 px-1">Browse product guide →</button>
           </div>
         )}
 

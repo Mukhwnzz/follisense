@@ -37,6 +37,10 @@ export interface OnboardingData {
   hormonalContraception: string;
   // Goals
   goals: string[];
+  hairProducts: string[];
+  otherHairProduct: string;
+  hairProductFrequency: string;
+  scalpProductFrequency: string;
 }
 
 export interface CheckInData {
@@ -200,6 +204,10 @@ const defaultOnboarding: OnboardingData = {
   menstrualCycleLength: '',
   hormonalContraception: '',
   goals: [],
+  hairProducts: [],
+  otherHairProduct: '',
+  hairProductFrequency: '',
+  scalpProductFrequency: '',
 };
 
 const demoHistory: CycleEntry[] = [

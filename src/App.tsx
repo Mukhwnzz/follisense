@@ -20,6 +20,7 @@ import StylistHome from "./pages/StylistHome";
 import StylistObservation from "./pages/StylistObservation";
 import StylistClients from "./pages/StylistClients";
 import ChatPage from "./pages/ChatPage";
+import ProductDirectory from "./pages/ProductDirectory";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -42,6 +43,7 @@ const App = () => (
               <Route path="/results" element={<RiskOutput />} />
               <Route path="/clinician-summary" element={<ClinicianSummary />} />
               <Route path="/health-profile" element={<HealthProfile />} />
+              <Route path="/products" element={<ProductDirectory />} />
               <Route path="/history" element={<HistoryPage />} />
               <Route path="/learn" element={<LearnPage />} />
               <Route path="/profile" element={<ProfilePage />} />

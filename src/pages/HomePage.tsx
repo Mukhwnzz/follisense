@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { User, ChevronRight, Leaf, Lightbulb, Scissors, X, Calendar, Heart, AlertTriangle, ArrowRight, Target, MessageCircle } from 'lucide-react';
+import { User, ChevronRight, Leaf, Lightbulb, Scissors, X, Calendar, Heart, AlertTriangle, ArrowRight, Target, MessageCircle, Stethoscope, FlaskConical, ShieldCheck } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar as CalendarPicker } from '@/components/ui/calendar';
@@ -79,6 +79,18 @@ const HomePage = () => {
   const [dismissedWashPrompt, setDismissedWashPrompt] = useState(false);
   const [dismissedCheckInModal, setDismissedCheckInModal] = useState(false);
   const [showCheckInModal, setShowCheckInModal] = useState(true);
+  const [showHealthNudge, setShowHealthNudge] = useState(false);
+  const [dismissedHealthNudge, setDismissedHealthNudge] = useState(false);
+
+  // Show health profile nudge 2 seconds after first visit
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (!healthProfile.sweat && !healthProfile.medicalConditions.length) {
+        setShowHealthNudge(true);
+      }
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, []);
 
   const [showQuickLog, setShowQuickLog] = useState(false);
   const [quickLogStep, setQuickLogStep] = useState(0);
@@ -414,6 +426,61 @@ const HomePage = () => {
                   </button>
                 </>
               )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Health Profile Nudge Modal */}
+      <AnimatePresence>
+        {showHealthNudge && !dismissedHealthNudge && !showCheckInModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-foreground/30 z-[55] flex items-center justify-center px-6"
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-card rounded-3xl p-6 max-w-sm w-full shadow-card"
+            >
+              <div className="flex justify-center mb-4">
+                <div className="w-12 h-12 rounded-full bg-sage-light flex items-center justify-center">
+                  <Heart size={22} className="text-primary" strokeWidth={1.8} />
+                </div>
+              </div>
+              <h3 className="text-lg font-semibold text-foreground text-center mb-2">You're all set!</h3>
+              <p className="text-sm text-muted-foreground text-center mb-5 leading-relaxed">
+                We've set up your cycle and check-ins based on what you told us. When you have a few minutes, there's a more detailed health profile you can fill in. The more we know, the smarter your insights get.
+              </p>
+              <div className="space-y-3 mb-6">
+                <div className="flex items-center gap-3">
+                  <Stethoscope size={16} className="text-primary flex-shrink-0" strokeWidth={1.8} />
+                  <p className="text-sm text-foreground">Medical history and conditions</p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <FlaskConical size={16} className="text-primary flex-shrink-0" strokeWidth={1.8} />
+                  <p className="text-sm text-foreground">Recent blood work (iron, vitamin D, thyroid)</p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <ShieldCheck size={16} className="text-primary flex-shrink-0" strokeWidth={1.8} />
+                  <p className="text-sm text-foreground">Scalp environment and skin conditions</p>
+                </div>
+              </div>
+              <button
+                onClick={() => { setDismissedHealthNudge(true); navigate('/health-profile'); }}
+                className="w-full h-14 bg-primary text-primary-foreground rounded-xl font-semibold text-base btn-press mb-3"
+              >
+                Take me there
+              </button>
+              <button
+                onClick={() => setDismissedHealthNudge(true)}
+                className="w-full text-center text-sm text-muted-foreground py-2"
+              >
+                I'll do it later
+              </button>
             </motion.div>
           </motion.div>
         )}
