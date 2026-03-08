@@ -25,33 +25,6 @@ const LoginPage = () => {
     navigate(onboardingComplete ? '/home' : '/onboarding');
   };
 
-  if (showForgotConfirm) {
-    return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center px-6">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="max-w-[430px] w-full text-center"
-        >
-          <div className="flex justify-center mb-6">
-            <div className="w-16 h-16 rounded-full bg-primary/15 flex items-center justify-center">
-              <CheckCircle size={32} className="text-primary" strokeWidth={1.5} />
-            </div>
-          </div>
-          <h1 className="text-2xl font-semibold text-foreground mb-3">Check your email</h1>
-          <p className="text-muted-foreground mb-8 leading-relaxed">
-            If an account exists for that email address, we've sent a password reset link. It may take a minute to arrive.
-          </p>
-          <button
-            onClick={() => setShowForgotConfirm(false)}
-            className="w-full h-14 bg-primary text-primary-foreground rounded-xl font-semibold text-base btn-press"
-          >
-            Back to login
-          </button>
-        </motion.div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center px-6">
