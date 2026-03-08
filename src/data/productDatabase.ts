@@ -3,7 +3,7 @@ export interface Product {
   brand: string;
   name: string;
   type: string;
-  category: 'scalp' | 'hair' | 'both';
+  category: 'scalp' | 'hair' | 'both' | 'tool' | 'accessory';
   keywords?: string[];
 }
 
@@ -41,6 +41,41 @@ export const productDatabase: Product[] = [
   { id: 'sp30', brand: 'Design Essentials', name: 'Scalp & Skin Care Anti-Itch Treatment', type: 'Treatment', category: 'scalp', keywords: ['anti-itch', 'itch'] },
   { id: 'sp31', brand: 'As I Am', name: 'Dry & Itchy Scalp Care Olive & Tea Tree Oil Shampoo', type: 'Shampoo', category: 'scalp', keywords: ['dry', 'itchy', 'olive', 'tea tree'] },
   { id: 'sp32', brand: "Aunt Jackie's", name: 'Oh So Clean Moisturizing & Softening Shampoo', type: 'Shampoo', category: 'scalp', keywords: ['moisturizing', 'softening'] },
+  // New scalp products
+  { id: 'sp33', brand: 'Kerastase', name: 'Initialiste Scalp Serum', type: 'Serum', category: 'scalp', keywords: ['kerastase', 'serum'] },
+  { id: 'sp34', brand: 'Kerastase', name: 'Specifique Bain Prevention Shampoo', type: 'Shampoo', category: 'scalp', keywords: ['kerastase', 'prevention', 'thinning'] },
+  { id: 'sp35', brand: 'Kerastase', name: 'Symbiose Anti-Dandruff Shampoo', type: 'Shampoo', category: 'scalp', keywords: ['kerastase', 'dandruff', 'symbiose'] },
+  { id: 'sp36', brand: 'Cecred', name: 'Hydrating Shampoo', type: 'Shampoo', category: 'scalp', keywords: ['cecred', 'hydrating', 'beyonce'] },
+  { id: 'sp37', brand: 'Cecred', name: 'Nourishing Hair Mask', type: 'Treatment', category: 'scalp', keywords: ['cecred', 'nourishing', 'mask'] },
+  { id: 'sp38', brand: 'Cecred', name: 'Fermented Rice & Rose Protein Treatment', type: 'Treatment', category: 'scalp', keywords: ['cecred', 'fermented', 'rice', 'rose', 'protein'] },
+  { id: 'sp39', brand: 'Philip Kingsley', name: 'Stimulating Scalp Toner', type: 'Tonic', category: 'scalp', keywords: ['philip kingsley', 'stimulating', 'toner'] },
+  { id: 'sp40', brand: 'Aveda', name: 'Invati Advanced Scalp Revitalizer', type: 'Treatment', category: 'scalp', keywords: ['aveda', 'invati', 'revitalizer', 'thinning'] },
+  { id: 'sp41', brand: 'Aveda', name: 'Pramasana Purifying Scalp Cleanser', type: 'Cleanser', category: 'scalp', keywords: ['aveda', 'pramasana', 'purifying'] },
+  { id: 'sp42', brand: 'The Inkey List', name: 'Salicylic Acid Exfoliating Scalp Treatment', type: 'Exfoliant', category: 'scalp', keywords: ['inkey', 'salicylic', 'exfoliating'] },
+  { id: 'sp43', brand: 'The Inkey List', name: 'Caffeine Stimulating Scalp Treatment', type: 'Treatment', category: 'scalp', keywords: ['inkey', 'caffeine', 'stimulating'] },
+  { id: 'sp44', brand: 'The Inkey List', name: 'PCA Bond Repair Hair Treatment', type: 'Treatment', category: 'scalp', keywords: ['inkey', 'pca', 'bond', 'repair'] },
+  { id: 'sp45', brand: 'Sunday Riley', name: 'Clean Rinse Clarifying Scalp Serum', type: 'Serum', category: 'scalp', keywords: ['sunday riley', 'clarifying', 'clean rinse'] },
+  { id: 'sp46', brand: 'Drunk Elephant', name: 'T.L.C. Happi Scalp Scrub', type: 'Exfoliant', category: 'scalp', keywords: ['drunk elephant', 'tlc', 'scrub'] },
+  { id: 'sp47', brand: 'Virtue', name: 'Flourish Nightly Intensive Hair Rejuvenation Treatment', type: 'Treatment', category: 'scalp', keywords: ['virtue', 'flourish', 'nightly', 'rejuvenation'] },
+  { id: 'sp48', brand: 'Christophe Robin', name: 'Cleansing Purifying Scrub with Sea Salt', type: 'Exfoliant', category: 'scalp', keywords: ['christophe robin', 'sea salt', 'scrub', 'purifying'] },
+  { id: 'sp49', brand: 'Act + Acre', name: 'Cold Processed Scalp Detox', type: 'Treatment', category: 'scalp', keywords: ['act acre', 'cold processed', 'detox'] },
+  { id: 'sp50', brand: 'Jupiter', name: 'Balancing Shampoo', type: 'Shampoo', category: 'scalp', keywords: ['jupiter', 'balancing', 'dandruff'] },
+  { id: 'sp51', brand: 'Seen', name: 'Shampoo', type: 'Shampoo', category: 'scalp', keywords: ['seen', 'gentle'] },
+  { id: 'sp52', brand: 'dpHUE', name: 'Apple Cider Vinegar Scalp Scrub', type: 'Exfoliant', category: 'scalp', keywords: ['dphue', 'acv', 'apple cider', 'scrub'] },
+  { id: 'sp53', brand: 'Prose', name: 'Custom Scalp Mask', type: 'Treatment', category: 'scalp', keywords: ['prose', 'custom', 'mask'] },
+  { id: 'sp54', brand: 'Vegamour', name: 'GRO Scalp Detoxifying Serum', type: 'Serum', category: 'scalp', keywords: ['vegamour', 'gro', 'detox'] },
+  { id: 'sp55', brand: 'Vegamour', name: 'GRO Hair Serum', type: 'Serum', category: 'scalp', keywords: ['vegamour', 'gro', 'growth'] },
+  { id: 'sp56', brand: 'Nutrafol', name: 'Root Purifier Scalp Microbiome Shampoo', type: 'Shampoo', category: 'scalp', keywords: ['nutrafol', 'microbiome', 'purifier'] },
+  { id: 'sp57', brand: "Kiehl's", name: 'Magic Elixir Scalp and Hair Oil Treatment', type: 'Oil', category: 'scalp', keywords: ['kiehls', 'magic elixir', 'oil'] },
+  { id: 'sp58', brand: 'The Ordinary', name: 'Glycolipid Cream Cleanser', type: 'Cleanser', category: 'scalp', keywords: ['ordinary', 'glycolipid', 'cleanser'] },
+  { id: 'sp59', brand: 'The Ordinary', name: 'Natural Moisturizing Factors Scalp Serum', type: 'Serum', category: 'scalp', keywords: ['ordinary', 'nmf', 'moisturizing', 'scalp serum'] },
+  { id: 'sp60', brand: 'Nizoral', name: '1% Ketoconazole Shampoo', type: 'Medicated Shampoo', category: 'scalp', keywords: ['nizoral', 'ketoconazole', '1%'] },
+  { id: 'sp61', brand: 'Nizoral', name: '2% Ketoconazole Shampoo', type: 'Medicated Shampoo', category: 'scalp', keywords: ['nizoral', 'ketoconazole', '2%', 'prescription'] },
+  { id: 'sp62', brand: 'Selsun Blue', name: 'Medicated Maximum Strength', type: 'Medicated Shampoo', category: 'scalp', keywords: ['selsun', 'maximum', 'selenium'] },
+  { id: 'sp63', brand: 'Neutrogena', name: 'T/Sal Therapeutic Shampoo', type: 'Medicated Shampoo', category: 'scalp', keywords: ['tsal', 'salicylic', 'therapeutic'] },
+  { id: 'sp64', brand: 'Generic', name: 'Minoxidil 2% (women\'s formula)', type: 'Topical Treatment', category: 'scalp', keywords: ['minoxidil', '2%', 'women', 'regrowth'] },
+  { id: 'sp65', brand: 'Generic', name: 'Minoxidil 5% (standard)', type: 'Topical Treatment', category: 'scalp', keywords: ['minoxidil', '5%', 'regrowth'] },
+  { id: 'sp66', brand: 'Viviscal', name: 'Gorgeous Growth Densifying Elixir', type: 'Serum', category: 'scalp', keywords: ['viviscal', 'growth', 'densifying'] },
 
   // HAIR PRODUCTS
   { id: 'hp1', brand: 'SheaMoisture', name: 'Manuka Honey & Mafura Oil Intensive Hydration Masque', type: 'Deep Conditioner', category: 'hair', keywords: ['manuka', 'honey', 'hydration', 'mask'] },
@@ -105,6 +140,52 @@ export const productDatabase: Product[] = [
   { id: 'hp60', brand: 'Homemade', name: 'Flaxseed gel', type: 'Gel', category: 'hair', keywords: ['flaxseed', 'homemade', 'diy'] },
   { id: 'hp61', brand: 'Homemade', name: 'Rice water rinse', type: 'Rinse', category: 'hair', keywords: ['rice', 'water', 'homemade', 'diy', 'protein'] },
   { id: 'hp62', brand: 'Homemade', name: 'Apple cider vinegar rinse', type: 'Rinse', category: 'both', keywords: ['acv', 'apple cider', 'vinegar', 'homemade', 'diy'] },
+  // New hair products
+  { id: 'hp63', brand: 'Kerastase', name: 'Elixir Ultime Oil', type: 'Oil', category: 'hair', keywords: ['kerastase', 'elixir', 'oil'] },
+  { id: 'hp64', brand: 'Kerastase', name: 'Nutritive Bain Satin Shampoo', type: 'Shampoo', category: 'hair', keywords: ['kerastase', 'nutritive', 'satin'] },
+  { id: 'hp65', brand: 'Kerastase', name: 'Resistance Bain Force Architecte Shampoo', type: 'Shampoo', category: 'hair', keywords: ['kerastase', 'resistance', 'force'] },
+  { id: 'hp66', brand: 'Kerastase', name: 'Masquintense Deep Treatment', type: 'Deep Conditioner', category: 'hair', keywords: ['kerastase', 'masquintense', 'deep'] },
+  { id: 'hp67', brand: 'Olaplex', name: 'No. 4 Bond Maintenance Shampoo', type: 'Shampoo', category: 'hair', keywords: ['olaplex', 'bond', 'shampoo'] },
+  { id: 'hp68', brand: 'Olaplex', name: 'No. 5 Bond Maintenance Conditioner', type: 'Conditioner', category: 'hair', keywords: ['olaplex', 'bond', 'conditioner'] },
+  { id: 'hp69', brand: 'Olaplex', name: 'No. 7 Bonding Oil', type: 'Oil', category: 'hair', keywords: ['olaplex', 'bonding', 'oil'] },
+  { id: 'hp70', brand: 'Olaplex', name: 'No. 8 Bond Intense Moisture Mask', type: 'Deep Conditioner', category: 'hair', keywords: ['olaplex', 'bond', 'moisture', 'mask'] },
+  { id: 'hp71', brand: 'K18', name: 'Peptide Prep pH Maintenance Shampoo', type: 'Shampoo', category: 'hair', keywords: ['k18', 'peptide', 'ph', 'maintenance'] },
+  { id: 'hp72', brand: 'K18', name: 'Peptide Prep Detox Shampoo', type: 'Shampoo', category: 'hair', keywords: ['k18', 'peptide', 'detox', 'clarifying'] },
+  { id: 'hp73', brand: 'Pattern Beauty', name: 'Heavy Conditioner', type: 'Conditioner', category: 'hair', keywords: ['pattern', 'heavy', 'conditioner'] },
+  { id: 'hp74', brand: 'Pattern Beauty', name: 'Medium Conditioner', type: 'Conditioner', category: 'hair', keywords: ['pattern', 'medium', 'conditioner'] },
+  { id: 'hp75', brand: 'Pattern Beauty', name: 'Curl Gel', type: 'Gel', category: 'hair', keywords: ['pattern', 'curl', 'gel'] },
+  { id: 'hp76', brand: 'Pattern Beauty', name: 'Styling Cream', type: 'Styling', category: 'hair', keywords: ['pattern', 'styling', 'cream'] },
+  { id: 'hp77', brand: 'Pattern Beauty', name: 'Edge Control', type: 'Edge Control', category: 'hair', keywords: ['pattern', 'edge'] },
+  { id: 'hp78', brand: 'Cecred', name: 'Leave-In Conditioner', type: 'Leave-In', category: 'hair', keywords: ['cecred', 'leave-in'] },
+  { id: 'hp79', brand: 'The Ordinary', name: 'Multi-Peptide Serum for Hair Density', type: 'Serum', category: 'hair', keywords: ['ordinary', 'peptide', 'density', 'growth'] },
+  { id: 'hp80', brand: 'Bread Beauty Supply', name: 'Hair Oil Everyday Gloss', type: 'Oil', category: 'hair', keywords: ['bread', 'oil', 'gloss'] },
+  { id: 'hp81', brand: 'Bread Beauty Supply', name: 'Hair Wash Gentle Milky Shampoo', type: 'Shampoo', category: 'hair', keywords: ['bread', 'milky', 'gentle'] },
+  { id: 'hp82', brand: 'Dizziak', name: 'Deep Conditioner', type: 'Deep Conditioner', category: 'hair', keywords: ['dizziak', 'deep'] },
+  { id: 'hp83', brand: 'Dizziak', name: 'Hydration Wash', type: 'Shampoo', category: 'hair', keywords: ['dizziak', 'hydration'] },
+  { id: 'hp84', brand: 'Boucleme', name: 'Curl Cream', type: 'Curl Cream', category: 'hair', keywords: ['boucleme', 'curl'] },
+  { id: 'hp85', brand: 'Boucleme', name: 'Curl Defining Gel', type: 'Gel', category: 'hair', keywords: ['boucleme', 'defining', 'gel'] },
+  { id: 'hp86', brand: 'Cécé Raphael', name: 'Hair Butter', type: 'Butter', category: 'hair', keywords: ['cece', 'raphael', 'butter'] },
+  { id: 'hp87', brand: 'Charlotte Mensah', name: 'Manketti Oil', type: 'Oil', category: 'hair', keywords: ['charlotte', 'mensah', 'manketti'] },
+  { id: 'hp88', brand: 'Vernon Francois', name: 'Pure Fro Moisture Spray', type: 'Spray', category: 'hair', keywords: ['vernon', 'francois', 'fro', 'moisture'] },
+  { id: 'hp89', brand: 'Sienna Naturals', name: 'H.A.P.I. Shampoo', type: 'Shampoo', category: 'hair', keywords: ['sienna', 'hapi'] },
+  { id: 'hp90', brand: 'Sienna Naturals', name: 'Dew Magic Leave-In Conditioner', type: 'Leave-In', category: 'hair', keywords: ['sienna', 'dew magic', 'leave-in'] },
+  { id: 'hp91', brand: 'Righteous Roots', name: 'Rx Oil', type: 'Oil', category: 'hair', keywords: ['righteous', 'roots', 'oil', 'growth'] },
+  { id: 'hp92', brand: "Uncle Funky's Daughter", name: 'Extra Butter Curl Forming Cream', type: 'Curl Cream', category: 'hair', keywords: ['uncle funky', 'butter', 'curl'] },
+  { id: 'hp93', brand: "Miss Jessie's", name: 'Pillow Soft Curls', type: 'Styling', category: 'hair', keywords: ['miss jessie', 'pillow', 'soft', 'curls'] },
+  { id: 'hp94', brand: "Miss Jessie's", name: 'Quick Curls', type: 'Gel', category: 'hair', keywords: ['miss jessie', 'quick', 'curls'] },
+  { id: 'hp95', brand: 'Mane Choice', name: 'Crystal Orchid Biotin Infused Styling Gel', type: 'Gel', category: 'hair', keywords: ['mane choice', 'biotin', 'orchid', 'gel'] },
+  { id: 'hp96', brand: 'TPH by Taraji', name: 'Honey Fresh Clarifying Shampoo', type: 'Clarifying Shampoo', category: 'hair', keywords: ['tph', 'taraji', 'honey', 'clarifying'] },
+  { id: 'hp97', brand: 'TPH by Taraji', name: 'Make It Rain Moisture Milk', type: 'Leave-In', category: 'hair', keywords: ['tph', 'taraji', 'moisture', 'milk'] },
+
+  // TOOLS & ACCESSORIES
+  { id: 'tl1', brand: 'Dyson', name: 'Supersonic Hair Dryer', type: 'Tool', category: 'tool', keywords: ['dyson', 'dryer', 'diffuser', 'blow dry'] },
+  { id: 'tl2', brand: 'GHD', name: 'Platinum+ Styler', type: 'Tool', category: 'tool', keywords: ['ghd', 'straightener', 'flat iron', 'styler'] },
+  { id: 'tl3', brand: 'Denman', name: 'Brush', type: 'Tool', category: 'tool', keywords: ['denman', 'brush', 'detangling', 'styling'] },
+  { id: 'tl4', brand: 'Tangle Teezer', name: 'Detangling Brush', type: 'Tool', category: 'tool', keywords: ['tangle', 'teezer', 'detangling', 'brush'] },
+  { id: 'tl5', brand: 'Wet Brush', name: 'Detangler', type: 'Tool', category: 'tool', keywords: ['wet brush', 'detangling'] },
+  { id: 'ac1', brand: 'Generic', name: 'Silk or satin bonnet', type: 'Accessory', category: 'accessory', keywords: ['bonnet', 'silk', 'satin', 'sleep', 'protective'] },
+  { id: 'ac2', brand: 'Generic', name: 'Satin pillowcase', type: 'Accessory', category: 'accessory', keywords: ['pillowcase', 'satin', 'silk', 'sleep'] },
+  { id: 'ac3', brand: 'Generic', name: 'Microfibre hair towel', type: 'Accessory', category: 'accessory', keywords: ['microfibre', 'towel', 'drying', 'plopping'] },
 ];
 
 export function searchProducts(query: string, category?: 'scalp' | 'hair'): Product[] {
@@ -115,12 +196,13 @@ export function searchProducts(query: string, category?: 'scalp' | 'hair'): Prod
   if (category === 'scalp') {
     pool = pool.filter(p => p.category === 'scalp' || p.category === 'both');
   } else if (category === 'hair') {
-    pool = pool.filter(p => p.category === 'hair' || p.category === 'both');
+    pool = pool.filter(p => p.category === 'hair' || p.category === 'both' || p.category === 'tool' || p.category === 'accessory');
+  } else {
+    // No category filter — search all
   }
 
   return pool.filter(p => {
     const searchable = `${p.brand} ${p.name} ${p.type} ${(p.keywords || []).join(' ')}`.toLowerCase();
-    // Split query into words and check all match
     const words = q.split(/\s+/);
     return words.every(w => searchable.includes(w));
   }).slice(0, 8);

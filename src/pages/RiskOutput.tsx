@@ -203,9 +203,14 @@ const RiskOutput = () => {
                   <p className="text-sm text-foreground">{goalMessage}</p>
                 </div>
               )}
-              <div className="card-elevated p-5 mb-8">
+              <div className="card-elevated p-5 mb-4">
                 <h3 className="font-semibold mb-2">We'll reassess</h3>
                 <p className="text-sm text-muted-foreground">At your next wash day, we'll compare. If things get worse, check in anytime.</p>
+              </div>
+              <div className="card-elevated p-4 mb-4 border border-border">
+                <h3 className="font-medium text-foreground text-sm mb-1">Want to get ahead of this?</h3>
+                <p className="text-xs text-muted-foreground mb-2">Even though this isn't urgent, speaking to a specialist is never a bad idea.</p>
+                <button onClick={() => navigate('/find-specialist')} className="text-xs font-medium text-primary">Find a specialist →</button>
               </div>
               <button onClick={() => navigate('/wash-day')} className="w-full h-12 rounded-xl border-2 border-primary text-primary font-semibold btn-press mb-3">
                 Start an early check-in
