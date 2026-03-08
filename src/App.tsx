@@ -77,6 +77,7 @@ const App = () => (
               <Route path="/stylist/learn" element={<StylistLearnPage />} />
               <Route path="/stylist/observation" element={<StylistObservation />} />
               <Route path="/stylist/quiz" element={<ScalpQuiz />} />
+              <Route path="/stylist/quick-intake" element={<StylistQuickIntake />} />
               <Route path="/stylist/clients" element={<StylistClients />} />
               <Route path="/stylist/profile" element={<StylistProfilePage />} />
               <Route path="*" element={<NotFound />} />
