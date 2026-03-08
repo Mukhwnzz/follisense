@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, ChevronRight, ExternalLink, Shield, AlertTriangle, Eye, Search as SearchIcon, CheckCircle2, XCircle, ArrowRight, MessageCircle, Camera } from 'lucide-react';
+import { ArrowLeft, ChevronRight, ExternalLink, Shield, AlertTriangle, Eye, Search as SearchIcon, CheckCircle2, XCircle, ArrowRight, MessageCircle, Camera, ImageIcon } from 'lucide-react';
 import { consumerConditions, ConsumerCondition } from '@/data/conditionGuide';
 import { stylistConditions, getConditionById as getStylistCondition } from '@/data/stylistConditions';
 import ScalpIllustration from '@/components/ScalpIllustration';
