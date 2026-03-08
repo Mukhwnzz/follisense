@@ -330,9 +330,9 @@ const HomePage = () => {
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="bg-card rounded-t-3xl w-full max-w-[430px] max-h-[85vh] overflow-y-auto"
+              className="bg-card rounded-t-3xl w-full max-w-[430px] max-h-[85vh] flex flex-col"
             >
-              <div className="p-6">
+              <div className="p-6 overflow-y-auto flex-1">
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="text-lg font-semibold">Quick log</h3>
                   <button onClick={resetQuickLog} className="p-1">
