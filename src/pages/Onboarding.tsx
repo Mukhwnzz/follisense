@@ -34,7 +34,25 @@ const styleOptions = [
 ];
 
 const cycleLengths = ['1–2 weeks', '2–4 weeks', '4–6 weeks', '6+ weeks', 'It varies'];
-const washFrequencies = ['Weekly', 'Every 2 weeks', 'Less than every 2 weeks', 'Only at takedown'];
+const washFrequencyOptions = [
+  'More than once a week',
+  'About once a week',
+  'Every 2 weeks',
+  'Every 3–4 weeks',
+  'Only when I take the style down',
+  'It depends on the style',
+];
+const washPerCycleOptions = ['0 (not at all)', '1', '2–3', '4+'];
+const cycleLengthMinOptions = ['Less than 1 week', '1–2 weeks', '2–4 weeks', '4–6 weeks'];
+const cycleLengthMaxOptions = ['2–4 weeks', '4–6 weeks', '6–8 weeks', '8+ weeks'];
+const betweenWashOptions = [
+  'Apply oil or serum to the scalp',
+  'Use a scalp refresh spray or dry shampoo',
+  'Rinse with water only',
+  'Massage / manipulate the scalp',
+  'Nothing — I leave it alone until wash day',
+  'Other',
+];
 const severities = ['None', 'Mild', 'Moderate', 'Severe'];
 const tendernessSeverities = ['None', 'Mild', 'Moderate', 'Severe'];
 const hairlineConcerns = ['No concerns', 'Slight concern', 'Noticeable change', 'Very concerned'];
