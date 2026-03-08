@@ -375,10 +375,22 @@ const Onboarding = () => {
       setBaselineAck(null);
       if (baselineStep < baselineQuestions.length - 1) {
         setBaselineStep(prev => prev + 1);
+      } else {
+        // Last baseline question answered — advance to baseline response step
+        const bItch = baselineAnswers.itch || '';
+        const bTenderness = baselineAnswers.tenderness || '';
+        const bHairline = baselineAnswers.hairline || '';
+        const bHairHealth = baselineAnswers.hairHealth || '';
+        const risk = computeBaselineRisk(bItch, bTenderness, bHairline, bHairHealth);
+        const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+        setBaselineRisk(risk);
+        setBaselineDate(today);
+        setBaselineResultScreen(risk);
+        setStep(5);
       }
     }, 1200);
     return () => clearTimeout(timer);
-  }, [baselineAck, baselineStep]);
+  }, [baselineAck, baselineStep, baselineAnswers]);
 
   const selectBaselineAnswer = (key: string, val: string, optIndex: number) => {
     setBaselineAnswers(prev => ({ ...prev, [key]: val }));
