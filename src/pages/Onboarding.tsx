@@ -742,7 +742,7 @@ const Onboarding = () => {
             {/* Step 8: Goals */}
             {step === 8 && (
               <div>
-                <h2 className="text-2xl font-semibold mb-2">What matters most to you right now?</h2>
+                <h2 className="text-lg font-medium text-foreground mb-2">What matters most to you right now?</h2>
                 <p className="text-muted-foreground mb-6">Pick up to 3 — this helps us focus your experience</p>
                 <div className="space-y-3 mb-6">
                   {goalOptions.map(g => (

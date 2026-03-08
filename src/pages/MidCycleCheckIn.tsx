@@ -22,7 +22,7 @@ const questions = [
   },
   {
     key: 'hairConcern',
-    q: 'Any breakage or dryness since your last check-in?',
+    q: 'Any unusual breakage or dryness since last time?',
     options: ['No, hair feels normal', 'A little more than usual', 'Yes, noticeably more', "Yes, I'm concerned"],
   },
 ];
