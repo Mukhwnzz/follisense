@@ -124,6 +124,13 @@ export interface QuickLogEntry {
   severity: string;
 }
 
+export interface ResearchData {
+  consented: boolean;
+  consentDate: string | null;
+  photoCount: number;
+  dismissed: boolean;
+}
+
 const defaultHealthProfile: HealthProfileData = {
   sweat: '',
   exercise: '',
