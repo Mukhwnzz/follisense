@@ -419,10 +419,8 @@ const Onboarding = () => {
         const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
         setBaselineRisk(risk);
         setBaselineDate(today);
-        if (risk !== 'green') {
-          setBaselineResultScreen(risk as 'amber' | 'red');
-          return;
-        }
+        setBaselineResultScreen(risk);
+        return;
       }
       if (step === 4 && baselineResultScreen) {
         setBaselineResultScreen(null);
