@@ -14,6 +14,7 @@ export interface StylistCondition {
   whatToTell: string;
   whatYouCanDo: string;
   severityGuide: string;
+  darkerSkinNote: string;
 }
 
 export const stylistConditions: StylistCondition[] = [
