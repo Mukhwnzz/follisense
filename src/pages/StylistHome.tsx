@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Plus, Leaf, Flame, Star, Play, Trophy } from 'lucide-react';
+import { Plus, Leaf, Flame, Star, Play, Trophy, Zap, Timer } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 import { dummyLeaderboard } from '@/data/quizQuestions';
 import { useState, useEffect } from 'react';
