@@ -70,18 +70,8 @@ const ArticleView = ({ article, onBack, onNavigate }: ArticleViewProps) => {
       )}
 
       <div className="mt-8 pt-6 border-t border-border">
-        <button
-          onClick={() => navigate('/chat')}
-          className="w-full card-elevated p-4 flex items-center gap-3 text-left"
-        >
-          <div className="w-10 h-10 rounded-xl bg-sage-light flex items-center justify-center flex-shrink-0">
-            <MessageCircle size={18} className="text-primary" />
-          </div>
-          <div>
-            <p className="text-sm font-medium text-foreground">Got more questions?</p>
-            <p className="text-xs text-muted-foreground">Ask FolliSense</p>
-          </div>
-        </button>
+        <p className="text-xs text-muted-foreground mb-2">Got more questions about this topic?</p>
+        <p className="text-sm text-primary font-medium">Tap the chat button to ask FolliSense</p>
       </div>
     </motion.div>
   );
