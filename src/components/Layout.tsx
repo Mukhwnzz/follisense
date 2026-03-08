@@ -22,7 +22,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
   const navigate = useNavigate();
   const { stylistMode } = useApp();
 
-  const hiddenNavPaths = ['/', '/signup', '/login', '/onboarding', '/mid-cycle', '/wash-day', '/results', '/clinician-summary', '/stylist/observation', '/stylist/quiz', '/find-specialist', '/forgot-password', '/salon-checkin', '/stylist/onboarding', '/stylist/signup', '/stylist/login', '/stylist/quick-intake'];
+  const hiddenNavPaths = ['/', '/signup', '/login', '/onboarding', '/mid-cycle', '/wash-day', '/results', '/clinician-summary', '/stylist/observation', '/stylist/quiz', '/find-specialist', '/forgot-password', '/salon-checkin', '/stylist/onboarding', '/stylist/signup', '/stylist/login', '/stylist/quick-intake', '/spot-it'];
   const showNav = !hiddenNavPaths.some(p => location.pathname === p) && !location.pathname.startsWith('/onboarding/');
 
   const tabs = stylistMode ? stylistTabs : consumerTabs;

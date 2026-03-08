@@ -36,6 +36,7 @@ import StylistLearnPage from "./pages/StylistLearnPage";
 import ScalpQuiz from "./pages/ScalpQuiz";
 import SalonCheckIn from "./pages/SalonCheckIn";
 import StylistQuickIntake from "./pages/StylistQuickIntake";
+import SpotIt from "./pages/SpotIt";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -69,6 +70,7 @@ const App = () => (
               <Route path="/history" element={<HistoryPage />} />
               <Route path="/learn" element={<LearnPage />} />
               <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/spot-it" element={<SpotIt />} />
               <Route path="/salon-checkin" element={<SalonCheckIn />} />
               <Route path="/stylist/signup" element={<StylistSignUpPage />} />
               <Route path="/stylist/login" element={<StylistLoginPage />} />
