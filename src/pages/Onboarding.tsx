@@ -578,72 +578,8 @@ const Onboarding = () => {
               </div>
             )}
 
-            {/* Step 7: Menstrual cycle */}
+            {/* Step 7: Goals */}
             {step === 7 && (
-              <div>
-                <h2 className="text-2xl font-semibold mb-2">Do you want to link your menstrual cycle?</h2>
-                <p className="text-muted-foreground mb-6">Hormonal changes can affect your scalp — tracking your cycle helps us give smarter insights</p>
-
-                <div className="space-y-3 mb-6">
-                  <button onClick={() => setMenstrualTracking('yes')} className={`selection-card w-full text-left ${menstrualTracking === 'yes' ? 'selected' : ''}`}>
-                    <p className="font-medium text-foreground">Yes, I'd like to track</p>
-                  </button>
-                  <button onClick={() => setMenstrualTracking('no')} className={`selection-card w-full text-left ${menstrualTracking === 'no' ? 'selected' : ''}`}>
-                    <p className="font-medium text-foreground">No thanks</p>
-                  </button>
-                  <button onClick={() => setMenstrualTracking('no-menstruate')} className={`selection-card w-full text-left ${menstrualTracking === 'no-menstruate' ? 'selected' : ''}`}>
-                    <p className="font-medium text-foreground">I don't menstruate</p>
-                  </button>
-                </div>
-
-                {menstrualTracking === 'yes' && (
-                  <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
-                    <div>
-                      <p className="font-medium text-foreground mb-3">When did your last period start?</p>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <button className="w-full h-12 px-4 rounded-xl border-2 border-border bg-card text-left text-sm flex items-center gap-2">
-                            <span className={lastPeriodDate ? 'text-foreground' : 'text-muted-foreground'}>
-                              {lastPeriodDate ? format(lastPeriodDate, 'PPP') : 'Pick a date'}
-                            </span>
-                          </button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={lastPeriodDate}
-                            onSelect={setLastPeriodDate}
-                            initialFocus
-                            className={cn("p-3 pointer-events-auto")}
-                          />
-                        </PopoverContent>
-                      </Popover>
-                    </div>
-
-                    <div>
-                      <p className="font-medium text-foreground mb-3">How long is your typical cycle?</p>
-                      <div className="flex flex-wrap gap-2">
-                        {menstrualCycleLengths.map(o => (
-                          <button key={o} onClick={() => setMenstrualCycleLen(o)} className={`pill-option ${menstrualCycleLen === o ? 'selected' : ''}`}>{o}</button>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div>
-                      <p className="font-medium text-foreground mb-3">Are you on hormonal contraception?</p>
-                      <div className="flex flex-wrap gap-2">
-                        {hormonalContraceptionOptions.map(o => (
-                          <button key={o} onClick={() => setHormonalContraception(o)} className={`pill-option ${hormonalContraception === o ? 'selected' : ''}`}>{o}</button>
-                        ))}
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-              </div>
-            )}
-
-            {/* Step 8: Goals */}
-            {step === 8 && (
               <div>
                 <h2 className="text-2xl font-semibold mb-2">What matters most to you right now?</h2>
                 <p className="text-muted-foreground mb-6">This helps us focus your check-ins and tips on what you care about. Pick up to 3.</p>

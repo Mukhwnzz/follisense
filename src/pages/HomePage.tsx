@@ -78,18 +78,7 @@ const HomePage = () => {
   const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
 
   const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000);
-  
-  // Menstrual cycle info
-  const cycleInfo = onboardingData.menstrualTracking === 'yes' 
-    ? getCycleDay(onboardingData.lastPeriodDate, onboardingData.menstrualCycleLength) 
-    : null;
-
-  // Choose daily tip — use hormonal tips when relevant
-  let todayTip = dailyTips[dayOfYear % dailyTips.length];
-  if (cycleInfo) {
-    if (cycleInfo.phase === 'luteal') todayTip = lutealTips[dayOfYear % lutealTips.length];
-    else if (cycleInfo.phase === 'menstruation') todayTip = menstruationTips[dayOfYear % menstruationTips.length];
-  }
+  const todayTip = dailyTips[dayOfYear % dailyTips.length];
 
   const daysUntilWash = totalDays - currentDay;
   const showWashPrompt = !onboardingData.isWornOutOnly && daysUntilWash <= 2 && !dismissedWashPrompt;
