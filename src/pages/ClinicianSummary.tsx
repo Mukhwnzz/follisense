@@ -23,19 +23,6 @@ const ClinicianSummary = () => {
     return cp;
   };
 
-  // Menstrual cycle day calculation
-  const getCycleDay = () => {
-    if (onboardingData.menstrualTracking !== 'yes' || !onboardingData.lastPeriodDate) return null;
-    const start = new Date(onboardingData.lastPeriodDate);
-    const now = new Date();
-    const diffDays = Math.floor((now.getTime() - start.getTime()) / 86400000);
-    let total = 28;
-    if (onboardingData.menstrualCycleLength === '21–25 days') total = 23;
-    else if (onboardingData.menstrualCycleLength === '31–35 days') total = 33;
-    return { day: (diffDays % total) + 1, total };
-  };
-
-  const cycleInfo = getCycleDay();
 
   const fields = [
     { label: 'Hair type', value: hairTypeLabel[onboardingData.hairType] || 'Not specified' },
@@ -107,30 +94,6 @@ const ClinicianSummary = () => {
             </div>
           </div>
 
-          {/* Menstrual cycle info */}
-          {onboardingData.menstrualTracking === 'yes' && (
-            <div className="card-elevated p-4 mb-4">
-              <h3 className="text-label mb-3">Menstrual Cycle</h3>
-              <div className="space-y-2.5">
-                {cycleInfo && (
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Menstrual cycle</span>
-                    <span className="font-medium text-foreground">Day {cycleInfo.day} of ~{cycleInfo.total} day cycle</span>
-                  </div>
-                )}
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Hormonal contraception</span>
-                  <span className="font-medium text-foreground">{onboardingData.hormonalContraception || 'Not specified'}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Menstrual status</span>
-                  <span className="font-medium text-foreground">{onboardingData.menstrualCycleLength === 'Irregular' ? 'Irregular' : 'Regular'}</span>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Symptoms */}
           <div className="card-elevated p-4 mb-4">
             <h3 className="text-label mb-3">Symptoms Reported (This Cycle)</h3>
             <div className="space-y-2.5">

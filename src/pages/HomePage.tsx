@@ -20,15 +20,6 @@ const dailyTips = [
   "Tip: If you're exercising today, a light spritz of scalp refresh spray afterwards can help with sweat buildup under your style",
 ];
 
-const lutealTips = [
-  "You're in the second half of your cycle — increased scalp oiliness or sensitivity is normal right now",
-  "Hormonal changes in your luteal phase can make your scalp more reactive — be gentle with any products",
-];
-
-const menstruationTips = [
-  "Some women notice more shedding around their period — this is usually temporary and hormonal",
-  "During your period, your scalp may feel more sensitive. Keep styling tension low.",
-];
 
 const quickLogSymptoms = [
   'Itching', 'Tenderness / soreness', 'Flaking', 'Thinning / shedding', 'Bumps or irritation', 'Something else',
@@ -60,25 +51,7 @@ const getQuickLogTips = (symptoms: string[]): string[] => {
   return tips.slice(0, 3);
 };
 
-const getCycleDay = (lastPeriodDate: string, cycleLengthStr: string): { day: number; total: number; phase: 'menstruation' | 'follicular' | 'luteal' } | null => {
-  if (!lastPeriodDate) return null;
-  const start = new Date(lastPeriodDate);
-  const now = new Date();
-  const diffMs = now.getTime() - start.getTime();
-  const diffDays = Math.floor(diffMs / 86400000);
-  
-  let total = 28;
-  if (cycleLengthStr === '21–25 days') total = 23;
-  else if (cycleLengthStr === '26–30 days') total = 28;
-  else if (cycleLengthStr === '31–35 days') total = 33;
-  
-  const day = (diffDays % total) + 1;
-  let phase: 'menstruation' | 'follicular' | 'luteal' = 'follicular';
-  if (day <= 5) phase = 'menstruation';
-  else if (day >= Math.floor(total / 2)) phase = 'luteal';
-  
-  return { day, total, phase };
-};
+
 
 const HomePage = () => {
   const navigate = useNavigate();
@@ -105,18 +78,7 @@ const HomePage = () => {
   const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
 
   const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000);
-  
-  // Menstrual cycle info
-  const cycleInfo = onboardingData.menstrualTracking === 'yes' 
-    ? getCycleDay(onboardingData.lastPeriodDate, onboardingData.menstrualCycleLength) 
-    : null;
-
-  // Choose daily tip — use hormonal tips when relevant
-  let todayTip = dailyTips[dayOfYear % dailyTips.length];
-  if (cycleInfo) {
-    if (cycleInfo.phase === 'luteal') todayTip = lutealTips[dayOfYear % lutealTips.length];
-    else if (cycleInfo.phase === 'menstruation') todayTip = menstruationTips[dayOfYear % menstruationTips.length];
-  }
+  const todayTip = dailyTips[dayOfYear % dailyTips.length];
 
   const daysUntilWash = totalDays - currentDay;
   const showWashPrompt = !onboardingData.isWornOutOnly && daysUntilWash <= 2 && !dismissedWashPrompt;
@@ -201,12 +163,6 @@ const HomePage = () => {
                 <p className="font-semibold text-lg text-foreground">{currentStyle}</p>
                 <p className="text-sm text-muted-foreground mt-1">Installed Feb 24</p>
                 <p className="text-sm text-muted-foreground">Next wash day: Mar 10</p>
-                {cycleInfo && (
-                  <div className="flex items-center gap-1.5 mt-2">
-                    <span className="w-2 h-2 rounded-full bg-primary" />
-                    <span className="text-xs text-muted-foreground">Cycle day {cycleInfo.day}</span>
-                  </div>
-                )}
               </div>
             </div>
           </div>
@@ -221,12 +177,6 @@ const HomePage = () => {
                 <p className="text-label mb-1">Last wash</p>
                 <p className="font-semibold text-foreground">{new Date(Date.now() - 3 * 86400000).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}</p>
                 <p className="text-sm text-muted-foreground mt-1">Next check-in: {new Date(Date.now() + 4 * 86400000).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })}</p>
-                {cycleInfo && (
-                  <div className="flex items-center gap-1.5 mt-1">
-                    <span className="w-2 h-2 rounded-full bg-primary" />
-                    <span className="text-xs text-muted-foreground">Cycle day {cycleInfo.day}</span>
-                  </div>
-                )}
               </div>
             </div>
           </div>

@@ -30,11 +30,6 @@ export interface OnboardingData {
   scalpProducts: string[];
   otherProduct: string;
   productFrequency: string;
-  // Menstrual cycle
-  menstrualTracking: string; // 'yes' | 'no' | 'no-menstruate'
-  lastPeriodDate: string;
-  menstrualCycleLength: string;
-  hormonalContraception: string;
   // Goals
   goals: string[];
 }
@@ -195,10 +190,6 @@ const defaultOnboarding: OnboardingData = {
   scalpProducts: [],
   otherProduct: '',
   productFrequency: '',
-  menstrualTracking: '',
-  lastPeriodDate: '',
-  menstrualCycleLength: '',
-  hormonalContraception: '',
   goals: [],
 };
 
