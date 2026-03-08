@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, ChevronRight, Eye, ArrowUpRight, AlertTriangle, Shield, BookOpen, Play, Flame, Star, Info, Heart, ExternalLink, Camera } from 'lucide-react';
+import { ArrowLeft, ChevronRight, Eye, ArrowUpRight, AlertTriangle, Shield, BookOpen, Play, Flame, Star, Info, Heart, ExternalLink, Camera, ImageIcon } from 'lucide-react';
 import { stylistConditions, StylistCondition, getConditionById } from '@/data/stylistConditions';
+import { consumerConditions } from '@/data/conditionGuide';
 import ScalpIllustration from '@/components/ScalpIllustration';
 import { toast } from '@/hooks/use-toast';
 
