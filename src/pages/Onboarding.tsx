@@ -597,7 +597,7 @@ const Onboarding = () => {
                     <Stethoscope size={32} className="text-destructive-foreground" strokeWidth={1.8} />
                   </motion.div>
                 </div>
-                <h2 className="text-2xl font-semibold text-center mb-2">We'd recommend seeking advice soon</h2>
+                <h2 className="text-lg font-medium text-foreground text-center mb-2">We'd recommend seeking advice soon</h2>
                 <p className="text-muted-foreground text-center mb-6">The symptoms you've described — especially {getBaselineSevereFlaggedSymptoms(itch, tenderness, hairline).join(' and ')} — are worth getting checked sooner rather than later.</p>
                 <div className="card-elevated p-5 mb-4">
                   <h3 className="font-semibold mb-2">Who to see</h3>
