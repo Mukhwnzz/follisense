@@ -783,7 +783,8 @@ const Onboarding = () => {
                 {(() => {
                   const defaultCount = isMale ? 6 : 8;
                   const locsStyles = ['Locs / faux locs', 'Locs or faux locs'];
-                  const getLocsPhoto = () => isMale && locsPhotos.male ? locsPhotos.male : null;
+                  const genderKeyStyle = isMale ? 'male' : isNeutral ? 'both' : 'female';
+                  const getLocsPhoto = () => locsPhotos[genderKeyStyle] || null;
                   
                   const renderStyleButton = (s: string) => {
                     const isLocs = locsStyles.includes(s);
