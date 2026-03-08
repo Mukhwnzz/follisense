@@ -59,7 +59,7 @@ const LoginPage = () => {
               <label className="text-sm font-medium text-foreground">Password</label>
               <button
                 type="button"
-                onClick={() => setShowForgotConfirm(true)}
+                onClick={() => navigate('/forgot-password')}
                 className="text-xs text-primary font-medium"
               >
                 Forgot password?
