@@ -214,6 +214,9 @@ const Onboarding = () => {
   const [products, setProducts] = useState<string[]>([]);
   const [otherProduct, setOtherProduct] = useState('');
   const [prodFreq, setProdFreq] = useState('');
+  const [hairProds, setHairProds] = useState<string[]>([]);
+  const [otherHairProd, setOtherHairProd] = useState('');
+  const [hairProdFreq, setHairProdFreq] = useState('');
   const [showMoreStyles, setShowMoreStyles] = useState(false);
   const [showMoreProducts, setShowMoreProducts] = useState(false);
   const [capturedPhotos, setCapturedPhotos] = useState<Record<string, boolean>>({});
