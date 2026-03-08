@@ -162,6 +162,11 @@ export const consumerConditions: ConsumerCondition[] = [
       { question: 'Do the patches have a clear defined border?' },
       { question: 'Do you have psoriasis anywhere else on your body?' },
     ],
+    photoGallery: [
+      { label: 'Mild — scalp plaque', description: 'Mild scalp psoriasis showing a defined silvery plaque near the hairline' },
+      { label: 'Moderate — multiple plaques', description: 'Moderate scalp psoriasis with multiple raised plaques on darker skin' },
+      { label: 'Extending beyond hairline', description: 'Scalp psoriasis extending beyond the hairline onto the forehead' },
+    ],
     actionSteps: [
       'See a dermatologist for proper diagnosis and treatment',
       'Use gentle, fragrance-free products on the scalp',
@@ -174,6 +179,8 @@ export const consumerConditions: ConsumerCondition[] = [
     whenToSee: 'Always see a dermatologist. Psoriasis is a chronic condition that benefits from medical management.',
     relatedArticleId: undefined,
     dermnetUrl: 'https://dermnetnz.org/topics/scalp-psoriasis',
+    externalLinkLabel: 'DermNet NZ — Scalp psoriasis',
+    externalLinkUrl: 'https://dermnetnz.org',
     chatPrompts: ['Could I have scalp psoriasis?', "What's the difference between psoriasis and dandruff?", 'What should I tell my doctor about this?'],
   },
   {
