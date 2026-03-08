@@ -102,6 +102,7 @@ const defaultHealthProfile: HealthProfileData = {
   skinConditions: [],
   skinConditionDetails: '',
   sensitiveSkin: '',
+  recentStressors: [],
   previousHairLoss: '',
   diagnosedCondition: '',
   diagnosedConditionDetails: '',
