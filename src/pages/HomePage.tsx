@@ -360,8 +360,8 @@ const HomePage = () => {
           </button>
         </div>
 
-        {/* Pre-wash day prompt */}
-        {showWashPrompt && (
+        {/* Pre-wash day / barber visit prompt */}
+        {!isMale && showWashPrompt && (
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="card-elevated p-5 mb-4 border-l-4 border-l-warning">
             <h3 className="font-semibold text-foreground mb-1">Wash day is coming up</h3>
             <p className="text-sm text-muted-foreground mb-4">When you take down your style, take a moment to check your scalp.</p>
