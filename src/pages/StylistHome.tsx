@@ -49,7 +49,7 @@ const StylistHome = () => {
         {/* Header */}
         <div className="flex items-center gap-2 mb-1">
           <Leaf size={20} className="text-primary" strokeWidth={1.8} />
-          <span className="text-sm font-semibold text-foreground">ScalpSense</span>
+          <span className="text-sm font-semibold text-foreground">FolliSense</span>
           <span className="text-[10px] font-medium bg-secondary text-foreground px-2 py-0.5 rounded-full">Stylist</span>
         </div>
         <h1 className="text-2xl font-semibold mb-0.5">Hi {userName || 'there'}</h1>
