@@ -224,6 +224,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       clientObservations, addClientObservation,
       stylistObservations: demoStylistObservations,
       healthProfile, setHealthProfile,
+      baselinePhotos, setBaselinePhotos,
       resetAll,
     }}>
       {children}
