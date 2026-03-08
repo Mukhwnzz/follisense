@@ -245,6 +245,9 @@ const ClinicianSummary = () => {
             <button onClick={handleShare} className="flex-1 h-12 rounded-xl border-2 border-border font-medium text-sm btn-press flex items-center justify-center gap-2"><Share2 size={16} strokeWidth={1.8} /> Share</button>
             <button onClick={() => toast('PDF download coming soon')} className="flex-1 h-12 rounded-xl border-2 border-border font-medium text-sm btn-press flex items-center justify-center gap-2"><Download size={16} strokeWidth={1.8} /> Download PDF</button>
           </div>
+          <button onClick={() => navigate('/find-specialist')} className="w-full h-12 rounded-xl border-2 border-border font-medium text-sm btn-press mb-3 text-muted-foreground">
+            Find a specialist to share this with
+          </button>
           <button onClick={() => navigate(-1)} className="w-full h-14 bg-primary text-primary-foreground rounded-xl font-semibold btn-press">Back to results</button>
         </motion.div>
       </div>

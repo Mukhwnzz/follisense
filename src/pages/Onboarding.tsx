@@ -607,12 +607,12 @@ const Onboarding = () => {
               </div>
             )}
 
-            {/* Step 1: Hair type & chemical processing */}
+            {/* Step 1: Hair type & chemical processing — progressive reveal */}
             {step === 1 && (
               <div>
                 <h2 className="text-lg font-medium text-foreground mb-2">Let's get to know your hair</h2>
                 <p className="text-muted-foreground mb-6">Select the option closest to your hair type</p>
-                <div className="space-y-3 mb-8">
+                <div className="space-y-3">
                   {hairTypes.map(ht => (
                     <button key={ht.id} onClick={() => setHairType(ht.id)} className={`selection-card w-full flex items-center gap-4 text-left ${hairType === ht.id ? 'selected' : ''}`}>
                       <div className="w-12 h-12 rounded-xl bg-accent flex items-center justify-center flex-shrink-0">
@@ -625,39 +625,71 @@ const Onboarding = () => {
                     </button>
                   ))}
                 </div>
-                <p className="font-medium text-foreground mb-3">Has your hair been chemically processed?</p>
-                <div className="space-y-2 mb-2">
-                  {chemicalOptionsSimple.map(opt => (
-                    <button key={opt} onClick={() => {
-                      setChemicalProcessing(opt);
-                      if (opt === 'No, fully natural') { setChemicalMultiple([]); setLastChemicalTreatment(''); }
-                      if (opt !== 'Yes') setChemicalMultiple([]);
-                    }} className={`selection-card w-full text-left ${chemicalProcessing === opt ? 'selected' : ''}`}>
-                      <p className="font-medium text-foreground text-sm">{opt}</p>
-                    </button>
-                  ))}
-                </div>
-                {chemicalProcessing === 'Yes' && (
-                  <div className="mt-3 p-3 rounded-xl bg-accent space-y-2">
-                    <p className="text-xs text-muted-foreground mb-2">What type of processing?</p>
-                    <div className="flex flex-wrap gap-2">
-                      {chemicalTypeOptions.map(opt => (
-                        <button key={opt} onClick={() => toggleChemMulti(opt)} className={`pill-option ${chemicalMultiple.includes(opt) ? 'selected' : ''}`}>{opt}</button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                {showChemicalFollowUp && (
-                  <div className="mt-4">
-                    <p className="text-sm font-medium text-foreground mb-3">When was your last chemical treatment?</p>
-                    <div className="flex flex-wrap gap-2">
-                      {lastChemicalTreatmentOptions.map(opt => (
-                        <button key={opt} onClick={() => setLastChemicalTreatment(opt)} className={`pill-option ${lastChemicalTreatment === opt ? 'selected' : ''}`}>{opt}</button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                <p className="text-xs text-muted-foreground mt-3">Chemical processing can affect how your scalp responds to styling — this helps us personalise your experience.</p>
+
+                <AnimatePresence>
+                  {hairType && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 12 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 12 }}
+                      transition={{ duration: 0.3 }}
+                      className="mt-8"
+                    >
+                      <p className="font-medium text-foreground mb-3">Has your hair been chemically processed?</p>
+                      <div className="space-y-2">
+                        {chemicalOptionsSimple.map(opt => (
+                          <button key={opt} onClick={() => {
+                            setChemicalProcessing(opt);
+                            if (opt === 'No, fully natural') { setChemicalMultiple([]); setLastChemicalTreatment(''); }
+                            if (opt !== 'Yes') setChemicalMultiple([]);
+                          }} className={`selection-card w-full text-left ${chemicalProcessing === opt ? 'selected' : ''}`}>
+                            <p className="font-medium text-foreground text-sm">{opt}</p>
+                          </button>
+                        ))}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                <AnimatePresence>
+                  {chemicalProcessing === 'Yes' && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 12 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 12 }}
+                      transition={{ duration: 0.3 }}
+                      className="mt-4 p-3 rounded-xl bg-accent space-y-2"
+                    >
+                      <p className="text-xs text-muted-foreground mb-2">What type of processing?</p>
+                      <div className="flex flex-wrap gap-2">
+                        {chemicalTypeOptions.map(opt => (
+                          <button key={opt} onClick={() => toggleChemMulti(opt)} className={`pill-option ${chemicalMultiple.includes(opt) ? 'selected' : ''}`}>{opt}</button>
+                        ))}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                <AnimatePresence>
+                  {((chemicalProcessing === 'Yes' && chemicalMultiple.length > 0) || chemicalProcessing === 'Previously processed, currently growing out') && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 12 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 12 }}
+                      transition={{ duration: 0.3 }}
+                      className="mt-4"
+                    >
+                      <p className="text-sm font-medium text-foreground mb-3">When was your last chemical treatment?</p>
+                      <div className="flex flex-wrap gap-2">
+                        {lastChemicalTreatmentOptions.map(opt => (
+                          <button key={opt} onClick={() => setLastChemicalTreatment(opt)} className={`pill-option ${lastChemicalTreatment === opt ? 'selected' : ''}`}>{opt}</button>
+                        ))}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                <p className="text-xs text-muted-foreground mt-4">Chemical processing can affect how your scalp responds to styling — this helps us personalise your experience.</p>
               </div>
             )}
 
