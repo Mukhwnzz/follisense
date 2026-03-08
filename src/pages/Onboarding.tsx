@@ -439,7 +439,7 @@ const Onboarding = () => {
             {/* Step 3: Cycle / routine */}
             {step === 3 && !isWornOutOnly && (
               <div>
-                <h2 className="text-2xl font-semibold mb-2">Your cycle</h2>
+                <h2 className="text-lg font-medium text-foreground mb-2">Your cycle</h2>
                 <p className="text-muted-foreground mb-6">How long do you typically keep a style in?</p>
                 <div className="flex flex-wrap gap-2 mb-2">
                   {cycleLengths.map(c => (
