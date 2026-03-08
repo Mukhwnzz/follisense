@@ -69,7 +69,7 @@ const scalpSteps = [
 const hairHealthSteps = [
   {
     key: 'hairFeel',
-    q: "How's your hair feeling right now?",
+    q: "How's your hair feeling?",
     options: [
       { label: 'Soft and moisturised as usual', desc: '' },
       { label: 'A bit dry', desc: '' },
