@@ -115,7 +115,12 @@ const Onboarding = () => {
     switch (step) {
       case 1: return !!hairType && !!chemicalProcessing && (chemicalProcessing !== 'Multiple' || chemicalMultiple.length > 0);
       case 2: return styles.length > 0 && (!styles.includes('Other') || otherStyle.trim().length > 0);
-      case 3: return !!cycleLen && !!washFreq;
+      case 3: {
+        const cycleOk = !!cycleLen && (cycleLen !== 'It varies' || (!!cycleLenMin && !!cycleLenMax));
+        const washOk = !!washFreq && (washFreq !== 'It depends on the style' || !!washFreqPerCycle);
+        const betweenOk = betweenWashCare.length > 0 && (!betweenWashCare.includes('Other') || otherBetweenWash.trim().length > 0);
+        return cycleOk && washOk && betweenOk;
+      }
       case 4: return !!itch && !!tenderness && !!hairline;
       case 5: return true; // photo step — always can proceed (skip or capture)
       case 6: return products.length > 0 && !!prodFreq && (!products.includes('Other') || otherProduct.trim().length > 0);
