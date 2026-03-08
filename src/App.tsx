@@ -9,6 +9,7 @@ import Welcome from "./pages/Welcome";
 import SignUpPage from "./pages/SignUpPage";
 import LoginPage from "./pages/LoginPage";
 import Onboarding from "./pages/Onboarding";
+import BaselineResponse from "./pages/BaselineResponse";
 import HomePage from "./pages/HomePage";
 import MidCycleCheckIn from "./pages/MidCycleCheckIn";
 import WashDayAssessment from "./pages/WashDayAssessment";
@@ -51,6 +52,7 @@ const App = () => (
               <Route path="/login" element={<LoginPage />} />
               <Route path="/forgot-password" element={<ForgotPasswordPage />} />
               <Route path="/onboarding" element={<Onboarding />} />
+              <Route path="/onboarding/baseline-response" element={<BaselineResponse />} />
               <Route path="/home" element={<HomePage />} />
               <Route path="/my-routine" element={<MyRoutine />} />
               <Route path="/chat" element={<ChatPage />} />
