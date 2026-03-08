@@ -466,7 +466,7 @@ const Onboarding = () => {
                 {styles.includes('Other') && (
                   <input type="text" value={otherStyle} onChange={e => setOtherStyle(e.target.value)} placeholder="Describe your style" className="w-full h-12 px-4 rounded-xl border-2 border-border bg-card text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors mt-3" />
                 )}
-                {hasProtectiveStyle && styles.length > 0 && (
+                {hasProtectiveOrStretchedStyle && styles.length > 0 && (
                   <div className="mt-8">
                     <p className="font-medium text-foreground mb-3">How much of the time are you in a protective or installed style?</p>
                     <div className="flex flex-wrap gap-2">
