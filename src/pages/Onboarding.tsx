@@ -484,10 +484,10 @@ const Onboarding = () => {
       setShowMicroEducation(null);
       return;
     }
-    if (step === 4 && baselineStep > 0) { setBaselineStep(prev => prev - 1); return; }
+    if (step === 5 && baselineStep > 0) { setBaselineStep(prev => prev - 1); return; }
     if (step === -1) { navigate('/'); return; }
     if (step > 0) {
-      if (skipMenstrual && step === 7) { setStep(6); return; }
+      if (skipMenstrual && step === 8) { setStep(7); return; }
       setStep(step - 1);
     } else if (step === 0) {
       setStep(-1);
@@ -499,8 +499,8 @@ const Onboarding = () => {
   const getProgressIndex = () => {
     if (step === -1) return 0;
     if (!skipMenstrual) return step + 1;
-    if (step <= 6) return step + 1;
-    return 8;
+    if (step <= 7) return step + 1;
+    return 9;
   };
 
   // ── Render ─────────────────────────────────────────────────────────────────
