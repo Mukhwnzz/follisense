@@ -101,6 +101,7 @@ export const stylistConditions: StylistCondition[] = [
     whatToTell: '"I\'ve found a smooth bald patch on your scalp. It looks like it could be alopecia areata, which is an autoimmune condition. It\'s not caused by anything you did. A dermatologist can confirm and discuss treatment options."',
     whatYouCanDo: 'Don\'t style over it tightly. Document the size and location in ScalpSense. Note whether it\'s new or getting larger.',
     severityGuide: 'Always refer. Can be self-limiting but can also progress.',
+    darkerSkinNote: 'On darker skin: The smooth, round patches are usually easy to spot because the contrast between bald skin and surrounding hair is clear. The key feature, exclamation point hairs at the edges, looks the same on all skin tones. These are short broken hairs that taper toward the root.',
   },
   {
     id: 'folliculitis',
