@@ -16,8 +16,16 @@ const ClinicianSummary = () => {
     '4c': '4c — Very tight, densely packed coils', 'unsure': 'Mixed / Unsure',
   };
 
+  const chemLabel = () => {
+    const cp = onboardingData.chemicalProcessing;
+    if (!cp || cp === 'No, fully natural') return null;
+    if (cp === 'Multiple') return onboardingData.chemicalProcessingMultiple?.join(', ') || 'Multiple (unspecified)';
+    return cp;
+  };
+
   const fields = [
     { label: 'Hair type', value: hairTypeLabel[onboardingData.hairType] || 'Not specified' },
+    ...(chemLabel() ? [{ label: 'Chemical processing', value: chemLabel()! }] : []),
     { label: 'Current protective style', value: onboardingData.protectiveStyles.join(', ') || 'Not specified' },
     { label: 'Typical cycle length', value: onboardingData.cycleLength || 'Not specified' },
     { label: 'Current cycle duration', value: '28 days' },

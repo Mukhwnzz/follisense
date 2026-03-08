@@ -13,14 +13,52 @@ const hairTypes = [
   { id: 'unsure', label: 'Not sure', desc: "That's okay — lots of people have a mix of different curl patterns" },
 ];
 
-const styleOptions = ['Braids', 'Twists', 'Locs', 'Weave / sew-in', 'Wig', 'Wash and go', 'Other'];
+const chemicalOptions = [
+  'No, fully natural',
+  'Yes, relaxed / permed',
+  'Yes, texturised',
+  'Yes, colour treated',
+  'Yes, bleached',
+  'Multiple',
+  'Previously processed, currently growing out',
+  'Not sure',
+];
+
+const chemicalMultipleOptions = ['Relaxed', 'Texturised', 'Colour treated', 'Bleached'];
+
+const styleOptions = [
+  'Box braids', 'Cornrows / flat twists', 'Knotless braids', 'Twists (two-strand)',
+  'Twist out / braid out', 'Locs / faux locs', 'Weave / sew-in', 'Wig (lace front)',
+  'Wig (other)', 'Crochet braids', 'Hair extensions (k-tips, micro links, etc.)',
+  'Wash and go', 'Bantu knots', 'Silk press / blowout', 'Other',
+];
+
 const cycleLengths = ['1–2 weeks', '2–4 weeks', '4–6 weeks', '6+ weeks', 'It varies'];
 const washFrequencies = ['Weekly', 'Every 2 weeks', 'Less than every 2 weeks', 'Only at takedown'];
 const severities = ['None', 'Mild', 'Moderate', 'Severe'];
 const tendernessSeverities = ['None', 'Mild', 'Moderate', 'Severe'];
 const hairlineConcerns = ['No concerns', 'Slight concern', 'Noticeable change', 'Very concerned'];
 
-const productOptions = ['Scalp oil', 'Leave-in conditioner', 'Edge control / gel', 'Anti-dandruff treatment', 'Growth serum / treatment', 'Co-wash', 'Clarifying shampoo', 'Other'];
+const productOptions = [
+  'Scalp oil (e.g., tea tree, rosemary, castor)',
+  'Hair oil (e.g., argan, jojoba, coconut)',
+  'Leave-in conditioner',
+  'Deep conditioner / mask',
+  'Edge control / gel',
+  'Mousse / foam',
+  'Hair butter / cream',
+  'Grease / pomade',
+  'Anti-dandruff / medicated shampoo',
+  'Clarifying shampoo',
+  'Co-wash',
+  'Growth serum / scalp treatment',
+  'Dry shampoo / scalp refresh spray',
+  'Heat protectant',
+  'Protein treatment',
+  'Apple cider vinegar rinse',
+  "None — I don't use products on my scalp",
+  'Other',
+];
 const productFrequencies = ['Daily', 'Every few days', 'Weekly', 'Only on wash day', 'Rarely'];
 
 const CurlIcon = ({ type }: { type: string }) => {
@@ -40,27 +78,32 @@ const Onboarding = () => {
   const { setOnboardingComplete, setOnboardingData } = useApp();
   const [step, setStep] = useState(1);
   const [hairType, setHairType] = useState('');
+  const [chemicalProcessing, setChemicalProcessing] = useState('');
+  const [chemicalMultiple, setChemicalMultiple] = useState<string[]>([]);
   const [styles, setStyles] = useState<string[]>([]);
+  const [otherStyle, setOtherStyle] = useState('');
   const [cycleLen, setCycleLen] = useState('');
   const [washFreq, setWashFreq] = useState('');
   const [itch, setItch] = useState('');
   const [tenderness, setTenderness] = useState('');
   const [hairline, setHairline] = useState('');
   const [products, setProducts] = useState<string[]>([]);
+  const [otherProduct, setOtherProduct] = useState('');
   const [prodFreq, setProdFreq] = useState('');
 
   const totalSteps = 5;
 
   const toggleStyle = (s: string) => setStyles(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s]);
   const toggleProduct = (p: string) => setProducts(prev => prev.includes(p) ? prev.filter(x => x !== p) : [...prev, p]);
+  const toggleChemMulti = (v: string) => setChemicalMultiple(prev => prev.includes(v) ? prev.filter(x => x !== v) : [...prev, v]);
 
   const canProceed = () => {
     switch (step) {
-      case 1: return !!hairType;
-      case 2: return styles.length > 0;
+      case 1: return !!hairType && !!chemicalProcessing && (chemicalProcessing !== 'Multiple' || chemicalMultiple.length > 0);
+      case 2: return styles.length > 0 && (!styles.includes('Other') || otherStyle.trim().length > 0);
       case 3: return !!cycleLen && !!washFreq;
       case 4: return !!itch && !!tenderness && !!hairline;
-      case 5: return products.length > 0 && !!prodFreq;
+      case 5: return products.length > 0 && !!prodFreq && (!products.includes('Other') || otherProduct.trim().length > 0);
       default: return false;
     }
   };
@@ -71,13 +114,17 @@ const Onboarding = () => {
     } else {
       setOnboardingData({
         hairType,
+        chemicalProcessing,
+        chemicalProcessingMultiple: chemicalMultiple,
         protectiveStyles: styles,
+        otherStyle,
         cycleLength: cycleLen,
         washFrequency: washFreq,
         baselineItch: itch,
         baselineTenderness: tenderness,
         baselineHairline: hairline,
         scalpProducts: products,
+        otherProduct,
         productFrequency: prodFreq,
       });
       setOnboardingComplete(true);
@@ -118,7 +165,7 @@ const Onboarding = () => {
               <div>
                 <h2 className="text-2xl font-semibold mb-2">Let's personalise your experience</h2>
                 <p className="text-muted-foreground mb-6">Select the option closest to your hair type</p>
-                <div className="space-y-3">
+                <div className="space-y-3 mb-8">
                   {hairTypes.map(ht => (
                     <button
                       key={ht.id}
@@ -135,6 +182,38 @@ const Onboarding = () => {
                     </button>
                   ))}
                 </div>
+
+                <p className="font-medium text-foreground mb-3">Has your hair been chemically processed?</p>
+                <div className="flex flex-wrap gap-2 mb-2">
+                  {chemicalOptions.map(opt => (
+                    <button
+                      key={opt}
+                      onClick={() => {
+                        setChemicalProcessing(opt);
+                        if (opt !== 'Multiple') setChemicalMultiple([]);
+                      }}
+                      className={`pill-option ${chemicalProcessing === opt ? 'selected' : ''}`}
+                    >
+                      {opt}
+                    </button>
+                  ))}
+                </div>
+                {chemicalProcessing === 'Multiple' && (
+                  <div className="flex flex-wrap gap-2 mt-3 p-3 rounded-xl bg-accent">
+                    {chemicalMultipleOptions.map(opt => (
+                      <button
+                        key={opt}
+                        onClick={() => toggleChemMulti(opt)}
+                        className={`pill-option ${chemicalMultiple.includes(opt) ? 'selected' : ''}`}
+                      >
+                        {opt}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                <p className="text-xs text-muted-foreground mt-3">
+                  Chemical processing can affect how your scalp responds to styling and products — this helps us give you more relevant guidance.
+                </p>
               </div>
             )}
 
@@ -153,6 +232,15 @@ const Onboarding = () => {
                     </button>
                   ))}
                 </div>
+                {styles.includes('Other') && (
+                  <input
+                    type="text"
+                    value={otherStyle}
+                    onChange={e => setOtherStyle(e.target.value)}
+                    placeholder="Describe your style"
+                    className="w-full h-12 px-4 rounded-xl border-2 border-border bg-card text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors mt-3"
+                  />
+                )}
               </div>
             )}
 
@@ -211,7 +299,7 @@ const Onboarding = () => {
               <div>
                 <h2 className="text-2xl font-semibold mb-2">What products do you use on your scalp?</h2>
                 <p className="text-muted-foreground mb-6">This helps us understand what might be affecting your scalp health</p>
-                <div className="grid grid-cols-2 gap-3 mb-8">
+                <div className="grid grid-cols-2 gap-3 mb-4">
                   {productOptions.map(p => (
                     <button
                       key={p}
@@ -222,6 +310,15 @@ const Onboarding = () => {
                     </button>
                   ))}
                 </div>
+                {products.includes('Other') && (
+                  <input
+                    type="text"
+                    value={otherProduct}
+                    onChange={e => setOtherProduct(e.target.value)}
+                    placeholder="What else do you use?"
+                    className="w-full h-12 px-4 rounded-xl border-2 border-border bg-card text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors mb-4"
+                  />
+                )}
                 <p className="text-muted-foreground mb-4">How often do you apply products to your scalp?</p>
                 <div className="flex flex-wrap gap-2">
                   {productFrequencies.map(f => (
