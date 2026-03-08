@@ -24,6 +24,7 @@ const starterQuestions: Record<string, string[]> = {
   red: ["How do I find a specialist?", "What does this mean for my hair?", "Is this reversible?"],
   history: ["What are my trends showing?", "Am I getting better or worse?", "What changed since last cycle?"],
   learn: ["Tell me more about this topic", "Does this apply to me?", "What should I do about this?"],
+  condition: ["Could I have this condition?", "What's the difference between similar conditions?", "What should I tell my doctor about this?"],
 };
 
 const matchResponse = (userMessage: string): { text: string; suggestions: string[] } => {
