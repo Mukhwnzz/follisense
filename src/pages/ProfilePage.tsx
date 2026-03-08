@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { User, ChevronRight, Shield, Trash2, Leaf, Repeat, Heart, Camera, RefreshCw, Target, Check, Calendar, Microscope, ChevronDown, Eye, EyeOff, Lock, Sparkles } from 'lucide-react';
+import { User, ChevronRight, Shield, Trash2, Leaf, Heart, Camera, RefreshCw, Target, Check, Calendar, Microscope, ChevronDown, Eye, EyeOff, Lock, Sparkles } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 import ProductSearch from '@/components/ProductSearch';
 import { toast } from '@/hooks/use-toast';
@@ -19,7 +19,7 @@ const goalOptions = [
 
 const ProfilePage = () => {
   const navigate = useNavigate();
-  const { onboardingData, setOnboardingData, resetAll, stylistMode, setStylistMode, baselinePhotos, setBaselinePhotos, research } = useApp();
+  const { onboardingData, setOnboardingData, resetAll, baselinePhotos, setBaselinePhotos, research } = useApp();
 
   const [notifications, setNotifications] = useState({
     dailyTip: true, midCycle: true, washDay: true, washApproaching: true, productReminders: false, weeklySummary: false,
@@ -48,7 +48,6 @@ const ProfilePage = () => {
   const hairTypeLabel: Record<string, string> = { '3b': '3b', '3c': '3c', '4a': '4a', '4b': '4b', '4c': '4c', 'unsure': 'Not sure' };
 
   const handleDelete = () => { resetAll(); navigate('/'); };
-  const handleModeSwitch = () => { setStylistMode(!stylistMode); navigate(stylistMode ? '/home' : '/stylist'); };
   const handleRetakePhoto = (area: string) => {
     const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
     setBaselinePhotos(baselinePhotos.map(p => p.area === area ? { ...p, date: today } : p));
@@ -89,20 +88,9 @@ const ProfilePage = () => {
           <h1 className="text-2xl font-semibold">Your profile</h1>
         </div>
 
-        {/* Mode switch */}
-        <div className="mb-6">
-          <button onClick={handleModeSwitch} className="card-elevated w-full p-5 flex items-center gap-4 border-2 border-secondary">
-            <div className="w-12 h-12 rounded-xl bg-secondary flex items-center justify-center flex-shrink-0"><Repeat size={22} className="text-foreground" strokeWidth={1.5} /></div>
-            <div className="flex-1 text-left">
-              <p className="font-semibold text-foreground">{stylistMode ? 'Switch to Personal Mode' : 'Switch to Stylist or Barber Mode'}</p>
-              <p className="text-xs text-muted-foreground mt-0.5">{stylistMode ? 'Go back to tracking your own scalp health' : 'Document scalp observations for your clients'}</p>
-            </div>
-            <ChevronRight size={18} className="text-muted-foreground" />
-          </button>
-        </div>
 
         {/* My Goals */}
-        {!stylistMode && (
+        {(
           <div className="mb-6">
             <h3 className="text-label mb-3">My Goals</h3>
             {!showGoalEditor ? (
@@ -148,7 +136,7 @@ const ProfilePage = () => {
         )}
 
         {/* My Routine link */}
-        {!stylistMode && (
+        {(
           <div className="mb-6">
             <button onClick={() => navigate('/my-routine')} className="card-elevated w-full p-4 flex items-center gap-3 text-left">
               <div className="w-10 h-10 rounded-xl bg-sage-light flex items-center justify-center flex-shrink-0"><Sparkles size={20} className="text-primary" strokeWidth={1.5} /></div>
@@ -162,7 +150,7 @@ const ProfilePage = () => {
         )}
 
         {/* Health profile link */}
-        {!stylistMode && (
+        {(
           <div className="mb-6">
             <button onClick={() => navigate('/health-profile')} className="card-elevated w-full p-4 flex items-center gap-3 text-left">
               <div className="w-10 h-10 rounded-xl bg-sage-light flex items-center justify-center flex-shrink-0"><Heart size={20} className="text-primary" strokeWidth={1.5} /></div>
@@ -176,7 +164,7 @@ const ProfilePage = () => {
         )}
 
         {/* Baseline photos */}
-        {!stylistMode && (
+        {(
           <div className="mb-6">
             <h3 className="text-label mb-3">Baseline Photos</h3>
             {baselinePhotos.length > 0 ? (
@@ -205,7 +193,7 @@ const ProfilePage = () => {
         )}
 
         {/* Hair settings */}
-        {!stylistMode && (
+        {(
           <div className="mb-6">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-label">Hair & Style Settings</h3>
@@ -278,7 +266,7 @@ const ProfilePage = () => {
         )}
 
         {/* Menstrual cycle settings — hidden for male users */}
-        {!stylistMode && onboardingData.gender !== 'man' && (
+        {onboardingData.gender !== 'man' && (
           <div className="mb-6">
             <h3 className="text-label mb-3">Menstrual Cycle</h3>
             <div className="card-elevated p-4">
@@ -318,7 +306,7 @@ const ProfilePage = () => {
         </div>
 
         {/* Research */}
-        {!stylistMode && (
+        {(
           <div className="mb-6">
             <h3 className="text-label mb-3">Research</h3>
             <div className="card-elevated p-4">

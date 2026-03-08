@@ -21,6 +21,10 @@ import ProfilePage from "./pages/ProfilePage";
 import StylistHome from "./pages/StylistHome";
 import StylistObservation from "./pages/StylistObservation";
 import StylistClients from "./pages/StylistClients";
+import StylistSignUpPage from "./pages/StylistSignUpPage";
+import StylistLoginPage from "./pages/StylistLoginPage";
+import StylistOnboarding from "./pages/StylistOnboarding";
+import StylistProfilePage from "./pages/StylistProfilePage";
 import ChatPage from "./pages/ChatPage";
 import ProductDirectory from "./pages/ProductDirectory";
 import ResearchProgramme from "./pages/ResearchProgramme";
@@ -61,12 +65,15 @@ const App = () => (
               <Route path="/history" element={<HistoryPage />} />
               <Route path="/learn" element={<LearnPage />} />
               <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/stylist/signup" element={<StylistSignUpPage />} />
+              <Route path="/stylist/login" element={<StylistLoginPage />} />
+              <Route path="/stylist/onboarding" element={<StylistOnboarding />} />
               <Route path="/stylist" element={<StylistHome />} />
               <Route path="/stylist/learn" element={<StylistLearnPage />} />
               <Route path="/stylist/observation" element={<StylistObservation />} />
               <Route path="/stylist/quiz" element={<ScalpQuiz />} />
               <Route path="/stylist/clients" element={<StylistClients />} />
-              <Route path="/stylist/profile" element={<ProfilePage />} />
+              <Route path="/stylist/profile" element={<StylistProfilePage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Layout>

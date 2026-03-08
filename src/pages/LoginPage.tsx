@@ -130,6 +130,11 @@ const LoginPage = () => {
             Sign up
           </button>
         </p>
+
+        <p className="text-center text-xs text-muted-foreground mt-4">
+          Are you a stylist?{' '}
+          <button onClick={() => navigate('/stylist/login')} className="text-primary font-medium">Log in here</button>
+        </p>
       </motion.div>
     </div>
   );

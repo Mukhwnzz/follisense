@@ -60,6 +60,16 @@ const Welcome = () => {
         >
           Already have an account? Log in
         </button>
+
+        <div className="w-full h-px bg-border my-6" />
+
+        <p className="text-sm text-muted-foreground mb-3">Are you a hair professional?</p>
+        <button
+          onClick={() => navigate('/stylist/signup')}
+          className="w-full h-12 rounded-xl border-2 border-border bg-card text-foreground text-sm font-semibold btn-press"
+        >
+          Stylist sign-up
+        </button>
       </motion.div>
     </div>
   );

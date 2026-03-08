@@ -5,6 +5,18 @@ import { useApp } from '@/contexts/AppContext';
 import { dummyLeaderboard } from '@/data/quizQuestions';
 import { useState, useEffect } from 'react';
 
+interface StylistProfile {
+  role: string; businessName: string; [key: string]: any;
+}
+
+const loadStylistProfile = (): StylistProfile | null => {
+  try {
+    const saved = localStorage.getItem('scalpsense-stylist-profile');
+    if (saved) return JSON.parse(saved);
+  } catch {}
+  return null;
+};
+
 const loadQuizState = () => {
   try {
     const saved = localStorage.getItem('scalpsense-quiz');
@@ -15,7 +27,7 @@ const loadQuizState = () => {
 
 const StylistHome = () => {
   const navigate = useNavigate();
-  const { clientObservations } = useApp();
+  const { clientObservations, userName } = useApp();
   const [quiz, setQuiz] = useState(loadQuizState);
 
   useEffect(() => {
@@ -23,6 +35,8 @@ const StylistHome = () => {
     window.addEventListener('focus', handler);
     return () => window.removeEventListener('focus', handler);
   }, []);
+
+  const stylistProfile = loadStylistProfile();
 
   const userEntry = { rank: 5, name: 'You', points: quiz.totalPoints, bestStreak: quiz.bestStreak };
   const leaderboard = [...dummyLeaderboard, userEntry].sort((a, b) => b.points - a.points).map((e, i) => ({ ...e, rank: i + 1 }));
@@ -38,7 +52,12 @@ const StylistHome = () => {
           <span className="text-sm font-semibold text-foreground">ScalpSense</span>
           <span className="text-[10px] font-medium bg-secondary text-foreground px-2 py-0.5 rounded-full">Stylist</span>
         </div>
-        <h1 className="text-2xl font-semibold mb-1">ScalpSense for Stylists</h1>
+        <h1 className="text-2xl font-semibold mb-0.5">Hi {userName || 'there'}</h1>
+        {stylistProfile?.role && (
+          <p className="text-sm text-muted-foreground mb-1">
+            {stylistProfile.role}{stylistProfile.businessName ? ` at ${stylistProfile.businessName}` : ''}
+          </p>
+        )}
         <p className="text-muted-foreground text-sm mb-6">Document scalp observations for your clients</p>
 
         {/* New observation button */}
