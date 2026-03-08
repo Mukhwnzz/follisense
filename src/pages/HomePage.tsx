@@ -441,14 +441,14 @@ const HomePage = () => {
           <button onClick={() => navigate(onboardingData.isWornOutOnly ? '/wash-day?mode=regular' : '/mid-cycle')} className="w-full h-12 bg-primary text-primary-foreground rounded-xl font-semibold text-sm btn-press">Start check-in</button>
         </div>
 
-        {/* Got a question? */}
-        <button onClick={() => navigate('/chat')} className="card-elevated p-4 mb-4 w-full flex items-center gap-3 text-left">
+        {/* Got a question? - points to Learn since chat is floating */}
+        <button onClick={() => navigate('/learn')} className="card-elevated p-4 mb-4 w-full flex items-center gap-3 text-left">
           <div className="w-10 h-10 rounded-xl bg-sage-light flex items-center justify-center flex-shrink-0">
             <MessageCircle size={20} className="text-primary" strokeWidth={1.5} />
           </div>
           <div className="flex-1">
             <p className="font-medium text-foreground text-sm">Got a question?</p>
-            <p className="text-xs text-muted-foreground">Chat with FolliSense about your scalp and hair</p>
+            <p className="text-xs text-muted-foreground">Tap the chat bubble or browse articles</p>
           </div>
           <ChevronRight size={18} className="text-muted-foreground" />
         </button>

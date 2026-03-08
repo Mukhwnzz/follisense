@@ -114,11 +114,15 @@ const SignUpPage = () => {
           </button>
         </div>
 
-        <p className="text-center text-sm text-muted-foreground">
+        <p className="text-center text-sm text-muted-foreground mb-3">
           Already have an account?{' '}
           <button onClick={() => navigate('/login')} className="text-primary font-medium">
             Log in
           </button>
+        </p>
+        <p className="text-center text-xs text-muted-foreground">
+          Are you a stylist?{' '}
+          <button onClick={() => navigate('/stylist/signup')} className="text-primary font-medium">Sign up here</button>
         </p>
       </motion.div>
     </div>

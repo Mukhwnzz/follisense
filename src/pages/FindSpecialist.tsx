@@ -43,7 +43,7 @@ const FindSpecialist = () => {
               placeholder="your@email.com"
               className="w-full h-12 px-4 rounded-xl border-2 border-border bg-card text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors mb-3"
             />
-            <button className="w-full h-12 bg-primary text-primary-foreground rounded-xl font-semibold text-sm btn-press">
+            <button onClick={() => toast({ title: 'You\'re on the list!', description: 'We\'ll notify you when the specialist directory is ready.' })} className="w-full h-12 bg-primary text-primary-foreground rounded-xl font-semibold text-sm btn-press">
               Notify me
             </button>
           </div>

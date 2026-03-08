@@ -9,7 +9,6 @@ interface ArticleViewProps {
 }
 
 const ArticleView = ({ article, onBack, onNavigate }: ArticleViewProps) => {
-  const navigate = useNavigate();
   const related = getRelatedArticles(article);
 
   return (
