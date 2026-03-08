@@ -343,8 +343,8 @@ const Onboarding = () => {
 
   // Skip menstrual step for men
   const skipMenstrual = isMale;
-  // Steps: 0=gender, 1=hair, 2=styles, 3=cycle, 4=baseline, 5=photos, 6=products, 7=menstrual (maybe skip), 8=goals
-  const totalSteps = skipMenstrual ? 8 : 9;
+  // Steps: 0=gender, 1=hair, 2=styles, 3=cycle, 4=baseline, 5=baseline response, 6=photos, 7=products, 8=menstrual (maybe skip), 9=goals
+  const totalSteps = skipMenstrual ? 9 : 10;
 
   const baselineAreas = [
     { id: 'hairline', label: 'Hairline — temples and edges', desc: 'Front-facing', optional: false },
@@ -375,10 +375,22 @@ const Onboarding = () => {
       setBaselineAck(null);
       if (baselineStep < baselineQuestions.length - 1) {
         setBaselineStep(prev => prev + 1);
+      } else {
+        // Last baseline question answered — advance to baseline response step
+        const bItch = baselineAnswers.itch || '';
+        const bTenderness = baselineAnswers.tenderness || '';
+        const bHairline = baselineAnswers.hairline || '';
+        const bHairHealth = baselineAnswers.hairHealth || '';
+        const risk = computeBaselineRisk(bItch, bTenderness, bHairline, bHairHealth);
+        const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+        setBaselineRisk(risk);
+        setBaselineDate(today);
+        setBaselineResultScreen(risk);
+        setStep(5);
       }
     }, 1200);
     return () => clearTimeout(timer);
-  }, [baselineAck, baselineStep]);
+  }, [baselineAck, baselineStep, baselineAnswers]);
 
   const selectBaselineAnswer = (key: string, val: string, optIndex: number) => {
     setBaselineAnswers(prev => ({ ...prev, [key]: val }));
@@ -392,8 +404,7 @@ const Onboarding = () => {
   // Map actual step to logical step (accounting for menstrual skip)
   const getLogicalStep = (s: number) => {
     if (!skipMenstrual) return s;
-    // For men: 0-6 are same, 7 becomes goals (was 8)
-    if (s >= 7) return s + 1; // shift to skip menstrual
+    if (s >= 8) return s + 1; // shift to skip menstrual
     return s;
   };
 
@@ -414,43 +425,29 @@ const Onboarding = () => {
         return cycleOk && washOk && betweenOk;
       }
       case 4: return allBaselineAnswered;
-      case 5: return true;
-      case 6: {
+      case 5: return true; // baseline response — always can proceed
+      case 6: return true; // photos — always can proceed
+      case 7: {
         const scalpNone = products.length === 1 && products[0] === 'None';
         const hairNone = hairProds.length === 1 && hairProds[0] === 'None';
         const scalpOk = scalpNone || (products.length > 0 && !!prodFreq);
         const hairOk = hairNone || (hairProds.length > 0 && !!hairProdFreq);
         return scalpOk && hairOk;
       }
-      case 7: {
+      case 8: {
         if (skipMenstrual) return goals.length > 0; // This is goals step for men
         return !!menstrualTracking && (menstrualTracking !== "Yes, I'd like to track" || (!!menstrualCycleLength && !!hormonalContraception));
       }
-      case 8: return goals.length > 0;
+      case 9: return goals.length > 0;
       default: return false;
     }
   };
 
-  const isLastStep = skipMenstrual ? step === 7 : step === 8;
+  const isLastStep = skipMenstrual ? step === 8 : step === 9;
 
   const handleNext = () => {
     if (!isLastStep) {
-      if (step === 4 && !baselineResultScreen) {
-        const itch = baselineAnswers.itch || '';
-        const tenderness = baselineAnswers.tenderness || '';
-        const hairline = baselineAnswers.hairline || '';
-        const hairHealth = baselineAnswers.hairHealth || '';
-        const risk = computeBaselineRisk(itch, tenderness, hairline, hairHealth);
-        const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
-        setBaselineRisk(risk);
-        setBaselineDate(today);
-        setBaselineResultScreen(risk);
-        return;
-      }
-      if (step === 4 && baselineResultScreen) {
-        setBaselineResultScreen(null);
-      }
-      if (step === 5) {
+      if (step === 6) {
         const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
         const photos = baselineAreas.filter(a => capturedPhotos[a.id]).map(a => ({ area: a.label, captured: true, date: today }));
         setBaselinePhotos(photos);
@@ -485,11 +482,13 @@ const Onboarding = () => {
   };
 
   const handleBack = () => {
-    if (step === 4 && baselineResultScreen) {
+    if (step === 5) {
+      // Going back from baseline response to baseline questions
       setBaselineResultScreen(null);
+      setStep(4);
       return;
     }
-    if (step === 4 && baselineStep > 0 && !baselineResultScreen) {
+    if (step === 4 && baselineStep > 0) {
       setBaselineStep(prev => prev - 1);
       return;
     }
@@ -705,7 +704,7 @@ const Onboarding = () => {
             )}
 
             {/* Step 4: Baseline — conversational step-through */}
-            {step === 4 && !baselineResultScreen && (
+            {step === 4 && (
               <div>
                 {baselineAck ? (
                   <motion.div
@@ -755,21 +754,22 @@ const Onboarding = () => {
               </div>
             )}
 
-            {step === 4 && baselineResultScreen === 'green' && (
+            {/* Step 5: Baseline Response — dedicated full page */}
+            {step === 5 && baselineResultScreen === 'green' && (
               <div>
-                <div className="flex justify-center mb-6">
+                <div className="flex justify-center mb-6 pt-8">
                   <motion.div initial={{ scale: 0.8 }} animate={{ scale: 1 }} transition={{ duration: 0.5, ease: 'easeOut' }} className="w-20 h-20 rounded-full bg-primary/15 flex items-center justify-center">
                     <Check size={32} className="text-primary" strokeWidth={1.8} />
                   </motion.div>
                 </div>
                 <h2 className="text-xl font-semibold text-foreground text-center mb-3">Everything looks good</h2>
-                <p className="text-muted-foreground text-center mb-6 leading-relaxed">Your scalp and hair seem to be in a healthy place. We'll use this as your baseline and track how things change over time.</p>
+                <p className="text-muted-foreground text-center mb-8 leading-relaxed">Your scalp and hair seem to be in a healthy place right now. We'll use this as your baseline and track how things change over time.</p>
               </div>
             )}
 
-            {step === 4 && baselineResultScreen === 'amber' && (
+            {step === 5 && baselineResultScreen === 'amber' && (
               <div>
-                <div className="flex justify-center mb-6">
+                <div className="flex justify-center mb-6 pt-8">
                   <motion.div initial={{ scale: 0.8 }} animate={{ scale: 1 }} transition={{ duration: 0.5, ease: 'easeOut' }} className="w-20 h-20 rounded-full bg-warning/15 flex items-center justify-center">
                     <Eye size={32} className="text-warning" strokeWidth={1.8} />
                   </motion.div>
@@ -778,7 +778,7 @@ const Onboarding = () => {
                 <p className="text-muted-foreground text-center mb-6 leading-relaxed">
                   You've flagged a few things we'll want to keep an eye on. We've noted {getBaselineModerateSymptoms(itch, tenderness, hairline, baselineAnswers.hairHealth || '').join(', ')} as your starting point. As you check in over the coming weeks, we'll track whether these improve, stay the same, or need attention.
                 </p>
-                <div className="card-elevated p-5 mb-6">
+                <div className="card-elevated p-5 mb-8">
                   <div className="flex items-start gap-3">
                     <div className="w-8 h-8 rounded-full bg-warning/15 flex items-center justify-center flex-shrink-0 mt-0.5">
                       <Sparkles size={16} className="text-warning" strokeWidth={1.8} />
@@ -789,9 +789,9 @@ const Onboarding = () => {
               </div>
             )}
 
-            {step === 4 && baselineResultScreen === 'red' && (
+            {step === 5 && baselineResultScreen === 'red' && (
               <div>
-                <div className="flex justify-center mb-6">
+                <div className="flex justify-center mb-6 pt-8">
                   <motion.div initial={{ scale: 0.8 }} animate={{ scale: 1 }} transition={{ duration: 0.5, ease: 'easeOut' }} className="w-20 h-20 rounded-full bg-destructive/15 flex items-center justify-center">
                     <Stethoscope size={32} className="text-destructive" strokeWidth={1.8} />
                   </motion.div>
@@ -831,8 +831,8 @@ const Onboarding = () => {
               </div>
             )}
 
-            {/* Step 5: Baseline photos */}
-            {step === 5 && (
+            {/* Step 6: Baseline photos */}
+            {step === 6 && (
               <div>
                 <h2 className="text-lg font-medium text-foreground mb-2">Capture your starting point</h2>
                 <p className="text-muted-foreground mb-6">A baseline photo helps you spot gradual changes that are hard to notice day to day</p>
@@ -859,8 +859,8 @@ const Onboarding = () => {
               </div>
             )}
 
-            {/* Step 6: Products */}
-            {step === 6 && (
+            {/* Step 7: Products */}
+            {step === 7 && (
               <div>
                 <h2 className="text-lg font-medium text-foreground mb-2">What do you put on your scalp?</h2>
                 <p className="text-sm text-muted-foreground mb-4">Start typing a product or brand name</p>
@@ -892,8 +892,8 @@ const Onboarding = () => {
               </div>
             )}
 
-            {/* Step 7: Menstrual cycle (skipped for men) */}
-            {step === 7 && !skipMenstrual && (
+            {/* Step 8: Menstrual cycle (skipped for men) */}
+            {step === 8 && !skipMenstrual && (
               <div>
                 <h2 className="text-lg font-medium text-foreground mb-2">
                   {isNeutral ? 'Do you want to track your hormonal cycle?' : 'Do you want to link your menstrual cycle?'}
@@ -961,8 +961,8 @@ const Onboarding = () => {
               </div>
             )}
 
-            {/* Goals step: step 7 for men, step 8 for others */}
-            {((skipMenstrual && step === 7) || (!skipMenstrual && step === 8)) && (
+            {/* Goals step: step 8 for men, step 9 for others */}
+            {((skipMenstrual && step === 8) || (!skipMenstrual && step === 9)) && (
               <div>
                 <h2 className="text-lg font-medium text-foreground mb-2">What matters most to you right now?</h2>
                 <p className="text-muted-foreground mb-6">Pick up to 3 — this helps us focus your experience</p>
@@ -989,17 +989,11 @@ const Onboarding = () => {
         </AnimatePresence>
 
         <div className="pb-8">
-          {step === 4 && baselineResultScreen ? (
+          {step === 4 && baselineAck ? null : step === 4 ? null : step === 5 ? (
             <button onClick={handleNext} className="w-full h-14 rounded-xl font-semibold text-base btn-press transition-colors bg-primary text-primary-foreground">
               {baselineResultScreen === 'red' ? 'Continue setup' : 'Continue'}
             </button>
-          ) : step === 4 && !baselineResultScreen && !baselineAck ? (
-            allBaselineAnswered && baselineStep === baselineQuestions.length - 1 ? (
-              <button onClick={handleNext} className="w-full h-14 rounded-xl font-semibold text-base btn-press transition-colors bg-primary text-primary-foreground">
-                Continue
-              </button>
-            ) : null
-          ) : step === 5 ? (
+          ) : step === 6 ? (
             <div className="space-y-3">
               <button onClick={handleNext} className="w-full h-14 rounded-xl font-semibold text-base btn-press transition-colors bg-primary text-primary-foreground">
                 {Object.values(capturedPhotos).some(Boolean) ? 'Continue' : 'Skip for now'}
@@ -1008,7 +1002,7 @@ const Onboarding = () => {
                 <p className="text-xs text-center text-muted-foreground">You can always add baseline photos later from your Profile.</p>
               )}
             </div>
-          ) : step === 4 && baselineAck ? null : (
+          ) : (
             <button
               onClick={handleNext}
               disabled={!canProceed()}
