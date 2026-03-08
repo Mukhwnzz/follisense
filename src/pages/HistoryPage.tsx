@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronDown, Minus, ArrowUp, Scissors, Eye, AlertTriangle } from 'lucide-react';
+import { ChevronDown, Minus, ArrowUp, Scissors, Eye, AlertTriangle, MapPin } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 
 const HistoryPage = () => {
@@ -15,21 +15,6 @@ const HistoryPage = () => {
     { label: 'Hair condition', status: 'Stable', icon: Minus, color: 'text-primary' },
   ];
 
-  // Build unified timeline
-  type TimelineEntry = {
-    id: string;
-    type: 'cycle' | 'salon' | 'stylist' | 'quicklog';
-    date: string;
-    data: any;
-  };
-
-  const entries: TimelineEntry[] = [
-    ...[...history].reverse().map(e => ({ id: e.id, type: 'cycle' as const, date: e.endDate, data: e })),
-    ...stylistObservations.map(o => ({ id: o.id, type: 'stylist' as const, date: o.date, data: o })),
-    ...salonVisits.map(v => ({ id: v.id, type: 'salon' as const, date: v.date, data: v })),
-    ...quickLogs.map(q => ({ id: q.id, type: 'quicklog' as const, date: q.date, data: q })),
-  ];
-
   return (
     <div className="page-container pt-6">
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
@@ -42,22 +27,14 @@ const HistoryPage = () => {
             {/* Cycle entries */}
             {[...history].reverse().map(entry => (
               <div key={entry.id} className="relative pl-10">
-                <div className={`absolute left-[9px] top-5 w-3 h-3 rounded-full border-2 border-card ${
-                  entry.risk === 'green' ? 'bg-primary' : entry.risk === 'amber' ? 'bg-warning' : 'bg-destructive'
-                }`} />
-                <button
-                  onClick={() => setExpanded(expanded === entry.id ? null : entry.id)}
-                  className="card-elevated p-4 w-full text-left"
-                >
+                <div className={`absolute left-[9px] top-5 w-3 h-3 rounded-full border-2 border-card ${entry.risk === 'green' ? 'bg-primary' : entry.risk === 'amber' ? 'bg-warning' : 'bg-destructive'}`} />
+                <button onClick={() => setExpanded(expanded === entry.id ? null : entry.id)} className="card-elevated p-4 w-full text-left">
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="font-medium text-foreground">{entry.style}</p>
                       <p className="text-xs text-muted-foreground">{entry.startDate} – {entry.endDate} · {entry.days} days</p>
                     </div>
-                    <ChevronDown
-                      size={18}
-                      className={`text-muted-foreground transition-transform ${expanded === entry.id ? 'rotate-180' : ''}`}
-                    />
+                    <ChevronDown size={18} className={`text-muted-foreground transition-transform ${expanded === entry.id ? 'rotate-180' : ''}`} />
                   </div>
                   <AnimatePresence>
                     {expanded === entry.id && entry.checkIn && (
@@ -102,19 +79,14 @@ const HistoryPage = () => {
             {/* Stylist observation entries */}
             {stylistObservations.map(obs => (
               <div key={obs.id} className="relative pl-10">
-                <div className={`absolute left-[9px] top-5 w-3 h-3 rounded-full border-2 border-card ${
-                  obs.risk === 'green' ? 'bg-primary' : obs.risk === 'amber' ? 'bg-warning' : 'bg-destructive'
-                }`} />
-                <button
-                  onClick={() => setExpanded(expanded === obs.id ? null : obs.id)}
-                  className="card-elevated p-4 w-full text-left border-l-4 border-l-warning"
-                >
+                <div className={`absolute left-[9px] top-5 w-3 h-3 rounded-full border-2 border-card ${obs.risk === 'green' ? 'bg-primary' : obs.risk === 'amber' ? 'bg-warning' : 'bg-destructive'}`} />
+                <button onClick={() => setExpanded(expanded === obs.id ? null : obs.id)} className="card-elevated p-4 w-full text-left border-l-4 border-l-warning">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <Eye size={16} className="text-warning flex-shrink-0" strokeWidth={1.5} />
                       <div>
-                        <p className="font-medium text-foreground">Stylist observation — {obs.date}</p>
-                        <p className="text-xs text-muted-foreground">by {obs.stylistName}</p>
+                        <p className="font-medium text-foreground text-sm">Stylist observation by {obs.stylistName}{obs.location ? ` at ${obs.location}` : ''}</p>
+                        <p className="text-xs text-muted-foreground">{obs.date}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
@@ -127,11 +99,17 @@ const HistoryPage = () => {
                       <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }} className="overflow-hidden">
                         <div className="pt-3 mt-3 border-t border-border space-y-2">
                           <div>
-                            <p className="text-xs text-muted-foreground">Flagged concerns</p>
+                            <p className="text-xs text-muted-foreground">What was observed</p>
                             <ul className="mt-1 space-y-0.5">
                               {obs.observations.map(o => (<li key={o} className="text-sm text-foreground">• {o}</li>))}
                             </ul>
                           </div>
+                          {obs.comparison && (
+                            <div>
+                              <p className="text-xs text-muted-foreground">Compared to last visit</p>
+                              <p className="text-sm text-foreground">Your stylist noted things are {obs.comparison.toLowerCase()}</p>
+                            </div>
+                          )}
                           {obs.notes && (
                             <div>
                               <p className="text-xs text-muted-foreground">Stylist notes</p>
@@ -150,10 +128,7 @@ const HistoryPage = () => {
             {salonVisits.map(visit => (
               <div key={visit.id} className="relative pl-10">
                 <div className="absolute left-[9px] top-5 w-3 h-3 rounded-full border-2 border-card bg-secondary" />
-                <button
-                  onClick={() => setExpanded(expanded === visit.id ? null : visit.id)}
-                  className="card-elevated p-4 w-full text-left border-l-4 border-l-secondary"
-                >
+                <button onClick={() => setExpanded(expanded === visit.id ? null : visit.id)} className="card-elevated p-4 w-full text-left border-l-4 border-l-secondary">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <Scissors size={16} className="text-muted-foreground flex-shrink-0" strokeWidth={1.5} />
