@@ -10,11 +10,11 @@ import { format } from 'date-fns';
 import ProductSearch from '@/components/ProductSearch';
 
 const hairTypes = [
-  { id: '3b', label: '3b', desc: 'Loose, springy curls' },
-  { id: '3c', label: '3c', desc: 'Tight, corkscrew curls' },
-  { id: '4a', label: '4a', desc: 'Dense, S-shaped coils' },
-  { id: '4b', label: '4b', desc: 'Z-shaped, tightly coiled' },
   { id: '4c', label: '4c', desc: 'Very tight, densely packed coils' },
+  { id: '4b', label: '4b', desc: 'Z-shaped, tightly coiled' },
+  { id: '4a', label: '4a', desc: 'Dense, S-shaped coils' },
+  { id: '3c', label: '3c', desc: 'Tight, corkscrew curls' },
+  { id: '3b', label: '3b', desc: 'Loose, springy curls' },
   { id: 'unsure', label: 'Not sure', desc: "That's okay — lots of us have a mix of patterns" },
 ];
 
