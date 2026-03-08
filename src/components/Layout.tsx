@@ -1,10 +1,10 @@
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Home, Clock, BookOpen, User, Users, MessageCircle } from 'lucide-react';
+import { Home, Clock, BookOpen, User, Users } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
+import FloatingChat from '@/components/FloatingChat';
 
 const consumerTabs = [
   { path: '/home', icon: Home, label: 'Home' },
-  { path: '/chat', icon: MessageCircle, label: 'Chat' },
   { path: '/history', icon: Clock, label: 'History' },
   { path: '/learn', icon: BookOpen, label: 'Learn' },
   { path: '/profile', icon: User, label: 'Profile' },
@@ -22,8 +22,8 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
   const navigate = useNavigate();
   const { stylistMode } = useApp();
 
-  const hiddenNavPaths = ['/', '/signup', '/login', '/onboarding', '/mid-cycle', '/wash-day', '/results', '/clinician-summary', '/stylist/observation', '/stylist/quiz', '/find-specialist'];
-  const showNav = !hiddenNavPaths.some(p => location.pathname === p);
+  const hiddenNavPaths = ['/', '/signup', '/login', '/onboarding', '/mid-cycle', '/wash-day', '/results', '/clinician-summary', '/stylist/observation', '/stylist/quiz', '/find-specialist', '/forgot-password'];
+  const showNav = !hiddenNavPaths.some(p => location.pathname === p) && !location.pathname.startsWith('/onboarding/');
 
   const tabs = stylistMode ? stylistTabs : consumerTabs;
 
@@ -54,6 +54,8 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
             </div>
           </nav>
         )}
+        {/* Floating chat for consumer mode only */}
+        {!stylistMode && <FloatingChat />}
       </div>
     </div>
   );

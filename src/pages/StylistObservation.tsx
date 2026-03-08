@@ -198,8 +198,8 @@ const StylistObservation = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="max-w-[430px] mx-auto px-6">
+    <div className="min-h-screen bg-background flex flex-col">
+      <div className="max-w-[430px] mx-auto px-6 flex-1 flex flex-col">
         {/* Top bar */}
         <div className="flex items-center justify-between py-4">
           <button onClick={() => step > 1 ? setStep(step - 1) : setShowConfirm(true)} className="p-2 -ml-2">
@@ -215,6 +215,7 @@ const StylistObservation = () => {
           </button>
         </div>
 
+        <div className="flex-1 overflow-y-auto min-h-0">
         <AnimatePresence mode="wait">
           <motion.div key={step} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.2 }} className="pt-2 pb-8">
 
@@ -482,10 +483,11 @@ const StylistObservation = () => {
             )}
           </motion.div>
         </AnimatePresence>
+        </div>
 
-        {/* Next button for steps 1-6 */}
+        {/* Next button for steps 1-6 (sticky) */}
         {step < 7 && (
-          <div className="pb-8">
+          <div className="flex-shrink-0 py-4">
             <button
               onClick={() => setStep(step + 1)}
               disabled={!canProceed()}

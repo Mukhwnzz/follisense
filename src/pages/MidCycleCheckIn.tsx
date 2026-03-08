@@ -106,54 +106,56 @@ const MidCycleCheckIn = () => {
           </button>
         </div>
 
-        <AnimatePresence mode="wait">
-          {acknowledgment ? (
-            <motion.div
-              key="ack"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              className="pt-16 text-center"
-            >
-              <p className="text-lg font-medium text-foreground">{acknowledgment}</p>
-            </motion.div>
-          ) : (
-            <motion.div
-              key={currentStep}
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.2 }}
-              className="pt-4"
-            >
-              <p className="text-label mb-2">Day 14 of your braids cycle</p>
-              <h2 className="text-xl font-semibold mb-6">{currentQ.q}</h2>
+        <div className="flex-1 overflow-y-auto min-h-0">
+          <AnimatePresence mode="wait">
+            {acknowledgment ? (
+              <motion.div
+                key="ack"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="pt-16 text-center"
+              >
+                <p className="text-lg font-medium text-foreground">{acknowledgment}</p>
+              </motion.div>
+            ) : (
+              <motion.div
+                key={currentStep}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.2 }}
+                className="pt-4 pb-8"
+              >
+                <p className="text-label mb-2">Day 14 of your braids cycle</p>
+                <h2 className="text-xl font-semibold mb-6">{currentQ.q}</h2>
 
-              <div className="space-y-3">
-                {currentQ.options.map((opt, optIdx) => (
-                  <button
-                    key={opt}
-                    onClick={() => selectAnswer(opt, optIdx)}
-                    className={`selection-card w-full text-left ${answers[currentQ.key] === opt ? 'selected' : ''}`}
-                  >
-                    <p className="font-medium text-foreground">{opt}</p>
-                  </button>
-                ))}
-              </div>
-
-              {isLastStep && allAnswered && !acknowledgment && (
-                <div className="pt-8">
-                  <button
-                    onClick={handleSubmit}
-                    className="w-full h-14 rounded-xl font-semibold text-base btn-press bg-primary text-primary-foreground"
-                  >
-                    See results
-                  </button>
+                <div className="space-y-3">
+                  {currentQ.options.map((opt, optIdx) => (
+                    <button
+                      key={opt}
+                      onClick={() => selectAnswer(opt, optIdx)}
+                      className={`selection-card w-full text-left ${answers[currentQ.key] === opt ? 'selected' : ''}`}
+                    >
+                      <p className="font-medium text-foreground">{opt}</p>
+                    </button>
+                  ))}
                 </div>
-              )}
-            </motion.div>
-          )}
-        </AnimatePresence>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {isLastStep && allAnswered && !acknowledgment && (
+          <div className="flex-shrink-0 py-4">
+            <button
+              onClick={handleSubmit}
+              className="w-full h-14 rounded-xl font-semibold text-base btn-press bg-primary text-primary-foreground"
+            >
+              See results
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Confirm exit modal */}

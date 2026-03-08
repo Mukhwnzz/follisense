@@ -87,10 +87,36 @@ const HomePage = () => {
   const [stylistName, setStylistName] = useState('');
   const [visitNotes, setVisitNotes] = useState('');
   const [dismissedWashPrompt, setDismissedWashPrompt] = useState(false);
-  const [dismissedCheckInModal, setDismissedCheckInModal] = useState(false);
-  const [showCheckInModal, setShowCheckInModal] = useState(true);
+  // Check-in modal logic: only show on fresh app open (6h+ gap) and not within 24h of dismissal
+  const [dismissedCheckInModal, setDismissedCheckInModal] = useState(() => {
+    const lastDismissed = localStorage.getItem('follisense-checkin-dismissed');
+    if (lastDismissed) {
+      const elapsed = Date.now() - parseInt(lastDismissed, 10);
+      if (elapsed < 24 * 60 * 60 * 1000) return true; // within 24h
+    }
+    const lastHomeVisit = localStorage.getItem('follisense-last-home-visit');
+    if (lastHomeVisit) {
+      const elapsed = Date.now() - parseInt(lastHomeVisit, 10);
+      if (elapsed < 6 * 60 * 60 * 1000) return true; // within 6h = just tab switching
+    }
+    const justOnboarded = sessionStorage.getItem('follisense-just-onboarded');
+    if (justOnboarded === 'true') return true;
+    return false;
+  });
+  const [showCheckInModal] = useState(!dismissedCheckInModal);
   const [showHealthNudge, setShowHealthNudge] = useState(false);
   const [dismissedHealthNudge, setDismissedHealthNudge] = useState(false);
+
+  // Track home visit time + clear onboarding flag
+  useEffect(() => {
+    localStorage.setItem('follisense-last-home-visit', String(Date.now()));
+    // Clear the just-onboarded flag after first Home visit
+    const justOnboarded = sessionStorage.getItem('follisense-just-onboarded');
+    if (justOnboarded === 'true') {
+      // Don't clear immediately — clear after navigating away and back
+      return () => { sessionStorage.removeItem('follisense-just-onboarded'); };
+    }
+  }, []);
 
   // Show health profile nudge 2 seconds after first visit
   useEffect(() => {
@@ -150,12 +176,12 @@ const HomePage = () => {
   const showWashPrompt = !onboardingData.isWornOutOnly && daysUntilWash <= 2 && !dismissedWashPrompt;
 
   const recentEntries = [
-    { label: 'Wash day check-in', date: 'Mar 5', risk: 'amber' as const },
-    { label: 'Quick log: itching (moderate)', date: 'Feb 28', risk: 'amber' as const },
-    { label: 'Salon visit: Wash + Treatment', date: 'Feb 25', risk: 'green' as const, icon: 'scissors' },
-    { label: 'Stylist observation', date: 'Feb 25', risk: 'amber' as const, icon: 'eye' },
-    { label: 'Mid-cycle check-in', date: 'Feb 20', risk: 'green' as const },
-    { label: 'Wash day check-in', date: 'Feb 12', risk: 'green' as const },
+    { label: 'Wash day check-in', date: 'Mar 5', risk: 'amber' as const, nav: '/results?risk=amber' },
+    { label: 'Quick log: itching (moderate)', date: 'Feb 28', risk: 'amber' as const, nav: '/history' },
+    { label: 'Salon visit: Wash + Treatment', date: 'Feb 25', risk: 'green' as const, icon: 'scissors', nav: '/history' },
+    { label: 'Stylist observation', date: 'Feb 25', risk: 'amber' as const, icon: 'eye', nav: '/history' },
+    { label: 'Mid-cycle check-in', date: 'Feb 20', risk: 'green' as const, nav: '/results?risk=green' },
+    { label: 'Wash day check-in', date: 'Feb 12', risk: 'green' as const, nav: '/results?risk=green' },
   ];
 
   const size = 120;
@@ -166,6 +192,11 @@ const HomePage = () => {
 
   const toggleService = (s: string) => setServices(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s]);
   const toggleQuickSymptom = (s: string) => setQuickSymptoms(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s]);
+
+  const dismissCheckIn = () => {
+    setDismissedCheckInModal(true);
+    localStorage.setItem('follisense-checkin-dismissed', String(Date.now()));
+  };
 
   const handleSaveSalon = () => {
     addSalonVisit({ id: `sv-${Date.now()}`, date: format(visitDate, 'MMM d'), services, stylistName: stylistName || undefined, notes: visitNotes || undefined });
@@ -427,16 +458,16 @@ const HomePage = () => {
           <h3 className="font-semibold text-foreground mb-3">Recent</h3>
           <div className="space-y-2">
             {recentEntries.map((entry, i) => (
-              <div key={i} className="card-elevated p-4 flex items-center justify-between">
+              <button key={i} onClick={() => navigate(entry.nav)} className="card-elevated p-4 w-full flex items-center justify-between btn-press">
                 <div className="flex items-center gap-3">
                   <span className={`status-dot ${entry.risk}`} />
-                  <div>
+                  <div className="text-left">
                     <p className="text-sm font-medium text-foreground">{entry.label}</p>
                     <p className="text-xs text-muted-foreground">{entry.date}</p>
                   </div>
                 </div>
                 <ChevronRight size={18} className="text-muted-foreground" />
-              </div>
+              </button>
             ))}
           </div>
         </div>
@@ -476,13 +507,13 @@ const HomePage = () => {
                     Hey — your braids have been in for 14 days. Quick scalp check? Takes about a minute.
                   </p>
                   <button
-                    onClick={() => { setDismissedCheckInModal(true); navigate('/mid-cycle'); }}
+                    onClick={() => { dismissCheckIn(); navigate('/mid-cycle'); }}
                     className="w-full h-14 bg-primary text-primary-foreground rounded-xl font-semibold text-base btn-press mb-3"
                   >
                     Start check-in
                   </button>
                   <button
-                    onClick={() => setDismissedCheckInModal(true)}
+                    onClick={dismissCheckIn}
                     className="w-full text-center text-sm text-muted-foreground py-2"
                   >
                     Remind me later
@@ -494,13 +525,13 @@ const HomePage = () => {
                     It's been 2 weeks — ready for a quick scalp check? Takes about 2 minutes.
                   </p>
                   <button
-                    onClick={() => { setDismissedCheckInModal(true); navigate('/wash-day?mode=regular'); }}
+                    onClick={() => { dismissCheckIn(); navigate('/wash-day?mode=regular'); }}
                     className="w-full h-14 bg-primary text-primary-foreground rounded-xl font-semibold text-base btn-press mb-3"
                   >
                     Start check-in
                   </button>
                   <button
-                    onClick={() => setDismissedCheckInModal(true)}
+                    onClick={dismissCheckIn}
                     className="w-full text-center text-sm text-muted-foreground py-2"
                   >
                     Remind me later
