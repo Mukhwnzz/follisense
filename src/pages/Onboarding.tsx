@@ -129,9 +129,9 @@ const getMicroEducation = (step: number, data: {
 
 // ── Skippable steps ────────────────────────────────────────────────────────────
 const isSkippableStep = (step: number, skipMenstrual: boolean): boolean => {
-  // Products (step 6), menstrual (step 7 for non-male)
-  if (step === 6) return true; // products
-  if (step === 7 && !skipMenstrual) return true; // menstrual
+  // Products (step 7), menstrual (step 8 for non-male)
+  if (step === 7) return true; // products
+  if (step === 8 && !skipMenstrual) return true; // menstrual
   return false;
 };
 
