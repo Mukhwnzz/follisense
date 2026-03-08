@@ -744,7 +744,14 @@ const Onboarding = () => {
         </AnimatePresence>
 
         <div className="pb-8">
-          {step === 5 ? (
+          {step === 4 && baselineResultScreen ? (
+            <button
+              onClick={handleNext}
+              className="w-full h-14 rounded-xl font-semibold text-base btn-press transition-colors bg-primary text-primary-foreground"
+            >
+              Continue setup
+            </button>
+          ) : step === 5 ? (
             <div className="space-y-3">
               <button
                 onClick={handleNext}
@@ -764,7 +771,7 @@ const Onboarding = () => {
                 canProceed() ? 'bg-primary text-primary-foreground' : 'bg-border text-muted-foreground cursor-not-allowed'
               }`}
             >
-              {step === totalSteps ? 'Set up my cycle' : 'Next'}
+              {step === totalSteps ? 'Set up my cycle' : step === 4 ? 'Set up my cycle' : 'Next'}
             </button>
           )}
         </div>
