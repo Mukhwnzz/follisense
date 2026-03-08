@@ -9,12 +9,11 @@ const StylistSignUpPage = () => {
   const navigate = useNavigate();
   const { setUserName, setStylistMode } = useApp();
   const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
-  const canSubmit = firstName.trim().length > 0 && lastName.trim().length > 0 && email.trim().length > 0 && password.length >= 6;
+  const canSubmit = firstName.trim().length > 0 && email.trim().length > 0 && password.length >= 6;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,7 +37,8 @@ const StylistSignUpPage = () => {
           <span className="text-[10px] font-medium bg-secondary text-foreground px-2 py-0.5 rounded-full">Stylist</span>
         </div>
 
-        <h1 className="text-2xl font-semibold text-foreground text-center mb-8">Create your stylist account</h1>
+        <h1 className="text-2xl font-semibold text-foreground text-center mb-1">Join FolliSense as a stylist</h1>
+        <p className="text-sm text-muted-foreground text-center mb-8">Help your clients stay on top of their scalp health</p>
 
         <form onSubmit={handleSubmit} className="space-y-4 mb-6">
           <div>
@@ -50,17 +50,6 @@ const StylistSignUpPage = () => {
               placeholder="Your first name"
               className="w-full h-12 px-4 rounded-xl border-2 border-border bg-card text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors"
               autoFocus
-            />
-          </div>
-
-          <div>
-            <label className="text-sm font-medium text-foreground mb-1.5 block">Last name</label>
-            <input
-              type="text"
-              value={lastName}
-              onChange={e => setLastName(e.target.value)}
-              placeholder="Your last name"
-              className="w-full h-12 px-4 rounded-xl border-2 border-border bg-card text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors"
             />
           </div>
 
@@ -128,11 +117,13 @@ const StylistSignUpPage = () => {
           </button>
         </div>
 
-        <p className="text-center text-sm text-muted-foreground">
+        <p className="text-center text-sm text-muted-foreground mb-3">
           Already have a stylist account?{' '}
-          <button onClick={() => navigate('/stylist/login')} className="text-primary font-medium">
-            Log in
-          </button>
+          <button onClick={() => navigate('/stylist/login')} className="text-primary font-medium">Log in</button>
+        </p>
+        <p className="text-center text-xs text-muted-foreground">
+          Looking for the personal app?{' '}
+          <button onClick={() => navigate('/signup')} className="text-primary font-medium">Sign up here</button>
         </p>
       </motion.div>
     </div>

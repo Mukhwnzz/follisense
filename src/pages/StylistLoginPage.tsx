@@ -31,13 +31,14 @@ const StylistLoginPage = () => {
         transition={{ duration: 0.4 }}
         className="max-w-[430px] w-full"
       >
-        <div className="flex items-center justify-center gap-2 mb-8">
+        <div className="flex items-center justify-center gap-2 mb-2">
           <Leaf size={24} className="text-primary" strokeWidth={1.8} />
           <span className="text-xl font-semibold text-foreground">FolliSense</span>
           <span className="text-[10px] font-medium bg-secondary text-foreground px-2 py-0.5 rounded-full">Stylist</span>
         </div>
 
-        <h1 className="text-2xl font-semibold text-foreground text-center mb-8">Welcome back</h1>
+        <h1 className="text-2xl font-semibold text-foreground text-center mb-1">Welcome back</h1>
+        <p className="text-sm text-muted-foreground text-center mb-8">Log in to your stylist account</p>
 
         <form onSubmit={handleSubmit} className="space-y-4 mb-6">
           <div>
@@ -55,13 +56,7 @@ const StylistLoginPage = () => {
           <div>
             <div className="flex items-center justify-between mb-1.5">
               <label className="text-sm font-medium text-foreground">Password</label>
-              <button
-                type="button"
-                onClick={() => navigate('/forgot-password')}
-                className="text-xs text-primary font-medium"
-              >
-                Forgot password?
-              </button>
+              <button type="button" onClick={() => navigate('/forgot-password')} className="text-xs text-primary font-medium">Forgot password?</button>
             </div>
             <div className="relative">
               <input
@@ -71,11 +66,7 @@ const StylistLoginPage = () => {
                 placeholder="Enter your password"
                 className="w-full h-12 px-4 pr-12 rounded-xl border-2 border-border bg-card text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors"
               />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-muted-foreground"
-              >
+              <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-muted-foreground">
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
@@ -125,15 +116,11 @@ const StylistLoginPage = () => {
 
         <p className="text-center text-sm text-muted-foreground mb-3">
           Don't have a stylist account?{' '}
-          <button onClick={() => navigate('/stylist/signup')} className="text-primary font-medium">
-            Sign up
-          </button>
+          <button onClick={() => navigate('/stylist/signup')} className="text-primary font-medium">Sign up</button>
         </p>
         <p className="text-center text-xs text-muted-foreground">
           Looking for the personal app?{' '}
-          <button onClick={() => navigate('/login')} className="text-primary font-medium">
-            Log in here
-          </button>
+          <button onClick={() => navigate('/login')} className="text-primary font-medium">Log in here</button>
         </p>
       </motion.div>
     </div>
