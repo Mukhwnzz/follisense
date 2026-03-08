@@ -33,6 +33,7 @@ export const stylistConditions: StylistCondition[] = [
     whatToTell: '"I\'ve noticed some thinning around your temples. It might be worth getting that checked by a trichologist or dermatologist, especially if it\'s been getting worse. Catching it early makes a big difference."',
     whatYouCanDo: 'Loosen the installation in affected areas. Suggest a break between styles. Don\'t reinstall tightly over an area that\'s already thinning.',
     severityGuide: 'Early (sparse but baby hairs visible) = reversible with intervention. Late (smooth, shiny, no fine hairs) = likely permanent scarring. Refer urgently.',
+    darkerSkinNote: 'On darker skin: Early thinning may be harder to spot visually because the contrast between skin and hair is lower. Feel for it: run your fingertip along the hairline and temples. If the hair density is noticeably thinner or you feel smooth skin where there used to be fine hairs, that\'s your signal. Redness may present as darker patches or slight hyperpigmentation rather than pink or red.',
   },
   {
     id: 'ccca',
