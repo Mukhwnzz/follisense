@@ -15,7 +15,7 @@ const hairTypes = [
   { id: '4a', label: '4a', desc: 'Dense, S-shaped coils' },
   { id: '3c', label: '3c', desc: 'Tight, corkscrew curls' },
   { id: '3b', label: '3b', desc: 'Loose, springy curls' },
-  { id: 'unsure', label: 'Not sure', desc: "That's okay — lots of us have a mix of patterns" },
+  { id: 'unsure', label: 'Not sure', desc: "That's okay, lots of us have a mix of patterns" },
 ];
 
 const chemicalOptionsSimple = [
