@@ -555,7 +555,7 @@ const Onboarding = () => {
         <div className="flex-1 overflow-y-auto min-h-0">
         <AnimatePresence mode="wait">
           <motion.div
-            key={step === 4 ? `4-${baselineStep}-${baselineAck ? 'ack' : 'q'}` : step}
+            key={step === 5 ? `5-${baselineStep}-${baselineAck ? 'ack' : 'q'}` : step}
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
