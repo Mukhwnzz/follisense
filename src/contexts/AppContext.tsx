@@ -37,6 +37,10 @@ export interface OnboardingData {
   hormonalContraception: string;
   // Goals
   goals: string[];
+  hairProducts: string[];
+  otherHairProduct: string;
+  hairProductFrequency: string;
+  scalpProductFrequency: string;
 }
 
 export interface CheckInData {
