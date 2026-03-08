@@ -11,7 +11,7 @@ interface StylistProfile {
 
 const loadStylistProfile = (): StylistProfile | null => {
   try {
-    const saved = localStorage.getItem('scalpsense-stylist-profile');
+    const saved = localStorage.getItem('follisense-stylist-profile');
     if (saved) return JSON.parse(saved);
   } catch {}
   return null;
