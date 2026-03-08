@@ -319,8 +319,8 @@ const HomePage = () => {
           </div>
         )}
 
-        {/* Menstrual cycle indicator */}
-        {cycleDay && (
+        {/* Menstrual cycle indicator — hidden for male users */}
+        {!isMale && cycleDay && (
           <div className="text-xs text-muted-foreground mb-3 px-1">Cycle day {cycleDay}</div>
         )}
 
