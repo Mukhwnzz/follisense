@@ -166,7 +166,33 @@ const ChatPage = () => {
     setIsTyping(true);
 
     setTimeout(() => {
-      const { text: responseText, suggestions } = matchResponse(text);
+      // Build context from previous messages for follow-up awareness
+      const prevMessages = [...messages, userMsg];
+      const lastAssistant = [...prevMessages].reverse().find(m => m.role === 'assistant');
+      const lastUserBefore = prevMessages.filter(m => m.role === 'user').slice(-2, -1)[0];
+      
+      let { text: responseText, suggestions } = matchResponse(text);
+      
+      // If this is a follow-up, reference previous context
+      if (lastAssistant && lastUserBefore) {
+        const prevTopic = lastUserBefore.content.toLowerCase();
+        const currentTopic = text.toLowerCase();
+        const isFollowUp = prevMessages.length >= 3;
+        
+        if (isFollowUp) {
+          // Add contextual prefix referencing what they previously said
+          if (prevTopic.includes('itch') && (currentTopic.includes('worse') || currentTopic.includes('still'))) {
+            responseText = `Since you mentioned itching earlier — if it's persisting or getting worse, that's a signal worth paying attention to.\n\n${responseText}`;
+          } else if (prevTopic.includes('edge') && currentTopic.includes('grow')) {
+            responseText = `Building on what we discussed about your edges — ${responseText}`;
+          } else if (prevTopic.includes('shed') && currentTopic.includes('normal')) {
+            responseText = `Given what you told me about your shedding — ${responseText}`;
+          } else if (isFollowUp && !currentTopic.match(/^(my scalp|i'm worried|how often)/)) {
+            // Generic follow-up awareness
+            responseText = `Good follow-up question. ${responseText}`;
+          }
+        }
+      }
 
       const assistantMsg: Message = {
         id: `assistant-${Date.now()}`,
