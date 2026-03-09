@@ -307,6 +307,7 @@ const Onboarding = () => {
   const [otherStyle, setOtherStyle] = useState('');
   const [protectiveFreq, setProtectiveFreq] = useState('');
   const [wornOutWashFreq, setWornOutWashFreq] = useState('');
+  const [lessOftenDetail, setLessOftenDetail] = useState('');
   const [restyleFreq, setRestyleFreq] = useState('');
   const [cycleLen, setCycleLen] = useState('');
   const [cycleLenMin, setCycleLenMin] = useState('');
