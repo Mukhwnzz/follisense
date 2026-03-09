@@ -798,19 +798,12 @@ const Onboarding = () => {
                   const getLocsPhoto = () => locsPhotos[genderKeyStyle] || null;
                   
                   const renderStyleButton = (s: string) => {
-                    const isLocs = locsStyles.includes(s);
-                    const locsPhoto = isLocs ? getLocsPhoto() : null;
                     return (
                       <button 
                         key={s} 
                         onClick={() => toggleStyle(s)} 
                         className={`selection-card text-center py-4 ${styles.includes(s) ? 'selected' : ''}`}
                       >
-                        {locsPhoto && (
-                          <div className="w-full h-16 rounded-lg overflow-hidden mb-2">
-                            <img src={locsPhoto.src} alt={locsPhoto.label} className="w-full h-full object-cover" />
-                          </div>
-                        )}
                         <p className="font-medium text-foreground text-sm">{s}</p>
                       </button>
                     );
