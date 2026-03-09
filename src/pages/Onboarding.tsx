@@ -352,7 +352,11 @@ const Onboarding = () => {
   const isNeutral = gender === 'prefer-not-to-say';
   const skipMenstrual = isMale;
 
-  const styleOptions = isMale ? maleStyleOptions : isNeutral ? [...new Set([...femaleStyleOptions, ...maleStyleOptions])] : femaleStyleOptions;
+  // Filter styles based on chemical processing — hide natural-only styles for currently processed hair
+  const naturalOnlyStyles = ['Worn out / loose (natural)', 'Wash and go', 'Twist out / braid out'];
+  const isCurrentlyProcessed = chemicalProcessing === 'Yes, currently' && chemicalMultiple.some(c => ['Relaxed or permed', 'Texturised'].includes(c));
+  const rawStyleOptions = isMale ? maleStyleOptions : isNeutral ? [...new Set([...femaleStyleOptions, ...maleStyleOptions])] : femaleStyleOptions;
+  const styleOptions = isCurrentlyProcessed ? rawStyleOptions.filter(s => !naturalOnlyStyles.includes(s)) : rawStyleOptions;
   const wornOutOnlyStyles = isMale ? wornOutOnlyStylesMale : isNeutral ? [...wornOutOnlyStylesFemale, ...wornOutOnlyStylesMale] : wornOutOnlyStylesFemale;
   const currentBetweenWashOptions = isMale ? betweenWashOptionsMale : isNeutral ? [...new Set([...betweenWashOptions, ...betweenWashOptionsMale])] : betweenWashOptions;
   const goalOptions = isMale ? maleGoalOptions : isNeutral ? [...new Set([...femaleGoalOptions, ...maleGoalOptions])] : femaleGoalOptions;
