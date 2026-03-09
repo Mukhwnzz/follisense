@@ -250,7 +250,7 @@ const getMatches = (selected: string[], gender?: string): ConditionMatch[] => {
 
 const SpotIt = () => {
   const navigate = useNavigate();
-  const { addQuickLog } = useApp();
+  const { addQuickLog, onboardingData } = useApp();
   const [step, setStep] = useState(1); // 1: select, 2: photo areas, 3: results
   const [selected, setSelected] = useState<string[]>([]);
 
