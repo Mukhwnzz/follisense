@@ -43,6 +43,12 @@ const symptomOptions = [
     icon: '🎯',
   },
   {
+    id: 'widening-part',
+    label: 'Widening part line',
+    description: 'Your part line is becoming wider or more visible over time',
+    icon: '📏',
+  },
+  {
     id: 'tenderness',
     label: 'Tenderness or soreness',
     description: 'Pain or sensitivity when touching the scalp',
