@@ -1018,9 +1018,17 @@ const Onboarding = () => {
                 <p className="text-muted-foreground mb-6">How often do you wash your hair?</p>
                 <div className="mb-8">
                   <div className="flex flex-wrap gap-2">
-                    {wornOutWashOptions.map(o => (<button key={o} onClick={() => setWornOutWashFreq(o)} className={`pill-option ${wornOutWashFreq === o ? 'selected' : ''}`}>{o}</button>))}
+                    {wornOutWashOptions.map(o => (<button key={o} onClick={() => { setWornOutWashFreq(o); if (o !== 'Less often') setLessOftenDetail(''); }} className={`pill-option ${wornOutWashFreq === o ? 'selected' : ''}`}>{o}</button>))}
                   </div>
                 </div>
+                <SlideIn show={wornOutWashFreq === 'Less often'}>
+                  <div className="mb-8">
+                    <p className="font-medium text-foreground mb-3">How many weeks between washes, roughly?</p>
+                    <div className="flex flex-wrap gap-2">
+                      {lessOftenWashOptions.map(o => (<button key={o} onClick={() => setLessOftenDetail(o)} className={`pill-option ${lessOftenDetail === o ? 'selected' : ''}`}>{o}</button>))}
+                    </div>
+                  </div>
+                </SlideIn>
                 <div>
                   <p className="font-medium text-foreground mb-3">How often do you restyle or manipulate your hair?</p>
                   <div className="flex flex-wrap gap-2">
