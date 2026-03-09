@@ -43,6 +43,12 @@ const symptomOptions = [
     icon: '🎯',
   },
   {
+    id: 'widening-part',
+    label: 'Widening part line',
+    description: 'Your part line is becoming wider or more visible over time',
+    icon: '📏',
+  },
+  {
     id: 'tenderness',
     label: 'Tenderness or soreness',
     description: 'Pain or sensitivity when touching the scalp',
@@ -65,7 +71,10 @@ interface ConditionMatch {
   severity: 'mild' | 'moderate' | 'severe';
 }
 
-const getMatches = (selected: string[]): ConditionMatch[] => {
+const getMatches = (selected: string[], gender?: string): ConditionMatch[] => {
+  const isMale = gender === 'man';
+  const isFemale = gender === 'woman';
+  const isNeutral = !isMale && !isFemale;
   const matches: ConditionMatch[] = [];
 
   if (selected.includes('hairline-thinning')) {
@@ -84,6 +93,36 @@ const getMatches = (selected: string[]): ConditionMatch[] => {
   }
 
   if (selected.includes('crown-thinning')) {
+    // FPHL match for female / neutral users
+    if (isFemale || isNeutral) {
+      matches.push({
+        conditionId: 'fphl',
+        name: 'Female pattern hair loss (FPHL)',
+        likelihood: selected.includes('widening-part') ? 'likely' : 'possible',
+        message: 'Thinning at the crown could be consistent with female pattern hair loss — the most common cause of hair loss in women. Unlike traction alopecia, it\'s hormonal.',
+        selfCareTips: [
+          'See a dermatologist or trichologist for proper diagnosis',
+          'Track changes with photos — especially your part line and crown',
+          'Ask about minoxidil — it\'s the most evidence-based treatment for FPHL',
+        ],
+        severity: 'moderate',
+      });
+    }
+    // MPHL match for male / neutral users
+    if (isMale || isNeutral) {
+      matches.push({
+        conditionId: 'mphl',
+        name: 'Male pattern hair loss (MPHL)',
+        likelihood: selected.includes('hairline-recession') ? 'likely' : 'possible',
+        message: 'Thinning at the crown could be consistent with male pattern hair loss. Tracking changes early helps.',
+        selfCareTips: [
+          'See a dermatologist or trichologist for proper diagnosis',
+          'Track changes with photos to monitor progression',
+          'Ask about evidence-based treatments like minoxidil or finasteride',
+        ],
+        severity: 'moderate',
+      });
+    }
     matches.push({
       conditionId: 'ccca',
       name: 'CCCA (Central Centrifugal Cicatricial Alopecia)',
@@ -98,7 +137,40 @@ const getMatches = (selected: string[]): ConditionMatch[] => {
     });
   }
 
+  // Widening part line — FPHL match
+  if (selected.includes('widening-part') && !selected.includes('crown-thinning')) {
+    if (isFemale || isNeutral) {
+      matches.push({
+        conditionId: 'fphl',
+        name: 'Female pattern hair loss (FPHL)',
+        likelihood: 'possible',
+        message: 'A widening part line is one of the earliest signs of female pattern hair loss. Your frontal hairline is usually preserved while the crown thins.',
+        selfCareTips: [
+          'See a dermatologist or trichologist for proper diagnosis',
+          'Track changes with photos — especially your part line',
+          'Ask about minoxidil — it\'s the most evidence-based treatment for FPHL',
+        ],
+        severity: 'mild',
+      });
+    }
+  }
+
   if (selected.includes('hairline-recession')) {
+    // MPHL match for male / neutral users
+    if (isMale || isNeutral) {
+      matches.push({
+        conditionId: 'mphl',
+        name: 'Male pattern hair loss (MPHL)',
+        likelihood: selected.includes('crown-thinning') ? 'likely' : 'possible',
+        message: 'Gradual recession of your hairline could be consistent with male pattern hair loss — the most common cause of hair loss in men. Early treatment can slow or stop progression.',
+        selfCareTips: [
+          'See a dermatologist or trichologist for proper diagnosis',
+          'Track changes with photos to monitor progression',
+          'Ask about evidence-based treatments like minoxidil or finasteride',
+        ],
+        severity: 'moderate',
+      });
+    }
     matches.push({
       conditionId: 'frontal-fibrosing-alopecia',
       name: 'Frontal fibrosing alopecia (FFA)',
@@ -178,7 +250,7 @@ const getMatches = (selected: string[]): ConditionMatch[] => {
 
 const SpotIt = () => {
   const navigate = useNavigate();
-  const { addQuickLog } = useApp();
+  const { addQuickLog, onboardingData } = useApp();
   const [step, setStep] = useState(1); // 1: select, 2: photo areas, 3: results
   const [selected, setSelected] = useState<string[]>([]);
 
@@ -193,7 +265,7 @@ const SpotIt = () => {
     }
   };
 
-  const matches = getMatches(selected);
+  const matches = getMatches(selected, onboardingData?.gender);
   const nothingSelected = selected.includes('nothing');
 
   const handleSaveAndFinish = () => {
@@ -278,6 +350,8 @@ const SpotIt = () => {
                       { label: 'Hairline thinning', desc: 'Thinning at the temples and edges from tight styles' },
                       { label: 'Hairline recession (FFA)', desc: 'Even, gradual recession of the frontal hairline with smooth skin' },
                       { label: 'Crown thinning', desc: 'Sparse hair at the vertex on textured hair' },
+                      { label: 'Widening part line', desc: 'Part line becoming visibly wider over time on textured hair' },
+                      { label: 'Redness / irritation', desc: 'Pinkish or irritated patches on darker scalp skin' },
                       { label: 'Redness / irritation', desc: 'Pinkish or irritated patches on darker scalp skin' },
                     ].map((photo, i) => (
                       <div key={i} className="flex-shrink-0 w-[160px]">

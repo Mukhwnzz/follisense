@@ -134,7 +134,7 @@ const BaselineResponse = () => {
   };
 
   const handleContinue = () => {
-    navigate('/onboarding?step=5');
+    navigate('/onboarding?step=6');
   };
 
   if (risk === 'green') return (

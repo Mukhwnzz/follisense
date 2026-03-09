@@ -540,12 +540,19 @@ const Onboarding = () => {
         setStep(step + 1);
       }
     } else {
+      // Compute the best wash frequency display value
+      const computedWashFrequency = isMale
+        ? maleWashFreq || maleScalpWashFreq
+        : isWornOutOnly
+          ? wornOutWashFreq + (lessOftenDetail ? ` (${lessOftenDetail})` : '')
+          : washFreqDetail || washFreqBucket;
+
       setOnboardingData({
         gender, hairType, chemicalProcessing, lastChemicalTreatment,
         chemicalProcessingMultiple: chemicalMultiple,
         protectiveStyles: styles, otherStyle, protectiveStyleFrequency: protectiveFreq,
         isWornOutOnly, cycleLength: cycleLen, cycleLengthMin: cycleLenMin, cycleLengthMax: cycleLenMax,
-        washFrequency: washFreq, washFrequencyPerCycle: washFreqPerCycle,
+        washFrequency: computedWashFrequency, washFrequencyPerCycle: washFreqPerCycle,
         betweenWashCare: isMale ? maleBetweenCare : betweenWashCare, otherBetweenWashCare: isMale ? otherMaleBetweenCare : otherBetweenWash,
         wornOutWashFrequency: wornOutWashFreq, restyleFrequency: restyleFreq,
         baselineItch: baselineAnswers.itch || '', baselineTenderness: baselineAnswers.tenderness || '',

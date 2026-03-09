@@ -86,6 +86,7 @@ const HomePage = () => {
   const navigate = useNavigate();
   const { onboardingData, history, salonVisits, addSalonVisit, healthProfile, addQuickLog, research, setResearch, checkInCount, userName } = useApp();
   const [showSalonForm, setShowSalonForm] = useState(false);
+  const [showSalonVisitPicker, setShowSalonVisitPicker] = useState(false);
   const [visitDate, setVisitDate] = useState<Date>(new Date());
   const [services, setServices] = useState<string[]>([]);
   const [stylistName, setStylistName] = useState('');
@@ -450,26 +451,14 @@ const HomePage = () => {
           </motion.div>
         )}
 
-        {/* Salon visit card */}
-        <button onClick={() => setShowSalonForm(true)} className="card-elevated p-4 mb-3 w-full flex items-center gap-3 text-left">
-          <div className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center flex-shrink-0">
-            <Scissors size={20} className="text-foreground" strokeWidth={1.5} />
-          </div>
-          <div className="flex-1">
-            <p className="font-medium text-foreground text-sm">{isMale ? 'Log a salon or barber visit' : 'Log a salon visit'}</p>
-            <p className="text-xs text-muted-foreground">Track appointments and services</p>
-          </div>
-          <ChevronRight size={18} className="text-muted-foreground" />
-        </button>
-
-        {/* Salon Check-in card */}
-        <button onClick={() => navigate('/salon-checkin')} className="card-elevated p-4 mb-4 w-full flex items-center gap-3 text-left border-l-4 border-l-primary">
+        {/* Salon Visit — unified entry with two paths */}
+        <button onClick={() => setShowSalonVisitPicker(true)} className="card-elevated p-4 mb-4 w-full flex items-center gap-3 text-left border-l-4 border-l-primary">
           <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-            <Stethoscope size={20} className="text-primary" strokeWidth={1.5} />
+            <Scissors size={20} className="text-primary" strokeWidth={1.5} />
           </div>
           <div className="flex-1">
-            <p className="font-medium text-foreground text-sm">Salon Check-in</p>
-            <p className="text-xs text-muted-foreground">Let your stylist capture your scalp during an appointment</p>
+            <p className="font-medium text-foreground text-sm">Salon Visit</p>
+            <p className="text-xs text-muted-foreground">Log your visit or let your stylist check in</p>
           </div>
           <ChevronRight size={18} className="text-muted-foreground" />
         </button>
@@ -734,6 +723,47 @@ const HomePage = () => {
                   </div>
                 )}
               </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Salon Visit Picker Modal */}
+      <AnimatePresence>
+        {showSalonVisitPicker && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-foreground/30 z-[55] flex items-center justify-center px-6">
+            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="bg-card rounded-3xl p-6 max-w-sm w-full shadow-card">
+              <div className="flex items-center justify-between mb-5">
+                <h3 className="text-lg font-semibold text-foreground">Salon Visit</h3>
+                <button onClick={() => setShowSalonVisitPicker(false)} className="p-1"><X size={22} className="text-muted-foreground" strokeWidth={1.8} /></button>
+              </div>
+              <p className="text-sm text-muted-foreground mb-5">What would you like to do?</p>
+              <button
+                onClick={() => { setShowSalonVisitPicker(false); setShowSalonForm(true); }}
+                className="w-full card-elevated p-4 mb-3 flex items-center gap-3 text-left"
+              >
+                <div className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center flex-shrink-0">
+                  <Calendar size={20} className="text-foreground" strokeWidth={1.5} />
+                </div>
+                <div className="flex-1">
+                  <p className="font-medium text-foreground text-sm">Log my own visit</p>
+                  <p className="text-xs text-muted-foreground">Record your salon or barber experience</p>
+                </div>
+                <ChevronRight size={16} className="text-muted-foreground" />
+              </button>
+              <button
+                onClick={() => { setShowSalonVisitPicker(false); navigate('/salon-checkin'); }}
+                className="w-full card-elevated p-4 flex items-center gap-3 text-left"
+              >
+                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <Stethoscope size={20} className="text-primary" strokeWidth={1.5} />
+                </div>
+                <div className="flex-1">
+                  <p className="font-medium text-foreground text-sm">Stylist check-in</p>
+                  <p className="text-xs text-muted-foreground">Hand your phone to your stylist for photo capture</p>
+                </div>
+                <ChevronRight size={16} className="text-muted-foreground" />
+              </button>
             </motion.div>
           </motion.div>
         )}

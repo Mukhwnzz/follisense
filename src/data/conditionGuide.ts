@@ -309,6 +309,70 @@ export const consumerConditions: ConsumerCondition[] = [
     externalLinkUrl: 'https://www.bad.org.uk',
     chatPrompts: ['Could I have frontal fibrosing alopecia?', "What's the difference between FFA and traction alopecia?", 'What should I tell my doctor about this?'],
   },
+  {
+    id: 'mphl',
+    name: 'Male pattern hair loss (MPHL)',
+    summary: 'Gradual hair loss following a predictable pattern: receding hairline and thinning at the crown.',
+    whatIsIt: "Male pattern hair loss (androgenetic alopecia in men) is the most common cause of hair loss in men. It's driven by genetics and hormones (DHT). It typically starts with a receding hairline at the temples and thinning at the crown, and progresses gradually over years. Early treatment can slow or stop progression.",
+    selfCheck: [
+      { question: 'Is your hairline receding at the temples or moving backward?' },
+      { question: 'Is the hair at your crown becoming thinner or see-through?' },
+      { question: 'Has this been happening gradually over months or years?' },
+      { question: 'Do other men in your family have similar hair loss patterns?' },
+    ],
+    photoGallery: [
+      { label: 'Early — temple recession', description: 'Early MPHL showing recession at the temples on darker skin' },
+      { label: 'Moderate — crown thinning', description: 'Moderate MPHL with visible thinning at the crown on textured hair' },
+      { label: 'Advanced — combined pattern', description: 'Advanced MPHL with both hairline recession and crown thinning on darker skin' },
+    ],
+    actionSteps: [
+      'See a dermatologist or trichologist — earlier treatment gives better results',
+      'Track changes with photos to monitor progression',
+      'Ask about minoxidil or finasteride — both are evidence-based treatments',
+    ],
+    dontDo: [
+      "Don't assume it's too late — many treatments can slow or stop progression",
+      "Don't rely on unproven supplements or miracle products",
+    ],
+    whenToSee: "If you're noticing your hairline receding or your crown thinning, see a dermatologist or trichologist. The earlier you start treatment, the more hair you can keep.",
+    relatedArticleId: undefined,
+    dermnetUrl: 'https://dermnetnz.org/topics/male-pattern-hair-loss',
+    externalLinkLabel: 'British Association of Dermatologists',
+    externalLinkUrl: 'https://www.bad.org.uk',
+    chatPrompts: ['Could I have male pattern hair loss?', "What's the difference between MPHL and traction alopecia?", 'What should I tell my doctor about this?'],
+  },
+  {
+    id: 'fphl',
+    name: 'Female pattern hair loss (FPHL)',
+    summary: 'Diffuse thinning at the crown and widening part line, with the frontal hairline usually preserved.',
+    whatIsIt: "Female pattern hair loss (androgenetic alopecia in women) is the most common cause of hair loss in women. It presents differently from male pattern loss: instead of a receding hairline, you'll typically see a widening part line and diffuse thinning at the crown while the frontal hairline stays intact. It can be triggered or worsened by hormonal changes, menopause, or stress.",
+    selfCheck: [
+      { question: 'Is your part line becoming wider or more visible?' },
+      { question: 'Is the hair at your crown becoming thinner or see-through?' },
+      { question: 'Is your frontal hairline still intact (not receding)?' },
+      { question: 'Has this been happening gradually over months or years?' },
+    ],
+    photoGallery: [
+      { label: 'Early — widening part', description: 'Early FPHL showing a widening part line on textured hair' },
+      { label: 'Moderate — crown thinning', description: 'Moderate FPHL with diffuse thinning at the crown on darker skin' },
+      { label: 'Advanced — significant thinning', description: 'Advanced FPHL with see-through crown area, hairline preserved, on darker skin' },
+    ],
+    actionSteps: [
+      'See a dermatologist or trichologist for proper diagnosis',
+      'Track changes with photos — especially your part line and crown',
+      'Ask about minoxidil — it\'s the most evidence-based treatment for FPHL',
+    ],
+    dontDo: [
+      "Don't confuse it with traction alopecia — FPHL is hormonal, not tension-related",
+      "Don't ignore it — early treatment can slow progression significantly",
+    ],
+    whenToSee: "If your part line is widening or you can see more scalp through your hair at the crown, see a dermatologist. Blood work may help rule out other causes like iron deficiency or thyroid issues.",
+    relatedArticleId: undefined,
+    dermnetUrl: 'https://dermnetnz.org/topics/female-pattern-hair-loss',
+    externalLinkLabel: 'British Association of Dermatologists',
+    externalLinkUrl: 'https://www.bad.org.uk',
+    chatPrompts: ['Could I have female pattern hair loss?', "What's the difference between FPHL and CCCA?", 'What should I tell my doctor about this?'],
+  },
 ];
 
 export const getConsumerConditionById = (id: string) => consumerConditions.find(c => c.id === id);

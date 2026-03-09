@@ -171,6 +171,40 @@ export const stylistConditions: StylistCondition[] = [
     severityGuide: 'Always refer. FFA causes permanent scarring and early treatment is critical to slow progression.',
     darkerSkinNote: 'On darker skin: The smooth, pale band where hair has been lost may appear as a lighter strip along the hairline that contrasts with the surrounding skin. Look for a clean, even line of recession rather than the patchy pattern seen in traction alopecia. Eyebrow loss is a helpful secondary sign that applies regardless of skin tone.',
   },
+  {
+    id: 'mphl',
+    name: 'Male pattern hair loss (MPHL)',
+    tag: 'Common',
+    summary: 'Gradual hair loss at the hairline and crown driven by genetics',
+    stages: [
+      { label: 'Early recession', annotation: 'Temples receding' },
+      { label: 'Moderate thinning', annotation: 'Crown becoming sparse' },
+      { label: 'Advanced', annotation: 'Combined hairline and crown loss' },
+    ],
+    whatItLooksLike: 'Gradual recession at the temples and thinning at the crown. The hair becomes finer and shorter in affected areas over time. The pattern is usually symmetrical.',
+    whereToLook: 'Temples, frontal hairline, and crown. Compare density to the sides and back.',
+    whatToTell: '"Your hairline and crown are showing some thinning that looks like it could be male pattern hair loss. A dermatologist can confirm and discuss treatment options — the earlier you start, the better the results."',
+    whatYouCanDo: 'Don\'t apply excessive tension to thinning areas. Note the pattern in FolliSense. Encourage the client to see a specialist.',
+    severityGuide: 'Early (slight temple recession) = treatable with good outcomes. Advanced (significant crown and hairline loss) = still treatable but less regrowth expected. Always refer.',
+    darkerSkinNote: 'On darker skin: Thinning at the crown may be easier to spot because of the contrast between scalp and hair. Temple recession can be subtle — compare both sides and look for the hairline pulling back unevenly.',
+  },
+  {
+    id: 'fphl',
+    name: 'Female pattern hair loss (FPHL)',
+    tag: 'Common',
+    summary: 'Diffuse thinning at the crown with preserved hairline',
+    stages: [
+      { label: 'Early — widening part', annotation: 'Part line becoming wider' },
+      { label: 'Moderate — diffuse thinning', annotation: 'Crown becoming see-through' },
+      { label: 'Advanced', annotation: 'Significant diffuse loss at crown' },
+    ],
+    whatItLooksLike: 'Widening part line and diffuse thinning at the crown. Unlike male pattern loss, the frontal hairline is usually preserved. The hair becomes finer and less dense at the top of the head.',
+    whereToLook: 'Part line and crown. Compare the density at the centre part to the sides.',
+    whatToTell: '"Your part line looks like it\'s widening and there\'s some thinning at the crown. This pattern could be female pattern hair loss. A dermatologist can confirm and there are treatments that can help slow it down."',
+    whatYouCanDo: 'Avoid tight styles that add tension to the crown. Note the pattern in FolliSense. Encourage the client to see a specialist.',
+    severityGuide: 'Any widening part line or crown thinning should be flagged. Early treatment can significantly slow progression.',
+    darkerSkinNote: 'On darker skin: A widening part line can be easier to spot due to the contrast. Look straight down at the crown and compare density to the sides and back. The preserved hairline is a key differentiator from traction alopecia.',
+  },
 ];
 
 export const getConditionById = (id: string): StylistCondition | undefined =>
