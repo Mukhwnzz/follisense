@@ -79,7 +79,7 @@ const hairTypes = [
   },
 ];
 
-const chemicalOptionsSimple = ['Yes, currently', 'Previously but not now', 'Never', 'Not sure'];
+const chemicalOptionsSimple = ['Yes, currently', 'Previously but not now', 'No, fully natural', 'Not sure'];
 const chemicalTypeOptions = ['Relaxed or permed', 'Texturised', 'Colour treated', 'Bleached'];
 const lastChemicalTreatmentOptions = ['Within the last month', '1 to 3 months ago', '3 to 6 months ago', '6 to 12 months ago', 'Over a year ago', 'Not sure'];
 
@@ -456,7 +456,7 @@ const Onboarding = () => {
       case 1: return !!hairType;
       case 2: {
         if (!chemicalProcessing) return false;
-        if (chemicalProcessing === 'Never' || chemicalProcessing === 'Not sure') return true;
+        if (chemicalProcessing === 'No, fully natural' || chemicalProcessing === 'Not sure') return true;
         if (chemicalProcessing === 'Yes, currently') return chemicalMultiple.length > 0 && !!lastChemicalTreatment;
         if (chemicalProcessing === 'Previously but not now') return !!lastChemicalTreatment;
         return false;
@@ -474,7 +474,7 @@ const Onboarding = () => {
           if (hasBraidsMale) return !!maleStyleDuration && !!maleScalpWashFreq && betweenOk;
           return betweenOk;
         }
-        if (isWornOutOnly) return !!wornOutWashFreq && !!restyleFreq;
+        if (isWornOutOnly) return !!wornOutWashFreq && (wornOutWashFreq !== 'Less often' || !!lessOftenDetail) && !!restyleFreq;
         const cycleOk = !!cycleLen && (cycleLen !== 'It varies' || (!!cycleLenMin && !!cycleLenMax));
         const washOk = !!washFreqBucket && !!washFreqDetail && (washFreqDetail !== 'It depends' || !!washFreqPerCycle);
         const betweenOk = betweenWashCare.length > 0 && (!betweenWashCare.includes('Other') || otherBetweenWash.trim().length > 0);
@@ -746,7 +746,7 @@ const Onboarding = () => {
                   {chemicalOptionsSimple.map(opt => (
                     <button key={opt} onClick={() => {
                       setChemicalProcessing(opt);
-                      if (opt === 'Never' || opt === 'Not sure') { setChemicalMultiple([]); setLastChemicalTreatment(''); }
+                      if (opt === 'No, fully natural' || opt === 'Not sure') { setChemicalMultiple([]); setLastChemicalTreatment(''); }
                       if (opt !== 'Yes, currently') setChemicalMultiple([]);
                     }} className={`selection-card w-full text-left ${chemicalProcessing === opt ? 'selected' : ''}`}>
                       <p className="font-medium text-foreground text-sm">{opt}</p>

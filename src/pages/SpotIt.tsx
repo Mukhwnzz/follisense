@@ -31,6 +31,12 @@ const symptomOptions = [
     icon: '📍',
   },
   {
+    id: 'hairline-recession',
+    label: 'Hairline moving backward',
+    description: 'Gradual, even recession of the frontal hairline, possibly with eyebrow thinning',
+    icon: '↗️',
+  },
+  {
     id: 'crown-thinning',
     label: 'Thinning at the crown',
     description: 'Hair becoming sparse or see-through at the top of the head',
@@ -87,6 +93,21 @@ const getMatches = (selected: string[]): ConditionMatch[] => {
         'Avoid tension and heat at the crown area',
         'Document the area with photos to track changes',
         'See a dermatologist — early treatment is critical for this condition',
+      ],
+      severity: 'moderate',
+    });
+  }
+
+  if (selected.includes('hairline-recession')) {
+    matches.push({
+      conditionId: 'frontal-fibrosing-alopecia',
+      name: 'Frontal fibrosing alopecia (FFA)',
+      likelihood: 'possible',
+      message: 'Gradual, even recession of the frontal hairline could be consistent with frontal fibrosing alopecia — a scarring condition that\'s different from traction alopecia.',
+      selfCareTips: [
+        'See a dermatologist as soon as possible — early treatment can slow progression',
+        'Document your hairline with photos to track changes',
+        'Mention any eyebrow thinning as well — it helps with diagnosis',
       ],
       severity: 'moderate',
     });
@@ -255,6 +276,7 @@ const SpotIt = () => {
                       { label: 'Flaking / buildup', desc: 'Yellowish or dry flakes along the part line on coily hair' },
                       { label: 'Folliculitis bumps', desc: 'Small inflamed bumps at follicles on darker skin' },
                       { label: 'Hairline thinning', desc: 'Thinning at the temples and edges from tight styles' },
+                      { label: 'Hairline recession (FFA)', desc: 'Even, gradual recession of the frontal hairline with smooth skin' },
                       { label: 'Crown thinning', desc: 'Sparse hair at the vertex on textured hair' },
                       { label: 'Redness / irritation', desc: 'Pinkish or irritated patches on darker scalp skin' },
                     ].map((photo, i) => (

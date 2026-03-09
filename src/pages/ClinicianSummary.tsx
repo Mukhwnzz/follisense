@@ -18,7 +18,7 @@ const ClinicianSummary = () => {
 
   const chemLabel = () => {
     const cp = onboardingData.chemicalProcessing;
-    if (!cp || cp === 'No, fully natural') return null;
+    if (!cp || cp === 'No, fully natural' || cp === 'Never') return null;
     let label = cp;
     if (cp === 'Multiple') label = onboardingData.chemicalProcessingMultiple?.join(', ') || 'Multiple (unspecified)';
     if (onboardingData.lastChemicalTreatment) label += ` — last treated: ${onboardingData.lastChemicalTreatment}`;

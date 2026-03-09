@@ -277,6 +277,38 @@ export const consumerConditions: ConsumerCondition[] = [
     externalLinkUrl: 'https://dermnetnz.org',
     chatPrompts: ['Could this be chemical damage?', 'Will my hair grow back after a chemical burn?', 'What should I tell my doctor about this?'],
   },
+  {
+    id: 'frontal-fibrosing-alopecia',
+    name: 'Frontal fibrosing alopecia (FFA)',
+    summary: 'A scarring hair loss condition causing the hairline to gradually recede.',
+    whatIsIt: "Frontal fibrosing alopecia (FFA) is a form of scarring hair loss where the hairline slowly recedes backward. It can also affect the eyebrows and body hair. It primarily affects post-menopausal women but can occur earlier. Unlike traction alopecia, there's often no history of tight styling — it's thought to be autoimmune. Early treatment can slow progression but can't reverse existing loss.",
+    selfCheck: [
+      { question: 'Has your hairline been gradually moving backward over months or years?' },
+      { question: 'Is the skin along your hairline smooth and pale or shiny?' },
+      { question: 'Have you noticed thinning or loss of your eyebrows as well?' },
+      { question: 'Is the recession happening evenly across the front, not just at the temples?' },
+    ],
+    photoGallery: [
+      { label: 'Early — hairline recession', description: 'Early FFA showing subtle, even recession of the frontal hairline' },
+      { label: 'Moderate — band-like loss', description: 'Moderate FFA with a visible band of smooth, scarred skin at the hairline' },
+      { label: 'With eyebrow loss', description: 'FFA presenting with both hairline recession and partial eyebrow loss' },
+    ],
+    actionSteps: [
+      'See a dermatologist as soon as possible — early treatment is critical',
+      'Document your hairline with photos to track changes over time',
+      'Avoid harsh chemicals or tight styles along the hairline',
+    ],
+    dontDo: [
+      "Don't assume it's normal ageing — FFA is a specific, treatable condition",
+      "Don't delay seeking professional advice — scarring is permanent once established",
+    ],
+    whenToSee: 'If your hairline is receding and you can see smooth, pale skin where hair used to be, see a dermatologist. If your eyebrows are also thinning, mention that too — it helps with diagnosis.',
+    relatedArticleId: undefined,
+    dermnetUrl: 'https://dermnetnz.org/topics/frontal-fibrosing-alopecia',
+    externalLinkLabel: 'British Association of Dermatologists — FFA',
+    externalLinkUrl: 'https://www.bad.org.uk',
+    chatPrompts: ['Could I have frontal fibrosing alopecia?', "What's the difference between FFA and traction alopecia?", 'What should I tell my doctor about this?'],
+  },
 ];
 
 export const getConsumerConditionById = (id: string) => consumerConditions.find(c => c.id === id);

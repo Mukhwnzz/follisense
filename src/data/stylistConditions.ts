@@ -154,6 +154,23 @@ export const stylistConditions: StylistCondition[] = [
     severityGuide: 'Mild redness = monitor. Blistering, open wounds, or persistent rawness = refer.',
     darkerSkinNote: 'On darker skin: Fresh chemical burns may appear darker, ashy, or slightly purple rather than red. In severe cases you may see lighter patches where the skin has been damaged. Scarring from repeated burns often presents as hypopigmented (lighter) smooth patches on brown skin.',
   },
+  {
+    id: 'frontal-fibrosing-alopecia',
+    name: 'Frontal fibrosing alopecia (FFA)',
+    tag: 'Less common',
+    summary: 'Scarring hair loss causing gradual, even recession of the frontal hairline',
+    stages: [
+      { label: 'Early recession', annotation: 'Subtle hairline moving back' },
+      { label: 'Moderate band-like loss', annotation: 'Visible smooth band at hairline' },
+      { label: 'Advanced with eyebrow loss', annotation: 'Significant recession + eyebrow thinning' },
+    ],
+    whatItLooksLike: 'Gradual, even recession of the entire frontal hairline. The skin where hair has been lost appears smooth, pale or shiny, with no visible follicles. May also see eyebrow thinning or loss. Unlike traction alopecia, it affects the entire front evenly rather than just the temples.',
+    whereToLook: 'Frontal hairline — look for even recession across the whole front, not just temples. Also check eyebrows.',
+    whatToTell: '"Your hairline looks like it may be receding in a pattern that could be frontal fibrosing alopecia. It\'s different from traction alopecia because it\'s not caused by tight styles. A dermatologist can diagnose and help slow it down."',
+    whatYouCanDo: 'Don\'t install tight styles along the hairline. Note the observation in FolliSense. Compare to previous visits if available.',
+    severityGuide: 'Always refer. FFA causes permanent scarring and early treatment is critical to slow progression.',
+    darkerSkinNote: 'On darker skin: The smooth, pale band where hair has been lost may appear as a lighter strip along the hairline that contrasts with the surrounding skin. Look for a clean, even line of recession rather than the patchy pattern seen in traction alopecia. Eyebrow loss is a helpful secondary sign that applies regardless of skin tone.',
+  },
 ];
 
 export const getConditionById = (id: string): StylistCondition | undefined =>
