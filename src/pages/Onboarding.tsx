@@ -107,7 +107,8 @@ const wornOutOnlyStylesMale = ['Short natural (TWA, tapered)', 'Fade or low cut 
 
 const protectiveFrequencyOptionsFemale = ['Most of the time', 'About half the time', 'Occasionally', 'Rarely — I mostly wear my hair out'];
 const protectiveFrequencyOptionsMale = ['This is my everyday look', 'Most of the time', 'I switch it up regularly', 'Occasionally'];
-const wornOutWashOptions = ['More than once a week', 'About once a week', 'Every 2 weeks', 'Less than every 2 weeks'];
+const wornOutWashOptions = ['Multiple times a week', 'Once a week', 'Every 2 weeks', 'Every 3–4 weeks', 'Less often'];
+const lessOftenWashOptions = ['Every 5–6 weeks', 'Every 7–8 weeks', '9+ weeks', 'It varies a lot'];
 const restyleOptions = ['Daily', 'Every few days', 'Weekly', 'Less often'];
 const cycleLengths = ['1–2 weeks', '2–4 weeks', '4–6 weeks', '6+ weeks', 'It varies'];
 const cycleLengthMinOptions = ['Less than 1 week', '1–2 weeks', '2–4 weeks', '4–6 weeks'];
@@ -306,6 +307,7 @@ const Onboarding = () => {
   const [otherStyle, setOtherStyle] = useState('');
   const [protectiveFreq, setProtectiveFreq] = useState('');
   const [wornOutWashFreq, setWornOutWashFreq] = useState('');
+  const [lessOftenDetail, setLessOftenDetail] = useState('');
   const [restyleFreq, setRestyleFreq] = useState('');
   const [cycleLen, setCycleLen] = useState('');
   const [cycleLenMin, setCycleLenMin] = useState('');
@@ -351,7 +353,11 @@ const Onboarding = () => {
   const isNeutral = gender === 'prefer-not-to-say';
   const skipMenstrual = isMale;
 
-  const styleOptions = isMale ? maleStyleOptions : isNeutral ? [...new Set([...femaleStyleOptions, ...maleStyleOptions])] : femaleStyleOptions;
+  // Filter styles based on chemical processing — hide natural-only styles for currently processed hair
+  const naturalOnlyStyles = ['Worn out / loose (natural)', 'Wash and go', 'Twist out / braid out'];
+  const isCurrentlyProcessed = chemicalProcessing === 'Yes, currently' && chemicalMultiple.some(c => ['Relaxed or permed', 'Texturised'].includes(c));
+  const rawStyleOptions = isMale ? maleStyleOptions : isNeutral ? [...new Set([...femaleStyleOptions, ...maleStyleOptions])] : femaleStyleOptions;
+  const styleOptions = isCurrentlyProcessed ? rawStyleOptions.filter(s => !naturalOnlyStyles.includes(s)) : rawStyleOptions;
   const wornOutOnlyStyles = isMale ? wornOutOnlyStylesMale : isNeutral ? [...wornOutOnlyStylesFemale, ...wornOutOnlyStylesMale] : wornOutOnlyStylesFemale;
   const currentBetweenWashOptions = isMale ? betweenWashOptionsMale : isNeutral ? [...new Set([...betweenWashOptions, ...betweenWashOptionsMale])] : betweenWashOptions;
   const goalOptions = isMale ? maleGoalOptions : isNeutral ? [...new Set([...femaleGoalOptions, ...maleGoalOptions])] : femaleGoalOptions;
@@ -1012,9 +1018,17 @@ const Onboarding = () => {
                 <p className="text-muted-foreground mb-6">How often do you wash your hair?</p>
                 <div className="mb-8">
                   <div className="flex flex-wrap gap-2">
-                    {wornOutWashOptions.map(o => (<button key={o} onClick={() => setWornOutWashFreq(o)} className={`pill-option ${wornOutWashFreq === o ? 'selected' : ''}`}>{o}</button>))}
+                    {wornOutWashOptions.map(o => (<button key={o} onClick={() => { setWornOutWashFreq(o); if (o !== 'Less often') setLessOftenDetail(''); }} className={`pill-option ${wornOutWashFreq === o ? 'selected' : ''}`}>{o}</button>))}
                   </div>
                 </div>
+                <SlideIn show={wornOutWashFreq === 'Less often'}>
+                  <div className="mb-8">
+                    <p className="font-medium text-foreground mb-3">How many weeks between washes, roughly?</p>
+                    <div className="flex flex-wrap gap-2">
+                      {lessOftenWashOptions.map(o => (<button key={o} onClick={() => setLessOftenDetail(o)} className={`pill-option ${lessOftenDetail === o ? 'selected' : ''}`}>{o}</button>))}
+                    </div>
+                  </div>
+                </SlideIn>
                 <div>
                   <p className="font-medium text-foreground mb-3">How often do you restyle or manipulate your hair?</p>
                   <div className="flex flex-wrap gap-2">
