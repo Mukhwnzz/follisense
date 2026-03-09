@@ -31,6 +31,12 @@ const symptomOptions = [
     icon: '📍',
   },
   {
+    id: 'hairline-recession',
+    label: 'Hairline moving backward',
+    description: 'Gradual, even recession of the frontal hairline, possibly with eyebrow thinning',
+    icon: '↗️',
+  },
+  {
     id: 'crown-thinning',
     label: 'Thinning at the crown',
     description: 'Hair becoming sparse or see-through at the top of the head',
