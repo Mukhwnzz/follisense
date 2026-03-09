@@ -1,7 +1,7 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, Clock } from 'lucide-react';
+import { Search, Clock, Eye } from 'lucide-react';
 import { articles, categories, getArticleById, Article } from '@/data/learnArticles';
 import { useApp } from '@/contexts/AppContext';
 import ArticleView from '@/components/ArticleView';
