@@ -722,12 +722,10 @@ const Onboarding = () => {
                         </div>
                         {photos.length > 0 && (
                           <div className="grid grid-cols-2 gap-2 mt-3">
-                            {/* Illustration */}
                             <div className="rounded-lg bg-accent/50 border border-border p-3 flex flex-col items-center justify-center min-h-[80px]">
                               <CurlIcon type={ht.id} />
                               <span className="text-[10px] text-muted-foreground mt-1.5 text-center">Pattern illustration</span>
                             </div>
-                            {/* Real reference photos */}
                             <PhotoGallery photos={photos} />
                           </div>
                         )}
