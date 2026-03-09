@@ -294,8 +294,7 @@ const Onboarding = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { setOnboardingComplete, setOnboardingData, setBaselinePhotos, setBaselineRisk, setBaselineDate } = useApp();
-  const initialStep = parseInt(searchParams.get('step') || '0', 10);
-  const [step, setStep] = useState(initialStep);
+  const [step, setStep] = useState(-1);
 
   // ── State ──
   const [gender, setGender] = useState('');
