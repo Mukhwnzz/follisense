@@ -7,7 +7,7 @@ import { useApp } from '@/contexts/AppContext';
 import ArticleView from '@/components/ArticleView';
 import ConditionGuidePage from '@/pages/ConditionGuidePage';
 
-const allCategories = [...categories, 'Know the signs', 'Spot It'];
+const allCategories = [...categories, 'Know the signs'];
 
 const LearnPage = () => {
   const { onboardingData } = useApp();
