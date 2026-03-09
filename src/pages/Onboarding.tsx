@@ -107,7 +107,8 @@ const wornOutOnlyStylesMale = ['Short natural (TWA, tapered)', 'Fade or low cut 
 
 const protectiveFrequencyOptionsFemale = ['Most of the time', 'About half the time', 'Occasionally', 'Rarely — I mostly wear my hair out'];
 const protectiveFrequencyOptionsMale = ['This is my everyday look', 'Most of the time', 'I switch it up regularly', 'Occasionally'];
-const wornOutWashOptions = ['More than once a week', 'About once a week', 'Every 2 weeks', 'Less than every 2 weeks'];
+const wornOutWashOptions = ['Multiple times a week', 'Once a week', 'Every 2 weeks', 'Every 3–4 weeks', 'Less often'];
+const lessOftenWashOptions = ['Every 5–6 weeks', 'Every 7–8 weeks', '9+ weeks', 'It varies a lot'];
 const restyleOptions = ['Daily', 'Every few days', 'Weekly', 'Less often'];
 const cycleLengths = ['1–2 weeks', '2–4 weeks', '4–6 weeks', '6+ weeks', 'It varies'];
 const cycleLengthMinOptions = ['Less than 1 week', '1–2 weeks', '2–4 weeks', '4–6 weeks'];
