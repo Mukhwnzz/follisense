@@ -27,7 +27,7 @@ const ScalpCheckIn = () => {
     },
     {
       label: 'I want to check something',
-      desc: 'Compare what you're seeing to reference images',
+      desc: "Compare what you're seeing to reference images",
       icon: Eye,
       iconBg: 'bg-primary/10',
       iconColor: 'text-primary',
