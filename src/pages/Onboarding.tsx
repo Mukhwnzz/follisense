@@ -788,9 +788,6 @@ const Onboarding = () => {
                 <p className="text-muted-foreground mb-6">Select everything you rotate between</p>
                 {(() => {
                   const defaultCount = isMale ? 6 : 8;
-                  const locsStyles = ['Locs / faux locs', 'Locs or faux locs'];
-                  const genderKeyStyle = isMale ? 'male' : isNeutral ? 'both' : 'female';
-                  const getLocsPhoto = () => locsPhotos[genderKeyStyle] || null;
                   
                   const renderStyleButton = (s: string) => {
                     return (
