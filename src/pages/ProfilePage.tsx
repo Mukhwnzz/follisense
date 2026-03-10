@@ -3,11 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   User, ChevronRight, Shield, Trash2, Leaf, Heart, Camera, RefreshCw, Target, Check,
-  Microscope, Eye, EyeOff, Lock, Sparkles, Pencil, ChevronDown, Droplets, Scissors, FlaskConical, Activity
+  Microscope, Eye, EyeOff, Lock, Sparkles, Pencil, ChevronDown, Droplets, Scissors, FlaskConical, Activity, Info
 } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 import ProductSearch from '@/components/ProductSearch';
 import { toast } from '@/hooks/use-toast';
+import { Switch } from '@/components/ui/switch';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 const goalOptions = [
   'Protect my edges / grow my hairline back',
@@ -21,6 +23,8 @@ const goalOptions = [
 ];
 
 const hairTypeLabels: Record<string, string> = {
+  'type3': 'Type 3 — Curly',
+  'type4': 'Type 4 — Coily',
   '3b': '3b — Wide, springy curls',
   '3c': '3c — Tight, corkscrew curls',
   '4a': '4a — Soft, defined coils',
@@ -84,7 +88,7 @@ const ProfilePage = () => {
   const {
     userName, onboardingData, setOnboardingData, resetAll,
     baselinePhotos, setBaselinePhotos, baselineRisk, baselineDate,
-    healthProfile, research,
+    healthProfile, research, setResearch,
   } = useApp();
 
   const [notifications, setNotifications] = useState({
@@ -101,6 +105,7 @@ const ProfilePage = () => {
   const [showCurrentPw, setShowCurrentPw] = useState(false);
   const [showNewPw, setShowNewPw] = useState(false);
   const [showConfirmPw, setShowConfirmPw] = useState(false);
+  const [showResearchExplainer, setShowResearchExplainer] = useState(false);
 
   const isMale = onboardingData.gender === 'man';
 
@@ -195,8 +200,113 @@ const ProfilePage = () => {
           )}
         </div>
 
-        {/* ═══════ Section 1: Your Hair ═══════ */}
-        <ProfileSection title="Your Hair" icon={Scissors} defaultOpen={true}>
+        {/* ═══════ Section 1: Account ═══════ */}
+        <ProfileSection title="Account" icon={User} defaultOpen={true}>
+          <div className="divide-y divide-border">
+            <InfoRow label="First name" value={userName || 'Not set'} />
+            <InfoRow label="Gender" value={onboardingData.gender === 'woman' ? 'Female' : onboardingData.gender === 'man' ? 'Male' : onboardingData.gender === 'prefer-not-to-say' ? 'Prefer not to say' : 'Not set'} />
+
+            {/* Notifications */}
+            <div className="px-4 py-3">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Notifications</p>
+              <div className="space-y-3">
+                {notificationOptions.map(item => (
+                  <div key={item.key} className="flex items-start justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-foreground">{item.label}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">{item.desc}</p>
+                    </div>
+                    <button onClick={() => setNotifications(prev => ({ ...prev, [item.key]: !prev[item.key] }))} className={`w-11 h-6 rounded-full transition-colors relative flex-shrink-0 mt-0.5 ${notifications[item.key] ? 'bg-primary' : 'bg-border'}`}>
+                      <div className={`w-5 h-5 rounded-full bg-card shadow-sm absolute top-0.5 transition-transform ${notifications[item.key] ? 'translate-x-[22px]' : 'translate-x-0.5'}`} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Data & Research */}
+            <div className="px-4 py-3">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Data & Research</p>
+              <div className="flex items-start justify-between gap-3 mb-2">
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-foreground">Contribute my anonymised data to scalp health research</p>
+                </div>
+                <Switch
+                  checked={research.consented}
+                  onCheckedChange={(checked) => setResearch({
+                    ...research,
+                    consented: checked,
+                    consentDate: checked ? new Date().toISOString() : null,
+                  })}
+                />
+              </div>
+              <Collapsible>
+                <CollapsibleTrigger className="flex items-center gap-1 text-xs font-medium text-primary mb-2">
+                  <Info size={12} /> Learn more
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <p className="text-xs text-muted-foreground leading-relaxed mb-2">
+                    Your anonymised check-in patterns help improve scalp health understanding for {isMale ? 'people' : 'women'} with textured hair, a group underrepresented in dermatology research. No photos or personal details are shared without your explicit consent.
+                  </p>
+                </CollapsibleContent>
+              </Collapsible>
+              {research.consented && research.photoCount > 0 && (
+                <p className="text-xs text-primary font-medium">You've contributed {research.photoCount} photo{research.photoCount !== 1 ? 's' : ''}.</p>
+              )}
+            </div>
+
+            {/* Privacy & Data */}
+            <div className="px-4 py-3">
+              <div className="flex items-start gap-3 mb-3">
+                <Shield size={18} className="text-primary mt-0.5 flex-shrink-0" strokeWidth={1.5} />
+                <div>
+                  <p className="text-sm text-foreground font-medium mb-1">How we use your information</p>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    Your data personalises your experience and generates your clinician summary if needed. Nothing is shared without permission. Photos stay on your device.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Actions */}
+            <button onClick={() => toast({ title: 'Coming soon', description: 'Data export will be available in a future update.' })} className="w-full px-4 py-3 text-left text-sm text-foreground flex items-center justify-between">
+              Export my data <ChevronRight size={16} className="text-muted-foreground" />
+            </button>
+            <button onClick={() => setShowChangePassword(!showChangePassword)} className="w-full px-4 py-3 text-left text-sm text-foreground flex items-center gap-2">
+              <Lock size={14} strokeWidth={1.5} /> Change password <ChevronRight size={14} className="text-muted-foreground ml-auto" />
+            </button>
+            {showChangePassword && (
+              <div className="px-4 py-3 space-y-3">
+                <div className="relative">
+                  <label className="text-xs font-medium text-muted-foreground mb-1 block">Current password</label>
+                  <input type={showCurrentPw ? 'text' : 'password'} value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} className="w-full h-10 px-3 pr-10 rounded-lg border border-border bg-card text-foreground text-sm focus:outline-none focus:border-primary" />
+                  <button type="button" onClick={() => setShowCurrentPw(!showCurrentPw)} className="absolute right-3 top-7 text-muted-foreground">{showCurrentPw ? <EyeOff size={16} /> : <Eye size={16} />}</button>
+                </div>
+                <div className="relative">
+                  <label className="text-xs font-medium text-muted-foreground mb-1 block">New password</label>
+                  <input type={showNewPw ? 'text' : 'password'} value={newPassword} onChange={e => setNewPassword(e.target.value)} className="w-full h-10 px-3 pr-10 rounded-lg border border-border bg-card text-foreground text-sm focus:outline-none focus:border-primary" />
+                  <button type="button" onClick={() => setShowNewPw(!showNewPw)} className="absolute right-3 top-7 text-muted-foreground">{showNewPw ? <EyeOff size={16} /> : <Eye size={16} />}</button>
+                </div>
+                <div className="relative">
+                  <label className="text-xs font-medium text-muted-foreground mb-1 block">Confirm new password</label>
+                  <input type={showConfirmPw ? 'text' : 'password'} value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} className="w-full h-10 px-3 pr-10 rounded-lg border border-border bg-card text-foreground text-sm focus:outline-none focus:border-primary" />
+                  <button type="button" onClick={() => setShowConfirmPw(!showConfirmPw)} className="absolute right-3 top-7 text-muted-foreground">{showConfirmPw ? <EyeOff size={16} /> : <Eye size={16} />}</button>
+                </div>
+                <button
+                  onClick={() => { toast({ title: 'Password updated' }); setCurrentPassword(''); setNewPassword(''); setConfirmPassword(''); setShowChangePassword(false); }}
+                  disabled={!currentPassword || !newPassword || !confirmPassword || newPassword !== confirmPassword}
+                  className={`w-full h-10 rounded-xl font-medium text-sm transition-colors ${currentPassword && newPassword && confirmPassword && newPassword === confirmPassword ? 'bg-primary text-primary-foreground' : 'bg-border text-muted-foreground cursor-not-allowed'}`}
+                >
+                  Update password
+                </button>
+              </div>
+            )}
+            <button onClick={handleDelete} className="w-full px-4 py-3 text-left text-sm text-destructive flex items-center gap-2"><Trash2 size={14} strokeWidth={1.5} /> Delete all data</button>
+          </div>
+        </ProfileSection>
+
+        {/* ═══════ Section 2: Your Hair ═══════ */}
+        <ProfileSection title="Your Hair" icon={Scissors}>
           <div className="divide-y divide-border">
             <InfoRow label="Hair type" value={hairTypeLabels[onboardingData.hairType] || onboardingData.hairType || 'Not set'} />
             <InfoRow label="How you wear your hair" value={onboardingData.protectiveStyles?.length > 0 ? onboardingData.protectiveStyles.join(', ') : 'Not set'} />
@@ -212,7 +322,7 @@ const ProfilePage = () => {
           </div>
         </ProfileSection>
 
-        {/* ═══════ Section 2: Hair History ═══════ */}
+        {/* ═══════ Section 3: Hair History ═══════ */}
         <ProfileSection title="Hair History" icon={FlaskConical}>
           <div className="divide-y divide-border">
             <InfoRow label="Chemical processing" value={chemDisplay} />
@@ -225,7 +335,7 @@ const ProfilePage = () => {
           </div>
         </ProfileSection>
 
-        {/* ═══════ Section 3: Your Routine ═══════ */}
+        {/* ═══════ Section 4: Your Routine ═══════ */}
         <ProfileSection
           title="Your Routine"
           icon={Droplets}
@@ -301,7 +411,7 @@ const ProfilePage = () => {
           </div>
         </ProfileSection>
 
-        {/* ═══════ Section 4: Health ═══════ */}
+        {/* ═══════ Section 5: Health ═══════ */}
         <ProfileSection title="Health" icon={Activity}>
           <div className="divide-y divide-border">
             {/* Baseline */}
@@ -430,94 +540,6 @@ const ProfilePage = () => {
               </div>
               <ChevronRight size={16} className="text-muted-foreground" />
             </button>
-
-            {/* Research */}
-            <div className="px-4 py-3">
-              <div className="flex items-center gap-2 mb-1">
-                <Microscope size={14} className="text-primary flex-shrink-0" strokeWidth={1.8} />
-                <p className="text-sm font-medium text-foreground">
-                  {research.consented ? 'Contributing to research' : 'Not participating in research'}
-                </p>
-              </div>
-              {research.consented && research.photoCount > 0 && (
-                <p className="text-xs text-primary font-medium mb-1">You've contributed {research.photoCount} photo{research.photoCount !== 1 ? 's' : ''}.</p>
-              )}
-              <button onClick={() => navigate('/research')} className="text-xs font-medium text-primary">{research.consented ? 'Manage consent' : 'Learn more'}</button>
-            </div>
-          </div>
-        </ProfileSection>
-
-        {/* ═══════ Section 5: Account ═══════ */}
-        <ProfileSection title="Account" icon={User}>
-          <div className="divide-y divide-border">
-            <InfoRow label="First name" value={userName || 'Not set'} />
-            <InfoRow label="Gender" value={onboardingData.gender === 'woman' ? 'Female' : onboardingData.gender === 'man' ? 'Male' : onboardingData.gender === 'prefer-not-to-say' ? 'Prefer not to say' : 'Not set'} />
-
-            {/* Notifications */}
-            <div className="px-4 py-3">
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Notifications</p>
-              <div className="space-y-3">
-                {notificationOptions.map(item => (
-                  <div key={item.key} className="flex items-start justify-between gap-3">
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-foreground">{item.label}</p>
-                      <p className="text-xs text-muted-foreground mt-0.5">{item.desc}</p>
-                    </div>
-                    <button onClick={() => setNotifications(prev => ({ ...prev, [item.key]: !prev[item.key] }))} className={`w-11 h-6 rounded-full transition-colors relative flex-shrink-0 mt-0.5 ${notifications[item.key] ? 'bg-primary' : 'bg-border'}`}>
-                      <div className={`w-5 h-5 rounded-full bg-card shadow-sm absolute top-0.5 transition-transform ${notifications[item.key] ? 'translate-x-[22px]' : 'translate-x-0.5'}`} />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Privacy & Data */}
-            <div className="px-4 py-3">
-              <div className="flex items-start gap-3 mb-3">
-                <Shield size={18} className="text-primary mt-0.5 flex-shrink-0" strokeWidth={1.5} />
-                <div>
-                  <p className="text-sm text-foreground font-medium mb-1">How we use your information</p>
-                  <p className="text-xs text-muted-foreground leading-relaxed">
-                    Your data personalises your experience and generates your clinician summary if needed. Nothing is shared without permission. Photos stay on your device.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Actions */}
-            <button onClick={() => toast({ title: 'Coming soon', description: 'Data export will be available in a future update.' })} className="w-full px-4 py-3 text-left text-sm text-foreground flex items-center justify-between">
-              Export my data <ChevronRight size={16} className="text-muted-foreground" />
-            </button>
-            <button onClick={() => setShowChangePassword(!showChangePassword)} className="w-full px-4 py-3 text-left text-sm text-foreground flex items-center gap-2">
-              <Lock size={14} strokeWidth={1.5} /> Change password <ChevronRight size={14} className="text-muted-foreground ml-auto" />
-            </button>
-            {showChangePassword && (
-              <div className="px-4 py-3 space-y-3">
-                <div className="relative">
-                  <label className="text-xs font-medium text-muted-foreground mb-1 block">Current password</label>
-                  <input type={showCurrentPw ? 'text' : 'password'} value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} className="w-full h-10 px-3 pr-10 rounded-lg border border-border bg-card text-foreground text-sm focus:outline-none focus:border-primary" />
-                  <button type="button" onClick={() => setShowCurrentPw(!showCurrentPw)} className="absolute right-3 top-7 text-muted-foreground">{showCurrentPw ? <EyeOff size={16} /> : <Eye size={16} />}</button>
-                </div>
-                <div className="relative">
-                  <label className="text-xs font-medium text-muted-foreground mb-1 block">New password</label>
-                  <input type={showNewPw ? 'text' : 'password'} value={newPassword} onChange={e => setNewPassword(e.target.value)} className="w-full h-10 px-3 pr-10 rounded-lg border border-border bg-card text-foreground text-sm focus:outline-none focus:border-primary" />
-                  <button type="button" onClick={() => setShowNewPw(!showNewPw)} className="absolute right-3 top-7 text-muted-foreground">{showNewPw ? <EyeOff size={16} /> : <Eye size={16} />}</button>
-                </div>
-                <div className="relative">
-                  <label className="text-xs font-medium text-muted-foreground mb-1 block">Confirm new password</label>
-                  <input type={showConfirmPw ? 'text' : 'password'} value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} className="w-full h-10 px-3 pr-10 rounded-lg border border-border bg-card text-foreground text-sm focus:outline-none focus:border-primary" />
-                  <button type="button" onClick={() => setShowConfirmPw(!showConfirmPw)} className="absolute right-3 top-7 text-muted-foreground">{showConfirmPw ? <EyeOff size={16} /> : <Eye size={16} />}</button>
-                </div>
-                <button
-                  onClick={() => { toast({ title: 'Password updated' }); setCurrentPassword(''); setNewPassword(''); setConfirmPassword(''); setShowChangePassword(false); }}
-                  disabled={!currentPassword || !newPassword || !confirmPassword || newPassword !== confirmPassword}
-                  className={`w-full h-10 rounded-xl font-medium text-sm transition-colors ${currentPassword && newPassword && confirmPassword && newPassword === confirmPassword ? 'bg-primary text-primary-foreground' : 'bg-border text-muted-foreground cursor-not-allowed'}`}
-                >
-                  Update password
-                </button>
-              </div>
-            )}
-            <button onClick={handleDelete} className="w-full px-4 py-3 text-left text-sm text-destructive flex items-center gap-2"><Trash2 size={14} strokeWidth={1.5} /> Delete all data</button>
           </div>
         </ProfileSection>
 

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { User, ChevronRight, Leaf, Lightbulb, Scissors, X, Calendar, Target, Stethoscope } from 'lucide-react';
+import { User, ChevronRight, Leaf, Lightbulb, Scissors, X, Calendar, Target, Stethoscope, Flame, Microscope } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 import { didYouKnowFacts } from '@/data/didYouKnowFacts';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -13,13 +13,14 @@ const serviceOptions = ['Wash', 'Treatment', 'Style installation', 'Style remova
 
 const HomePage = () => {
   const navigate = useNavigate();
-  const { onboardingData, healthProfile, addSalonVisit, checkInCount, userName } = useApp();
+  const { onboardingData, healthProfile, addSalonVisit, checkInCount, userName, research, setResearch } = useApp();
   const [showSalonForm, setShowSalonForm] = useState(false);
   const [showSalonVisitPicker, setShowSalonVisitPicker] = useState(false);
   const [visitDate, setVisitDate] = useState<Date>(new Date());
   const [services, setServices] = useState<string[]>([]);
   const [stylistName, setStylistName] = useState('');
   const [visitNotes, setVisitNotes] = useState('');
+  const [showResearchPrompt, setShowResearchPrompt] = useState(false);
 
   useEffect(() => {
     localStorage.setItem('follisense-last-home-visit', String(Date.now()));
@@ -28,6 +29,14 @@ const HomePage = () => {
       return () => { sessionStorage.removeItem('follisense-just-onboarded'); };
     }
   }, []);
+
+  // Show research prompt once after 3rd check-in
+  useEffect(() => {
+    if (checkInCount >= 3 && !research.consented && !research.dismissed) {
+      const timer = setTimeout(() => setShowResearchPrompt(true), 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [checkInCount, research.consented, research.dismissed]);
 
   const isMale = onboardingData.gender === 'man';
   const currentStyle = onboardingData.protectiveStyles[0] || 'Braids';
@@ -44,6 +53,9 @@ const HomePage = () => {
   const radius = (size - stroke) / 2;
   const circumference = 2 * Math.PI * radius;
   const offset = circumference - (progress / 100) * circumference;
+
+  // Streak calculation (mock: consecutive check-ins = checkInCount for demo)
+  const streak = checkInCount;
 
   const toggleService = (s: string) => setServices(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s]);
 
@@ -71,6 +83,16 @@ const HomePage = () => {
   const hasSkippedProducts = skipped.includes(6) || skipped.includes(7);
   const hasIncompleteProfile = hasSkippedProducts || (!healthProfile.sweat && !healthProfile.medicalConditions.length);
 
+  const handleResearchDismiss = () => {
+    setShowResearchPrompt(false);
+    setResearch({ ...research, dismissed: true });
+  };
+
+  const handleResearchOptIn = () => {
+    setShowResearchPrompt(false);
+    setResearch({ ...research, consented: true, consentDate: new Date().toISOString() });
+  };
+
   return (
     <div className="page-container pt-6">
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
@@ -83,6 +105,33 @@ const HomePage = () => {
           <button onClick={() => navigate('/profile')} className="w-10 h-10 rounded-full bg-accent flex items-center justify-center">
             <User size={20} className="text-muted-foreground" strokeWidth={1.8} />
           </button>
+        </div>
+
+        {/* ══════ Streak / Progress ══════ */}
+        <div className="flex items-center gap-3 mb-4 px-1">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+              <Flame size={16} className="text-primary" strokeWidth={1.8} />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-foreground">
+                {checkInCount} check-in{checkInCount !== 1 ? 's' : ''} completed
+              </p>
+              {streak >= 2 && (
+                <p className="text-xs text-primary font-medium">{streak} in a row — keep it up</p>
+              )}
+            </div>
+          </div>
+          <div className="flex-1 flex justify-end">
+            <div className="flex gap-1">
+              {Array.from({ length: Math.min(streak, 5) }).map((_, i) => (
+                <div key={i} className="w-2 h-2 rounded-full bg-primary" />
+              ))}
+              {Array.from({ length: Math.max(0, 5 - streak) }).map((_, i) => (
+                <div key={`e-${i}`} className="w-2 h-2 rounded-full bg-border" />
+              ))}
+            </div>
+          </div>
         </div>
 
         {/* ══════ Primary Action: Scalp Check-in ══════ */}
@@ -110,7 +159,6 @@ const HomePage = () => {
             <div className="flex-1">
               <p className="font-semibold text-foreground mb-1">Scalp check-in</p>
               <p className="text-sm text-muted-foreground leading-relaxed">{getCheckInDesc()}</p>
-              <p className="text-xs text-primary font-medium mt-1.5">{checkInCount} check-ins completed</p>
             </div>
             <ChevronRight size={18} className="text-muted-foreground flex-shrink-0" />
           </div>
@@ -158,6 +206,36 @@ const HomePage = () => {
         {/* Spacer for bottom nav */}
         <div className="h-20" />
       </motion.div>
+
+      {/* ══════ Research Prompt Modal (one-time, after 3rd check-in) ══════ */}
+      <AnimatePresence>
+        {showResearchPrompt && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-foreground/30 z-[55] flex items-center justify-center px-6">
+            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="bg-card rounded-3xl p-6 max-w-sm w-full shadow-card">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <Microscope size={20} className="text-primary" strokeWidth={1.5} />
+                </div>
+                <h3 className="text-base font-semibold text-foreground">Help improve scalp health research</h3>
+              </div>
+              <p className="text-sm text-muted-foreground mb-5 leading-relaxed">
+                You've completed {checkInCount} check-ins. Want to help improve scalp health research for textured hair? Your anonymised data contributes to better understanding of scalp health.
+              </p>
+              <div className="space-y-2">
+                <button onClick={handleResearchOptIn} className="w-full h-12 rounded-xl bg-primary text-primary-foreground font-medium text-sm">
+                  Yes, opt me in
+                </button>
+                <button onClick={handleResearchDismiss} className="w-full h-12 rounded-xl border border-border text-foreground font-medium text-sm">
+                  Not now
+                </button>
+                <button onClick={() => { handleResearchDismiss(); navigate('/profile'); }} className="w-full text-center text-sm text-primary font-medium py-2">
+                  Learn more
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* ══════ Salon Visit Picker Modal ══════ */}
       <AnimatePresence>
