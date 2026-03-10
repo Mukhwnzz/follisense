@@ -7,8 +7,9 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 
 const HealthProfile = () => {
   const navigate = useNavigate();
-  const { healthProfile, setHealthProfile } = useApp();
+  const { healthProfile, setHealthProfile, onboardingData } = useApp();
   const hp = healthProfile;
+  const isMale = onboardingData.gender === 'man';
 
   const update = <K extends keyof typeof hp>(key: K, value: (typeof hp)[K]) => {
     setHealthProfile({ ...hp, [key]: value });
