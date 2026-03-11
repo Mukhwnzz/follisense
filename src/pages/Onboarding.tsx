@@ -430,6 +430,17 @@ const Onboarding = () => {
   const toggleStyle = (s: string) => setStyles(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s]);
   const toggleChemMulti = (v: string) => setChemicalMultiple(prev => prev.includes(v) ? prev.filter(x => x !== v) : [...prev, v]);
   const toggleMaleBetweenCare = (v: string) => setMaleBetweenCare(prev => prev.includes(v) ? prev.filter(x => x !== v) : [...prev, v]);
+  const toggleNotSureFollowUp = (v: string) => {
+    if (v === 'None of these' || v === "I really don't know") {
+      setNotSureFollowUp(prev => prev.includes(v) ? [] : [v]);
+      setLastChemicalTreatment('');
+    } else {
+      setNotSureFollowUp(prev => {
+        const without = prev.filter(x => x !== 'None of these' && x !== "I really don't know");
+        return without.includes(v) ? without.filter(x => x !== v) : [...without, v];
+      });
+    }
+  };
   const toggleBetweenWash = (v: string) => {
     const nothingOption = 'Nothing — I leave it alone until wash day';
     if (v === nothingOption) {
