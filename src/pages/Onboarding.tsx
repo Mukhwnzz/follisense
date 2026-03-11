@@ -594,9 +594,23 @@ const Onboarding = () => {
           ? wornOutWashFreq + (lessOftenDetail ? ` (${lessOftenDetail})` : '')
           : washFreqDetail || washFreqBucket;
 
+      // Compute effective chemical processing from "Not sure" follow-up
+      let effectiveChemProcessing = chemicalProcessing;
+      let effectiveChemMultiple = [...chemicalMultiple];
+      if (chemicalProcessing === 'Not sure' && notSureFollowUp.length > 0) {
+        if (notSureFollowUp.includes('None of these')) {
+          effectiveChemProcessing = 'No, fully natural';
+        } else if (!notSureFollowUp.includes("I really don't know")) {
+          effectiveChemProcessing = 'Yes';
+          effectiveChemMultiple = notSureFollowUp
+            .map(s => notSureChemicalFollowUp.find(n => n.label === s)?.mapsTo)
+            .filter(Boolean) as string[];
+        }
+      }
+
       setOnboardingData({
-        gender, hairType, chemicalProcessing, lastChemicalTreatment,
-        chemicalProcessingMultiple: chemicalMultiple,
+        gender, hairType, chemicalProcessing: effectiveChemProcessing, lastChemicalTreatment,
+        chemicalProcessingMultiple: effectiveChemMultiple,
         protectiveStyles: styles, otherStyle, protectiveStyleFrequency: protectiveFreq,
         isWornOutOnly, cycleLength: cycleLen, cycleLengthMin: cycleLenMin, cycleLengthMax: cycleLenMax,
         washFrequency: computedWashFrequency, washFrequencyPerCycle: washFreqPerCycle,
