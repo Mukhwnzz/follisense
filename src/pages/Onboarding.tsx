@@ -1156,16 +1156,76 @@ const Onboarding = () => {
               <div>
                 <h2 className="text-lg font-medium text-foreground mb-2">Capture your starting point</h2>
                 <p className="text-muted-foreground mb-4">A baseline photo helps you spot gradual changes that are hard to notice day to day</p>
-                <details className="mb-5 rounded-xl border border-border overflow-hidden">
-                  <summary className="px-4 py-3 text-sm font-medium text-foreground cursor-pointer hover:bg-accent/50 transition-colors">📸 How to take good baseline photos</summary>
-                  <div className="px-4 pb-4 space-y-3 text-xs text-muted-foreground leading-relaxed border-t border-border pt-3">
-                    <p><strong className="text-foreground">Lighting:</strong> Natural light is best. Face a window or go outside.</p>
-                    <p><strong className="text-foreground">Hairline:</strong> Pull your hair back. Hold camera about 15cm away.</p>
-                    <p><strong className="text-foreground">Crown:</strong> Part your hair at the crown. Capture straight down from above.</p>
-                    <p><strong className="text-foreground">Nape:</strong> Pull your hair forward or up. Capture the back of your neck.</p>
-                    <p><strong className="text-foreground">General:</strong> Keep steady. Make sure the scalp is visible, not just hair.</p>
+                <div className="card-elevated mb-5 overflow-hidden">
+                  <div className="p-4 pb-2">
+                    <h3 className="text-sm font-semibold text-foreground">How to take good baseline photos</h3>
+                    <p className="text-xs text-muted-foreground mt-0.5">Getting this right makes tracking changes much easier</p>
                   </div>
-                </details>
+                  <Tabs defaultValue="read" className="px-4 pb-4">
+                    <TabsList className="w-full mb-3">
+                      <TabsTrigger value="watch" className="flex-1">Watch</TabsTrigger>
+                      <TabsTrigger value="read" className="flex-1">Read</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="watch">
+                      <button
+                        onClick={() => toast({ title: 'Video guide coming soon', description: 'We are working on a short instructional video for you.' })}
+                        className="w-full aspect-video rounded-xl bg-accent border border-border flex flex-col items-center justify-center gap-2 mb-2"
+                      >
+                        <div className="w-12 h-12 rounded-full bg-primary/15 flex items-center justify-center">
+                          <Play size={20} className="text-primary ml-0.5" strokeWidth={1.8} />
+                        </div>
+                      </button>
+                      <p className="text-xs text-muted-foreground text-center">A quick 60-second guide to capturing your scalp and hairline</p>
+                    </TabsContent>
+                    <TabsContent value="read">
+                      <div className="space-y-3">
+                        <div className="rounded-xl bg-accent p-3">
+                          <p className="text-xs font-semibold text-foreground mb-1">Hairline and temples</p>
+                          <ul className="text-xs text-muted-foreground space-y-0.5 list-disc pl-3">
+                            <li>Pull your hair back from your face</li>
+                            <li>Hold the camera about 15cm away</li>
+                            <li>Capture from your forehead down to your ears on both sides</li>
+                            <li>Good lighting facing a window is ideal</li>
+                          </ul>
+                        </div>
+                        <div className="rounded-xl bg-accent p-3">
+                          <p className="text-xs font-semibold text-foreground mb-1">Crown and vertex</p>
+                          <ul className="text-xs text-muted-foreground space-y-0.5 list-disc pl-3">
+                            <li>Part your hair at the crown</li>
+                            <li>Use a second mirror or ask someone to help</li>
+                            <li>Capture straight down from above</li>
+                            <li>Make sure the scalp is visible, not just hair</li>
+                          </ul>
+                        </div>
+                        <div className="rounded-xl bg-accent p-3">
+                          <p className="text-xs font-semibold text-foreground mb-1">Nape and back of neck</p>
+                          <ul className="text-xs text-muted-foreground space-y-0.5 list-disc pl-3">
+                            <li>Pull your hair forward or up</li>
+                            <li>Capture the back of your neck and lower hairline</li>
+                            <li>A second mirror or someone to help makes this easier</li>
+                          </ul>
+                        </div>
+                        <div className="rounded-xl bg-accent p-3">
+                          <p className="text-xs font-semibold text-foreground mb-1">Hair condition</p>
+                          <ul className="text-xs text-muted-foreground space-y-0.5 list-disc pl-3">
+                            <li>Hold a section of hair against a plain light background</li>
+                            <li>Capture the mid-lengths and ends</li>
+                            <li>This helps track breakage and texture changes over time</li>
+                          </ul>
+                        </div>
+                        <div className="rounded-xl border border-border p-3">
+                          <p className="text-xs font-semibold text-foreground mb-1">General tips</p>
+                          <ul className="text-xs text-muted-foreground space-y-0.5 list-disc pl-3">
+                            <li>Take photos in natural light whenever possible</li>
+                            <li>Make sure your scalp is visible, not hidden by hair</li>
+                            <li>Take a few shots and pick the clearest one</li>
+                            <li>Consistency matters: try to take photos in the same lighting and angle each time</li>
+                          </ul>
+                        </div>
+                      </div>
+                    </TabsContent>
+                  </Tabs>
+                </div>
                 <div className="space-y-3 mb-6">
                   {baselineAreas.map(area => (
                     <div key={area.id} className={`selection-card w-full flex items-center gap-4 text-left ${area.optional ? 'border-dashed opacity-80' : ''} ${capturedPhotos[area.id] ? 'selected' : ''}`}>
