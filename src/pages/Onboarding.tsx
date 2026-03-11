@@ -198,11 +198,37 @@ const isSkippableStep = (step: number, skipMenstrual: boolean): boolean => {
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
-const getBaselineAcknowledgment = (optionIndex: number): string => {
-  if (optionIndex === 0) return ['That\'s good to hear', 'Great', 'Lovely'][Math.floor(Math.random() * 3)];
-  if (optionIndex === 1) return ['Okay, noted', 'Thanks for sharing that', 'Got it'][Math.floor(Math.random() * 3)];
-  if (optionIndex === 2) return ['Thanks for being honest about that', "Okay, that's really helpful to know", "We'll keep a close eye on that"][Math.floor(Math.random() * 3)];
-  return ["I'm sorry you're dealing with that. Let's make sure we address it.", "That sounds really uncomfortable. You're in the right place.", "Thank you for telling us. We're going to take that seriously."][Math.floor(Math.random() * 3)];
+const ackPools: Record<number, string[]> = {
+  0: ["That's great", "Good to hear", "Lovely", "Nice"],
+  1: [
+    "Okay, we've noted that. Nothing to worry about for now",
+    "Thanks for sharing. We'll keep that in mind",
+    "Got it. That's pretty common but worth tracking",
+    "Noted. We'll see how that looks over your next few check-ins",
+    "Mild is usually manageable. Let's track how it goes",
+  ],
+  2: [
+    "Thanks for being honest about that. That's exactly the kind of thing we want to track for you",
+    "Okay, that's really helpful to know. We'll pay attention to that",
+    "We appreciate you sharing that. Let's watch how it develops",
+    "That's worth keeping an eye on. We'll check in on this next time",
+    "Thanks for flagging that. Knowing your starting point helps us help you better",
+    "Moderate symptoms are exactly why tools like this exist. We'll track it closely",
+  ],
+  3: [
+    "I'm sorry you're dealing with that. Let's make sure we address it",
+    "That sounds really uncomfortable. You're in the right place",
+    "Thank you for telling us. We're going to take that seriously",
+    "We hear you. That's not something you should have to just live with",
+    "That's significant and we're glad you're not ignoring it",
+  ],
+};
+
+const pickAck = (optionIndex: number, used: Set<string>): string => {
+  const pool = ackPools[Math.min(optionIndex, 3)];
+  const unused = pool.filter(m => !used.has(m));
+  const available = unused.length > 0 ? unused : pool;
+  return available[Math.floor(Math.random() * available.length)];
 };
 
 const computeBaselineRisk = (itch: string, tenderness: string, hairline: string, hairHealth: string): 'green' | 'amber' | 'red' => {
