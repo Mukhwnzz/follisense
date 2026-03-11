@@ -32,6 +32,8 @@ import ResearchProgramme from "./pages/ResearchProgramme";
 import FindSpecialist from "./pages/FindSpecialist";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import MyRoutine from "./pages/MyRoutine";
+import RoutineTracker from "./pages/RoutineTracker";
+import SalonBooking from "./pages/SalonBooking";
 import StylistLearnPage from "./pages/StylistLearnPage";
 import ScalpQuiz from "./pages/ScalpQuiz";
 import SalonCheckIn from "./pages/SalonCheckIn";
