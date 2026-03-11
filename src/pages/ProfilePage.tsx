@@ -106,6 +106,10 @@ const ProfilePage = () => {
   const [showNewPw, setShowNewPw] = useState(false);
   const [showConfirmPw, setShowConfirmPw] = useState(false);
   const [showResearchExplainer, setShowResearchExplainer] = useState(false);
+  const [preferredStylist, setPreferredStylist] = useState('');
+  const [preferredSalon, setPreferredSalon] = useState('');
+  const [bookingMethod, setBookingMethod] = useState('');
+  const [salonContact, setSalonContact] = useState('');
 
   const isMale = onboardingData.gender === 'man';
 
@@ -407,6 +411,32 @@ const ProfilePage = () => {
             )}
             <div className="px-4 pb-3">
               <button onClick={() => navigate('/products')} className="text-sm font-medium text-primary">Browse product guide →</button>
+            </div>
+          </div>
+        </ProfileSection>
+
+        {/* ═══════ Your Stylist ═══════ */}
+        <ProfileSection title="Your Stylist" icon={Scissors}>
+          <div className="divide-y divide-border">
+            <div className="px-4 py-3">
+              <label className="text-xs font-medium text-muted-foreground mb-1 block">Preferred stylist name (optional)</label>
+              <input type="text" value={preferredStylist} onChange={e => setPreferredStylist(e.target.value)} placeholder="e.g. Ama" className="w-full h-10 px-3 rounded-lg border border-border bg-card text-foreground text-sm focus:outline-none focus:border-primary" />
+            </div>
+            <div className="px-4 py-3">
+              <label className="text-xs font-medium text-muted-foreground mb-1 block">Salon name (optional)</label>
+              <input type="text" value={preferredSalon} onChange={e => setPreferredSalon(e.target.value)} placeholder="e.g. Natural Touch Studio" className="w-full h-10 px-3 rounded-lg border border-border bg-card text-foreground text-sm focus:outline-none focus:border-primary" />
+            </div>
+            <div className="px-4 py-3">
+              <label className="text-xs font-medium text-muted-foreground mb-1 block">How do you usually book?</label>
+              <div className="flex flex-wrap gap-2 mt-1">
+                {['Fresha', 'Booksy', 'Instagram DM', 'WhatsApp', 'Phone call', 'Other'].map(m => (
+                  <button key={m} onClick={() => setBookingMethod(m)} className={`pill-option ${bookingMethod === m ? 'selected' : ''}`}>{m}</button>
+                ))}
+              </div>
+            </div>
+            <div className="px-4 py-3">
+              <label className="text-xs font-medium text-muted-foreground mb-1 block">Salon phone or booking link (optional)</label>
+              <input type="text" value={salonContact} onChange={e => setSalonContact(e.target.value)} placeholder="Phone number or URL" className="w-full h-10 px-3 rounded-lg border border-border bg-card text-foreground text-sm focus:outline-none focus:border-primary" />
             </div>
           </div>
         </ProfileSection>

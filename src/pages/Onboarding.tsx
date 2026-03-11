@@ -1,9 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, HelpCircle, ChevronDown, Camera, Check, Leaf, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowLeft, HelpCircle, ChevronDown, Camera, Check, Leaf, ChevronLeft, ChevronRight, Play } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { toast } from '@/hooks/use-toast';
 import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
@@ -74,9 +76,15 @@ const hairTypes = [
   },
 ];
 
-const chemicalOptionsSimple = ['Yes, currently', 'Previously but not now', 'No, fully natural', 'Not sure'];
+const chemicalOptionsSimple = ['No, fully natural', 'Yes', 'Previously, but not currently', 'Not sure'];
 const chemicalTypeOptions = ['Relaxed or permed', 'Texturised', 'Colour treated', 'Bleached'];
 const lastChemicalTreatmentOptions = ['Within the last month', '1 to 3 months ago', '3 to 6 months ago', '6 to 12 months ago', 'Over a year ago', 'Not sure'];
+const notSureChemicalFollowUp = [
+  { label: 'Relaxer or perm', desc: 'Makes curly hair straight', mapsTo: 'Relaxed or permed' },
+  { label: 'Texturiser', desc: 'Loosens curl pattern without fully straightening', mapsTo: 'Texturised' },
+  { label: 'Hair colour or dye', desc: '', mapsTo: 'Colour treated' },
+  { label: 'Bleach or lightening', desc: '', mapsTo: 'Bleached' },
+];
 
 const femaleStyleOptions = [
   'Worn out / loose (natural)', 'Worn out / loose (relaxed or straightened)',
@@ -192,11 +200,37 @@ const isSkippableStep = (step: number, skipMenstrual: boolean): boolean => {
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
-const getBaselineAcknowledgment = (optionIndex: number): string => {
-  if (optionIndex === 0) return ['That\'s good to hear', 'Great', 'Lovely'][Math.floor(Math.random() * 3)];
-  if (optionIndex === 1) return ['Okay, noted', 'Thanks for sharing that', 'Got it'][Math.floor(Math.random() * 3)];
-  if (optionIndex === 2) return ['Thanks for being honest about that', "Okay, that's really helpful to know", "We'll keep a close eye on that"][Math.floor(Math.random() * 3)];
-  return ["I'm sorry you're dealing with that. Let's make sure we address it.", "That sounds really uncomfortable. You're in the right place.", "Thank you for telling us. We're going to take that seriously."][Math.floor(Math.random() * 3)];
+const ackPools: Record<number, string[]> = {
+  0: ["That's great", "Good to hear", "Lovely", "Nice"],
+  1: [
+    "Okay, we've noted that. Nothing to worry about for now",
+    "Thanks for sharing. We'll keep that in mind",
+    "Got it. That's pretty common but worth tracking",
+    "Noted. We'll see how that looks over your next few check-ins",
+    "Mild is usually manageable. Let's track how it goes",
+  ],
+  2: [
+    "Thanks for being honest about that. That's exactly the kind of thing we want to track for you",
+    "Okay, that's really helpful to know. We'll pay attention to that",
+    "We appreciate you sharing that. Let's watch how it develops",
+    "That's worth keeping an eye on. We'll check in on this next time",
+    "Thanks for flagging that. Knowing your starting point helps us help you better",
+    "Moderate symptoms are exactly why tools like this exist. We'll track it closely",
+  ],
+  3: [
+    "I'm sorry you're dealing with that. Let's make sure we address it",
+    "That sounds really uncomfortable. You're in the right place",
+    "Thank you for telling us. We're going to take that seriously",
+    "We hear you. That's not something you should have to just live with",
+    "That's significant and we're glad you're not ignoring it",
+  ],
+};
+
+const pickAck = (optionIndex: number, used: Set<string>): string => {
+  const pool = ackPools[Math.min(optionIndex, 3)];
+  const unused = pool.filter(m => !used.has(m));
+  const available = unused.length > 0 ? unused : pool;
+  return available[Math.floor(Math.random() * available.length)];
 };
 
 const computeBaselineRisk = (itch: string, tenderness: string, hairline: string, hairHealth: string): 'green' | 'amber' | 'red' => {
@@ -328,6 +362,7 @@ const Onboarding = () => {
   const [showMoreStyles, setShowMoreStyles] = useState(false);
   const [showMicroEducation, setShowMicroEducation] = useState<{ title: string; message: string } | null>(null);
   const [skippedSections, setSkippedSections] = useState<number[]>([]);
+  const [notSureFollowUp, setNotSureFollowUp] = useState<string[]>([]);
 
   // Male-specific
   const [barberFreq, setBarberFreq] = useState('');
@@ -342,6 +377,7 @@ const Onboarding = () => {
   const [baselineStep, setBaselineStep] = useState(0);
   const [baselineAnswers, setBaselineAnswers] = useState<Record<string, string>>({});
   const [baselineAck, setBaselineAck] = useState<string | null>(null);
+  const usedAcks = useRef<Set<string>>(new Set());
 
   // ── Derived ──
   const isMale = gender === 'man';
@@ -350,7 +386,7 @@ const Onboarding = () => {
 
   // Filter styles based on chemical processing — hide natural-only styles for currently processed hair
   const naturalOnlyStyles = ['Worn out / loose (natural)', 'Wash and go', 'Twist out / braid out'];
-  const isCurrentlyProcessed = chemicalProcessing === 'Yes, currently' && chemicalMultiple.some(c => ['Relaxed or permed', 'Texturised'].includes(c));
+  const isCurrentlyProcessed = chemicalProcessing === 'Yes' && chemicalMultiple.some(c => ['Relaxed or permed', 'Texturised'].includes(c));
   const rawStyleOptions = isMale ? maleStyleOptions : isNeutral ? [...new Set([...femaleStyleOptions, ...maleStyleOptions])] : femaleStyleOptions;
   const styleOptions = isCurrentlyProcessed ? rawStyleOptions.filter(s => !naturalOnlyStyles.includes(s)) : rawStyleOptions;
   const wornOutOnlyStyles = isMale ? wornOutOnlyStylesMale : isNeutral ? [...wornOutOnlyStylesFemale, ...wornOutOnlyStylesMale] : wornOutOnlyStylesFemale;
@@ -396,6 +432,17 @@ const Onboarding = () => {
   const toggleStyle = (s: string) => setStyles(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s]);
   const toggleChemMulti = (v: string) => setChemicalMultiple(prev => prev.includes(v) ? prev.filter(x => x !== v) : [...prev, v]);
   const toggleMaleBetweenCare = (v: string) => setMaleBetweenCare(prev => prev.includes(v) ? prev.filter(x => x !== v) : [...prev, v]);
+  const toggleNotSureFollowUp = (v: string) => {
+    if (v === 'None of these' || v === "I really don't know") {
+      setNotSureFollowUp(prev => prev.includes(v) ? [] : [v]);
+      setLastChemicalTreatment('');
+    } else {
+      setNotSureFollowUp(prev => {
+        const without = prev.filter(x => x !== 'None of these' && x !== "I really don't know");
+        return without.includes(v) ? without.filter(x => x !== v) : [...without, v];
+      });
+    }
+  };
   const toggleBetweenWash = (v: string) => {
     const nothingOption = 'Nothing — I leave it alone until wash day';
     if (v === nothingOption) {
@@ -440,7 +487,9 @@ const Onboarding = () => {
 
   const selectBaselineAnswer = (key: string, val: string, optIndex: number) => {
     setBaselineAnswers(prev => ({ ...prev, [key]: val }));
-    setBaselineAck(getBaselineAcknowledgment(optIndex));
+    const ack = pickAck(optIndex, usedAcks.current);
+    usedAcks.current.add(ack);
+    setBaselineAck(ack);
   };
 
   // ── canProceed ──
@@ -451,9 +500,14 @@ const Onboarding = () => {
       case 1: return !!hairType;
       case 2: {
         if (!chemicalProcessing) return false;
-        if (chemicalProcessing === 'No, fully natural' || chemicalProcessing === 'Not sure') return true;
-        if (chemicalProcessing === 'Yes, currently') return chemicalMultiple.length > 0 && !!lastChemicalTreatment;
-        if (chemicalProcessing === 'Previously but not now') return !!lastChemicalTreatment;
+        if (chemicalProcessing === 'No, fully natural') return true;
+        if (chemicalProcessing === 'Yes') return chemicalMultiple.length > 0 && !!lastChemicalTreatment;
+        if (chemicalProcessing === 'Previously, but not currently') return !!lastChemicalTreatment;
+        if (chemicalProcessing === 'Not sure') {
+          if (notSureFollowUp.length === 0) return false;
+          if (notSureFollowUp.includes('None of these') || notSureFollowUp.includes("I really don't know")) return true;
+          return !!lastChemicalTreatment;
+        }
         return false;
       }
       case 3: {
@@ -542,9 +596,23 @@ const Onboarding = () => {
           ? wornOutWashFreq + (lessOftenDetail ? ` (${lessOftenDetail})` : '')
           : washFreqDetail || washFreqBucket;
 
+      // Compute effective chemical processing from "Not sure" follow-up
+      let effectiveChemProcessing = chemicalProcessing;
+      let effectiveChemMultiple = [...chemicalMultiple];
+      if (chemicalProcessing === 'Not sure' && notSureFollowUp.length > 0) {
+        if (notSureFollowUp.includes('None of these')) {
+          effectiveChemProcessing = 'No, fully natural';
+        } else if (!notSureFollowUp.includes("I really don't know")) {
+          effectiveChemProcessing = 'Yes';
+          effectiveChemMultiple = notSureFollowUp
+            .map(s => notSureChemicalFollowUp.find(n => n.label === s)?.mapsTo)
+            .filter(Boolean) as string[];
+        }
+      }
+
       setOnboardingData({
-        gender, hairType, chemicalProcessing, lastChemicalTreatment,
-        chemicalProcessingMultiple: chemicalMultiple,
+        gender, hairType, chemicalProcessing: effectiveChemProcessing, lastChemicalTreatment,
+        chemicalProcessingMultiple: effectiveChemMultiple,
         protectiveStyles: styles, otherStyle, protectiveStyleFrequency: protectiveFreq,
         isWornOutOnly, cycleLength: cycleLen, cycleLengthMin: cycleLenMin, cycleLengthMax: cycleLenMax,
         washFrequency: computedWashFrequency, washFrequencyPerCycle: washFreqPerCycle,
@@ -743,20 +811,23 @@ const Onboarding = () => {
               <div>
                 <h2 className="text-lg font-medium text-foreground mb-1">A quick question about your hair history</h2>
                 <p className="text-xs text-muted-foreground mb-5">{sectionWhyText[2]}</p>
-                <p className="font-medium text-foreground mb-3">Is your hair chemically processed?</p>
+                <p className="font-medium text-foreground mb-3">Has your hair been chemically processed?</p>
                 <div className="space-y-2">
                   {chemicalOptionsSimple.map(opt => (
                     <button key={opt} onClick={() => {
                       setChemicalProcessing(opt);
-                      if (opt === 'No, fully natural' || opt === 'Not sure') { setChemicalMultiple([]); setLastChemicalTreatment(''); }
-                      if (opt !== 'Yes, currently') setChemicalMultiple([]);
+                      if (opt === 'No, fully natural') { setChemicalMultiple([]); setLastChemicalTreatment(''); setNotSureFollowUp([]); }
+                      if (opt === 'Yes') { setNotSureFollowUp([]); }
+                      if (opt === 'Previously, but not currently') { setChemicalMultiple([]); setNotSureFollowUp([]); }
+                      if (opt === 'Not sure') { setChemicalMultiple([]); setLastChemicalTreatment(''); setNotSureFollowUp([]); }
+                      if (opt !== 'Yes') setChemicalMultiple([]);
                     }} className={`selection-card w-full text-left ${chemicalProcessing === opt ? 'selected' : ''}`}>
                       <p className="font-medium text-foreground text-sm">{opt}</p>
                     </button>
                   ))}
                 </div>
 
-                <SlideIn show={chemicalProcessing === 'Yes, currently'}>
+                <SlideIn show={chemicalProcessing === 'Yes'}>
                   <div className="mt-4 p-3 rounded-xl bg-accent space-y-2">
                     <p className="text-sm font-medium text-foreground mb-2">What type of processing?</p>
                     <div className="flex flex-wrap gap-2">
@@ -767,7 +838,27 @@ const Onboarding = () => {
                   </div>
                 </SlideIn>
 
-                <SlideIn show={(chemicalProcessing === 'Yes, currently' && chemicalMultiple.length > 0) || chemicalProcessing === 'Previously but not now'}>
+                <SlideIn show={chemicalProcessing === 'Not sure'}>
+                  <div className="mt-4 p-3 rounded-xl bg-accent space-y-3">
+                    <p className="text-sm font-medium text-foreground">No worries. Have you ever had any of these done to your hair?</p>
+                    <div className="space-y-2">
+                      {notSureChemicalFollowUp.map(opt => (
+                        <button key={opt.label} onClick={() => toggleNotSureFollowUp(opt.label)} className={`selection-card w-full text-left ${notSureFollowUp.includes(opt.label) ? 'selected' : ''}`}>
+                          <p className="font-medium text-foreground text-sm">{opt.label}</p>
+                          {opt.desc && <p className="text-xs text-muted-foreground">{opt.desc}</p>}
+                        </button>
+                      ))}
+                      <button onClick={() => toggleNotSureFollowUp('None of these')} className={`selection-card w-full text-left ${notSureFollowUp.includes('None of these') ? 'selected' : ''}`}>
+                        <p className="font-medium text-foreground text-sm">None of these</p>
+                      </button>
+                      <button onClick={() => toggleNotSureFollowUp("I really don't know")} className={`selection-card w-full text-left ${notSureFollowUp.includes("I really don't know") ? 'selected' : ''}`}>
+                        <p className="font-medium text-foreground text-sm">I really don't know</p>
+                      </button>
+                    </div>
+                  </div>
+                </SlideIn>
+
+                <SlideIn show={(chemicalProcessing === 'Yes' && chemicalMultiple.length > 0) || chemicalProcessing === 'Previously, but not currently' || (chemicalProcessing === 'Not sure' && notSureFollowUp.length > 0 && !notSureFollowUp.includes('None of these') && !notSureFollowUp.includes("I really don't know"))}>
                   <div className="mt-4">
                     <p className="text-sm font-medium text-foreground mb-3">When was your last chemical treatment?</p>
                     <div className="flex flex-wrap gap-2">
@@ -1067,16 +1158,76 @@ const Onboarding = () => {
               <div>
                 <h2 className="text-lg font-medium text-foreground mb-2">Capture your starting point</h2>
                 <p className="text-muted-foreground mb-4">A baseline photo helps you spot gradual changes that are hard to notice day to day</p>
-                <details className="mb-5 rounded-xl border border-border overflow-hidden">
-                  <summary className="px-4 py-3 text-sm font-medium text-foreground cursor-pointer hover:bg-accent/50 transition-colors">📸 How to take good baseline photos</summary>
-                  <div className="px-4 pb-4 space-y-3 text-xs text-muted-foreground leading-relaxed border-t border-border pt-3">
-                    <p><strong className="text-foreground">Lighting:</strong> Natural light is best. Face a window or go outside.</p>
-                    <p><strong className="text-foreground">Hairline:</strong> Pull your hair back. Hold camera about 15cm away.</p>
-                    <p><strong className="text-foreground">Crown:</strong> Part your hair at the crown. Capture straight down from above.</p>
-                    <p><strong className="text-foreground">Nape:</strong> Pull your hair forward or up. Capture the back of your neck.</p>
-                    <p><strong className="text-foreground">General:</strong> Keep steady. Make sure the scalp is visible, not just hair.</p>
+                <div className="card-elevated mb-5 overflow-hidden">
+                  <div className="p-4 pb-2">
+                    <h3 className="text-sm font-semibold text-foreground">How to take good baseline photos</h3>
+                    <p className="text-xs text-muted-foreground mt-0.5">Getting this right makes tracking changes much easier</p>
                   </div>
-                </details>
+                  <Tabs defaultValue="read" className="px-4 pb-4">
+                    <TabsList className="w-full mb-3">
+                      <TabsTrigger value="watch" className="flex-1">Watch</TabsTrigger>
+                      <TabsTrigger value="read" className="flex-1">Read</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="watch">
+                      <button
+                        onClick={() => toast({ title: 'Video guide coming soon', description: 'We are working on a short instructional video for you.' })}
+                        className="w-full aspect-video rounded-xl bg-accent border border-border flex flex-col items-center justify-center gap-2 mb-2"
+                      >
+                        <div className="w-12 h-12 rounded-full bg-primary/15 flex items-center justify-center">
+                          <Play size={20} className="text-primary ml-0.5" strokeWidth={1.8} />
+                        </div>
+                      </button>
+                      <p className="text-xs text-muted-foreground text-center">A quick 60-second guide to capturing your scalp and hairline</p>
+                    </TabsContent>
+                    <TabsContent value="read">
+                      <div className="space-y-3">
+                        <div className="rounded-xl bg-accent p-3">
+                          <p className="text-xs font-semibold text-foreground mb-1">Hairline and temples</p>
+                          <ul className="text-xs text-muted-foreground space-y-0.5 list-disc pl-3">
+                            <li>Pull your hair back from your face</li>
+                            <li>Hold the camera about 15cm away</li>
+                            <li>Capture from your forehead down to your ears on both sides</li>
+                            <li>Good lighting facing a window is ideal</li>
+                          </ul>
+                        </div>
+                        <div className="rounded-xl bg-accent p-3">
+                          <p className="text-xs font-semibold text-foreground mb-1">Crown and vertex</p>
+                          <ul className="text-xs text-muted-foreground space-y-0.5 list-disc pl-3">
+                            <li>Part your hair at the crown</li>
+                            <li>Use a second mirror or ask someone to help</li>
+                            <li>Capture straight down from above</li>
+                            <li>Make sure the scalp is visible, not just hair</li>
+                          </ul>
+                        </div>
+                        <div className="rounded-xl bg-accent p-3">
+                          <p className="text-xs font-semibold text-foreground mb-1">Nape and back of neck</p>
+                          <ul className="text-xs text-muted-foreground space-y-0.5 list-disc pl-3">
+                            <li>Pull your hair forward or up</li>
+                            <li>Capture the back of your neck and lower hairline</li>
+                            <li>A second mirror or someone to help makes this easier</li>
+                          </ul>
+                        </div>
+                        <div className="rounded-xl bg-accent p-3">
+                          <p className="text-xs font-semibold text-foreground mb-1">Hair condition</p>
+                          <ul className="text-xs text-muted-foreground space-y-0.5 list-disc pl-3">
+                            <li>Hold a section of hair against a plain light background</li>
+                            <li>Capture the mid-lengths and ends</li>
+                            <li>This helps track breakage and texture changes over time</li>
+                          </ul>
+                        </div>
+                        <div className="rounded-xl border border-border p-3">
+                          <p className="text-xs font-semibold text-foreground mb-1">General tips</p>
+                          <ul className="text-xs text-muted-foreground space-y-0.5 list-disc pl-3">
+                            <li>Take photos in natural light whenever possible</li>
+                            <li>Make sure your scalp is visible, not hidden by hair</li>
+                            <li>Take a few shots and pick the clearest one</li>
+                            <li>Consistency matters: try to take photos in the same lighting and angle each time</li>
+                          </ul>
+                        </div>
+                      </div>
+                    </TabsContent>
+                  </Tabs>
+                </div>
                 <div className="space-y-3 mb-6">
                   {baselineAreas.map(area => (
                     <div key={area.id} className={`selection-card w-full flex items-center gap-4 text-left ${area.optional ? 'border-dashed opacity-80' : ''} ${capturedPhotos[area.id] ? 'selected' : ''}`}>

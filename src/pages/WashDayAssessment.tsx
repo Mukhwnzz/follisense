@@ -5,21 +5,46 @@ import { ArrowLeft, X, Camera } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 import ProductSearch from '@/components/ProductSearch';
 
+const washDayUsedAcks = new Set<string>();
+
 const getAcknowledgment = (optionIndex: number, totalOptions: number): string => {
-  if (optionIndex === 0) {
-    const msgs = ["That's good to hear", 'Great', 'Lovely'];
-    return msgs[Math.floor(Math.random() * msgs.length)];
-  }
-  if (optionIndex === 1) {
-    const msgs = ['Okay, noted', 'Thanks for sharing that', 'Got it'];
-    return msgs[Math.floor(Math.random() * msgs.length)];
-  }
-  if (optionIndex >= totalOptions - 1) {
-    const msgs = ["I'm sorry you're dealing with that. Let's make sure we address it.", "That sounds really uncomfortable. You're in the right place.", "Thank you for telling us. We're going to take that seriously."];
-    return msgs[Math.floor(Math.random() * msgs.length)];
-  }
-  const msgs = ['Thanks for being honest about that', "Okay, that's really helpful to know", "We'll keep a close eye on that"];
-  return msgs[Math.floor(Math.random() * msgs.length)];
+  const pools: Record<string, string[]> = {
+    none: ["That's great", "Good to hear", "Lovely", "Nice"],
+    mild: [
+      "Okay, we've noted that. Nothing to worry about for now",
+      "Thanks for sharing. We'll keep that in mind",
+      "Got it. That's pretty common but worth tracking",
+      "Noted. We'll see how that looks over your next few check-ins",
+      "Mild is usually manageable. Let's track how it goes",
+    ],
+    moderate: [
+      "Thanks for being honest about that. That's exactly the kind of thing we want to track for you",
+      "Okay, that's really helpful to know. We'll pay attention to that",
+      "We appreciate you sharing that. Let's watch how it develops",
+      "That's worth keeping an eye on. We'll check in on this next time",
+      "Thanks for flagging that. Knowing your starting point helps us help you better",
+      "Moderate symptoms are exactly why tools like this exist. We'll track it closely",
+    ],
+    severe: [
+      "I'm sorry you're dealing with that. Let's make sure we address it",
+      "That sounds really uncomfortable. You're in the right place",
+      "Thank you for telling us. We're going to take that seriously",
+      "We hear you. That's not something you should have to just live with",
+      "That's significant and we're glad you're not ignoring it",
+    ],
+  };
+
+  let key = 'mild';
+  if (optionIndex === 0) key = 'none';
+  else if (optionIndex >= totalOptions - 1) key = 'severe';
+  else if (optionIndex >= 2) key = 'moderate';
+
+  const pool = pools[key];
+  const unused = pool.filter(m => !washDayUsedAcks.has(m));
+  const available = unused.length > 0 ? unused : pool;
+  const pick = available[Math.floor(Math.random() * available.length)];
+  washDayUsedAcks.add(pick);
+  return pick;
 };
 
 interface StepDef {

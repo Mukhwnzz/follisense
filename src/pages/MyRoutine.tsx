@@ -120,7 +120,7 @@ const generateMockRoutine = (data: any): Routine => {
           : 'Avoid daily heat styling. Every heat pass weakens the protein bonds in your hair. If you use heat, always use a protectant and keep the temperature under 190°C.',
       },
       {
-        item: 'Avoid heavy oils or greases directly on your scalp. They can clog follicles and trap buildup, especially under protective styles.',
+        item: 'Oils work well for the hair shaft, but your scalp might benefit from something lighter between washes, especially under protective styles.',
       },
       {
         item: data.chemicalProcessing !== 'No, fully natural'
