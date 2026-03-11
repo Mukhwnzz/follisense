@@ -106,6 +106,10 @@ const ProfilePage = () => {
   const [showNewPw, setShowNewPw] = useState(false);
   const [showConfirmPw, setShowConfirmPw] = useState(false);
   const [showResearchExplainer, setShowResearchExplainer] = useState(false);
+  const [preferredStylist, setPreferredStylist] = useState('');
+  const [preferredSalon, setPreferredSalon] = useState('');
+  const [bookingMethod, setBookingMethod] = useState('');
+  const [salonContact, setSalonContact] = useState('');
 
   const isMale = onboardingData.gender === 'man';
 
