@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Leaf, Eye, EyeOff } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
-import { toast } from '@/hooks/use-toast';
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -11,20 +10,18 @@ const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  
 
   const canSubmit = email.trim().length > 0 && password.length >= 1;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!canSubmit) return;
-    // For prototype: extract name from email or use generic
     const nameFromEmail = email.split('@')[0].replace(/[^a-zA-Z]/g, '');
     const displayName = nameFromEmail.charAt(0).toUpperCase() + nameFromEmail.slice(1);
     setUserName(displayName || 'there');
+    // Returning users skip onboarding entirely
     navigate(onboardingComplete ? '/home' : '/onboarding');
   };
-
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center px-6">
@@ -57,11 +54,7 @@ const LoginPage = () => {
           <div>
             <div className="flex items-center justify-between mb-1.5">
               <label className="text-sm font-medium text-foreground">Password</label>
-              <button
-                type="button"
-                onClick={() => navigate('/forgot-password')}
-                className="text-xs text-primary font-medium"
-              >
+              <button type="button" onClick={() => navigate('/forgot-password')} className="text-xs text-primary font-medium">
                 Forgot password?
               </button>
             </div>
@@ -126,9 +119,7 @@ const LoginPage = () => {
 
         <p className="text-center text-sm text-muted-foreground">
           Don't have an account?{' '}
-          <button onClick={() => navigate('/signup')} className="text-primary font-medium">
-            Sign up
-          </button>
+          <button onClick={() => navigate('/signup')} className="text-primary font-medium">Sign up</button>
         </p>
 
         <p className="text-center text-xs text-muted-foreground mt-4">

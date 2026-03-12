@@ -1,17 +1,9 @@
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Leaf, CalendarCheck, Brain, Stethoscope } from 'lucide-react';
-import { useApp } from '@/contexts/AppContext';
+import { Leaf, User, Scissors } from 'lucide-react';
 
 const Welcome = () => {
   const navigate = useNavigate();
-  const { onboardingComplete } = useApp();
-
-  const features = [
-    { icon: CalendarCheck, text: 'Track symptoms around your wash day, not every day' },
-    { icon: Brain, text: 'Understand what your scalp and hair are telling you' },
-    { icon: Stethoscope, text: 'Know when to seek professional care' },
-  ];
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center px-6 relative overflow-hidden">
@@ -24,52 +16,69 @@ const Welcome = () => {
         transition={{ duration: 0.5, ease: 'easeOut' }}
         className="max-w-[430px] w-full text-center relative z-10"
       >
-        <div className="flex items-center justify-center gap-2 mb-4">
+        <div className="flex items-center justify-center gap-2 mb-3">
           <Leaf size={28} className="text-primary" strokeWidth={1.8} />
           <h1 className="text-3xl font-semibold text-foreground tracking-tight">FolliSense</h1>
         </div>
-        <p className="text-muted-foreground text-lg mb-12">Smart scalp care, built around you</p>
+        <p className="text-muted-foreground text-lg mb-10">Smart scalp care, built around you</p>
 
-        <div className="space-y-4 mb-12">
-          {features.map(({ icon: Icon, text }, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.3 + i * 0.15, duration: 0.4 }}
-              className="flex items-center gap-4 text-left px-2"
+        {/* Consumer entry */}
+        <div className="card-elevated p-5 mb-4 text-left">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 rounded-xl bg-sage-light flex items-center justify-center flex-shrink-0">
+              <User size={20} className="text-primary" strokeWidth={1.8} />
+            </div>
+            <div>
+              <p className="font-semibold text-foreground">I'm a consumer</p>
+              <p className="text-xs text-muted-foreground">Track your scalp health and hair journey</p>
+            </div>
+          </div>
+          <div className="flex gap-3">
+            <button
+              onClick={() => navigate('/signup')}
+              className="flex-1 h-12 bg-primary text-primary-foreground rounded-xl font-semibold text-sm btn-press"
             >
-              <div className="w-10 h-10 rounded-xl bg-sage-light flex items-center justify-center flex-shrink-0">
-                <Icon size={20} className="text-primary" strokeWidth={1.8} />
-              </div>
-              <p className="text-foreground text-[15px]">{text}</p>
-            </motion.div>
-          ))}
+              Sign up
+            </button>
+            <button
+              onClick={() => navigate('/login')}
+              className="flex-1 h-12 rounded-xl border-2 border-border bg-card text-foreground font-semibold text-sm btn-press"
+            >
+              Log in
+            </button>
+          </div>
         </div>
 
-        <button
-          onClick={() => navigate('/signup')}
-          className="w-full h-14 bg-primary text-primary-foreground rounded-xl font-semibold text-base btn-press"
-        >
-          Get started
-        </button>
+        {/* Stylist entry */}
+        <div className="card-elevated p-5 mb-6 text-left">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 rounded-xl bg-accent flex items-center justify-center flex-shrink-0">
+              <Scissors size={20} className="text-foreground" strokeWidth={1.8} />
+            </div>
+            <div>
+              <p className="font-semibold text-foreground">I'm a stylist or barber</p>
+              <p className="text-xs text-muted-foreground">Professional tools for client scalp health</p>
+            </div>
+          </div>
+          <div className="flex gap-3">
+            <button
+              onClick={() => navigate('/stylist/signup')}
+              className="flex-1 h-12 bg-foreground text-background rounded-xl font-semibold text-sm btn-press"
+            >
+              Sign up
+            </button>
+            <button
+              onClick={() => navigate('/stylist/login')}
+              className="flex-1 h-12 rounded-xl border-2 border-border bg-card text-foreground font-semibold text-sm btn-press"
+            >
+              Log in
+            </button>
+          </div>
+        </div>
 
-        <button
-          onClick={() => navigate('/login')}
-          className="mt-4 text-muted-foreground text-sm hover:text-foreground transition-colors"
-        >
-          Already have an account? Log in
-        </button>
-
-        <div className="w-full h-px bg-border my-6" />
-
-        <p className="text-sm text-muted-foreground mb-3">Are you a hair professional?</p>
-        <button
-          onClick={() => navigate('/stylist/signup')}
-          className="w-full h-12 rounded-xl border-2 border-border bg-card text-foreground text-sm font-semibold btn-press"
-        >
-          Stylist sign-up
-        </button>
+        <p className="text-xs text-muted-foreground">
+          By continuing, you agree to our Terms of Service and Privacy Policy.
+        </p>
       </motion.div>
     </div>
   );
