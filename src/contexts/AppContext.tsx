@@ -166,6 +166,8 @@ interface AppContextType {
   setOnboardingData: (d: OnboardingData) => void;
   currentCheckIn: CheckInData | null;
   setCurrentCheckIn: (d: CheckInData | null) => void;
+  checkInHistory: CheckInData[];
+  addToCheckInHistory: (c: CheckInData) => void;
   history: CycleEntry[];
   salonVisits: SalonVisit[];
   addSalonVisit: (v: SalonVisit) => void;
@@ -195,6 +197,8 @@ interface AppContextType {
   incrementResearchPhotos: () => void;
   checkInCount: number;
   setCheckInCount: (n: number) => void;
+  progressiveDismissed: Record<string, boolean>;
+  dismissProgressivePrompt: (key: string) => void;
   resetAll: () => void;
 }
 
@@ -243,6 +247,13 @@ const defaultStylistLocations: StylistLocation[] = [
   { id: 'loc2', name: 'Home Studio', city: 'Ikeja', isPrimary: false },
 ];
 
+// Demo check-in history for triage comparison
+const demoCheckInHistory: CheckInData[] = [
+  { itch: 'Mild', tenderness: 'None', hairline: 'No change', flaking: 'None', shedding: 'Normal', type: 'wash-day', date: 'Apr 2' },
+  { itch: 'Moderate', tenderness: 'A little', hairline: 'Looks a bit thinner', flaking: 'Some flaking', shedding: 'More than usual', type: 'wash-day', date: 'Mar 18' },
+  { itch: 'Mild', tenderness: 'None', hairline: 'No change', flaking: 'None', shedding: 'Normal', type: 'wash-day', date: 'Feb 20' },
+];
+
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider = ({ children }: { children: ReactNode }) => {
@@ -250,6 +261,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [onboardingComplete, setOnboardingComplete] = useState(false);
   const [onboardingData, setOnboardingData] = useState<OnboardingData>(defaultOnboarding);
   const [currentCheckIn, setCurrentCheckIn] = useState<CheckInData | null>(null);
+  const [checkInHistory, setCheckInHistory] = useState<CheckInData[]>(demoCheckInHistory);
   const [riskOverride, setRiskOverride] = useState<'green' | 'amber' | 'red' | null>(null);
   const [stylistMode, setStylistMode] = useState(false);
   const [salonVisits, setSalonVisits] = useState<SalonVisit[]>(demoSalonVisits);
@@ -262,6 +274,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [quickLogs, setQuickLogs] = useState<QuickLogEntry[]>([]);
   const [research, setResearch] = useState<ResearchData>({ consented: false, consentDate: null, photoCount: 0, dismissed: false });
   const [checkInCount, setCheckInCount] = useState(3);
+  const [progressiveDismissed, setProgressiveDismissed] = useState<Record<string, boolean>>({});
 
   const addSalonVisit = (v: SalonVisit) => setSalonVisits(prev => [v, ...prev]);
   const addClientObservation = (o: ClientObservation) => setClientObservations(prev => [o, ...prev]);
@@ -269,12 +282,15 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const addStylistLocation = (loc: StylistLocation) => setStylistLocations(prev => [...prev, loc]);
   const removeStylistLocation = (id: string) => setStylistLocations(prev => prev.filter(l => l.id !== id));
   const incrementResearchPhotos = () => setResearch(prev => ({ ...prev, photoCount: prev.photoCount + 1 }));
+  const addToCheckInHistory = (c: CheckInData) => setCheckInHistory(prev => [c, ...prev]);
+  const dismissProgressivePrompt = (key: string) => setProgressiveDismissed(prev => ({ ...prev, [key]: true }));
 
   const resetAll = () => {
     setUserName('');
     setOnboardingComplete(false);
     setOnboardingData(defaultOnboarding);
     setCurrentCheckIn(null);
+    setCheckInHistory([]);
     setRiskOverride(null);
     setStylistMode(false);
     setSalonVisits(demoSalonVisits);
@@ -287,6 +303,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     setQuickLogs([]);
     setResearch({ consented: false, consentDate: null, photoCount: 0, dismissed: false });
     setCheckInCount(0);
+    setProgressiveDismissed({});
   };
 
   return (
@@ -295,6 +312,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       onboardingComplete, setOnboardingComplete,
       onboardingData, setOnboardingData,
       currentCheckIn, setCurrentCheckIn,
+      checkInHistory, addToCheckInHistory,
       history: demoHistory,
       salonVisits, addSalonVisit,
       riskOverride, setRiskOverride,
@@ -309,6 +327,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       quickLogs, addQuickLog,
       research, setResearch, incrementResearchPhotos,
       checkInCount, setCheckInCount,
+      progressiveDismissed, dismissProgressivePrompt,
       resetAll,
     }}>
       {children}

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { User, ChevronRight, Leaf, Lightbulb, Scissors, X, Calendar, Target, Stethoscope, Flame, Microscope, Droplets } from 'lucide-react';
+import { User, ChevronRight, Leaf, Lightbulb, Scissors, X, Calendar, Target, Stethoscope, Flame, Microscope, Droplets, Camera, FlaskConical, Heart, Sparkles } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 import { didYouKnowFacts } from '@/data/didYouKnowFacts';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -13,7 +13,10 @@ const serviceOptions = ['Wash', 'Treatment', 'Style installation', 'Style remova
 
 const HomePage = () => {
   const navigate = useNavigate();
-  const { onboardingData, healthProfile, addSalonVisit, checkInCount, userName, research, setResearch } = useApp();
+  const {
+    onboardingData, healthProfile, addSalonVisit, checkInCount, userName,
+    research, setResearch, progressiveDismissed, dismissProgressivePrompt, checkInHistory,
+  } = useApp();
   const [showSalonForm, setShowSalonForm] = useState(false);
   const [showSalonVisitPicker, setShowSalonVisitPicker] = useState(false);
   const [visitDate, setVisitDate] = useState<Date>(new Date());
@@ -24,10 +27,6 @@ const HomePage = () => {
 
   useEffect(() => {
     localStorage.setItem('follisense-last-home-visit', String(Date.now()));
-    const justOnboarded = sessionStorage.getItem('follisense-just-onboarded');
-    if (justOnboarded === 'true') {
-      return () => { sessionStorage.removeItem('follisense-just-onboarded'); };
-    }
   }, []);
 
   // Show research prompt once after 3rd check-in
@@ -54,7 +53,6 @@ const HomePage = () => {
   const circumference = 2 * Math.PI * radius;
   const offset = circumference - (progress / 100) * circumference;
 
-  // Streak calculation (mock: consecutive check-ins = checkInCount for demo)
   const streak = checkInCount;
 
   const toggleService = (s: string) => setServices(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s]);
@@ -71,17 +69,22 @@ const HomePage = () => {
   const getCheckInDesc = () => {
     if (isMale) {
       if (onboardingData.barberFrequency) return "It's been a couple of weeks since your last barber visit. Quick scalp check?";
-      if (onboardingData.locRetwistFrequency) return "Your locs have been in for 2 weeks — time for a quick scalp check?";
+      if (onboardingData.locRetwistFrequency) return "Your locs have been in for 2 weeks. Time for a quick scalp check?";
       return "Ready for a quick scalp check? Takes about a minute.";
     }
-    if (onboardingData.isWornOutOnly) return "It's been 2 weeks — ready for a quick scalp check?";
-    return `Hey — it's been 2 weeks since your ${(currentStyle).toLowerCase()} went in. Quick check-in?`;
+    if (onboardingData.isWornOutOnly) return "It's been 2 weeks. Ready for a quick scalp check?";
+    return `Hey, it's been 2 weeks since your ${currentStyle.toLowerCase()} went in. Quick check-in?`;
   };
 
-  // Profile completeness check
-  const skipped = JSON.parse(sessionStorage.getItem('follisense-skipped-sections') || '[]');
-  const hasSkippedProducts = skipped.includes(6) || skipped.includes(7);
-  const hasIncompleteProfile = hasSkippedProducts || (!healthProfile.sweat && !healthProfile.medicalConditions.length);
+  // ── Progressive profiling prompts ──
+  // These appear contextually, once each, and can be dismissed
+  const showPhotosPrompt = checkInCount >= 2 && !progressiveDismissed['photos'];
+  const showChemicalPrompt = !onboardingData.chemicalProcessing && !progressiveDismissed['chemical'] && checkInCount >= 1;
+  const showProductsPrompt = !progressiveDismissed['products'] && checkInCount >= 1 && onboardingData.scalpProducts.length === 0;
+
+  // Detect symptom fluctuation for menstrual prompt
+  const hasSymptomFluctuation = checkInHistory.length >= 2 && !isMale;
+  const showMenstrualPrompt = hasSymptomFluctuation && !onboardingData.menstrualTracking && !progressiveDismissed['menstrual'] && !isMale;
 
   const handleResearchDismiss = () => {
     setShowResearchPrompt(false);
@@ -107,7 +110,7 @@ const HomePage = () => {
           </button>
         </div>
 
-        {/* ══════ Streak / Progress ══════ */}
+        {/* Streak / Progress */}
         <div className="flex items-center gap-3 mb-4 px-1">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
@@ -118,7 +121,7 @@ const HomePage = () => {
                 {checkInCount} check-in{checkInCount !== 1 ? 's' : ''} completed
               </p>
               {streak >= 2 && (
-                <p className="text-xs text-primary font-medium">{streak} in a row — keep it up</p>
+                <p className="text-xs text-primary font-medium">{streak} in a row. Keep it up</p>
               )}
             </div>
           </div>
@@ -134,7 +137,7 @@ const HomePage = () => {
           </div>
         </div>
 
-        {/* ══════ Primary Action: Scalp Check-in ══════ */}
+        {/* Primary Action: Scalp Check-in */}
         <button
           onClick={() => navigate('/scalp-check')}
           className="card-elevated p-5 mb-4 w-full text-left border-l-4 border-l-primary"
@@ -164,7 +167,80 @@ const HomePage = () => {
           </div>
         </button>
 
-        {/* ══════ Salon Visit (secondary) ══════ */}
+        {/* ── Progressive Profiling Prompts ── */}
+        {showPhotosPrompt && (
+          <div className="card-elevated p-4 mb-4 border-l-4 border-l-primary/50">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <Camera size={18} className="text-primary" strokeWidth={1.5} />
+              </div>
+              <div className="flex-1">
+                <p className="font-medium text-foreground text-sm">Track visual changes over time?</p>
+                <p className="text-xs text-muted-foreground mt-0.5">Add your starting point so we can compare at future check-ins.</p>
+                <div className="flex gap-2 mt-2">
+                  <button onClick={() => navigate('/profile')} className="text-xs font-medium text-primary">Add photos</button>
+                  <button onClick={() => dismissProgressivePrompt('photos')} className="text-xs text-muted-foreground">Not now</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {showChemicalPrompt && (
+          <div className="card-elevated p-4 mb-4 border-l-4 border-l-primary/50">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-xl bg-accent flex items-center justify-center flex-shrink-0">
+                <FlaskConical size={18} className="text-foreground" strokeWidth={1.5} />
+              </div>
+              <div className="flex-1">
+                <p className="font-medium text-foreground text-sm">Tell us more about your hair history</p>
+                <p className="text-xs text-muted-foreground mt-0.5">This helps us tailor your check-ins more accurately.</p>
+                <div className="flex gap-2 mt-2">
+                  <button onClick={() => navigate('/profile')} className="text-xs font-medium text-primary">Complete profile</button>
+                  <button onClick={() => dismissProgressivePrompt('chemical')} className="text-xs text-muted-foreground">Not now</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {showProductsPrompt && (
+          <div className="card-elevated p-4 mb-4 border-l-4 border-l-primary/50">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-xl bg-accent flex items-center justify-center flex-shrink-0">
+                <Sparkles size={18} className="text-primary" strokeWidth={1.5} />
+              </div>
+              <div className="flex-1">
+                <p className="font-medium text-foreground text-sm">What products are you using?</p>
+                <p className="text-xs text-muted-foreground mt-0.5">Tell us what you're using so we can flag potential irritants.</p>
+                <div className="flex gap-2 mt-2">
+                  <button onClick={() => navigate('/profile')} className="text-xs font-medium text-primary">Add products</button>
+                  <button onClick={() => dismissProgressivePrompt('products')} className="text-xs text-muted-foreground">Not now</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {showMenstrualPrompt && (
+          <div className="card-elevated p-4 mb-4 border-l-4 border-l-primary/50">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <Heart size={18} className="text-primary" strokeWidth={1.5} />
+              </div>
+              <div className="flex-1">
+                <p className="font-medium text-foreground text-sm">Your symptoms seem to shift in a pattern</p>
+                <p className="text-xs text-muted-foreground mt-0.5">Want to link your cycle for more accurate insights?</p>
+                <div className="flex gap-2 mt-2">
+                  <button onClick={() => navigate('/profile')} className="text-xs font-medium text-primary">Link cycle</button>
+                  <button onClick={() => dismissProgressivePrompt('menstrual')} className="text-xs text-muted-foreground">Not now</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Salon Visit */}
         <button onClick={() => setShowSalonVisitPicker(true)} className="card-elevated p-4 mb-4 w-full flex items-center gap-3 text-left">
           <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
             <Scissors size={20} className="text-primary" strokeWidth={1.5} />
@@ -176,7 +252,7 @@ const HomePage = () => {
           <ChevronRight size={18} className="text-muted-foreground" />
         </button>
 
-        {/* ══════ Did You Know ══════ */}
+        {/* Did You Know */}
         <div className="rounded-2xl bg-sage-light p-5 mb-4">
           <div className="flex items-start gap-3">
             <Lightbulb size={20} className="text-primary mt-0.5 flex-shrink-0" strokeWidth={1.8} />
@@ -189,7 +265,7 @@ const HomePage = () => {
           </div>
         </div>
 
-        {/* ══════ Salon Booking (approaching end of cycle) ══════ */}
+        {/* Salon Booking */}
         {!isMale && !onboardingData.isWornOutOnly && currentDay >= totalDays - 4 && (
           <button onClick={() => navigate('/salon-booking')} className="card-elevated p-4 mb-4 w-full flex items-center gap-3 text-left">
             <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
@@ -203,7 +279,7 @@ const HomePage = () => {
           </button>
         )}
 
-        {/* ══════ Your Routine ══════ */}
+        {/* Your Routine */}
         <button onClick={() => navigate('/routine-tracker')} className="card-elevated p-4 mb-4 w-full flex items-center gap-3 text-left">
           <div className="w-10 h-10 rounded-xl bg-accent flex items-center justify-center flex-shrink-0">
             <Droplets size={20} className="text-primary" strokeWidth={1.5} />
@@ -215,25 +291,10 @@ const HomePage = () => {
           <ChevronRight size={18} className="text-muted-foreground" />
         </button>
 
-        {/* ══════ Complete your profile (only if sections skipped) ══════ */}
-        {hasIncompleteProfile && (
-          <button onClick={() => navigate(hasSkippedProducts ? '/onboarding?step=7' : '/health-profile')} className="card-elevated p-4 mb-4 w-full flex items-center gap-3 text-left border-l-4 border-l-warning">
-            <div className="w-10 h-10 rounded-xl bg-warning/15 flex items-center justify-center flex-shrink-0">
-              <Target size={20} className="text-warning" strokeWidth={1.5} />
-            </div>
-            <div className="flex-1">
-              <p className="font-medium text-foreground text-sm">Complete your profile</p>
-              <p className="text-xs text-muted-foreground">Fill in skipped sections for better personalisation</p>
-            </div>
-            <ChevronRight size={18} className="text-muted-foreground" />
-          </button>
-        )}
-
-        {/* Spacer for bottom nav */}
         <div className="h-20" />
       </motion.div>
 
-      {/* ══════ Research Prompt Modal (one-time, after 3rd check-in) ══════ */}
+      {/* Research Prompt Modal */}
       <AnimatePresence>
         {showResearchPrompt && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-foreground/30 z-[55] flex items-center justify-center px-6">
@@ -248,22 +309,16 @@ const HomePage = () => {
                 You've completed {checkInCount} check-ins. Want to help improve scalp health research for textured hair? Your anonymised data contributes to better understanding of scalp health.
               </p>
               <div className="space-y-2">
-                <button onClick={handleResearchOptIn} className="w-full h-12 rounded-xl bg-primary text-primary-foreground font-medium text-sm">
-                  Yes, opt me in
-                </button>
-                <button onClick={handleResearchDismiss} className="w-full h-12 rounded-xl border border-border text-foreground font-medium text-sm">
-                  Not now
-                </button>
-                <button onClick={() => { handleResearchDismiss(); navigate('/profile'); }} className="w-full text-center text-sm text-primary font-medium py-2">
-                  Learn more
-                </button>
+                <button onClick={handleResearchOptIn} className="w-full h-12 rounded-xl bg-primary text-primary-foreground font-medium text-sm">Yes, opt me in</button>
+                <button onClick={handleResearchDismiss} className="w-full h-12 rounded-xl border border-border text-foreground font-medium text-sm">Not now</button>
+                <button onClick={() => { handleResearchDismiss(); navigate('/profile'); }} className="w-full text-center text-sm text-primary font-medium py-2">Learn more</button>
               </div>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* ══════ Salon Visit Picker Modal ══════ */}
+      {/* Salon Visit Picker Modal */}
       <AnimatePresence>
         {showSalonVisitPicker && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-foreground/30 z-[55] flex items-center justify-center px-6">
@@ -273,10 +328,7 @@ const HomePage = () => {
                 <button onClick={() => setShowSalonVisitPicker(false)} className="p-1"><X size={22} className="text-muted-foreground" strokeWidth={1.8} /></button>
               </div>
               <p className="text-sm text-muted-foreground mb-5">What would you like to do?</p>
-              <button
-                onClick={() => { setShowSalonVisitPicker(false); setShowSalonForm(true); }}
-                className="w-full card-elevated p-4 mb-3 flex items-center gap-3 text-left"
-              >
+              <button onClick={() => { setShowSalonVisitPicker(false); setShowSalonForm(true); }} className="w-full card-elevated p-4 mb-3 flex items-center gap-3 text-left">
                 <div className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center flex-shrink-0">
                   <Calendar size={20} className="text-foreground" strokeWidth={1.5} />
                 </div>
@@ -286,10 +338,7 @@ const HomePage = () => {
                 </div>
                 <ChevronRight size={16} className="text-muted-foreground" />
               </button>
-              <button
-                onClick={() => { setShowSalonVisitPicker(false); navigate('/salon-checkin'); }}
-                className="w-full card-elevated p-4 flex items-center gap-3 text-left"
-              >
+              <button onClick={() => { setShowSalonVisitPicker(false); navigate('/salon-checkin'); }} className="w-full card-elevated p-4 flex items-center gap-3 text-left">
                 <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
                   <Stethoscope size={20} className="text-primary" strokeWidth={1.5} />
                 </div>
@@ -304,7 +353,7 @@ const HomePage = () => {
         )}
       </AnimatePresence>
 
-      {/* ══════ Salon Visit Form Modal ══════ */}
+      {/* Salon Visit Form Modal */}
       <AnimatePresence>
         {showSalonForm && (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-foreground/30 z-50 flex items-end justify-center">
@@ -319,7 +368,6 @@ const HomePage = () => {
                   <Popover>
                     <PopoverTrigger asChild>
                       <button className="w-full h-12 px-4 rounded-xl border-2 border-border bg-card text-left text-sm flex items-center gap-2">
-                        <Calendar size={16} className="text-muted-foreground" />
                         <span className="text-foreground">{format(visitDate, 'PPP')}</span>
                       </button>
                     </PopoverTrigger>
@@ -329,20 +377,24 @@ const HomePage = () => {
                   </Popover>
                 </div>
                 <div className="mb-5">
-                  <label className="text-sm font-medium text-foreground mb-2 block">What was done?</label>
+                  <label className="text-sm font-medium text-foreground mb-2 block">Services</label>
                   <div className="flex flex-wrap gap-2">
-                    {serviceOptions.map(s => (<button key={s} onClick={() => toggleService(s)} className={`pill-option ${services.includes(s) ? 'selected' : ''}`}>{s}</button>))}
+                    {serviceOptions.map(s => (
+                      <button key={s} onClick={() => toggleService(s)} className={`pill-option ${services.includes(s) ? 'selected' : ''}`}>{s}</button>
+                    ))}
                   </div>
                 </div>
                 <div className="mb-5">
                   <label className="text-sm font-medium text-foreground mb-2 block">Stylist name (optional)</label>
-                  <input type="text" value={stylistName} onChange={e => setStylistName(e.target.value)} placeholder="e.g. Ama" className="w-full h-12 px-4 rounded-xl border-2 border-border bg-card text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors" />
+                  <input type="text" value={stylistName} onChange={e => setStylistName(e.target.value)} placeholder="Who did your hair?" className="w-full h-12 px-4 rounded-xl border-2 border-border bg-card text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors" />
                 </div>
                 <div className="mb-6">
-                  <label className="text-sm font-medium text-foreground mb-2 block">Any notes? (optional)</label>
-                  <textarea value={visitNotes} onChange={e => setVisitNotes(e.target.value)} placeholder="e.g. Deep conditioning treatment" rows={3} className="w-full px-4 py-3 rounded-xl border-2 border-border bg-card text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors resize-none" />
+                  <label className="text-sm font-medium text-foreground mb-2 block">Notes (optional)</label>
+                  <textarea value={visitNotes} onChange={e => setVisitNotes(e.target.value)} placeholder="Anything to remember?" rows={3} className="w-full px-4 py-3 rounded-xl border-2 border-border bg-card text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors resize-none" />
                 </div>
-                <button onClick={handleSaveSalon} disabled={services.length === 0} className={`w-full h-14 rounded-xl font-semibold text-base btn-press transition-colors ${services.length > 0 ? 'bg-primary text-primary-foreground' : 'bg-border text-muted-foreground cursor-not-allowed'}`}>Save visit</button>
+                <button onClick={handleSaveSalon} disabled={services.length === 0} className={`w-full h-14 rounded-xl font-semibold text-base btn-press transition-colors ${services.length > 0 ? 'bg-primary text-primary-foreground' : 'bg-border text-muted-foreground cursor-not-allowed'}`}>
+                  Save visit
+                </button>
               </div>
             </motion.div>
           </motion.div>
