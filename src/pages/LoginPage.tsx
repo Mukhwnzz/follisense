@@ -23,16 +23,16 @@ const LoginPage = () => {
   };
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#F5F0EB', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px 16px' }}>
-      <style>{`#login-card { border: none !important; outline: none !important; box-shadow: none !important; }`}</style>
+    <div style={{ minHeight: '100vh', backgroundColor: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px 16px' }}>
+      <style>{`#login-card { border: none !important; outline: none !important; }`}</style>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
         style={{ width: '100%', maxWidth: '860px', border: 'none', outline: 'none' }}
       >
-        {/* White card — no border/outline */}
-        <div id="login-card" style={{ backgroundColor: '#FFFFFF', borderRadius: '20px', padding: '44px 72px', border: 'none', outline: 'none' }}>
+        {/* Lifted card */}
+        <div id="login-card" style={{ backgroundColor: '#FFFFFF', borderRadius: '24px', padding: '44px 72px', border: 'none', outline: 'none', boxShadow: '0 8px 40px rgba(0,0,0,0.10), 0 2px 8px rgba(0,0,0,0.06)' }}>
 
           {/* Logo + FolliSense — centered, inline */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', marginBottom: '4px' }}>
