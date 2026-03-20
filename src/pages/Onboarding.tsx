@@ -4,36 +4,30 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, HelpCircle, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 
-// Hair reference photos
-import bwType3 from '@/assets/hair/bw_type3.jpg';
-import bwType3c from '@/assets/hair/bw_type3_c.jpg';
-import bwType4a from '@/assets/hair/bw_type4_a.jpg';
-import bwType4b from '@/assets/hair/bw_type4_b.jpg';
-import bwType4c from '@/assets/hair/bw_type4_c.jpg';
-import bmType3 from '@/assets/hair/bm_type3.jpg';
-import bmType4 from '@/assets/hair/bm_type4.jpg';
-import bmType4Fade from '@/assets/hair/bm_type4_fade.jpg';
-
+// ─── HAIR REFERENCE PHOTOS ───────────────────────────────────────────────────
 const hairPhotos: Record<string, Record<string, { src: string; label: string }[]>> = {
   type3: {
     female: [
-      { src: bwType3, label: 'Type 3: S-shaped curls, bouncy' },
-      { src: bwType3c, label: 'Type 3: Tighter curls, voluminous' },
+      { src: 'https://i.pinimg.com/736x/99/59/67/995967923455cf9abd0b8ef9d4e4ba81.jpg', label: 'Type 3: S-shaped curls, bouncy' },
+      { src: 'https://i.pinimg.com/1200x/59/e2/50/59e250e2cbe1244e3e2196678551b14b.jpg', label: 'Type 3: Tighter curls, voluminous' },
     ],
-    male: [{ src: bmType3, label: 'Type 3: Defined curls, medium density' }],
+    male: [
+      { src: 'https://i.pinimg.com/736x/a2/24/c0/a224c05d0dfbda56c5e6841df83067ef.jpg', label: 'Type 3: Defined curls, medium density' },
+    ],
   },
   type4: {
     female: [
-      { src: bwType4a, label: 'Type 4a: Defined coils, springy' },
-      { src: bwType4b, label: 'Type 4b: Z-pattern coils, dense' },
-      { src: bwType4c, label: 'Type 4c: Tight coils, significant shrinkage' },
+      { src: 'https://i.pinimg.com/1200x/35/a3/1c/35a31cd46add2f0f7c933f348c60420e.jpg', label: 'Type 4a: Defined coils, springy' },
+      { src: 'https://i.pinimg.com/1200x/1b/47/2c/1b472c56063b6145d0945cc232fd056d.jpg', label: 'Type 4b: Z-pattern coils, dense' },
+      { src: 'https://i.pinimg.com/736x/a7/e7/9a/a7e79acc50020c6f6d793291e1c4c2e9.jpg', label: 'Type 4c: Tight coils, significant shrinkage' },
     ],
     male: [
-      { src: bmType4, label: 'Type 4: Tight coils, dense, afro' },
-      { src: bmType4Fade, label: 'Type 4: Coily texture, fade' },
+      { src: 'https://i.pinimg.com/1200x/c1/f8/13/c1f8138c7a1b36c682dd42554dc9b227.jpg', label: 'Type 4: Tight coils, dense, afro' },
+      { src: 'https://i.pinimg.com/736x/f5/ea/1e/f5ea1e1fe243495ddf4c22800791e0c6.jpg', label: 'Type 4: Coily texture, fade' },
     ],
   },
 };
+// ─────────────────────────────────────────────────────────────────────────────
 
 const hairTypes = [
   { id: 'type4', label: 'Type 4: Coily', desc: 'Tight coils or zig-zag pattern, dense texture, significant shrinkage' },
@@ -79,13 +73,8 @@ const maleStyleOptions = [
 ];
 
 const protectiveFreqOptions = ['Most of the time', 'Sometimes', 'Rarely', 'Never'];
-
 const cycleLengthOptions = ['1-2 weeks', '3-4 weeks', '5-6 weeks', '7-8 weeks', 'Longer than 8 weeks', 'It varies'];
-
-const betweenWashOptions = [
-  'Nothing', 'Oil my scalp', 'Use a scalp spray or tonic', 'Rinse with water only', 'Other',
-];
-
+const betweenWashOptions = ['Nothing', 'Oil my scalp', 'Use a scalp spray or tonic', 'Rinse with water only', 'Other'];
 const concernOptions = [
   'Itching', 'Flaking', 'Thinning', 'Tenderness', 'Breakage', 'Dryness',
   'I just want to stay on top of things', 'Not sure',
@@ -98,26 +87,48 @@ const sectionExplainers: Record<number, string> = {
   3: "This personalises your experience so we focus on what matters to you.",
 };
 
-// Photo gallery component
+// Photo gallery — full image visible, no cropping
 const PhotoGallery = ({ photos }: { photos: { src: string; label: string }[] }) => {
   const [idx, setIdx] = useState(0);
   if (photos.length === 0) return null;
   if (photos.length === 1) {
     return (
-      <div className="rounded-lg overflow-hidden border border-border">
-        <img src={photos[0].src} alt={photos[0].label} className="w-full h-24 object-cover object-top" />
-        <p className="text-[10px] text-muted-foreground text-center py-1 bg-accent/30">{photos[0].label}</p>
+      <div className="rounded-xl overflow-hidden border border-border">
+        <img
+          src={photos[0].src}
+          alt={photos[0].label}
+          className="w-full"
+         style={{ width: '100%', height: '200px', objectFit: 'cover' }}
+        />
+        <p className="text-[10px] text-muted-foreground text-center py-1.5 bg-accent/40">{photos[0].label}</p>
       </div>
     );
   }
   return (
-    <div className="relative rounded-lg overflow-hidden border border-border">
-      <img src={photos[idx].src} alt={photos[idx].label} className="w-full h-24 object-cover object-top" />
-      <p className="text-[10px] text-muted-foreground text-center py-1 bg-accent/30">{photos[idx].label}</p>
-      <button onClick={(e) => { e.stopPropagation(); setIdx(i => (i - 1 + photos.length) % photos.length); }} className="absolute left-1 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-background/80 flex items-center justify-center"><ChevronLeft size={12} /></button>
-      <button onClick={(e) => { e.stopPropagation(); setIdx(i => (i + 1) % photos.length); }} className="absolute right-1 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-background/80 flex items-center justify-center"><ChevronRight size={12} /></button>
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-1">
-        {photos.map((_, i) => <div key={i} className={`w-1.5 h-1.5 rounded-full ${i === idx ? 'bg-foreground' : 'bg-foreground/30'}`} />)}
+    <div className="relative rounded-xl overflow-hidden border border-border">
+      <img
+        src={photos[idx].src}
+        alt={photos[idx].label}
+        className="w-full"
+        style={{ width: '100%', height: '200px', objectFit: 'cover' }}
+      />
+      <p className="text-[10px] text-muted-foreground text-center py-1.5 bg-accent/40">{photos[idx].label}</p>
+      <button
+        onClick={(e) => { e.stopPropagation(); setIdx(i => (i - 1 + photos.length) % photos.length); }}
+        className="absolute left-2 top-[90px] -translate-y-1/2 w-7 h-7 rounded-full bg-background/90 flex items-center justify-center shadow"
+      >
+        <ChevronLeft size={14} />
+      </button>
+      <button
+        onClick={(e) => { e.stopPropagation(); setIdx(i => (i + 1) % photos.length); }}
+        className="absolute right-2 top-[90px] -translate-y-1/2 w-7 h-7 rounded-full bg-background/90 flex items-center justify-center shadow"
+      >
+        <ChevronRight size={14} />
+      </button>
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-1">
+        {photos.map((_, i) => (
+          <div key={i} className={`w-1.5 h-1.5 rounded-full ${i === idx ? 'bg-foreground' : 'bg-foreground/30'}`} />
+        ))}
       </div>
     </div>
   );
@@ -141,23 +152,19 @@ const Onboarding = () => {
   const isMale = gender === 'man';
   const isNeutral = gender === 'prefer-not-to-say';
 
-  // Screen 1: Hair texture
   const [hairType, setHairType] = useState(onboardingData.hairType || '');
   const [hairSubType, setHairSubType] = useState('');
   const [showSubType, setShowSubType] = useState(false);
 
-  // Screen 2: Styles
   const [styles, setStyles] = useState<string[]>(onboardingData.protectiveStyles || []);
   const [otherStyle, setOtherStyle] = useState(onboardingData.otherStyle || '');
   const [protectiveFreq, setProtectiveFreq] = useState(onboardingData.protectiveStyleFrequency || '');
   const [showMoreStyles, setShowMoreStyles] = useState(false);
 
-  // Screen 3: Cycle + care
   const [cycleLength, setCycleLength] = useState(onboardingData.cycleLength || '');
   const [betweenWash, setBetweenWash] = useState<string[]>(onboardingData.betweenWashCare || []);
   const [otherBetweenWash, setOtherBetweenWash] = useState(onboardingData.otherBetweenWashCare || '');
 
-  // Screen 4: Concerns
   const [concerns, setConcerns] = useState<string[]>(onboardingData.goals || []);
 
   const rawStyleOptions = isMale ? maleStyleOptions : isNeutral ? [...new Set([...femaleStyleOptions, ...maleStyleOptions])] : femaleStyleOptions;
@@ -190,7 +197,6 @@ const Onboarding = () => {
     if (step < TOTAL_SCREENS - 1) {
       setStep(step + 1);
     } else {
-      // Save all data and go to dashboard
       const effectiveHairType = hairSubType || hairType;
       setOnboardingData({
         ...onboardingData,
@@ -217,13 +223,19 @@ const Onboarding = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <div className="max-w-[430px] mx-auto px-6 flex-1 flex flex-col">
+      <div className="max-w-[430px] mx-auto px-6 flex-1 flex flex-col w-full">
+
         {/* Header with progress */}
         <div className="flex items-center justify-between py-4">
-          <button onClick={handleBack} className="p-2 -ml-2 text-foreground"><ArrowLeft size={22} strokeWidth={1.8} /></button>
+          <button onClick={handleBack} className="p-2 -ml-2 text-foreground">
+            <ArrowLeft size={22} strokeWidth={1.8} />
+          </button>
           <div className="flex gap-2">
             {Array.from({ length: TOTAL_SCREENS }).map((_, i) => (
-              <div key={i} className={`h-1.5 w-8 rounded-full transition-colors duration-300 ${i <= step ? 'bg-primary' : 'bg-border'}`} />
+              <div
+                key={i}
+                className={`h-1.5 w-8 rounded-full transition-colors duration-300 ${i <= step ? 'bg-primary' : 'bg-border'}`}
+              />
             ))}
           </div>
           <div className="w-10" />
@@ -239,10 +251,11 @@ const Onboarding = () => {
               transition={{ duration: 0.2 }}
               className="pt-2 pb-8"
             >
+
               {/* ── Screen 1: Hair Texture ── */}
               {step === 0 && (
                 <div>
-                  <h2 className="text-lg font-medium text-foreground mb-1">What's your hair texture?</h2>
+                  <h2 className="text-lg font-semibold text-foreground mb-1">What's your hair texture?</h2>
                   <p className="text-xs text-muted-foreground mb-5">{sectionExplainers[0]}</p>
                   <p className="text-xs text-muted-foreground mb-4 italic">
                     Type 4 coils are tighter than a pen spring. Type 3 curls wrap around a finger.
@@ -259,7 +272,7 @@ const Onboarding = () => {
                         <button
                           key={ht.id}
                           onClick={() => { setHairType(ht.id); setHairSubType(''); setShowSubType(false); }}
-                          className={`selection-card w-full text-left ${hairType === ht.id ? 'selected' : ''}`}
+                          className={`selection-card w-full text-left !p-2 ${hairType === ht.id ? 'selected' : ''}`}
                         >
                           <div className="flex items-center gap-4 mb-2">
                             <div className="w-12 h-12 rounded-xl bg-accent flex items-center justify-center flex-shrink-0">
@@ -270,11 +283,12 @@ const Onboarding = () => {
                               <p className="text-sm text-muted-foreground">{ht.desc}</p>
                             </div>
                           </div>
+
                           {photos.length > 0 && (
-                            <div className="grid grid-cols-2 gap-2 mt-3">
-                              <div className="rounded-lg bg-accent/50 border border-border p-3 flex flex-col items-center justify-center min-h-[80px]">
+                            <div className="mt-3 space-y-2">
+                              <div className="rounded-xl bg-accent/50 border border-border p-4 flex flex-col items-center justify-center">
                                 <CurlIcon type={ht.id} />
-                                <span className="text-[10px] text-muted-foreground mt-1.5 text-center">Pattern illustration</span>
+                                <span className="text-[10px] text-muted-foreground mt-2 text-center">Pattern illustration</span>
                               </div>
                               <PhotoGallery photos={photos} />
                             </div>
@@ -284,7 +298,6 @@ const Onboarding = () => {
                     })}
                   </div>
 
-                  {/* Optional sub-type */}
                   {(hairType === 'type3' || hairType === 'type4') && !showSubType && (
                     <button
                       onClick={() => setShowSubType(true)}
@@ -296,7 +309,7 @@ const Onboarding = () => {
 
                   {showSubType && subTypes[hairType] && (
                     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mt-4">
-                      <p className="text-sm font-medium text-foreground mb-3">Which sub-type?</p>
+                      <p className="text-sm font-semibold text-foreground mb-3">Which sub-type?</p>
                       <div className="flex flex-wrap gap-2">
                         {subTypes[hairType].map(st => (
                           <button
@@ -316,7 +329,7 @@ const Onboarding = () => {
               {/* ── Screen 2: Styles + Frequency ── */}
               {step === 1 && (
                 <div>
-                  <h2 className="text-lg font-medium text-foreground mb-1">How do you usually wear your hair?</h2>
+                  <h2 className="text-lg font-semibold text-foreground mb-1">How do you usually wear your hair?</h2>
                   <p className="text-xs text-muted-foreground mb-3">{sectionExplainers[1]}</p>
                   <p className="text-muted-foreground mb-5 text-sm">Select everything you rotate between</p>
 
@@ -361,7 +374,7 @@ const Onboarding = () => {
 
                   {styles.length > 0 && (
                     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mt-8">
-                      <p className="font-medium text-foreground mb-3">How often are you in protective styles?</p>
+                      <p className="font-semibold text-foreground mb-3">How often are you in protective styles?</p>
                       <div className="flex flex-wrap gap-2">
                         {protectiveFreqOptions.map(o => (
                           <button key={o} onClick={() => setProtectiveFreq(o)} className={`pill-option ${protectiveFreq === o ? 'selected' : ''}`}>{o}</button>
@@ -375,17 +388,17 @@ const Onboarding = () => {
               {/* ── Screen 3: Cycle Length + Between-Wash Care ── */}
               {step === 2 && (
                 <div>
-                  <h2 className="text-lg font-medium text-foreground mb-1">Your routine</h2>
+                  <h2 className="text-lg font-semibold text-foreground mb-1">Your routine</h2>
                   <p className="text-xs text-muted-foreground mb-5">{sectionExplainers[2]}</p>
 
-                  <p className="font-medium text-foreground mb-3">How long do you usually keep a style in?</p>
+                  <p className="font-semibold text-foreground mb-3">How long do you usually keep a style in?</p>
                   <div className="flex flex-wrap gap-2 mb-8">
                     {cycleLengthOptions.map(o => (
                       <button key={o} onClick={() => setCycleLength(o)} className={`pill-option ${cycleLength === o ? 'selected' : ''}`}>{o}</button>
                     ))}
                   </div>
 
-                  <p className="font-medium text-foreground mb-3">What do you do for your scalp between washes?</p>
+                  <p className="font-semibold text-foreground mb-3">What do you do for your scalp between washes?</p>
                   <div className="flex flex-wrap gap-2">
                     {betweenWashOptions.map(o => (
                       <button key={o} onClick={() => toggleBetweenWash(o)} className={`pill-option ${betweenWash.includes(o) ? 'selected' : ''}`}>{o}</button>
@@ -406,7 +419,7 @@ const Onboarding = () => {
               {/* ── Screen 4: Top Concerns ── */}
               {step === 3 && (
                 <div>
-                  <h2 className="text-lg font-medium text-foreground mb-1">What matters most to you right now?</h2>
+                  <h2 className="text-lg font-semibold text-foreground mb-1">What matters most to you right now?</h2>
                   <p className="text-xs text-muted-foreground mb-5">{sectionExplainers[3]}</p>
                   <p className="text-muted-foreground mb-5 text-sm">Select all that apply</p>
                   <div className="space-y-3">
@@ -422,6 +435,7 @@ const Onboarding = () => {
                   </div>
                 </div>
               )}
+
             </motion.div>
           </AnimatePresence>
         </div>
@@ -438,6 +452,7 @@ const Onboarding = () => {
             {step === TOTAL_SCREENS - 1 ? "Let's go" : 'Next'}
           </button>
         </div>
+
       </div>
     </div>
   );

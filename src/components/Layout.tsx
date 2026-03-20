@@ -27,9 +27,12 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
 
   const tabs = stylistMode ? stylistTabs : consumerTabs;
 
+  const isAuthPage = ['/', '/login', '/signup', '/forgot-password', '/stylist/login', '/stylist/signup'].includes(location.pathname);
+  const isWelcomePage = location.pathname === '/';
+
   return (
-    <div className="min-h-screen bg-background">
-      <div className="max-w-[430px] mx-auto min-h-screen relative">
+    <div className="min-h-screen" style={{ backgroundColor: isWelcomePage ? undefined : '#FFFFFF' }}>
+      <div className={`mx-auto min-h-screen relative ${isWelcomePage ? 'w-full max-w-none' : isAuthPage ? 'max-w-[620px]' : 'max-w-[430px]'}`}>
         {children}
         {showNav && (
           <nav className="fixed bottom-0 left-0 right-0 z-50">
