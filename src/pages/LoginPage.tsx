@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Eye, EyeOff } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
+import { supabase } from '@/lib/supabaseClient';
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -13,14 +14,44 @@ const LoginPage = () => {
 
   const canSubmit = email.trim().length > 0 && password.length >= 1;
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!canSubmit) return;
-    const nameFromEmail = email.split('@')[0].replace(/[^a-zA-Z]/g, '');
-    const displayName = nameFromEmail.charAt(0).toUpperCase() + nameFromEmail.slice(1);
-    setUserName(displayName || 'there');
+  const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  if (!canSubmit) return;
+
+  try {
+    // clears old session (prevents fake login feeling)
+    await supabase.auth.signOut();
+
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (error) {
+      console.error(error);
+      alert(error.message);//error message to set
+      return;
+    }
+
+    // ✅ real logged-in user
+    const user = data.user;
+
+    // fetch profile 
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('first_name')
+      .eq('id', user.id)
+      .single();
+
+    setUserName(profile?.first_name || 'there');
+
     navigate(onboardingComplete ? '/home' : '/onboarding');
-  };
+
+  } catch (err) {
+    console.error(err);
+    alert('Something went wrong');
+  }
+};
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#FFFFFF', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px 16px' }}>

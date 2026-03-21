@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Leaf, Eye, EyeOff, Shield } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
+import { supabase } from '@/lib/supabaseClient';
 import { toast } from '@/hooks/use-toast';
 
 const StylistSignUpPage = () => {
@@ -13,15 +14,68 @@ const StylistSignUpPage = () => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
-  const canSubmit = firstName.trim().length > 0 && email.trim().length > 0 && password.length >= 6;
+ 
+const isStrongPassword =
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!canSubmit) return;
+  password.length >= 8 &&
+  /[A-Z]/.test(password) &&
+  /[a-z]/.test(password) &&
+  /[0-9]/.test(password);
+
+  const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+  const canSubmit =
+  firstName.trim().length > 0 &&
+  isValidEmail &&
+  isStrongPassword;
+
+  const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  if (!canSubmit) return;
+
+  try {
+    // 1️⃣ Create auth user
+    const { data: authData, error: authError } = await supabase.auth.signUp({
+      email,
+      password,
+    });
+
+    if (authError) {
+      console.error(authError);
+      toast({ title: authError.message });
+      return;
+    }
+
+    if (!authData?.user?.id) {
+      toast({ title: 'Signup failed' });
+      return;
+    }
+
+    // 2️⃣ Insert into profiles table
+    const { error: profileError } = await supabase.from('profiles').upsert([
+      {
+        id: authData.user.id,
+        role: 'stylist', // 
+        first_name: firstName,
+        gender: null, 
+      },
+    ]);
+
+    if (profileError) {
+      console.error(profileError);
+      toast({ title: profileError.message });
+      return;
+    }
+
     setUserName(firstName.trim());
     setStylistMode(true);
     navigate('/stylist/onboarding');
-  };
+
+  } catch (err) {
+    console.error(err);
+    toast({ title: 'Something went wrong' });
+  }
+};
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center px-6">
@@ -62,6 +116,11 @@ const StylistSignUpPage = () => {
               placeholder="you@example.com"
               className="w-full h-12 px-4 rounded-xl border-2 border-border bg-card text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors"
             />
+            {email && !isValidEmail && (
+               <p className="text-xs text-red-500 mt-1">
+                  Enter a valid email
+              </p>
+             )}
           </div>
 
           <div>
@@ -71,9 +130,15 @@ const StylistSignUpPage = () => {
                 type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={e => setPassword(e.target.value)}
-                placeholder="At least 6 characters"
+                placeholder="Min 8 chars, uppercase, lowercase & number"
                 className="w-full h-12 px-4 pr-12 rounded-xl border-2 border-border bg-card text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors"
               />
+                {password && !isStrongPassword && (
+                 <p className="text-xs text-red-500 mt-1">
+                   Password must be 8+ chars, include uppercase, lowercase & number
+                </p>
+              )}
+              
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}

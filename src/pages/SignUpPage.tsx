@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { Leaf, Eye, EyeOff, Shield } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 import { supabase } from '@/lib/supabaseClient';
+import { toast } from '@/hooks/use-toast';
 
 const genderOptions = [
   { id: 'woman', label: 'Female' },
@@ -22,8 +23,18 @@ const SignUpPage = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // Only allow submit if all required fields are filled
-  const canSubmit = firstName.trim().length > 0 && email.trim().length > 0 && password.length >= 6 && !!gender;
+  const isStrongPassword =
+   password.length >= 8 &&
+   /[A-Z]/.test(password) &&
+   /[a-z]/.test(password) &&
+   /[0-9]/.test(password);
+
+  const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+ const canSubmit =
+  firstName.trim().length > 0 &&
+  isValidEmail &&
+  isStrongPassword;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,21 +50,39 @@ const SignUpPage = () => {
         password,
       });
 
-      if (authError) {
+    if (authError) {
         console.error('Auth error:', authError);
         setError(authError.message);
         return;
       }
 
-      if (!authData?.user?.id) {
-        setError('Signup failed: no user returned');
-        return;
-      }
+    if (authData.user) {
+       const userId = authData.user.id;
+
+        const { error: profileError } = await supabase
+          .from('profiles')
+           .upsert([
+               {
+                 id: userId,
+                 role: 'consumer',
+                 first_name: firstName,
+                 gender: gender || null,
+                },
+              ]);
+
+      if (profileError) {
+           setError(profileError.message);
+              return;
+             }
+            }
+
+       //ONLY CONTINUE IF USER IS CONFIRMED
+       const user = authData.user;
 
       // 2️⃣ Insert user profile into your table
       const { error: profileError } = await supabase
-        .from('user_profiles')
-        .insert([
+        .from('profiles')
+        .upsert([
           {
             id: authData.user.id,
             role: 'consumer', // change if you implement stylist signup
@@ -122,6 +151,11 @@ const SignUpPage = () => {
               placeholder="you@example.com"
               className="w-full h-12 px-4 rounded-xl border-2 border-border bg-card text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors"
             />
+             {email && !isValidEmail && (
+             <p className="text-xs text-red-500 mt-1">
+                 Enter a valid email
+              </p>
+            )}
           </div>
 
           {/* Password */}
@@ -132,9 +166,14 @@ const SignUpPage = () => {
                 type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="At least 6 characters"
+                placeholder="At least 8 characters with uppercase, lowercase & number"
                 className="w-full h-12 px-4 pr-12 rounded-xl border-2 border-border bg-card text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors"
               />
+              {password && !isStrongPassword && (
+                <p className="text-xs text-red-500 mt-1">
+                  Password must be 8+ chars, include uppercase, lowercase & number
+                </p>
+               )}
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
