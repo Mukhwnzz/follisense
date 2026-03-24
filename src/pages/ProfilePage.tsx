@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 import ProductSearch from '@/components/ProductSearch';
+import { supabase } from '@/lib/supabaseClient';
 import { toast } from '@/hooks/use-toast';
 import { Switch } from '@/components/ui/switch';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';

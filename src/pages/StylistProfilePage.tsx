@@ -6,6 +6,7 @@ import {
   Plus, Star, Check, Pencil, Award, ClipboardCheck, Brain, Scissors, X
 } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
+import { supabase } from '@/lib/supabaseClient';
 import { toast } from '@/hooks/use-toast';
 
 const allSpecialties = [
@@ -15,7 +16,7 @@ const allSpecialties = [
   'Colour or bleach', 'Haircuts or trims', 'Barber services (fades, lineups)', 'Scalp treatments',
 ];
 
-const businessTypes = ['Salon-based', 'Mobile', 'Both'];
+const businessTypes =['salon', 'mobile', 'both'];
 
 interface StylistProfileData {
   role: string | string[];
@@ -100,6 +101,7 @@ const StylistProfilePage = () => {
   const navigate = useNavigate();
   const { userName, resetAll, clientObservations, stylistLocations, setStylistLocations, addStylistLocation, removeStylistLocation } = useApp();
   const [profile, setProfile] = useState<StylistProfileData>(defaultProfile);
+  const [userId, setUserId] = useState<string | null>(null);
   const [editingAbout, setEditingAbout] = useState(false);
   const [editingBusiness, setEditingBusiness] = useState(false);
   const [editingExpertise, setEditingExpertise] = useState(false);
@@ -124,21 +126,93 @@ const StylistProfilePage = () => {
   const quizState = loadQuizState();
 
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem('follisense-stylist-profile');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        const migrated = { ...defaultProfile, ...parsed, specialties: parsed.specialties || parsed.services || [] };
-        setProfile(migrated);
-      }
-    } catch {}
-  }, []);
-
-  const saveProfile = (updated: StylistProfileData) => {
-    setProfile(updated);
-    localStorage.setItem('follisense-stylist-profile', JSON.stringify(updated));
+  const getUser = async () => {
+    const { data } = await supabase.auth.getUser();
+    setUserId(data.user?.id || null);
   };
 
+  getUser();
+}, []);
+  
+  useEffect(() => {
+  const loadProfile = async () => {
+    if (!userId) return;
+
+    const { data, error } = await supabase
+      .from('stylist_profiles')
+      .select('*')
+      .eq('user_id', userId)
+      .single();
+
+    if (error) {
+      console.error(error);
+      return;
+    }
+
+    if (data) {
+     setProfile({
+      role: data.roles || [], // ✅ FIX: was data.role
+      otherRole: data.other_role || '',
+      experience: data.experience_level || '',
+      businessName: data.business_name || '',
+      businessType: data.work_type || '', // ✅ FIX: was business_type
+      city: data.city || '',
+      country: data.country || '',
+      specialties: data.specialties || [],
+      bio: data.bio || '',
+  });
+}
+  };
+
+  loadProfile();
+}, [userId]);
+  
+  const saveProfile = async (updated: StylistProfileData) => {
+  if (!userId) return;
+
+  const { data, error } = await supabase
+  .from('stylist_profiles')
+  .upsert(
+  {
+    user_id: userId,
+
+    roles: Array.isArray(updated.role)
+      ? updated.role
+      : [updated.role],
+
+    work_type: updated.businessType,
+
+    experience_level: updated.experience,
+
+    business_name: updated.businessName,
+    business_type: updated.businessType,
+
+    city: updated.city,
+    country: updated.country,
+
+    specialties: updated.specialties,
+
+    bio: updated.bio,
+
+    services: updated.specialties, // or separate if you collect differently
+    goals: [], // since you haven’t added this input yet
+  },
+  { onConflict: 'user_id' }
+)
+.select();
+  console.log('DATA:',JSON.stringify(data, null, 2));
+  console.log('ERROR:', error);
+
+  if (error) {
+    console.error(error);
+    toast({ title: 'Failed to save profile' });
+    return;
+  }
+
+  setProfile(updated);
+  toast({ title: 'Profile saved successfully 🔥' });
+};
+  
   const startEditing = (section: 'about' | 'business' | 'expertise') => {
     setEditProfile({ ...profile });
     if (section === 'about') setEditingAbout(true);
@@ -146,8 +220,9 @@ const StylistProfilePage = () => {
     if (section === 'expertise') setEditingExpertise(true);
   };
   const cancelEditing = () => { setEditingAbout(false); setEditingBusiness(false); setEditingExpertise(false); };
-  const saveEditing = () => {
-    saveProfile(editProfile);
+  const saveEditing = async () => {
+  await saveProfile(editProfile);
+  
     setEditingAbout(false);
     setEditingBusiness(false);
     setEditingExpertise(false);
@@ -361,8 +436,18 @@ const StylistProfilePage = () => {
             <div className="p-4 space-y-3">
               <div>
                 <label className="text-xs font-medium text-muted-foreground mb-1 block">Years of experience</label>
-                <input type="text" value={editProfile.experience} onChange={e => setEditProfile({ ...editProfile, experience: e.target.value })}
-                  className="w-full h-10 px-3 rounded-lg border border-border bg-card text-foreground text-sm focus:outline-none focus:border-primary" placeholder="e.g. 5 years" />
+                <select
+  value={editProfile.experience}
+  onChange={e => setEditProfile({ ...editProfile, experience: e.target.value })}
+  className="w-full h-10 px-3 rounded-lg border border-border bg-card text-foreground text-sm focus:outline-none focus:border-primary"
+>
+  <option value="">Select experience</option>
+  <option value="<1">Less than 1 year</option>
+  <option value="1-3">1–3 years</option>
+  <option value="3-5">3–5 years</option>
+  <option value="5-10">5–10 years</option>
+  <option value="10+">10+ years</option>
+</select>
               </div>
               <div>
                 <label className="text-xs font-medium text-muted-foreground mb-2 block">Specialties</label>
