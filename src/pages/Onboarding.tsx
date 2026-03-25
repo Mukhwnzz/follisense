@@ -166,7 +166,7 @@ const TOTAL_SCREENS = 5;
 
 const Onboarding = () => {
   const navigate = useNavigate();
-  const { onboardingData, setOnboardingData, setOnboardingComplete } = useApp();
+  const { onboardingData, setOnboardingData, setOnboardingComplete, setBaselinePhotos, setBaselineDate } = useApp();
 
   const [step, setStep] = useState(0);
   const gender = onboardingData.gender;
