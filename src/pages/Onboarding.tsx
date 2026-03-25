@@ -141,7 +141,28 @@ const CurlIcon = ({ type }: { type: string }) => {
   return null;
 };
 
-const TOTAL_SCREENS = 4;
+const photoSteps = [
+  {
+    title: 'Front hairline photo',
+    instruction: 'Keep your forehead visible. Pull hair back to show your hairline and temples.',
+    refLabel: 'Reference: front hairline view on textured hair',
+    area: 'Hairline / edges',
+  },
+  {
+    title: 'Side profile photo',
+    instruction: 'Turn to show one side of your head. Include the temple area and ear.',
+    refLabel: 'Reference: side view showing temple area',
+    area: 'Side / temple',
+  },
+  {
+    title: 'Back and nape photo',
+    instruction: 'Show the back of your head. Include your nape and crown. Use a second mirror or ask someone to help.',
+    refLabel: 'Reference: back view showing nape and crown',
+    area: 'Nape / crown',
+  },
+];
+
+const TOTAL_SCREENS = 5;
 
 const Onboarding = () => {
   const navigate = useNavigate();
