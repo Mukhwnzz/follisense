@@ -210,12 +210,52 @@ const Onboarding = () => {
   };
   const toggleConcern = (c: string) => setConcerns(prev => prev.includes(c) ? prev.filter(x => x !== c) : [...prev, c]);
 
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const url = URL.createObjectURL(file);
+      setCapturedPhotos(prev => { const next = [...prev]; next[photoStep] = url; return next; });
+    }
+    e.target.value = '';
+  };
+
+  const handleSkipPhotos = () => {
+    finishOnboarding();
+  };
+
+  const finishOnboarding = () => {
+    const effectiveHairType = hairSubType || hairType;
+    const photos = capturedPhotos
+      .map((p, i) => p ? { area: photoSteps[i].area, captured: true, date: new Date().toLocaleDateString() } : null)
+      .filter(Boolean) as { area: string; captured: boolean; date: string }[];
+    setOnboardingData({
+      ...onboardingData,
+      hairType: effectiveHairType,
+      protectiveStyles: styles,
+      otherStyle,
+      protectiveStyleFrequency: protectiveFreq,
+      isWornOutOnly: false,
+      cycleLength,
+      betweenWashCare: betweenWash,
+      otherBetweenWashCare: otherBetweenWash,
+      goals: concerns,
+    });
+    if (photos.length > 0) {
+      setBaselinePhotos(photos);
+      setBaselineDate(new Date().toLocaleDateString());
+    }
+    sessionStorage.setItem('follisense-just-onboarded', 'true');
+    setOnboardingComplete(true);
+    navigate('/home');
+  };
+
   const canProceed = () => {
     switch (step) {
       case 0: return !!hairType;
       case 1: return styles.length > 0 && (!styles.includes('Other') || otherStyle.trim().length > 0) && !!protectiveFreq;
       case 2: return !!cycleLength && betweenWash.length > 0 && (!betweenWash.includes('Other') || otherBetweenWash.trim().length > 0);
       case 3: return concerns.length > 0;
+      case 4: return true; // photo screen always allows proceeding
       default: return false;
     }
   };
