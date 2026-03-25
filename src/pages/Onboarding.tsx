@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, HelpCircle, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowLeft, HelpCircle, ChevronDown, ChevronLeft, ChevronRight, Camera, ImagePlus, RotateCcw, Check } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 
 // ─── HAIR REFERENCE PHOTOS ───────────────────────────────────────────────────
