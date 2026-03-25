@@ -188,6 +188,12 @@ const Onboarding = () => {
 
   const [concerns, setConcerns] = useState<string[]>(onboardingData.goals || []);
 
+  // Screen 5: Photo capture
+  const [photoStep, setPhotoStep] = useState(0);
+  const [capturedPhotos, setCapturedPhotos] = useState<(string | null)[]>([null, null, null]);
+  const [photosDone, setPhotosDone] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const rawStyleOptions = isMale ? maleStyleOptions : isNeutral ? [...new Set([...femaleStyleOptions, ...maleStyleOptions])] : femaleStyleOptions;
   const genderKey = isMale ? 'male' : isNeutral ? 'both' : 'female';
 
