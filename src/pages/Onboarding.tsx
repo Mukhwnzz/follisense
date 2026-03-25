@@ -264,22 +264,7 @@ const Onboarding = () => {
     if (step < TOTAL_SCREENS - 1) {
       setStep(step + 1);
     } else {
-      const effectiveHairType = hairSubType || hairType;
-      setOnboardingData({
-        ...onboardingData,
-        hairType: effectiveHairType,
-        protectiveStyles: styles,
-        otherStyle,
-        protectiveStyleFrequency: protectiveFreq,
-        isWornOutOnly: false,
-        cycleLength,
-        betweenWashCare: betweenWash,
-        otherBetweenWashCare: otherBetweenWash,
-        goals: concerns,
-      });
-      sessionStorage.setItem('follisense-just-onboarded', 'true');
-      setOnboardingComplete(true);
-      navigate('/home');
+      finishOnboarding();
     }
   };
 
