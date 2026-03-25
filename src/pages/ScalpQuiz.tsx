@@ -7,12 +7,21 @@ import { supabase } from '@/lib/supabaseClient';
 import toast, { Toaster } from 'react-hot-toast';
 import ScalpIllustration from '@/components/ScalpIllustration';
 
+// ---------------------------
+// Helpers
+// ---------------------------
+
 // ✅ Get logged-in user ID
-const getUserId = async () => {
-  const { data,error } = await supabase.auth.getUser();
+const getUserId = async (): Promise<string | null> => {
+  const { data, error } = await supabase.auth.getUser();
   if (error || !data?.user) return null;
   return data.user.id;
 };
+
+// ---------------------------
+// Local storage state management
+// ---------------------------
+
 interface QuizState {
   totalPoints: number;
   currentStreak: number;
@@ -36,6 +45,10 @@ const saveQuizState = (state: QuizState) => {
   localStorage.setItem('follisense-quiz', JSON.stringify(state));
 };
 
+// ---------------------------
+// Utilities
+// ---------------------------
+
 const shuffleArray = <T,>(arr: T[]): T[] => {
   const a = [...arr];
   for (let i = a.length - 1; i > 0; i--) {
@@ -53,15 +66,23 @@ const getMultiplier = (timeLeft: number): { label: string; value: number } => {
   return { label: '1×', value: 1 };
 };
 
-  const ScalpQuiz = () => {
+// ---------------------------
+// Component
+// ---------------------------
+
+const ScalpQuiz = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const isChallenge = searchParams.get('mode') === 'challenge';
 
   const [quizState, setQuizState] = useState<QuizState>(loadQuizState);
 
+  // ---------------------------
+  // Quiz phase state
+  // ---------------------------
+
   const [phase, setPhase] = useState<'playing' | 'roundSummary'>('playing');
-  const [userAttempts, setUserAttempts] = useState<any[]>([]); // store previous attempts
+  const [userAttempts, setUserAttempts] = useState<any[]>([]); // previous attempts
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [showExplanation, setShowExplanation] = useState(false);
   const [roundQuestions, setRoundQuestions] = useState<QuizQuestion[]>([]);
@@ -71,43 +92,10 @@ const getMultiplier = (timeLeft: number): { label: string; value: number } => {
   const [hasSaved, setHasSaved] = useState(false);
   const [usedIds, setUsedIds] = useState<Set<number>>(new Set());
 
-  
+  // ---------------------------
+  // Challenge timer
+  // ---------------------------
 
-  // ✅ Save quiz attempt to Supabase
-  const saveQuizAttempt = async (
-  roundPoints: number,
-  roundCorrect: number,
-  currentStreak: number
-) => {
-  const userId = await getUserId();
-
-  if (!userId) {
-    toast.error("You must be logged in to save your quiz!");
-    return;
-  }
-
-  const { data, error } = await supabase
-    .from('quiz_attempts')
-    .insert([
-      {
-        stylist_user_id: userId,
-        score: roundPoints,
-        questions_answered: roundQuestions.length,
-        correct_answers: roundCorrect,
-        streak_at_time: currentStreak,
-      },  
-    ]);
-
-  if (error) {
-    console.error("Error saving quiz:", error);
-    toast.error("Failed to save your quiz. Try again!");//feedback to user
-  } else {
-    console.log("Quiz saved successfully!");
-    toast.success("Your quiz was saved!");//Feedback to user
-  }
-};
-
-  // Challenge mode state
   const [timeLeft, setTimeLeft] = useState(TIMER_DURATION);
   const [answeredMultiplier, setAnsweredMultiplier] = useState<{ label: string; value: number } | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -126,6 +114,7 @@ const getMultiplier = (timeLeft: number): { label: string; value: number } => {
       setTimeLeft(prev => {
         if (prev <= 1) {
           clearTimer();
+          handleTimeout();
           return 0;
         }
         return prev - 1;
@@ -133,54 +122,36 @@ const getMultiplier = (timeLeft: number): { label: string; value: number } => {
     }, 1000);
   };
 
-  // Auto-timeout in challenge mode
   useEffect(() => {
-    if (isChallenge)return;
-
-    startTimer();
-    return () => clearTimer(); // Clean up timer when component unmounts or phase changes
-}, [phase, isChallenge]);
-
-  const handleTimeout = () => {
-    if (selectedAnswer) return;
-    setSelectedAnswer('__timeout__');
-    setShowExplanation(true);
-    setAnsweredMultiplier({ label: '0×', value: 0 });
-
-    const newState = { ...quizState, currentStreak: 0 };
-    if (!newState.wrongQuestionIds.includes(question.id)) {
-      newState.wrongQuestionIds.push(question.id);
-    }
-    setQuizState(newState);
-    saveQuizState(newState);
-  };
-
-  const pickQuestions = useCallback((currentUsedIds: Set<number>) => {
-    const wrong = quizQuestions.filter(q => quizState.wrongQuestionIds.includes(q.id) && !currentUsedIds.has(q.id));
-    const rest = quizQuestions.filter(q => !quizState.wrongQuestionIds.includes(q.id) && !currentUsedIds.has(q.id));
-    const pool = [...shuffleArray(wrong), ...shuffleArray(rest)];
-    if (pool.length < 5) {
-      return shuffleArray([...quizQuestions]).slice(0, 5);
-    }
-    return pool.slice(0, 5);
-  }, [quizState.wrongQuestionIds]);
-
-  useEffect(() => {
-    setRoundQuestions(pickQuestions(new Set()));
-    setQuestionIndex(0);
-    setRoundCorrect(0);
-    setRoundPoints(0);
-    if (isChallenge) startTimer();
+    if (!isChallenge && phase === 'playing') startTimer();
     return () => clearTimer();
+  }, [phase]);
+
+  // ---------------------------
+  // Question handling
+  // ---------------------------
+
+  const pickQuestions = useCallback(
+    (currentUsedIds: Set<number>) => {
+      const wrong = quizQuestions.filter(q => quizState.wrongQuestionIds.includes(q.id) && !currentUsedIds.has(q.id));
+      const rest = quizQuestions.filter(q => !quizState.wrongQuestionIds.includes(q.id) && !currentUsedIds.has(q.id));
+      const pool = [...shuffleArray(wrong), ...shuffleArray(rest)];
+      if (pool.length < 5) return shuffleArray([...quizQuestions]).slice(0, 5);
+      return pool.slice(0, 5);
+    },
+    [quizState.wrongQuestionIds]
+  );
+
+  useEffect(() => {
+    startNewRound();
   }, []);
 
   const currentQuestion = roundQuestions[questionIndex];
-  const question = currentQuestion!;
+  const shuffledOptions = useMemo(() => currentQuestion ? shuffleArray(currentQuestion.options) : [], [currentQuestion?.id]);
 
-  const shuffledOptions = useMemo(() => {
-    if (!question) return [];
-    return shuffleArray(question.options);
-  }, [question.id]);
+  // ---------------------------
+  // Answer handling
+  // ---------------------------
 
   const handleAnswer = (answer: string) => {
     if (selectedAnswer) return;
@@ -189,7 +160,6 @@ const getMultiplier = (timeLeft: number): { label: string; value: number } => {
     setShowExplanation(true);
 
     const isCorrect = answer === currentQuestion.correctAnswer;
-    
     const newState = { ...quizState };
     const mult = isChallenge ? getMultiplier(timeLeft) : null;
     setAnsweredMultiplier(mult);
@@ -210,11 +180,21 @@ const getMultiplier = (timeLeft: number): { label: string; value: number } => {
         setRoundPoints(prev => prev + 3);
       }
       newState.currentStreak = 0;
-      if (!newState.wrongQuestionIds.includes(question.id)) {
-        newState.wrongQuestionIds.push(question.id);
-      }
+      if (!newState.wrongQuestionIds.includes(currentQuestion.id)) newState.wrongQuestionIds.push(currentQuestion.id);
     }
 
+    setQuizState(newState);
+    saveQuizState(newState);
+  };
+
+  const handleTimeout = () => {
+    if (selectedAnswer) return;
+    setSelectedAnswer('__timeout__');
+    setShowExplanation(true);
+    setAnsweredMultiplier({ label: '0×', value: 0 });
+
+    const newState = { ...quizState, currentStreak: 0 };
+    if (!newState.wrongQuestionIds.includes(currentQuestion.id)) newState.wrongQuestionIds.push(currentQuestion.id);
     setQuizState(newState);
     saveQuizState(newState);
   };
@@ -226,57 +206,101 @@ const getMultiplier = (timeLeft: number): { label: string; value: number } => {
 
     const nextIdx = questionIndex + 1;
     if (nextIdx >= 5) {
-    const roundBonus = 5;
+      const roundBonus = 5;
+      const finalPoints = roundPoints + roundBonus;
 
-    const finalPoints = roundPoints + roundBonus;
+      const newState = { ...quizState, totalPoints: quizState.totalPoints + roundBonus };
+      if (isChallenge && finalPoints > quizState.challengeHighScore) newState.challengeHighScore = finalPoints;
 
-    const newState = {
-    ...quizState,
-       totalPoints: quizState.totalPoints + roundBonus,
-  };
+      setQuizState(newState);
+      saveQuizState(newState);
+      setRoundPoints(finalPoints);
 
-    if (isChallenge && finalPoints > quizState.challengeHighScore) {
-      newState.challengeHighScore = finalPoints;
-  }
+      if (!hasSaved) {
+        saveQuizAttempt(finalPoints, roundCorrect, quizState.currentStreak);
+        setHasSaved(true);
+      }
 
-    setQuizState(newState);
-    saveQuizState(newState);
-    setRoundPoints(finalPoints);
-
-  // ✅ SAVE TO SUPABASE (THIS IS THE IMPORTANT LINE)
-  if (!hasSaved) {
-    saveQuizAttempt(finalPoints, roundCorrect, quizState.currentStreak);
-    setHasSaved(true);
-}
-
-    setPhase('roundSummary');
-    clearTimer();
-  }else {
-    // ✅ THIS WAS MISSING
-    setQuestionIndex(nextIdx);
-
-    if (isChallenge) {
-      startTimer();
+      setPhase('roundSummary');
+      clearTimer();
+    } else {
+      setQuestionIndex(nextIdx);
+      if (isChallenge) startTimer();
     }
-  }
-};  
+  };
 
   const startNewRound = () => {
     const newUsed = new Set(usedIds);
     roundQuestions.forEach(q => newUsed.add(q.id));
-    setHasSaved(false);
     setUsedIds(newUsed);
     setRoundQuestions(pickQuestions(newUsed));
     setQuestionIndex(0);
     setRoundCorrect(0);
     setRoundPoints(0);
     setPhase('playing');
+    setHasSaved(false);
     if (isChallenge) startTimer();
   };
 
-  if (!currentQuestion && phase === 'playing') return null; 
+  // ---------------------------
+  // Supabase integration
+  // ---------------------------
 
-  // Round summary
+  const saveQuizAttempt = async (score: number, correct: number, streak: number) => {
+    const userId = await getUserId();
+    if (!userId) {
+      toast.error("You must be logged in to save your quiz!");
+      return;
+    }
+
+    const { error } = await supabase.from('quiz_attempts').insert([
+      {
+        stylist_user_id: userId,
+        score,
+        questions_answered: roundQuestions.length,
+        correct_answers: correct,
+        streak_at_time: streak,
+      }
+    ]);
+
+    if (error) toast.error("Failed to save your quiz. Try again!");
+    else toast.success("Your quiz was saved!");
+  };
+
+  const fetchUserAttempts = async () => {
+    const userId = await getUserId();
+    if (!userId) return [];
+
+    const { data, error } = await supabase
+      .from('quiz_attempts')
+      .select('*')
+      .eq('stylist_user_id', userId)
+      .order('created_at', { ascending: false });
+
+    if (error) toast.error("Failed to fetch your attempts");
+    return data || [];
+  };
+
+  useEffect(() => {
+    fetchUserAttempts().then((attempts) => setUserAttempts(attempts));
+  }, []);
+
+  // ---------------------------
+  // Rendering
+  // ---------------------------
+
+  if (!currentQuestion && phase === 'playing') return null;
+
+  const question = currentQuestion!;
+  const isCorrect = selectedAnswer === question.correctAnswer;
+  const isTimeout = selectedAnswer === '__timeout__';
+  const timerPercent = (timeLeft / TIMER_DURATION) * 100;
+  const timerColor = timeLeft > 7 ? 'bg-primary' : timeLeft > 4 ? 'bg-[hsl(40,70%,50%)]' : 'bg-destructive';
+
+  // ---------------------------
+  // Round Summary
+  // ---------------------------
+
   if (phase === 'roundSummary') {
     return (
       <div className="page-container pt-6">
@@ -311,7 +335,9 @@ const getMultiplier = (timeLeft: number): { label: string; value: number } => {
             </div>
             <div className="flex justify-between">
               <span className="text-sm text-muted-foreground">Current streak</span>
-              <span className="text-sm font-semibold flex items-center gap-1"><Flame size={14} className="text-primary" />{quizState.currentStreak}</span>
+              <span className="text-sm font-semibold flex items-center gap-1">
+                <Flame size={14} className="text-primary" />{quizState.currentStreak}
+              </span>
             </div>
           </div>
 
@@ -326,40 +352,13 @@ const getMultiplier = (timeLeft: number): { label: string; value: number } => {
     );
   }
 
-
-  // ------------------------
-  // Fetch previous attempts
-  // ------------------------
-  const fetchUserAttempts = async () => {
-    const userId = await getUserId();
-    if (!userId) return [];
-
-    const { data, error } = await supabase
-      .from('quiz_attempts')
-      .select('*')
-      .eq('stylist_user_id', userId)
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      toast.error("Failed to fetch your attempts");
-      return [];
-    }
-
-    return data;
-  };
-
-  // Call this once when component mounts
-  useEffect(() => {
-    fetchUserAttempts().then((attempts) => setUserAttempts(attempts));
-  }, []);
-  
-  const isCorrect = selectedAnswer === currentQuestion.correctAnswer;
-  const isTimeout = selectedAnswer === '__timeout__';
-  const timerPercent = (timeLeft / TIMER_DURATION) * 100;
-  const timerColor = timeLeft > 7 ? 'bg-primary' : timeLeft > 4 ? 'bg-[hsl(40,70%,50%)]' : 'bg-destructive';
+  // ---------------------------
+  // Quiz Playing Phase
+  // ---------------------------
 
   return (
     <div className="page-container pt-6 pb-24">
+      <Toaster position="top-right" />
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
         {/* Header */}
         <div className="flex items-center justify-between mb-3">
@@ -377,7 +376,7 @@ const getMultiplier = (timeLeft: number): { label: string; value: number } => {
           </div>
         </div>
 
-        {/* Timer bar (challenge mode) */}
+        {/* Timer bar */}
         {isChallenge && !selectedAnswer && (
           <div className="mb-3">
             <div className="flex items-center justify-between mb-1">
@@ -407,23 +406,23 @@ const getMultiplier = (timeLeft: number): { label: string; value: number } => {
           ))}
         </div>
 
+        {/* Question */}
         <h1 className="text-lg font-semibold mb-4">What are you looking at?</h1>
 
-        {/* Illustration */}
+        {/* Illustration & Options */}
         <AnimatePresence mode="wait">
-          <motion.div key={currentQuestion.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
+          <motion.div key={question.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
             <div className="w-full aspect-square max-w-[240px] mx-auto rounded-2xl overflow-hidden mb-4">
-              <ScalpIllustration conditionId={currentQuestion.conditionId} stageIndex={currentQuestion.stageIndex} />
+              <ScalpIllustration conditionId={question.conditionId} stageIndex={question.stageIndex} />
             </div>
-
-            <p className="text-sm text-muted-foreground text-center mb-5 italic">"{currentQuestion.scenario}"</p>
+            <p className="text-sm text-muted-foreground text-center mb-5 italic">"{question.scenario}"</p>
 
             {/* Options */}
             <div className="space-y-2.5 mb-4">
-              {shuffledOptions.map((option) => {
+              {shuffledOptions.map(option => {
                 let bg = 'bg-card border border-border';
                 if (selectedAnswer) {
-                  if (option === currentQuestion.correctAnswer) bg = 'bg-primary/15 border border-primary/40 text-foreground';
+                  if (option === question.correctAnswer) bg = 'bg-primary/15 border border-primary/40 text-foreground';
                   else if (option === selectedAnswer && !isCorrect) bg = 'bg-destructive/10 border border-destructive/30 text-foreground';
                 }
                 return (
@@ -446,12 +445,9 @@ const getMultiplier = (timeLeft: number): { label: string; value: number } => {
                   {isTimeout ? "Time's up!" : isCorrect ? "That's right!" : 'Not quite'}
                 </p>
                 <p className="text-sm text-muted-foreground leading-relaxed mb-2">
-                  {isTimeout
-                    ? `The correct answer was ${currentQuestion.correctAnswer}. ${currentQuestion.incorrectExplanationTemplate}`
-                    : isCorrect ? currentQuestion.correctExplanation : currentQuestion.incorrectExplanationTemplate}
+                  {isTimeout ? `The correct answer was ${question.correctAnswer}. ${question.incorrectExplanationTemplate}` : isCorrect ? question.correctExplanation : question.incorrectExplanationTemplate}
                 </p>
-                {/* Skin tone tip */}
-                <p className="text-xs text-primary font-medium italic mb-2">{currentQuestion.skinToneTip}</p>
+                <p className="text-xs text-primary font-medium italic mb-2">{question.skinToneTip}</p>
                 <p className="text-xs text-primary font-medium mb-1">
                   {isTimeout
                     ? '0 points, too slow!'
@@ -461,7 +457,7 @@ const getMultiplier = (timeLeft: number): { label: string; value: number } => {
                 </p>
 
                 <button
-                  onClick={() => navigate(`/stylist/learn?condition=${currentQuestion.learnMoreId}`)}
+                  onClick={() => navigate(`/stylist/learn?condition=${question.learnMoreId}`)}
                   className="text-xs text-primary font-medium flex items-center gap-1 mt-2 btn-press"
                 >
                   Learn more about this condition <ChevronRight size={12} />
@@ -469,6 +465,7 @@ const getMultiplier = (timeLeft: number): { label: string; value: number } => {
               </motion.div>
             )}
 
+            {/* Next button */}
             {showExplanation && (
               <button onClick={handleNext} className="w-full h-12 bg-primary text-primary-foreground rounded-xl font-semibold text-sm btn-press">
                 {questionIndex >= 4 ? 'See results' : 'Next question'}
