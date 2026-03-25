@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, HelpCircle, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowLeft, HelpCircle, ChevronDown, ChevronLeft, ChevronRight, Camera, ImagePlus, RotateCcw, Check } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 
 // ─── HAIR REFERENCE PHOTOS ───────────────────────────────────────────────────
@@ -141,11 +141,32 @@ const CurlIcon = ({ type }: { type: string }) => {
   return null;
 };
 
-const TOTAL_SCREENS = 4;
+const photoSteps = [
+  {
+    title: 'Front hairline photo',
+    instruction: 'Keep your forehead visible. Pull hair back to show your hairline and temples.',
+    refLabel: 'Reference: front hairline view on textured hair',
+    area: 'Hairline / edges',
+  },
+  {
+    title: 'Side profile photo',
+    instruction: 'Turn to show one side of your head. Include the temple area and ear.',
+    refLabel: 'Reference: side view showing temple area',
+    area: 'Side / temple',
+  },
+  {
+    title: 'Back and nape photo',
+    instruction: 'Show the back of your head. Include your nape and crown. Use a second mirror or ask someone to help.',
+    refLabel: 'Reference: back view showing nape and crown',
+    area: 'Nape / crown',
+  },
+];
+
+const TOTAL_SCREENS = 5;
 
 const Onboarding = () => {
   const navigate = useNavigate();
-  const { onboardingData, setOnboardingData, setOnboardingComplete } = useApp();
+  const { onboardingData, setOnboardingData, setOnboardingComplete, setBaselinePhotos, setBaselineDate } = useApp();
 
   const [step, setStep] = useState(0);
   const gender = onboardingData.gender;
@@ -167,6 +188,12 @@ const Onboarding = () => {
 
   const [concerns, setConcerns] = useState<string[]>(onboardingData.goals || []);
 
+  // Screen 5: Photo capture
+  const [photoStep, setPhotoStep] = useState(0);
+  const [capturedPhotos, setCapturedPhotos] = useState<(string | null)[]>([null, null, null]);
+  const [photosDone, setPhotosDone] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const rawStyleOptions = isMale ? maleStyleOptions : isNeutral ? [...new Set([...femaleStyleOptions, ...maleStyleOptions])] : femaleStyleOptions;
   const genderKey = isMale ? 'male' : isNeutral ? 'both' : 'female';
 
@@ -183,12 +210,52 @@ const Onboarding = () => {
   };
   const toggleConcern = (c: string) => setConcerns(prev => prev.includes(c) ? prev.filter(x => x !== c) : [...prev, c]);
 
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const url = URL.createObjectURL(file);
+      setCapturedPhotos(prev => { const next = [...prev]; next[photoStep] = url; return next; });
+    }
+    e.target.value = '';
+  };
+
+  const handleSkipPhotos = () => {
+    finishOnboarding();
+  };
+
+  const finishOnboarding = () => {
+    const effectiveHairType = hairSubType || hairType;
+    const photos = capturedPhotos
+      .map((p, i) => p ? { area: photoSteps[i].area, captured: true, date: new Date().toLocaleDateString() } : null)
+      .filter(Boolean) as { area: string; captured: boolean; date: string }[];
+    setOnboardingData({
+      ...onboardingData,
+      hairType: effectiveHairType,
+      protectiveStyles: styles,
+      otherStyle,
+      protectiveStyleFrequency: protectiveFreq,
+      isWornOutOnly: false,
+      cycleLength,
+      betweenWashCare: betweenWash,
+      otherBetweenWashCare: otherBetweenWash,
+      goals: concerns,
+    });
+    if (photos.length > 0) {
+      setBaselinePhotos(photos);
+      setBaselineDate(new Date().toLocaleDateString());
+    }
+    sessionStorage.setItem('follisense-just-onboarded', 'true');
+    setOnboardingComplete(true);
+    navigate('/home');
+  };
+
   const canProceed = () => {
     switch (step) {
       case 0: return !!hairType;
       case 1: return styles.length > 0 && (!styles.includes('Other') || otherStyle.trim().length > 0) && !!protectiveFreq;
       case 2: return !!cycleLength && betweenWash.length > 0 && (!betweenWash.includes('Other') || otherBetweenWash.trim().length > 0);
       case 3: return concerns.length > 0;
+      case 4: return true; // photo screen always allows proceeding
       default: return false;
     }
   };
@@ -197,22 +264,7 @@ const Onboarding = () => {
     if (step < TOTAL_SCREENS - 1) {
       setStep(step + 1);
     } else {
-      const effectiveHairType = hairSubType || hairType;
-      setOnboardingData({
-        ...onboardingData,
-        hairType: effectiveHairType,
-        protectiveStyles: styles,
-        otherStyle,
-        protectiveStyleFrequency: protectiveFreq,
-        isWornOutOnly: false,
-        cycleLength,
-        betweenWashCare: betweenWash,
-        otherBetweenWashCare: otherBetweenWash,
-        goals: concerns,
-      });
-      sessionStorage.setItem('follisense-just-onboarded', 'true');
-      setOnboardingComplete(true);
-      navigate('/home');
+      finishOnboarding();
     }
   };
 
@@ -436,22 +488,180 @@ const Onboarding = () => {
                 </div>
               )}
 
+              {/* ── Screen 5: Baseline Photos ── */}
+              {step === 4 && (
+                <div>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
+                    ref={fileInputRef}
+                    onChange={handleFileSelect}
+                    className="hidden"
+                  />
+
+                  {!photosDone ? (
+                    <div>
+                      {/* Photo step progress */}
+                      <div className="flex items-center justify-center gap-3 mb-6">
+                        {photoSteps.map((_, i) => (
+                          <div key={i} className="flex items-center gap-2">
+                            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold transition-colors ${
+                              i < photoStep ? 'bg-primary text-primary-foreground' :
+                              i === photoStep ? 'bg-primary text-primary-foreground' :
+                              'bg-muted text-muted-foreground'
+                            }`}>
+                              {i < photoStep ? <Check size={16} /> : i + 1}
+                            </div>
+                            {i < photoSteps.length - 1 && (
+                              <div className={`w-6 h-0.5 ${i < photoStep ? 'bg-primary' : 'bg-border'}`} />
+                            )}
+                          </div>
+                        ))}
+                      </div>
+
+                      <h2 className="text-lg font-semibold text-foreground mb-1">
+                        {photoSteps[photoStep].title}
+                      </h2>
+                      <p className="text-xs text-muted-foreground mb-2">
+                        Set your starting point so we can track changes over time.
+                      </p>
+                      <p className="text-sm text-foreground mb-5">
+                        {photoSteps[photoStep].instruction}
+                      </p>
+
+                      {/* Reference photo placeholder */}
+                      <div className="rounded-xl border-2 border-dashed border-border bg-accent/30 aspect-[4/3] flex flex-col items-center justify-center mb-4">
+                        <Camera size={40} className="text-muted-foreground mb-2" strokeWidth={1.2} />
+                        <p className="text-xs text-muted-foreground text-center px-6">
+                          {photoSteps[photoStep].refLabel}
+                        </p>
+                      </div>
+
+                      {/* Captured thumbnail or capture buttons */}
+                      {capturedPhotos[photoStep] ? (
+                        <div className="mb-4">
+                          <div className="rounded-xl overflow-hidden border border-primary mb-3">
+                            <img
+                              src={capturedPhotos[photoStep]!}
+                              alt={`Captured ${photoSteps[photoStep].area}`}
+                              className="w-full aspect-[4/3] object-cover"
+                            />
+                          </div>
+                          <button
+                            onClick={() => setCapturedPhotos(prev => { const next = [...prev]; next[photoStep] = null; return next; })}
+                            className="flex items-center gap-2 text-sm text-primary font-medium mx-auto"
+                          >
+                            <RotateCcw size={14} /> Retake
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="flex gap-3 mb-4">
+                          <button
+                            onClick={() => fileInputRef.current?.click()}
+                            className="flex-1 h-12 rounded-xl bg-primary text-primary-foreground font-semibold text-sm flex items-center justify-center gap-2"
+                          >
+                            <Camera size={18} /> Take photo
+                          </button>
+                          <button
+                            onClick={() => {
+                              const input = document.createElement('input');
+                              input.type = 'file';
+                              input.accept = 'image/*';
+                              input.onchange = (e) => {
+                                const file = (e.target as HTMLInputElement).files?.[0];
+                                if (file) {
+                                  const url = URL.createObjectURL(file);
+                                  setCapturedPhotos(prev => { const next = [...prev]; next[photoStep] = url; return next; });
+                                }
+                              };
+                              input.click();
+                            }}
+                            className="flex-1 h-12 rounded-xl border-2 border-border text-foreground font-semibold text-sm flex items-center justify-center gap-2"
+                          >
+                            <ImagePlus size={18} /> Choose photo
+                          </button>
+                        </div>
+                      )}
+
+                      {/* Next / Done for photo step */}
+                      {capturedPhotos[photoStep] && (
+                        <button
+                          onClick={() => {
+                            if (photoStep < photoSteps.length - 1) {
+                              setPhotoStep(photoStep + 1);
+                            } else {
+                              setPhotosDone(true);
+                            }
+                          }}
+                          className="w-full h-14 rounded-xl bg-primary text-primary-foreground font-semibold text-base btn-press mb-3"
+                        >
+                          {photoStep < photoSteps.length - 1 ? 'Next' : 'Done'}
+                        </button>
+                      )}
+
+                      {/* Skip */}
+                      <button
+                        onClick={handleSkipPhotos}
+                        className="w-full text-center text-sm text-muted-foreground py-2"
+                      >
+                        Skip for now
+                      </button>
+                    </div>
+                  ) : (
+                    /* ── Confirmation screen ── */
+                    <div className="text-center">
+                      <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                        <Check size={32} className="text-primary" />
+                      </div>
+                      <h2 className="text-xl font-semibold text-foreground mb-2">Baseline set. You're ready to go.</h2>
+                      <p className="text-sm text-muted-foreground mb-6">
+                        We'll compare future photos against these to track changes.
+                      </p>
+
+                      <div className="flex gap-3 justify-center mb-8">
+                        {capturedPhotos.map((photo, i) => (
+                          photo ? (
+                            <div key={i} className="w-24 h-24 rounded-xl overflow-hidden border border-border">
+                              <img src={photo} alt={photoSteps[i].area} className="w-full h-full object-cover" />
+                            </div>
+                          ) : (
+                            <div key={i} className="w-24 h-24 rounded-xl bg-muted flex items-center justify-center border border-border">
+                              <Camera size={20} className="text-muted-foreground" />
+                            </div>
+                          )
+                        ))}
+                      </div>
+
+                      <button
+                        onClick={finishOnboarding}
+                        className="w-full h-14 rounded-xl bg-primary text-primary-foreground font-semibold text-base btn-press"
+                      >
+                        Take me to my dashboard
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+
             </motion.div>
           </AnimatePresence>
         </div>
 
-        {/* Bottom button */}
-        <div className="flex-shrink-0 py-4">
-          <button
-            onClick={handleNext}
-            disabled={!canProceed()}
-            className={`w-full h-14 rounded-xl font-semibold text-base btn-press transition-colors ${
-              canProceed() ? 'bg-primary text-primary-foreground' : 'bg-border text-muted-foreground cursor-not-allowed'
-            }`}
-          >
-            {step === TOTAL_SCREENS - 1 ? "Let's go" : 'Next'}
-          </button>
-        </div>
+        {/* Bottom button - hidden on photo screen */}
+        {step < 4 && (
+          <div className="flex-shrink-0 py-4">
+            <button
+              onClick={handleNext}
+              disabled={!canProceed()}
+              className={`w-full h-14 rounded-xl font-semibold text-base btn-press transition-colors ${
+                canProceed() ? 'bg-primary text-primary-foreground' : 'bg-border text-muted-foreground cursor-not-allowed'
+              }`}
+            >
+              Next
+            </button>
+          </div>
+        )}
 
       </div>
     </div>
