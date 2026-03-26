@@ -73,28 +73,28 @@ const matchResponse = (userMessage: string): MatchedResponse => {
 
   if (lower.includes('shedding') || lower.includes('hair loss') || lower.includes('losing hair') || lower.includes('falling out')) {
     return {
-      text: "First, let's separate shedding from breakage. Shedding is full strands falling from the root — with a small white bulb at the end. That's your hair's natural cycle and 50–100 strands a day is normal.\n\nAfter a protective style, several weeks of shedding comes out at once during wash day, which looks alarming but is usually just accumulated normal shed. If you're seeing significantly more than usual, or if it's happening outside of wash day, it could be telogen effluvium from stress, hormonal changes, or nutritional deficiency. Track it over your next 2–3 wash cycles to see if there's a pattern.",
+      text: "First, let's separate shedding from breakage. Shedding is full strands falling from the root, with a small white bulb at the end. That's your hair's natural cycle and 50 to 100 strands a day is normal.\n\nAfter a protective style, several weeks of shedding comes out at once during wash day, which looks alarming but is usually just accumulated normal shed. If you're seeing significantly more than usual, or if it's happening outside of wash day, it could be telogen effluvium from stress, hormonal changes, or nutritional deficiency. Track it over your next 2 to 3 wash cycles to see if there's a pattern.",
       suggestions: ["Is this normal after braids?", "Could it be telogen effluvium?", "Should I get blood work done?"],
     };
   }
 
   if (lower.includes('dandruff') || lower.includes('flaking') || lower.includes('flakes')) {
     return {
-      text: "Flaking has two main causes and they need different treatments. Dandruff (seborrheic dermatitis) produces oily, yellowish flakes and is caused by yeast overgrowth. It responds to antifungal shampoos like ketoconazole or zinc pyrithione.\n\nDry scalp produces smaller, white, dry flakes and needs gentle moisturising and less frequent washing. Under protective styles, buildup from products can also look like flaking but is actually residue. If you're not sure which you have, try a medicated shampoo for 2–3 washes. If it helps, it was dandruff. If not, focus on hydration.",
+      text: "Flaking has two main causes and they need different treatments. Dandruff (seborrheic dermatitis) produces oily, yellowish flakes and is caused by yeast overgrowth. It responds to antifungal shampoos like ketoconazole or zinc pyrithione.\n\nDry scalp produces smaller, white, dry flakes and needs gentle moisturising and less frequent washing. Under protective styles, buildup from products can also look like flaking but is actually residue. If you're not sure which you have, try a medicated shampoo for 2 to 3 washes. If it helps, it was dandruff. If not, focus on hydration.",
       suggestions: ["How to treat under braids?", "Is dandruff worse in winter?", "Could it be psoriasis?"],
     };
   }
 
   if (lower.includes('oil') || lower.includes('oils') || lower.includes('castor')) {
     return {
-      text: "This might be an unpopular opinion, but most scalp oils have very limited clinical evidence behind them. Heavy oils like castor oil can actually clog follicles and worsen buildup, especially under protective styles where the scalp isn't being regularly cleansed.\n\nThe two with some research support are rosemary oil and peppermint oil — both diluted — and the evidence is still modest. If you're using oil on your scalp and it feels good, keep it light and infrequent. But if you're dealing with a scalp issue, adding oil is often not the answer and can make things worse.",
+      text: "This might be an unpopular opinion, but most scalp oils have very limited clinical evidence behind them. Heavy oils like castor oil can actually clog follicles and worsen buildup, especially under protective styles where the scalp isn't being regularly cleansed.\n\nThe two with some research support are rosemary oil and peppermint oil, both diluted, and the evidence is still modest. If you're using oil on your scalp and it feels good, keep it light and infrequent. But if you're dealing with a scalp issue, adding oil is often not the answer and can make things worse.",
       suggestions: ["What about rosemary oil specifically?", "What should I use instead?", "Can oil clog hair follicles?"],
     };
   }
 
   if (lower.includes('diet') || lower.includes('nutrition') || lower.includes('eat') || lower.includes('food') || lower.includes('vitamin')) {
     return {
-      text: "Your hair is built from protein and fuelled by nutrients delivered through your blood supply to the follicle. The big ones for hair health: iron (carries oxygen to follicles — low iron is a top cause of shedding in women), vitamin D (low levels linked to hair loss, common in people with darker skin), zinc (supports growth and repair), B12 (essential for the red blood cells that feed follicles), and protein itself.\n\nBefore buying supplements, get a blood test. Supplements fix deficiencies but they don't override genetics, hormones, or mechanical damage.",
+      text: "Your hair is built from protein and fuelled by nutrients delivered through your blood supply to the follicle. The big ones for hair health: iron (carries oxygen to follicles, low iron is a top cause of shedding in women), vitamin D (low levels linked to hair loss, common in people with darker skin), zinc (supports growth and repair), B12 (essential for the red blood cells that feed follicles), and protein itself.\n\nBefore buying supplements, get a blood test. Supplements fix deficiencies but they don't override genetics, hormones, or mechanical damage.",
       suggestions: ["Should I take biotin?", "Best foods for hair growth?", "How do I get tested?"],
     };
   }
@@ -108,14 +108,14 @@ const matchResponse = (userMessage: string): MatchedResponse => {
 
   if (lower.includes('locs') || lower.includes('dreadlocks') || lower.includes('retwist')) {
     return {
-      text: "The most common scalp issue with locs is traction from retwists that are too tight. Your retwist should never hurt. If it does, your loctician is going too tight and that's damaging your follicles, especially along the hairline and part lines.\n\nYou can and should wash your scalp with locs. Diluted shampoo or a scalp-specific cleanser applied between locs works well. Avoid heavy waxes or products that create buildup at the root. And give your loc line some breathing room — consistently tight retwists in the same spots will cause thinning over time.",
+      text: "The most common scalp issue with locs is traction from retwists that are too tight. Your retwist should never hurt. If it does, your loctician is going too tight and that's damaging your follicles, especially along the hairline and part lines.\n\nYou can and should wash your scalp with locs. Diluted shampoo or a scalp-specific cleanser applied between locs works well. Avoid heavy waxes or products that create buildup at the root. And give your loc line some breathing room, consistently tight retwists in the same spots will cause thinning over time.",
       suggestions: ["How often should I retwist?", "Best way to wash with locs?", "Thinning at my part line"],
     };
   }
 
   if (lower.includes('durag') || lower.includes('waves') || lower.includes('wave cap')) {
     return {
-      text: "Durags and wave caps work by compressing your hair to train the curl pattern. That compression — especially if it's tight and worn for long hours every day — applies constant low-level tension to your hairline.\n\nIf you're noticing your temples looking thinner, the durag might be contributing. Try loosening the tie so there's less pressure on the hairline. Give your scalp a break from compression for a few hours each day. And if you're seeing consistent recession, it's worth getting assessed — because catching it early makes the difference between reversible and permanent.",
+      text: "Durags and wave caps work by compressing your hair to train the curl pattern. That compression, especially if it's tight and worn for long hours every day, applies constant low-level tension to your hairline.\n\nIf you're noticing your temples looking thinner, the durag might be contributing. Try loosening the tie so there's less pressure on the hairline. Give your scalp a break from compression for a few hours each day. And if you're seeing consistent recession, it's worth getting assessed, because catching it early makes the difference between reversible and permanent.",
       suggestions: ["How tight is too tight?", "Am I losing hair from my durag?", "Waves vs hairline health"],
     };
   }
@@ -123,7 +123,7 @@ const matchResponse = (userMessage: string): MatchedResponse => {
   // Off-topic check
   if (!lower.match(/hair|scalp|itch|style|braid|wash|shed|break|product|grow|thin|edge|dandruff|flak|curl|loc|wig|wave|barber|routine|moisture|protein|dry|brittle|bump|follicle/)) {
     return {
-      text: "I'm best with scalp and hair questions — is there something about your hair I can help with?",
+      text: "I'm best with scalp and hair questions, is there something about your hair I can help with?",
       suggestions: ["My scalp has been itchy", "I'm worried about thinning", "Help me build a routine"],
     };
   }
@@ -182,11 +182,11 @@ const ChatPage = () => {
         if (isFollowUp) {
           // Add contextual prefix referencing what they previously said
           if (prevTopic.includes('itch') && (currentTopic.includes('worse') || currentTopic.includes('still'))) {
-            responseText = `Since you mentioned itching earlier — if it's persisting or getting worse, that's a signal worth paying attention to.\n\n${responseText}`;
+            responseText = `Since you mentioned itching earlier, if it's persisting or getting worse, that's a signal worth paying attention to.\n\n${responseText}`;
           } else if (prevTopic.includes('edge') && currentTopic.includes('grow')) {
-            responseText = `Building on what we discussed about your edges — ${responseText}`;
+            responseText = `Building on what we discussed about your edges, ${responseText}`;
           } else if (prevTopic.includes('shed') && currentTopic.includes('normal')) {
-            responseText = `Given what you told me about your shedding — ${responseText}`;
+            responseText = `Given what you told me about your shedding, ${responseText}`;
           } else if (isFollowUp && !currentTopic.match(/^(my scalp|i'm worried|how often)/)) {
             // Generic follow-up awareness
             responseText = `Good follow-up question. ${responseText}`;

@@ -7,7 +7,7 @@ const computeBaselineRisk = (itch: string, tenderness: string, hairline: string,
   const mildest = ['None', 'No concerns'];
   const severe = ['Severe', 'Very concerned'];
   const moderate = ['Moderate', 'Noticeable change'];
-  const hairMildest = ['Healthy — no concerns'];
+  const hairMildest = ['Healthy, no concerns'];
   const hairModerate = ['Noticeably dry, brittle, or breaking more than usual', "Concerned about my hair's condition"];
   const scalpValues = [itch, tenderness, hairline];
   const allScalpMild = scalpValues.every(v => mildest.includes(v));
@@ -55,18 +55,18 @@ const getBaselineTips = (itch: string, tenderness: string, hairline: string, hai
       else tips.push('If your scalp is sore after a fresh cut or lineup, give it a day. If it persists, it could be irritation from clippers or product.');
     }
     if (hairline === 'Noticeable change' || hairline === 'Slight concern' || hairline === 'Very concerned') {
-      tips.push('Give your hairline a break from tension — if you wear a durag or tight styles regularly, loosening up can help.');
+      tips.push('Give your hairline a break from tension, if you wear a durag or tight styles regularly, loosening up can help.');
     }
     if (hairHealth.includes('dry') || hairHealth.includes('brittle') || hairHealth.includes('breakage') || hairHealth.includes('Concerned')) {
       tips.push('Noticeable changes in your hair\'s texture or density are worth monitoring. A trichologist can check whether it\'s something treatable.');
     }
   } else {
-    if (itch === 'Moderate' || itch === 'Mild' || itch === 'Severe') tips.push('Try pressing gently with a fingertip instead of scratching — it relieves itch without damaging the scalp. If your scalp feels dry or tight, a fragrance-free scalp moisturiser or hydrating mist may help.');
-    if (tenderness === 'Moderate' || tenderness === 'Mild' || tenderness === 'Severe') tips.push('If your current style feels tight, don\'t re-tighten loose areas — let them be. It\'s okay to take it down early.');
-    if (hairline === 'Noticeable change' || hairline === 'Slight concern' || hairline === 'Very concerned') tips.push('Give your hairline a break from tension — consider asking your stylist to keep installations looser around your edges.');
+    if (itch === 'Moderate' || itch === 'Mild' || itch === 'Severe') tips.push('Try pressing gently with a fingertip instead of scratching, it relieves itch without damaging the scalp. If your scalp feels dry or tight, a fragrance-free scalp moisturiser or hydrating mist may help.');
+    if (tenderness === 'Moderate' || tenderness === 'Mild' || tenderness === 'Severe') tips.push('If your current style feels tight, don\'t re-tighten loose areas, let them be. It\'s okay to take it down early.');
+    if (hairline === 'Noticeable change' || hairline === 'Slight concern' || hairline === 'Very concerned') tips.push('Give your hairline a break from tension, consider asking your stylist to keep installations looser around your edges.');
     if (hairHealth.includes('dry') || hairHealth.includes('brittle') || hairHealth.includes('breakage') || hairHealth.includes('Concerned')) tips.push('A deep conditioning treatment can help restore moisture and reduce breakage over time.');
   }
-  if (tips.length === 0) tips.push('Consistency is key — regular check-ins will help you spot patterns early.');
+  if (tips.length === 0) tips.push('Consistency is key, regular check-ins will help you spot patterns early.');
   return tips;
 };
 
@@ -182,7 +182,7 @@ const BaselineResponse = () => {
     </div>
   );
 
-  // Red — dynamic heading/body based on encounter count and gender
+  // Red, dynamic heading/body based on encounter count and gender
   let redHeading: string;
   let redBody: string;
 
@@ -217,7 +217,7 @@ const BaselineResponse = () => {
         redBody = "Hairline changes can feel scary, but noticing them is the first and most important step. The earlier you get a professional opinion, the more options you'll have. Many hairline concerns are reversible when caught early.";
       } else if (isSevereHairHealth) {
         redHeading = "Your hair is telling you something";
-        redBody = "When your hair changes significantly in texture, density, or strength, it's often a signal that something is going on underneath — whether that's your scalp, your nutrition, your hormones, or your styling routine. A specialist can help pinpoint the cause.";
+        redBody = "When your hair changes significantly in texture, density, or strength, it's often a signal that something is going on underneath, whether that's your scalp, your nutrition, your hormones, or your styling routine. A specialist can help pinpoint the cause.";
       }
     }
   }
@@ -236,9 +236,9 @@ const BaselineResponse = () => {
           <div className="card-elevated p-5 mb-4">
             <h3 className="font-semibold mb-3">Who can help</h3>
             <div className="space-y-2">
-              <p className="text-sm text-muted-foreground leading-relaxed"><strong className="text-foreground">Trichologist</strong> — specialises in hair and scalp conditions. Best first step for hair-specific concerns.</p>
-              <p className="text-sm text-muted-foreground leading-relaxed"><strong className="text-foreground">Dermatologist</strong> — can investigate skin and scalp conditions in depth and prescribe treatment.</p>
-              <p className="text-sm text-muted-foreground leading-relaxed"><strong className="text-foreground">GP</strong> — can run blood tests, check for underlying causes, and refer you onwards.</p>
+              <p className="text-sm text-muted-foreground leading-relaxed"><strong className="text-foreground">Trichologist</strong>, specialises in hair and scalp conditions. Best first step for hair-specific concerns.</p>
+              <p className="text-sm text-muted-foreground leading-relaxed"><strong className="text-foreground">Dermatologist</strong>, can investigate skin and scalp conditions in depth and prescribe treatment.</p>
+              <p className="text-sm text-muted-foreground leading-relaxed"><strong className="text-foreground">GP</strong>, can run blood tests, check for underlying causes, and refer you onwards.</p>
             </div>
           </div>
 
