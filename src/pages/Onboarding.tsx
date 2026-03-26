@@ -140,7 +140,6 @@ const Onboarding = () => {
   const [scalpPhotos, setScalpPhotos] = useState<Record<number, boolean>>({});
   const [lengthPhotoIndex, setLengthPhotoIndex] = useState(0);
   const [lengthPhotos, setLengthPhotos] = useState<Record<number, boolean>>({});
-  const [skippedScalpPhotos, setSkippedScalpPhotos] = useState(false);
   const [skippedLengthPhotos, setSkippedLengthPhotos] = useState(false);
 
   const isMale = gender === 'man';
@@ -226,7 +225,7 @@ const Onboarding = () => {
 
   const handleNext = () => {
     // Scalp photo sub-steps
-    if (step === 6 && scalpPhotoIndex < 3 && !skippedScalpPhotos) {
+    if (step === 6 && scalpPhotoIndex < 3) {
       setScalpPhotoIndex(scalpPhotoIndex + 1);
       return;
     }
