@@ -48,28 +48,63 @@ const FloatingChat = () => {
   const [inputValue, setInputValue] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [showTooltip, setShowTooltip] = useState(false);
-  const [tooltipShown, setTooltipShown] = useState(false);
-  const [hasPulsed, setHasPulsed] = useState(false);
+  const [shouldPulse, setShouldPulse] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const idleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Hide on auth/onboarding/checkin/stylist screens
   const hiddenPaths = ['/', '/signup', '/login', '/forgot-password', '/onboarding', '/mid-cycle', '/wash-day', '/stylist'];
   const shouldHide = hiddenPaths.some(p => location.pathname === p || location.pathname.startsWith('/stylist'));
-  
-  // Show tooltip on first Home visit
-  useEffect(() => {
-    if (location.pathname === '/home' && !tooltipShown && !isOpen) {
-      const timer = setTimeout(() => { setShowTooltip(true); setTooltipShown(true); }, 1500);
-      const dismiss = setTimeout(() => setShowTooltip(false), 6500);
-      return () => { clearTimeout(timer); clearTimeout(dismiss); };
-    }
-  }, [location.pathname, tooltipShown, isOpen]);
 
-  useEffect(() => { if (!hasPulsed) { const t = setTimeout(() => setHasPulsed(true), 3000); return () => clearTimeout(t); } }, [hasPulsed]);
+  // One-time greeting tooltip on first dashboard visit after onboarding
+  useEffect(() => {
+    if (location.pathname === '/home' && !isOpen) {
+      const tooltipKey = 'follisense-chat-tooltip-shown';
+      const alreadyShown = localStorage.getItem(tooltipKey);
+      if (!alreadyShown) {
+        const timer = setTimeout(() => setShowTooltip(true), 1500);
+        const dismiss = setTimeout(() => {
+          setShowTooltip(false);
+          localStorage.setItem(tooltipKey, 'true');
+        }, 6500);
+        return () => { clearTimeout(timer); clearTimeout(dismiss); };
+      }
+    }
+  }, [location.pathname, isOpen]);
+
+  // 30s idle pulse on dashboard
+  useEffect(() => {
+    if (location.pathname === '/home' && !isOpen) {
+      const resetIdle = () => {
+        setShouldPulse(false);
+        if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
+        idleTimerRef.current = setTimeout(() => setShouldPulse(true), 30000);
+      };
+
+      resetIdle();
+      const events = ['click', 'scroll', 'touchstart', 'keydown'];
+      events.forEach(e => window.addEventListener(e, resetIdle, { passive: true }));
+
+      return () => {
+        if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
+        events.forEach(e => window.removeEventListener(e, resetIdle));
+      };
+    } else {
+      setShouldPulse(false);
+      if (idleTimerRef.current) clearTimeout(idleTimerRef.current);
+    }
+  }, [location.pathname, isOpen]);
+
+  // Stop pulse after one animation
+  useEffect(() => {
+    if (shouldPulse) {
+      const t = setTimeout(() => setShouldPulse(false), 2000);
+      return () => clearTimeout(t);
+    }
+  }, [shouldPulse]);
 
   useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages, isTyping]);
 
-  // Contextual suggestions based on route
   const getSuggestions = (): string[] => {
     const path = location.pathname;
     if (path === '/results') {
@@ -81,7 +116,6 @@ const FloatingChat = () => {
     }
     if (path === '/history') return starterQuestions.history;
     if (path === '/learn') {
-      // If on a condition guide page, show condition-specific prompts
       if (location.search.includes('condition')) return starterQuestions.condition;
       return starterQuestions.learn;
     }
@@ -113,10 +147,10 @@ const FloatingChat = () => {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
             className="fixed bottom-[148px] right-6 z-50 max-w-[220px]"
-            onClick={() => setShowTooltip(false)}
+            onClick={() => { setShowTooltip(false); localStorage.setItem('follisense-chat-tooltip-shown', 'true'); }}
           >
             <div className="bg-card rounded-2xl p-3.5 shadow-lg border border-border">
-              <p className="text-sm text-foreground">Hi {userName || 'there'}, ask me anything about your scalp or hair</p>
+              <p className="text-sm text-foreground">Hi {userName || 'there'} 👋</p>
             </div>
             <div className="absolute -bottom-1.5 right-6 w-3 h-3 bg-card border-r border-b border-border rotate-45" />
           </motion.div>
@@ -128,9 +162,8 @@ const FloatingChat = () => {
         onClick={() => { setIsOpen(true); setShowTooltip(false); }}
         className="fixed bottom-20 right-6 z-50 w-14 h-14 rounded-full flex items-center justify-center"
         style={{ backgroundColor: 'hsl(155, 12%, 55%)', boxShadow: '0 4px 12px rgba(45,45,45,0.15)' }}
-        initial={!hasPulsed ? { scale: 1 } : false}
-        animate={!hasPulsed ? { scale: [1, 1.1, 1, 1.1, 1] } : { scale: 1 }}
-        transition={!hasPulsed ? { duration: 2, ease: 'easeInOut' } : {}}
+        animate={shouldPulse ? { scale: [1, 1.08, 1, 1.08, 1] } : { scale: 1 }}
+        transition={shouldPulse ? { duration: 1.8, ease: 'easeInOut' } : {}}
         whileTap={{ scale: 0.95 }}
       >
         <MessageCircle size={24} className="text-white" strokeWidth={1.8} />

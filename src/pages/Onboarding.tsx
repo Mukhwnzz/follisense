@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, HelpCircle, ChevronDown, ChevronLeft, ChevronRight, Camera, ImageIcon, Check, Play } from 'lucide-react';
+import { ArrowLeft, HelpCircle, ChevronDown, ChevronLeft, ChevronRight, Camera, ImageIcon, Check, Play, AlertCircle } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 import { toast } from '@/hooks/use-toast';
 
@@ -24,10 +24,11 @@ import hairMaleType4 from '@/assets/hair/bm_type4.jpg';
 import hairMaleType3 from '@/assets/hair/bm_type3.jpg';
 
 // Sub-type back-view images
-import hair4aBack from '@/assets/hair/bw_type4_a.jpg';
+import hair4aBack from '@/assets/hair/bw_type4a_back.png';
 import hair4bBack from '@/assets/hair/bw_type4b_back.png';
 import hair4cBack from '@/assets/hair/bw_type4c_back.png';
 import hair3aBack from '@/assets/hair/bw_type3a_back.png';
+import hair3bBack from '@/assets/hair/bw_type3b_back.png';
 import hair3cBack from '@/assets/hair/bw_type3c_back.png';
 
 // ─── DATA ───────────────────────────────────────────────────────────────────
@@ -111,10 +112,11 @@ const CurlIcon = ({ type }: { type: string }) => {
 // 4: Top concerns
 // 5: Photo guidelines + consent
 // 6: Scalp photos (4 sub-steps)
-// 7: Length transition
-// 8: Length photos (3 sub-steps)
-// 9: Completion
-const TOTAL_SCREENS = 10;
+// 7: Scalp concerns prompt (NEW)
+// 8: Length transition
+// 9: Length photos (3 sub-steps)
+// 10: Completion
+const TOTAL_SCREENS = 11;
 
 const Onboarding = () => {
   const navigate = useNavigate();
@@ -153,10 +155,16 @@ const Onboarding = () => {
   const [lengthPhotoIndex, setLengthPhotoIndex] = useState(0);
   const [lengthPhotos, setLengthPhotos] = useState<Record<number, string>>({});
   const [skippedLengthPhotos, setSkippedLengthPhotos] = useState(false);
-  const [autoAdvanceTimer, setAutoAdvanceTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
+
+  // Scalp concerns (new screen 7)
+  const [scalpConcernChoice, setScalpConcernChoice] = useState<'yes' | 'no' | null>(null);
+  const [scalpConcernNote, setScalpConcernNote] = useState('');
+  const [scalpConcernPhoto, setScalpConcernPhoto] = useState<string | null>(null);
 
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
+  const concernCameraRef = useRef<HTMLInputElement>(null);
+  const concernGalleryRef = useRef<HTMLInputElement>(null);
 
   const isMale = gender === 'man';
   const isNeutral = gender === 'prefer-not-to-say';
@@ -191,7 +199,7 @@ const Onboarding = () => {
     }
     if (area === 'front') return refLengthFront;
     if (area === 'side') return refLengthSide;
-    return refLengthFront; // back length reuses front reference (pulling hair down back)
+    return refLengthFront;
   };
 
   const scalpRefAreas: ('front' | 'side' | 'back' | 'top')[] = ['front', 'side', 'back', 'top'];
@@ -205,10 +213,11 @@ const Onboarding = () => {
       case 3: return !!cycleLength && betweenWash.length > 0 && (!betweenWash.includes('Other') || otherBetweenWash.trim().length > 0);
       case 4: return concerns.length > 0;
       case 5: return consentChecked;
-      case 6: return !!scalpPhotos[scalpPhotoIndex]; // require photo before advancing
-      case 7: return true;
+      case 6: return !!scalpPhotos[scalpPhotoIndex];
+      case 7: return scalpConcernChoice !== null;
       case 8: return true;
       case 9: return true;
+      case 10: return true;
       default: return false;
     }
   };
@@ -230,19 +239,19 @@ const Onboarding = () => {
     });
   };
 
-  // Auto-advance logic after photo capture
+  // Advance photo step (called by "Use this photo" button)
   const advancePhotoStep = useCallback(() => {
     if (step === 6) {
       if (scalpPhotoIndex < 3) {
         setScalpPhotoIndex(prev => prev + 1);
       } else {
-        setStep(7);
+        setStep(7); // go to scalp concerns screen
       }
-    } else if (step === 8) {
+    } else if (step === 9) {
       if (lengthPhotoIndex < 2) {
         setLengthPhotoIndex(prev => prev + 1);
       } else {
-        setStep(9);
+        setStep(10);
       }
     }
   }, [step, scalpPhotoIndex, lengthPhotoIndex]);
@@ -250,37 +259,18 @@ const Onboarding = () => {
   const handlePhotoCapture = (dataUrl: string) => {
     if (step === 6) {
       setScalpPhotos(prev => ({ ...prev, [scalpPhotoIndex]: dataUrl }));
-    } else if (step === 8) {
+    } else if (step === 9) {
       setLengthPhotos(prev => ({ ...prev, [lengthPhotoIndex]: dataUrl }));
     }
-    toast({ title: 'Photo captured', description: 'Your photo has been saved.' });
-
-    // Auto-advance after 1.5s
-    const timer = setTimeout(() => {
-      advancePhotoStep();
-    }, 1500);
-    setAutoAdvanceTimer(timer);
   };
 
   const handleRetake = () => {
-    // Cancel auto-advance
-    if (autoAdvanceTimer) {
-      clearTimeout(autoAdvanceTimer);
-      setAutoAdvanceTimer(null);
-    }
     if (step === 6) {
       setScalpPhotos(prev => { const n = { ...prev }; delete n[scalpPhotoIndex]; return n; });
-    } else if (step === 8) {
+    } else if (step === 9) {
       setLengthPhotos(prev => { const n = { ...prev }; delete n[lengthPhotoIndex]; return n; });
     }
   };
-
-  // Cleanup timer on unmount or step change
-  useEffect(() => {
-    return () => {
-      if (autoAdvanceTimer) clearTimeout(autoAdvanceTimer);
-    };
-  }, [autoAdvanceTimer]);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -292,13 +282,24 @@ const Onboarding = () => {
       };
       reader.readAsDataURL(file);
     }
-    // Reset input so same file can be selected again
+    e.target.value = '';
+  };
+
+  const handleConcernPhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        setScalpConcernPhoto(ev.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
     e.target.value = '';
   };
 
   const handleNext = () => {
-    // Photo steps auto-advance, but keep handleNext for non-photo steps
-    if (step === 6 || step === 8) {
+    // Photo steps use "Use this photo" button, not the main Next
+    if (step === 6 || step === 9) {
       advancePhotoStep();
       return;
     }
@@ -325,18 +326,17 @@ const Onboarding = () => {
 
   const handleBack = () => {
     if (step === 6 && scalpPhotoIndex > 0) { setScalpPhotoIndex(scalpPhotoIndex - 1); return; }
-    if (step === 8 && lengthPhotoIndex > 0) { setLengthPhotoIndex(lengthPhotoIndex - 1); return; }
+    if (step === 9 && lengthPhotoIndex > 0) { setLengthPhotoIndex(lengthPhotoIndex - 1); return; }
     if (step > 0) setStep(step - 1);
     else navigate(-1);
   };
 
-
   const handleSkipLengthPhotos = () => {
     setSkippedLengthPhotos(true);
-    setStep(9); // go to completion
+    setStep(10);
   };
 
-  // Journey progress bar: 8 segments
+  // Journey progress bar
   const journeySegments = ['Gender', 'Hair type', 'Styles', 'Routine', 'Concerns', 'Guidelines', 'Scalp photos', 'Length check'];
   const stepToSegment = (s: number): number => {
     if (s <= 0) return 0;
@@ -345,12 +345,15 @@ const Onboarding = () => {
     if (s <= 3) return 3;
     if (s <= 4) return 4;
     if (s <= 5) return 5;
-    if (s <= 6) return 6; // scalp photos (all 4 sub-steps)
+    if (s <= 7) return 6; // scalp photos + concerns
     return 7; // length transition, length photos, completion
   };
   const activeSegment = stepToSegment(step);
 
   const hasAnyCapturedPhotos = Object.keys(scalpPhotos).length > 0 || Object.keys(lengthPhotos).length > 0;
+
+  // Current photo for preview
+  const currentPhoto = step === 6 ? scalpPhotos[scalpPhotoIndex] : step === 9 ? lengthPhotos[lengthPhotoIndex] : null;
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -375,7 +378,7 @@ const Onboarding = () => {
         <div className="flex-1 overflow-y-auto min-h-0">
           <AnimatePresence mode="wait">
             <motion.div
-              key={step === 6 ? `6-${scalpPhotoIndex}` : step === 8 ? `8-${lengthPhotoIndex}` : step}
+              key={step === 6 ? `6-${scalpPhotoIndex}` : step === 9 ? `9-${lengthPhotoIndex}` : step}
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
@@ -433,7 +436,6 @@ const Onboarding = () => {
                         <p className="text-xs text-muted-foreground">Tight coils or zig-zag pattern, dense texture</p>
                       </div>
 
-                      {/* Sub-type expansion */}
                       {hairType === 'type4' && !showSubType && (
                         <button
                           onClick={(e) => { e.stopPropagation(); setShowSubType(true); }}
@@ -501,7 +503,6 @@ const Onboarding = () => {
                         <p className="text-xs text-muted-foreground">Visible curl pattern, S-shaped curls</p>
                       </div>
 
-                      {/* Sub-type expansion */}
                       {hairType === 'type3' && !showSubType && (
                         <button
                           onClick={(e) => { e.stopPropagation(); setShowSubType(true); }}
@@ -522,7 +523,7 @@ const Onboarding = () => {
                           <div className="grid grid-cols-3 gap-2 mb-2">
                             {[
                               { id: '3a', label: '3A', img: hair3aBack },
-                              { id: '3b', label: '3B', img: null },
+                              { id: '3b', label: '3B', img: hair3bBack },
                               { id: '3c', label: '3C', img: hair3cBack },
                             ].map(st => (
                               <button
@@ -530,15 +531,9 @@ const Onboarding = () => {
                                 onClick={(e) => { e.stopPropagation(); setHairSubType(st.id); }}
                                 className={`rounded-xl border-2 overflow-hidden transition-colors ${hairSubType === st.id ? 'border-primary' : 'border-border'}`}
                               >
-                                {st.img ? (
-                                  <div className="h-[90px] bg-accent/30">
-                                    <img src={st.img} alt={st.label} className="w-full h-full object-contain" />
-                                  </div>
-                                ) : (
-                                  <div className="h-[90px] bg-accent/30 flex items-center justify-center">
-                                    <CurlIcon type="type3" />
-                                  </div>
-                                )}
+                                <div className="h-[90px] bg-accent/30">
+                                  <img src={st.img} alt={st.label} className="w-full h-full object-contain" />
+                                </div>
                                 <p className="text-xs font-semibold text-foreground text-center py-1.5">{st.label}</p>
                               </button>
                             ))}
@@ -733,58 +728,145 @@ const Onboarding = () => {
                   <h3 className="text-base font-semibold text-foreground mb-2">{scalpPhotoSteps[scalpPhotoIndex].title}</h3>
                   <p className="text-sm text-muted-foreground mb-4">{scalpPhotoSteps[scalpPhotoIndex].instruction}</p>
 
-                  {/* Reference image */}
-                  <div className="rounded-xl overflow-hidden border border-border mb-4 bg-accent/30">
-                    <img
-                      src={getRefImage(scalpRefAreas[scalpPhotoIndex])}
-                      alt={`Reference: ${scalpPhotoSteps[scalpPhotoIndex].title}`}
-                      className="w-full h-auto max-h-[280px] object-contain"
-                    />
-                    <p className="text-[10px] text-muted-foreground text-center py-1.5 bg-accent/40">Reference photo</p>
-                  </div>
-
-                  {scalpPhotoIndex === 0 && (
-                    <p className="text-xs text-muted-foreground mb-4 italic">
-                      These photos stay private to you. They help you see changes that happen too slowly to notice day to day.
-                    </p>
-                  )}
-
-                  {scalpPhotos[scalpPhotoIndex] ? (
-                    <div className="card-elevated p-4 mb-4 flex items-center gap-3">
-                      <div className="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0">
-                        <img src={scalpPhotos[scalpPhotoIndex]} alt="Captured" className="w-full h-full object-cover" />
+                  {currentPhoto ? (
+                    /* Photo preview with confirm/retake */
+                    <div className="mb-4">
+                      <div className="rounded-xl overflow-hidden border-2 border-primary mb-4">
+                        <img src={currentPhoto} alt="Your photo" className="w-full h-auto max-h-[320px] object-contain bg-accent/30" />
                       </div>
-                      <div className="flex-1">
-                        <p className="text-sm font-medium text-foreground">Photo captured</p>
-                        <p className="text-xs text-muted-foreground">Auto-advancing…</p>
+                      <div className="space-y-2">
+                        <button
+                          onClick={advancePhotoStep}
+                          className="w-full h-12 rounded-xl bg-primary text-primary-foreground font-semibold text-sm btn-press flex items-center justify-center gap-2"
+                        >
+                          <Check size={18} /> Use this photo
+                        </button>
+                        <button
+                          onClick={handleRetake}
+                          className="w-full h-12 rounded-xl border-2 border-border text-foreground font-medium text-sm btn-press"
+                        >
+                          Retake
+                        </button>
                       </div>
-                      <button onClick={handleRetake} className="text-xs text-primary font-medium">Retake</button>
                     </div>
                   ) : (
-                    <div className="space-y-2 mb-4">
-                      <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handleFileSelect} />
-                      <input ref={galleryInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileSelect} />
-                      <button onClick={() => cameraInputRef.current?.click()} className="w-full h-12 rounded-xl bg-primary text-primary-foreground font-semibold text-sm btn-press flex items-center justify-center gap-2">
-                        <Camera size={18} /> Take photo
-                      </button>
-                      <button onClick={() => galleryInputRef.current?.click()} className="w-full h-12 rounded-xl border-2 border-border text-foreground font-medium text-sm btn-press flex items-center justify-center gap-2">
-                        <ImageIcon size={18} /> Choose photo
-                      </button>
-                    </div>
-                  )}
+                    <>
+                      {/* Reference image */}
+                      <div className="rounded-xl overflow-hidden border border-border mb-4 bg-accent/30">
+                        <img
+                          src={getRefImage(scalpRefAreas[scalpPhotoIndex])}
+                          alt={`Reference: ${scalpPhotoSteps[scalpPhotoIndex].title}`}
+                          className="w-full h-auto max-h-[280px] object-contain"
+                        />
+                        <p className="text-[10px] text-muted-foreground text-center py-1.5 bg-accent/40">Reference photo</p>
+                      </div>
 
+                      {scalpPhotoIndex === 0 && (
+                        <p className="text-xs text-muted-foreground mb-4 italic">
+                          These photos stay private to you. They help you see changes that happen too slowly to notice day to day.
+                        </p>
+                      )}
+
+                      <div className="space-y-2 mb-4">
+                        <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handleFileSelect} />
+                        <input ref={galleryInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileSelect} />
+                        <button onClick={() => cameraInputRef.current?.click()} className="w-full h-12 rounded-xl bg-primary text-primary-foreground font-semibold text-sm btn-press flex items-center justify-center gap-2">
+                          <Camera size={18} /> Take photo
+                        </button>
+                        <button onClick={() => galleryInputRef.current?.click()} className="w-full h-12 rounded-xl border-2 border-border text-foreground font-medium text-sm btn-press flex items-center justify-center gap-2">
+                          <ImageIcon size={18} /> Choose photo
+                        </button>
+                      </div>
+                    </>
+                  )}
                 </div>
               )}
 
-              {/* ── Screen 7: Length Transition ── */}
+              {/* ── Screen 7: Scalp Concerns Prompt (NEW) ── */}
               {step === 7 && (
+                <div>
+                  <h2 className="text-lg font-semibold text-foreground mb-2">While we're here…</h2>
+                  <p className="text-sm text-muted-foreground mb-6">
+                    Is there anything about your scalp you'd like to record? You've just been looking closely — now's a good time to note anything.
+                  </p>
+
+                  {scalpConcernChoice === null && (
+                    <div className="space-y-3">
+                      <button
+                        onClick={() => setScalpConcernChoice('yes')}
+                        className="selection-card w-full text-left"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-accent flex items-center justify-center flex-shrink-0">
+                            <AlertCircle size={20} className="text-foreground" strokeWidth={1.5} />
+                          </div>
+                          <div>
+                            <p className="font-semibold text-foreground text-sm">Yes, I'd like to note something</p>
+                            <p className="text-xs text-muted-foreground">Flag a specific area or concern</p>
+                          </div>
+                        </div>
+                      </button>
+                      <button
+                        onClick={() => setScalpConcernChoice('no')}
+                        className="selection-card w-full text-left"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-accent flex items-center justify-center flex-shrink-0">
+                            <Check size={20} className="text-primary" strokeWidth={1.5} />
+                          </div>
+                          <div>
+                            <p className="font-semibold text-foreground text-sm">No, everything looks fine</p>
+                            <p className="text-xs text-muted-foreground">Continue to the next step</p>
+                          </div>
+                        </div>
+                      </button>
+                    </div>
+                  )}
+
+                  {scalpConcernChoice === 'yes' && (
+                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+                      <textarea
+                        value={scalpConcernNote}
+                        onChange={e => setScalpConcernNote(e.target.value)}
+                        placeholder="Describe what you've noticed — e.g. 'tender spot near my left temple' or 'flaking along my part line'"
+                        className="w-full h-28 p-4 rounded-xl border-2 border-border bg-card text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary resize-none mb-4"
+                      />
+
+                      {scalpConcernPhoto ? (
+                        <div className="mb-4">
+                          <div className="rounded-xl overflow-hidden border border-border mb-2">
+                            <img src={scalpConcernPhoto} alt="Concern area" className="w-full h-auto max-h-[200px] object-contain bg-accent/30" />
+                          </div>
+                          <button onClick={() => setScalpConcernPhoto(null)} className="text-xs text-primary font-medium">Remove photo</button>
+                        </div>
+                      ) : (
+                        <div className="space-y-2 mb-4">
+                          <input ref={concernCameraRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handleConcernPhotoSelect} />
+                          <input ref={concernGalleryRef} type="file" accept="image/*" className="hidden" onChange={handleConcernPhotoSelect} />
+                          <p className="text-xs text-muted-foreground mb-2">Want to capture the area? (optional)</p>
+                          <div className="flex gap-2">
+                            <button onClick={() => concernCameraRef.current?.click()} className="flex-1 h-10 rounded-xl border-2 border-border text-foreground font-medium text-xs btn-press flex items-center justify-center gap-1.5">
+                              <Camera size={14} /> Camera
+                            </button>
+                            <button onClick={() => concernGalleryRef.current?.click()} className="flex-1 h-10 rounded-xl border-2 border-border text-foreground font-medium text-xs btn-press flex items-center justify-center gap-1.5">
+                              <ImageIcon size={14} /> Gallery
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </motion.div>
+                  )}
+                </div>
+              )}
+
+              {/* ── Screen 8: Length Transition ── */}
+              {step === 8 && (
                 <div>
                   <h2 className="text-lg font-semibold text-foreground mb-2">Want to track your hair length too?</h2>
                   <p className="text-sm text-muted-foreground mb-6">
                     These photos show your full hair so you can see growth over time. Pull a section straight to show your true length past shrinkage.
                   </p>
 
-                  {/* Show a length reference image */}
                   <div className="rounded-xl overflow-hidden border border-border mb-6 bg-accent/30">
                     <img
                       src={isMale ? refMaleFront : refLengthFront}
@@ -795,13 +877,13 @@ const Onboarding = () => {
 
                   <div className="space-y-3">
                     <button
-                      onClick={() => setStep(8)}
+                      onClick={() => setStep(9)}
                       className="w-full h-14 rounded-xl bg-primary text-primary-foreground font-semibold text-base btn-press"
                     >
                       Yes, let's do it
                     </button>
                     <button
-                      onClick={() => setStep(9)}
+                      onClick={() => setStep(10)}
                       className="w-full h-14 rounded-xl border-2 border-border text-foreground font-medium text-base btn-press"
                     >
                       Skip for now
@@ -810,45 +892,57 @@ const Onboarding = () => {
                 </div>
               )}
 
-              {/* ── Screen 8: Length Photos ── */}
-              {step === 8 && (
+              {/* ── Screen 9: Length Photos ── */}
+              {step === 9 && (
                 <div>
                   <h2 className="text-lg font-semibold text-foreground mb-1">Hair length check</h2>
                   <p className="text-sm text-muted-foreground mb-1">{lengthPhotoSteps[lengthPhotoIndex].step}</p>
                   <h3 className="text-base font-semibold text-foreground mb-2">{lengthPhotoSteps[lengthPhotoIndex].title}</h3>
                   <p className="text-sm text-muted-foreground mb-4">{lengthPhotoSteps[lengthPhotoIndex].instruction}</p>
 
-                  <div className="rounded-xl overflow-hidden border border-border mb-4 bg-accent/30">
-                    <img
-                      src={getLengthRefImage(lengthRefAreas[lengthPhotoIndex])}
-                      alt={`Reference: ${lengthPhotoSteps[lengthPhotoIndex].title}`}
-                      className="w-full h-auto max-h-[280px] object-contain"
-                    />
-                    <p className="text-[10px] text-muted-foreground text-center py-1.5 bg-accent/40">Reference photo</p>
-                  </div>
-
                   {lengthPhotos[lengthPhotoIndex] ? (
-                    <div className="card-elevated p-4 mb-4 flex items-center gap-3">
-                      <div className="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0">
-                        <img src={lengthPhotos[lengthPhotoIndex]} alt="Captured" className="w-full h-full object-cover" />
+                    /* Photo preview with confirm/retake */
+                    <div className="mb-4">
+                      <div className="rounded-xl overflow-hidden border-2 border-primary mb-4">
+                        <img src={lengthPhotos[lengthPhotoIndex]} alt="Your photo" className="w-full h-auto max-h-[320px] object-contain bg-accent/30" />
                       </div>
-                      <div className="flex-1">
-                        <p className="text-sm font-medium text-foreground">Photo captured</p>
-                        <p className="text-xs text-muted-foreground">Auto-advancing…</p>
+                      <div className="space-y-2">
+                        <button
+                          onClick={advancePhotoStep}
+                          className="w-full h-12 rounded-xl bg-primary text-primary-foreground font-semibold text-sm btn-press flex items-center justify-center gap-2"
+                        >
+                          <Check size={18} /> Use this photo
+                        </button>
+                        <button
+                          onClick={handleRetake}
+                          className="w-full h-12 rounded-xl border-2 border-border text-foreground font-medium text-sm btn-press"
+                        >
+                          Retake
+                        </button>
                       </div>
-                      <button onClick={handleRetake} className="text-xs text-primary font-medium">Retake</button>
                     </div>
                   ) : (
-                    <div className="space-y-2 mb-4">
-                      <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handleFileSelect} />
-                      <input ref={galleryInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileSelect} />
-                      <button onClick={() => cameraInputRef.current?.click()} className="w-full h-12 rounded-xl bg-primary text-primary-foreground font-semibold text-sm btn-press flex items-center justify-center gap-2">
-                        <Camera size={18} /> Take photo
-                      </button>
-                      <button onClick={() => galleryInputRef.current?.click()} className="w-full h-12 rounded-xl border-2 border-border text-foreground font-medium text-sm btn-press flex items-center justify-center gap-2">
-                        <ImageIcon size={18} /> Choose photo
-                      </button>
-                    </div>
+                    <>
+                      <div className="rounded-xl overflow-hidden border border-border mb-4 bg-accent/30">
+                        <img
+                          src={getLengthRefImage(lengthRefAreas[lengthPhotoIndex])}
+                          alt={`Reference: ${lengthPhotoSteps[lengthPhotoIndex].title}`}
+                          className="w-full h-auto max-h-[280px] object-contain"
+                        />
+                        <p className="text-[10px] text-muted-foreground text-center py-1.5 bg-accent/40">Reference photo</p>
+                      </div>
+
+                      <div className="space-y-2 mb-4">
+                        <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handleFileSelect} />
+                        <input ref={galleryInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileSelect} />
+                        <button onClick={() => cameraInputRef.current?.click()} className="w-full h-12 rounded-xl bg-primary text-primary-foreground font-semibold text-sm btn-press flex items-center justify-center gap-2">
+                          <Camera size={18} /> Take photo
+                        </button>
+                        <button onClick={() => galleryInputRef.current?.click()} className="w-full h-12 rounded-xl border-2 border-border text-foreground font-medium text-sm btn-press flex items-center justify-center gap-2">
+                          <ImageIcon size={18} /> Choose photo
+                        </button>
+                      </div>
+                    </>
                   )}
 
                   <button onClick={handleSkipLengthPhotos} className="w-full text-center text-sm text-muted-foreground py-2">
@@ -857,8 +951,8 @@ const Onboarding = () => {
                 </div>
               )}
 
-              {/* ── Screen 9: Completion ── */}
-              {step === 9 && (
+              {/* ── Screen 10: Completion ── */}
+              {step === 10 && (
                 <div className="flex flex-col items-center justify-center min-h-[50vh]">
                   <div className="w-20 h-20 rounded-full bg-sage-light flex items-center justify-center mb-6">
                     <Check size={36} className="text-primary" strokeWidth={2} />
@@ -888,9 +982,9 @@ const Onboarding = () => {
           </AnimatePresence>
         </div>
 
-        {/* Bottom button - hidden on photo capture steps (auto-advance handles those) */}
+        {/* Bottom button - hidden on photo capture steps and transition screens */}
         <div className="flex-shrink-0 py-4">
-          {step !== 7 && step !== 6 && step !== 8 && (
+          {step !== 8 && step !== 6 && step !== 9 && (
             <button
               onClick={handleNext}
               disabled={!canProceed()}
@@ -898,7 +992,7 @@ const Onboarding = () => {
                 canProceed() ? 'bg-primary text-primary-foreground' : 'bg-border text-muted-foreground cursor-not-allowed'
               }`}
             >
-              {step === 9 ? 'Take me to my dashboard' : step === 5 ? 'Continue' : 'Next'}
+              {step === 10 ? 'Take me to my dashboard' : step === 5 ? 'Continue' : step === 7 && scalpConcernChoice === 'no' ? 'Continue' : step === 7 && scalpConcernChoice === 'yes' ? 'Save & continue' : 'Next'}
             </button>
           )}
         </div>
