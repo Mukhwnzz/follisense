@@ -356,7 +356,7 @@ const ScalpQuiz = () => {
                 <p className="text-xs text-primary font-medium italic mb-2">{currentQuestion.skinToneTip}</p>
                 <p className="text-xs text-primary font-medium mb-1">
                   {isTimeout
-                    ? '0 points — too slow!'
+                    ? '0 points, too slow!'
                     : isCorrect
                       ? `+${isChallenge && answeredMultiplier ? Math.round(10 * answeredMultiplier.value) : 10} points${isChallenge && answeredMultiplier ? ` (${answeredMultiplier.label})` : ''}${isCorrect && quizState.currentStreak % 5 === 0 && quizState.currentStreak > 0 ? ' + 15 streak bonus!' : ''}`
                       : isChallenge ? '0 points' : '+3 points'}

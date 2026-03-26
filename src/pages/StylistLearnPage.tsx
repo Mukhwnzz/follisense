@@ -61,7 +61,7 @@ const ConditionDetail = ({ condition, onBack }: { condition: StylistCondition; o
       {consumerCond && (
         <div className="mb-5">
           <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Reference photos</h3>
-          <p className="text-[11px] text-muted-foreground mb-3">Photos on textured hair and darker skin tones — placeholders for now</p>
+          <p className="text-[11px] text-muted-foreground mb-3">Photos on textured hair and darker skin tones, placeholders for now</p>
           <div className="flex gap-3 overflow-x-auto pb-3 -mx-1 px-1 scrollbar-hide" style={{ WebkitOverflowScrolling: 'touch' }}>
             {consumerCond.photoGallery.map((photo, i) => (
               <div key={i} className="flex-shrink-0 w-[200px]">

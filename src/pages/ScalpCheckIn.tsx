@@ -11,7 +11,7 @@ const ScalpCheckIn = () => {
   const options = [
     {
       label: 'Scheduled check-in',
-      desc: 'Your regular scalp check — takes about a minute',
+      desc: 'Your regular scalp check, takes about a minute',
       icon: Leaf,
       iconBg: 'bg-sage-light',
       iconColor: 'text-primary',

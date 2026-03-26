@@ -96,7 +96,7 @@ const StylistHome = () => {
           </button>
         </div>
 
-        {/* === HERO QUIZ CARD — primary CTA === */}
+        {/* === HERO QUIZ CARD, primary CTA === */}
         <motion.div
           initial={!hasAttemptedQuiz ? { scale: 1 } : undefined}
           animate={!hasAttemptedQuiz ? { scale: [1, 1.01, 1] } : undefined}
@@ -226,7 +226,7 @@ const StylistHome = () => {
                   <span className="text-sm font-semibold text-foreground">{obs.clientName.charAt(0)}</span>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-foreground">{obs.clientName}{obs.location ? ` — ${obs.location}` : ''}</p>
+                  <p className="text-sm font-medium text-foreground">{obs.clientName}{obs.location ? `, ${obs.location}` : ''}</p>
                   <p className="text-xs text-muted-foreground">{obs.date}{obs.locationCity ? `, ${obs.locationCity}` : ''}</p>
                 </div>
               </div>

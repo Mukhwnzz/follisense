@@ -197,7 +197,7 @@ const SalonCheckIn = () => {
 
               <div className="mt-auto">
                 <button onClick={() => setStep(2)} className="w-full h-14 bg-primary text-primary-foreground rounded-xl font-semibold text-base btn-press">
-                  {photos.length > 0 ? 'Next — Add observations' : 'Skip photos'}
+                  {photos.length > 0 ? 'Next, Add observations' : 'Skip photos'}
                 </button>
               </div>
             </motion.div>
@@ -234,7 +234,7 @@ const SalonCheckIn = () => {
                 <button onClick={() => setStep(3)} disabled={selectedObservations.length === 0} className={`w-full h-14 rounded-xl font-semibold text-base btn-press transition-colors ${
                   selectedObservations.length > 0 ? 'bg-primary text-primary-foreground' : 'bg-border text-muted-foreground cursor-not-allowed'
                 }`}>
-                  Next — Add notes
+                  Next, Add notes
                 </button>
               </div>
             </motion.div>
@@ -244,12 +244,12 @@ const SalonCheckIn = () => {
           {step === 3 && (
             <motion.div key="notes" initial={{ opacity: 0, x: 15 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -15 }} className="flex-1 flex flex-col">
               <h2 className="text-xl font-bold text-foreground mb-1">Anything else to note?</h2>
-              <p className="text-sm text-muted-foreground mb-5">Optional — add anything the client should know</p>
+              <p className="text-sm text-muted-foreground mb-5">Optional, add anything the client should know</p>
 
               <textarea
                 value={note}
                 onChange={e => setNote(e.target.value)}
-                placeholder="e.g. Edges are thinning — suggested looser braid tension next time. Noticed some flaking at the crown."
+                placeholder="e.g. Edges are thinning, suggested looser braid tension next time. Noticed some flaking at the crown."
                 className="w-full h-40 px-4 py-3 rounded-xl border-2 border-border bg-card text-foreground text-base resize-none focus:outline-none focus:border-primary placeholder:text-muted-foreground"
               />
 

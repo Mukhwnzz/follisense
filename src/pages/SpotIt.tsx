@@ -57,7 +57,7 @@ const symptomOptions = [
   {
     id: 'nothing',
     label: 'Nothing concerning',
-    description: 'Just exploring — no current issues',
+    description: 'Just exploring, no current issues',
     icon: '✅',
   },
 ];
@@ -82,11 +82,11 @@ const getMatches = (selected: string[], gender?: string): ConditionMatch[] => {
       conditionId: 'traction-alopecia',
       name: 'Traction alopecia',
       likelihood: selected.includes('tenderness') ? 'likely' : 'possible',
-      message: 'This could be consistent with early traction alopecia — hair loss caused by repeated tension from tight styles.',
+      message: 'This could be consistent with early traction alopecia, hair loss caused by repeated tension from tight styles.',
       selfCareTips: [
         'Loosen or remove any tight styles immediately',
         'Give your hairline a break between installations',
-        'Avoid re-tightening edges — if they\'re loose, leave them',
+        'Avoid re-tightening edges, if they\'re loose, leave them',
       ],
       severity: selected.includes('tenderness') ? 'moderate' : 'mild',
     });
@@ -99,11 +99,11 @@ const getMatches = (selected: string[], gender?: string): ConditionMatch[] => {
         conditionId: 'fphl',
         name: 'Female pattern hair loss (FPHL)',
         likelihood: selected.includes('widening-part') ? 'likely' : 'possible',
-        message: 'Thinning at the crown could be consistent with female pattern hair loss — the most common cause of hair loss in women. Unlike traction alopecia, it\'s hormonal.',
+        message: 'Thinning at the crown could be consistent with female pattern hair loss, the most common cause of hair loss in women. Unlike traction alopecia, it\'s hormonal.',
         selfCareTips: [
           'See a dermatologist or trichologist for proper diagnosis',
-          'Track changes with photos — especially your part line and crown',
-          'Ask about minoxidil — it\'s the most evidence-based treatment for FPHL',
+          'Track changes with photos, especially your part line and crown',
+          'Ask about minoxidil, it\'s the most evidence-based treatment for FPHL',
         ],
         severity: 'moderate',
       });
@@ -131,13 +131,13 @@ const getMatches = (selected: string[], gender?: string): ConditionMatch[] => {
       selfCareTips: [
         'Avoid tension and heat at the crown area',
         'Document the area with photos to track changes',
-        'See a dermatologist — early treatment is critical for this condition',
+        'See a dermatologist, early treatment is critical for this condition',
       ],
       severity: 'moderate',
     });
   }
 
-  // Widening part line — FPHL match
+  // Widening part line, FPHL match
   if (selected.includes('widening-part') && !selected.includes('crown-thinning')) {
     if (isFemale || isNeutral) {
       matches.push({
@@ -147,8 +147,8 @@ const getMatches = (selected: string[], gender?: string): ConditionMatch[] => {
         message: 'A widening part line is one of the earliest signs of female pattern hair loss. Your frontal hairline is usually preserved while the crown thins.',
         selfCareTips: [
           'See a dermatologist or trichologist for proper diagnosis',
-          'Track changes with photos — especially your part line',
-          'Ask about minoxidil — it\'s the most evidence-based treatment for FPHL',
+          'Track changes with photos, especially your part line',
+          'Ask about minoxidil, it\'s the most evidence-based treatment for FPHL',
         ],
         severity: 'mild',
       });
@@ -162,7 +162,7 @@ const getMatches = (selected: string[], gender?: string): ConditionMatch[] => {
         conditionId: 'mphl',
         name: 'Male pattern hair loss (MPHL)',
         likelihood: selected.includes('crown-thinning') ? 'likely' : 'possible',
-        message: 'Gradual recession of your hairline could be consistent with male pattern hair loss — the most common cause of hair loss in men. Early treatment can slow or stop progression.',
+        message: 'Gradual recession of your hairline could be consistent with male pattern hair loss, the most common cause of hair loss in men. Early treatment can slow or stop progression.',
         selfCareTips: [
           'See a dermatologist or trichologist for proper diagnosis',
           'Track changes with photos to monitor progression',
@@ -175,11 +175,11 @@ const getMatches = (selected: string[], gender?: string): ConditionMatch[] => {
       conditionId: 'frontal-fibrosing-alopecia',
       name: 'Frontal fibrosing alopecia (FFA)',
       likelihood: 'possible',
-      message: 'Gradual, even recession of the frontal hairline could be consistent with frontal fibrosing alopecia — a scarring condition that\'s different from traction alopecia.',
+      message: 'Gradual, even recession of the frontal hairline could be consistent with frontal fibrosing alopecia, a scarring condition that\'s different from traction alopecia.',
       selfCareTips: [
-        'See a dermatologist as soon as possible — early treatment can slow progression',
+        'See a dermatologist as soon as possible, early treatment can slow progression',
         'Document your hairline with photos to track changes',
-        'Mention any eyebrow thinning as well — it helps with diagnosis',
+        'Mention any eyebrow thinning as well, it helps with diagnosis',
       ],
       severity: 'moderate',
     });
@@ -190,7 +190,7 @@ const getMatches = (selected: string[], gender?: string): ConditionMatch[] => {
       conditionId: 'seborrheic-dermatitis',
       name: 'Seborrheic dermatitis',
       likelihood: selected.includes('redness') ? 'likely' : 'possible',
-      message: 'This could be consistent with seborrheic dermatitis — a common, manageable condition caused by yeast overgrowth, not poor hygiene.',
+      message: 'This could be consistent with seborrheic dermatitis, a common, manageable condition caused by yeast overgrowth, not poor hygiene.',
       selfCareTips: [
         'Try a medicated shampoo with ketoconazole or zinc pyrithione',
         'Cleanse your scalp regularly, even under protective styles',
@@ -205,7 +205,7 @@ const getMatches = (selected: string[], gender?: string): ConditionMatch[] => {
       conditionId: 'folliculitis',
       name: 'Folliculitis',
       likelihood: 'possible',
-      message: 'Small bumps at the hair follicle could be consistent with folliculitis — inflammation that often appears after a new style or cut.',
+      message: 'Small bumps at the hair follicle could be consistent with folliculitis, inflammation that often appears after a new style or cut.',
       selfCareTips: [
         'Keep the area clean and avoid touching it',
         'Loosen or remove the style if it\'s causing irritation',
@@ -238,7 +238,7 @@ const getMatches = (selected: string[], gender?: string): ConditionMatch[] => {
       message: 'Scalp tenderness can be a sign of too much tension from styling. If your style feels tight, that\'s your scalp telling you something.',
       selfCareTips: [
         'Loosen the tightest sections of your current style',
-        'Pain after installation is a warning sign — don\'t tough it out',
+        'Pain after installation is a warning sign, don\'t tough it out',
         'Consider asking your stylist for a looser grip next time',
       ],
       severity: 'mild',
@@ -315,7 +315,7 @@ const SpotIt = () => {
                   <span className="text-xs font-semibold uppercase tracking-wider text-primary">Spot It</span>
                 </div>
                 <h2 className="text-lg font-medium mb-2 text-foreground">What are you seeing on your scalp?</h2>
-                <p className="text-muted-foreground text-sm mb-6">Select everything that matches. This isn't a diagnosis — it's a starting point.</p>
+                <p className="text-muted-foreground text-sm mb-6">Select everything that matches. This isn't a diagnosis, it's a starting point.</p>
 
                 <div className="space-y-2.5">
                   {symptomOptions.map(opt => (
@@ -342,7 +342,7 @@ const SpotIt = () => {
 
                 {/* Visual reference placeholders */}
                 <div className="mt-6">
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Visual reference — on textured hair & darker skin tones</p>
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Visual reference, on textured hair & darker skin tones</p>
                   <div className="flex gap-3 overflow-x-auto pb-3 -mx-1 px-1 scrollbar-hide" style={{ WebkitOverflowScrolling: 'touch' }}>
                     {[
                       { label: 'Flaking / buildup', desc: 'Yellowish or dry flakes along the part line on coily hair' },
@@ -375,7 +375,7 @@ const SpotIt = () => {
                     <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-4 mt-4">
                       <Shield size={32} className="text-primary" />
                     </div>
-                    <h2 className="text-lg font-medium text-foreground text-center mb-2">All clear — nothing flagged</h2>
+                    <h2 className="text-lg font-medium text-foreground text-center mb-2">All clear, nothing flagged</h2>
                     <p className="text-sm text-muted-foreground text-center mb-6 leading-relaxed">
                       Great that you're checking in. Regular self-checks are one of the best things you can do for your scalp health. Keep it up.
                     </p>

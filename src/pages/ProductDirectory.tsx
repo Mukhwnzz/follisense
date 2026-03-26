@@ -71,8 +71,8 @@ const productDirectory: ProductCategory[] = [
   {
     name: 'Treatments and conditioners',
     products: [
-      { name: 'Deep conditioner — moisture (e.g., SheaMoisture Manuka Honey, Amika Soulfood)', desc: 'Intense hydration for dry, brittle hair', tag: 'Hair' },
-      { name: 'Deep conditioner — protein (e.g., Aphogee, SheaMoisture Manuka Honey & Yogurt)', desc: 'Strengthens hair structure and reduces breakage', tag: 'Hair' },
+      { name: 'Deep conditioner, moisture (e.g., SheaMoisture Manuka Honey, Amika Soulfood)', desc: 'Intense hydration for dry, brittle hair', tag: 'Hair' },
+      { name: 'Deep conditioner, protein (e.g., Aphogee, SheaMoisture Manuka Honey & Yogurt)', desc: 'Strengthens hair structure and reduces breakage', tag: 'Hair' },
       { name: 'Leave-in conditioner (e.g., SheaMoisture, Cantu, Aunt Jackie\'s)', desc: 'Daily moisture and detangling for hair', tag: 'Hair' },
       { name: 'Protein treatment (e.g., Aphogee Two-Step, Curlsmith)', desc: 'Reconstructs damaged hair with protein bonds', tag: 'Hair' },
       { name: 'Bond repair treatment (e.g., Olaplex No.3, K18)', desc: 'Repairs disulfide bonds damaged by chemicals or heat', tag: 'Hair' },
