@@ -142,10 +142,14 @@ const Onboarding = () => {
 
   // Photos
   const [scalpPhotoIndex, setScalpPhotoIndex] = useState(0);
-  const [scalpPhotos, setScalpPhotos] = useState<Record<number, boolean>>({});
+  const [scalpPhotos, setScalpPhotos] = useState<Record<number, string>>({});
   const [lengthPhotoIndex, setLengthPhotoIndex] = useState(0);
-  const [lengthPhotos, setLengthPhotos] = useState<Record<number, boolean>>({});
+  const [lengthPhotos, setLengthPhotos] = useState<Record<number, string>>({});
   const [skippedLengthPhotos, setSkippedLengthPhotos] = useState(false);
+  const [autoAdvanceTimer, setAutoAdvanceTimer] = useState<ReturnType<typeof setTimeout> | null>(null);
+
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
 
   const isMale = gender === 'man';
   const isNeutral = gender === 'prefer-not-to-say';
@@ -180,7 +184,7 @@ const Onboarding = () => {
     }
     if (area === 'front') return refLengthFront;
     if (area === 'side') return refLengthSide;
-    return refLengthSide; // back length reuses side reference
+    return refLengthFront; // back length reuses front reference (pulling hair down back)
   };
 
   const scalpRefAreas: ('front' | 'side' | 'back' | 'top')[] = ['front', 'side', 'back', 'top'];
@@ -219,43 +223,83 @@ const Onboarding = () => {
     });
   };
 
-  const handleSimulateCapture = () => {
-    if (step === 6) {
-      setScalpPhotos(prev => ({ ...prev, [scalpPhotoIndex]: true }));
-    } else if (step === 8) {
-      setLengthPhotos(prev => ({ ...prev, [lengthPhotoIndex]: true }));
-    }
-    toast({ title: 'Photo captured', description: 'Your photo has been saved.' });
-  };
-
-  const handleNext = () => {
-    // Scalp photo sub-steps: advance within the 4-step sequence
+  // Auto-advance logic after photo capture
+  const advancePhotoStep = useCallback(() => {
     if (step === 6) {
       if (scalpPhotoIndex < 3) {
         setScalpPhotoIndex(prev => prev + 1);
-        return;
+      } else {
+        setStep(7);
       }
-      // All 4 scalp photos done, advance to length transition
-      setStep(7);
-      return;
-    }
-    // Length photo sub-steps
-    if (step === 8) {
-      if (lengthPhotoIndex < 2 && !skippedLengthPhotos) {
+    } else if (step === 8) {
+      if (lengthPhotoIndex < 2) {
         setLengthPhotoIndex(prev => prev + 1);
-        return;
+      } else {
+        setStep(9);
       }
-      // All length photos done, advance to completion
-      setStep(9);
+    }
+  }, [step, scalpPhotoIndex, lengthPhotoIndex]);
+
+  const handlePhotoCapture = (dataUrl: string) => {
+    if (step === 6) {
+      setScalpPhotos(prev => ({ ...prev, [scalpPhotoIndex]: dataUrl }));
+    } else if (step === 8) {
+      setLengthPhotos(prev => ({ ...prev, [lengthPhotoIndex]: dataUrl }));
+    }
+    toast({ title: 'Photo captured', description: 'Your photo has been saved.' });
+
+    // Auto-advance after 1.5s
+    const timer = setTimeout(() => {
+      advancePhotoStep();
+    }, 1500);
+    setAutoAdvanceTimer(timer);
+  };
+
+  const handleRetake = () => {
+    // Cancel auto-advance
+    if (autoAdvanceTimer) {
+      clearTimeout(autoAdvanceTimer);
+      setAutoAdvanceTimer(null);
+    }
+    if (step === 6) {
+      setScalpPhotos(prev => { const n = { ...prev }; delete n[scalpPhotoIndex]; return n; });
+    } else if (step === 8) {
+      setLengthPhotos(prev => { const n = { ...prev }; delete n[lengthPhotoIndex]; return n; });
+    }
+  };
+
+  // Cleanup timer on unmount or step change
+  useEffect(() => {
+    return () => {
+      if (autoAdvanceTimer) clearTimeout(autoAdvanceTimer);
+    };
+  }, [autoAdvanceTimer]);
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const dataUrl = ev.target?.result as string;
+        handlePhotoCapture(dataUrl);
+      };
+      reader.readAsDataURL(file);
+    }
+    // Reset input so same file can be selected again
+    e.target.value = '';
+  };
+
+  const handleNext = () => {
+    // Photo steps auto-advance, but keep handleNext for non-photo steps
+    if (step === 6 || step === 8) {
+      advancePhotoStep();
       return;
     }
 
     if (step < TOTAL_SCREENS - 1) {
-      // Save data before leaving data screens
       if (step === 4) saveOnboardingData();
       setStep(step + 1);
     } else {
-      // Completion
       saveOnboardingData();
       const capturedAreas = Object.keys(scalpPhotos).filter(k => scalpPhotos[Number(k)]);
       if (capturedAreas.length > 0) {
@@ -612,20 +656,23 @@ const Onboarding = () => {
 
                   {scalpPhotos[scalpPhotoIndex] ? (
                     <div className="card-elevated p-4 mb-4 flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-xl bg-sage-light flex items-center justify-center">
-                        <Check size={20} className="text-primary" />
+                      <div className="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0">
+                        <img src={scalpPhotos[scalpPhotoIndex]} alt="Captured" className="w-full h-full object-cover" />
                       </div>
                       <div className="flex-1">
                         <p className="text-sm font-medium text-foreground">Photo captured</p>
+                        <p className="text-xs text-muted-foreground">Auto-advancing…</p>
                       </div>
-                      <button onClick={() => setScalpPhotos(prev => { const n = { ...prev }; delete n[scalpPhotoIndex]; return n; })} className="text-xs text-primary font-medium">Retake</button>
+                      <button onClick={handleRetake} className="text-xs text-primary font-medium">Retake</button>
                     </div>
                   ) : (
                     <div className="space-y-2 mb-4">
-                      <button onClick={handleSimulateCapture} className="w-full h-12 rounded-xl bg-primary text-primary-foreground font-semibold text-sm btn-press flex items-center justify-center gap-2">
+                      <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handleFileSelect} />
+                      <input ref={galleryInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileSelect} />
+                      <button onClick={() => cameraInputRef.current?.click()} className="w-full h-12 rounded-xl bg-primary text-primary-foreground font-semibold text-sm btn-press flex items-center justify-center gap-2">
                         <Camera size={18} /> Take photo
                       </button>
-                      <button onClick={handleSimulateCapture} className="w-full h-12 rounded-xl border-2 border-border text-foreground font-medium text-sm btn-press flex items-center justify-center gap-2">
+                      <button onClick={() => galleryInputRef.current?.click()} className="w-full h-12 rounded-xl border-2 border-border text-foreground font-medium text-sm btn-press flex items-center justify-center gap-2">
                         <ImageIcon size={18} /> Choose photo
                       </button>
                     </div>
@@ -687,20 +734,23 @@ const Onboarding = () => {
 
                   {lengthPhotos[lengthPhotoIndex] ? (
                     <div className="card-elevated p-4 mb-4 flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-xl bg-sage-light flex items-center justify-center">
-                        <Check size={20} className="text-primary" />
+                      <div className="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0">
+                        <img src={lengthPhotos[lengthPhotoIndex]} alt="Captured" className="w-full h-full object-cover" />
                       </div>
                       <div className="flex-1">
                         <p className="text-sm font-medium text-foreground">Photo captured</p>
+                        <p className="text-xs text-muted-foreground">Auto-advancing…</p>
                       </div>
-                      <button onClick={() => setLengthPhotos(prev => { const n = { ...prev }; delete n[lengthPhotoIndex]; return n; })} className="text-xs text-primary font-medium">Retake</button>
+                      <button onClick={handleRetake} className="text-xs text-primary font-medium">Retake</button>
                     </div>
                   ) : (
                     <div className="space-y-2 mb-4">
-                      <button onClick={handleSimulateCapture} className="w-full h-12 rounded-xl bg-primary text-primary-foreground font-semibold text-sm btn-press flex items-center justify-center gap-2">
+                      <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" className="hidden" onChange={handleFileSelect} />
+                      <input ref={galleryInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileSelect} />
+                      <button onClick={() => cameraInputRef.current?.click()} className="w-full h-12 rounded-xl bg-primary text-primary-foreground font-semibold text-sm btn-press flex items-center justify-center gap-2">
                         <Camera size={18} /> Take photo
                       </button>
-                      <button onClick={handleSimulateCapture} className="w-full h-12 rounded-xl border-2 border-border text-foreground font-medium text-sm btn-press flex items-center justify-center gap-2">
+                      <button onClick={() => galleryInputRef.current?.click()} className="w-full h-12 rounded-xl border-2 border-border text-foreground font-medium text-sm btn-press flex items-center justify-center gap-2">
                         <ImageIcon size={18} /> Choose photo
                       </button>
                     </div>
@@ -743,9 +793,9 @@ const Onboarding = () => {
           </AnimatePresence>
         </div>
 
-        {/* Bottom button */}
+        {/* Bottom button - hidden on photo capture steps (auto-advance handles those) */}
         <div className="flex-shrink-0 py-4">
-          {step !== 7 && ( // Length transition has its own buttons
+          {step !== 7 && step !== 6 && step !== 8 && (
             <button
               onClick={handleNext}
               disabled={!canProceed()}
@@ -753,7 +803,7 @@ const Onboarding = () => {
                 canProceed() ? 'bg-primary text-primary-foreground' : 'bg-border text-muted-foreground cursor-not-allowed'
               }`}
             >
-              {step === 9 ? 'Take me to my dashboard' : step === 6 && scalpPhotos[scalpPhotoIndex] ? 'Next' : step === 8 && lengthPhotos[lengthPhotoIndex] ? 'Next' : step === 6 || step === 8 ? 'Next' : step === 5 ? 'Continue' : 'Next'}
+              {step === 9 ? 'Take me to my dashboard' : step === 5 ? 'Continue' : 'Next'}
             </button>
           )}
         </div>
