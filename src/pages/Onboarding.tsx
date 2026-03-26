@@ -5,7 +5,7 @@ import { ArrowLeft, HelpCircle, ChevronDown, ChevronLeft, ChevronRight, Camera, 
 import { useApp } from '@/contexts/AppContext';
 import { toast } from '@/hooks/use-toast';
 
-// Reference images
+// Reference images for photo capture
 import refFemaleFront from '@/assets/ref-female-front.jpg';
 import refFemaleSide from '@/assets/ref-female-side.jpg';
 import refFemaleBack from '@/assets/ref-female-back.jpg';
@@ -16,6 +16,12 @@ import refMaleBack from '@/assets/ref-male-back.png';
 import refMaleTop from '@/assets/ref-male-top.png';
 import refLengthFront from '@/assets/ref-length-front.png';
 import refLengthSide from '@/assets/ref-length-side.png';
+
+// Hair type selection images
+import hairFemaleType4 from '@/assets/hair/bw_type4_b.jpg';
+import hairFemaleType3 from '@/assets/hair/bw_type3.jpg';
+import hairMaleType4 from '@/assets/hair/bm_type4.jpg';
+import hairMaleType3 from '@/assets/hair/bm_type3.jpg';
 
 // ─── DATA ───────────────────────────────────────────────────────────────────
 const hairTypes = [
