@@ -5,7 +5,7 @@ import { ArrowLeft, HelpCircle, ChevronDown, ChevronLeft, ChevronRight, Camera, 
 import { useApp } from '@/contexts/AppContext';
 import { toast } from '@/hooks/use-toast';
 
-// Reference images
+// Reference images for photo capture
 import refFemaleFront from '@/assets/ref-female-front.jpg';
 import refFemaleSide from '@/assets/ref-female-side.jpg';
 import refFemaleBack from '@/assets/ref-female-back.jpg';
@@ -16,6 +16,12 @@ import refMaleBack from '@/assets/ref-male-back.png';
 import refMaleTop from '@/assets/ref-male-top.png';
 import refLengthFront from '@/assets/ref-length-front.png';
 import refLengthSide from '@/assets/ref-length-side.png';
+
+// Hair type selection images
+import hairFemaleType4 from '@/assets/hair/bw_type4_b.jpg';
+import hairFemaleType3 from '@/assets/hair/bw_type3.jpg';
+import hairMaleType4 from '@/assets/hair/bm_type4.jpg';
+import hairMaleType3 from '@/assets/hair/bm_type3.jpg';
 
 // ─── DATA ───────────────────────────────────────────────────────────────────
 const hairTypes = [
@@ -379,7 +385,7 @@ const Onboarding = () => {
                         {hairType === ht.id && ht.id !== 'unsure' && (
                           <div className="mt-3 rounded-xl overflow-hidden border border-border">
                             <img
-                              src={isMale ? refMaleFront : refFemaleFront}
+                              src={ht.id === 'type4' ? (isMale ? hairMaleType4 : hairFemaleType4) : (isMale ? hairMaleType3 : hairFemaleType3)}
                               alt={`${ht.label} reference`}
                               className="w-full h-[180px] object-cover object-top"
                             />
@@ -589,11 +595,11 @@ const Onboarding = () => {
                   <p className="text-sm text-muted-foreground mb-4">{scalpPhotoSteps[scalpPhotoIndex].instruction}</p>
 
                   {/* Reference image */}
-                  <div className="rounded-xl overflow-hidden border border-border mb-4">
+                  <div className="rounded-xl overflow-hidden border border-border mb-4 bg-accent/30">
                     <img
                       src={getRefImage(scalpRefAreas[scalpPhotoIndex])}
                       alt={`Reference: ${scalpPhotoSteps[scalpPhotoIndex].title}`}
-                      className="w-full h-[220px] object-cover object-top"
+                      className="w-full h-auto max-h-[280px] object-contain"
                     />
                     <p className="text-[10px] text-muted-foreground text-center py-1.5 bg-accent/40">Reference photo</p>
                   </div>
@@ -637,11 +643,11 @@ const Onboarding = () => {
                   </p>
 
                   {/* Show a length reference image */}
-                  <div className="rounded-xl overflow-hidden border border-border mb-6">
+                  <div className="rounded-xl overflow-hidden border border-border mb-6 bg-accent/30">
                     <img
                       src={isMale ? refMaleFront : refLengthFront}
                       alt="Length check reference"
-                      className="w-full h-[250px] object-cover object-center"
+                      className="w-full h-auto max-h-[280px] object-contain"
                     />
                   </div>
 
@@ -670,11 +676,11 @@ const Onboarding = () => {
                   <h3 className="text-base font-semibold text-foreground mb-2">{lengthPhotoSteps[lengthPhotoIndex].title}</h3>
                   <p className="text-sm text-muted-foreground mb-4">{lengthPhotoSteps[lengthPhotoIndex].instruction}</p>
 
-                  <div className="rounded-xl overflow-hidden border border-border mb-4">
+                  <div className="rounded-xl overflow-hidden border border-border mb-4 bg-accent/30">
                     <img
                       src={getLengthRefImage(lengthRefAreas[lengthPhotoIndex])}
                       alt={`Reference: ${lengthPhotoSteps[lengthPhotoIndex].title}`}
-                      className="w-full h-[250px] object-cover object-center"
+                      className="w-full h-auto max-h-[280px] object-contain"
                     />
                     <p className="text-[10px] text-muted-foreground text-center py-1.5 bg-accent/40">Reference photo</p>
                   </div>
