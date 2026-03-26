@@ -189,7 +189,7 @@ const Onboarding = () => {
       case 3: return !!cycleLength && betweenWash.length > 0 && (!betweenWash.includes('Other') || otherBetweenWash.trim().length > 0);
       case 4: return concerns.length > 0;
       case 5: return consentChecked;
-      case 6: return true; // can always proceed (skip or captured)
+      case 6: return !!scalpPhotos[scalpPhotoIndex]; // require photo before advancing
       case 7: return true;
       case 8: return true;
       case 9: return true;
@@ -610,9 +610,6 @@ const Onboarding = () => {
                     </div>
                   )}
 
-                  <button onClick={handleSkipScalpPhotos} className="w-full text-center text-sm text-muted-foreground py-2">
-                    Skip for now
-                  </button>
                 </div>
               )}
 
