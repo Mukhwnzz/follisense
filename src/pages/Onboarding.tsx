@@ -12,8 +12,7 @@ import refFemaleBack from '@/assets/ref-female-back.jpg';
 import refFemaleTop from '@/assets/ref-female-top.jpg';
 import refMaleFront from '@/assets/ref-male-front.jpg';
 import refMaleSide from '@/assets/ref-male-side.jpg';
-import refMaleBack from '@/assets/ref-male-back.jpg';
-import refMaleTop from '@/assets/ref-male-top.jpg';
+import refMaleBack from '@/assets/ref-male-back.png';
 import refLengthFront from '@/assets/ref-length-front.png';
 import refLengthSide from '@/assets/ref-length-side.png';
 import refLengthBack from '@/assets/ref-length-back.png';
@@ -140,6 +139,7 @@ const Onboarding = () => {
   const [scalpPhotos, setScalpPhotos] = useState<Record<number, boolean>>({});
   const [lengthPhotoIndex, setLengthPhotoIndex] = useState(0);
   const [lengthPhotos, setLengthPhotos] = useState<Record<number, boolean>>({});
+  const [skippedScalpPhotos, setSkippedScalpPhotos] = useState(false);
   const [skippedLengthPhotos, setSkippedLengthPhotos] = useState(false);
 
   const isMale = gender === 'man';
@@ -159,7 +159,7 @@ const Onboarding = () => {
       if (area === 'front') return refMaleFront;
       if (area === 'side') return refMaleSide;
       if (area === 'back') return refMaleBack;
-      return refMaleTop;
+      return refMaleFront;
     }
     if (area === 'front') return refFemaleFront;
     if (area === 'side') return refFemaleSide;
@@ -189,7 +189,7 @@ const Onboarding = () => {
       case 3: return !!cycleLength && betweenWash.length > 0 && (!betweenWash.includes('Other') || otherBetweenWash.trim().length > 0);
       case 4: return concerns.length > 0;
       case 5: return consentChecked;
-      case 6: return !!scalpPhotos[scalpPhotoIndex]; // require photo before advancing
+      case 6: return true; // can always proceed (skip or captured)
       case 7: return true;
       case 8: return true;
       case 9: return true;
@@ -225,7 +225,7 @@ const Onboarding = () => {
 
   const handleNext = () => {
     // Scalp photo sub-steps
-    if (step === 6 && scalpPhotoIndex < 3) {
+    if (step === 6 && scalpPhotoIndex < 3 && !skippedScalpPhotos) {
       setScalpPhotoIndex(scalpPhotoIndex + 1);
       return;
     }
@@ -264,6 +264,10 @@ const Onboarding = () => {
     else navigate(-1);
   };
 
+  const handleSkipScalpPhotos = () => {
+    setSkippedScalpPhotos(true);
+    setStep(7); // go to length transition
+  };
 
   const handleSkipLengthPhotos = () => {
     setSkippedLengthPhotos(true);
@@ -606,6 +610,9 @@ const Onboarding = () => {
                     </div>
                   )}
 
+                  <button onClick={handleSkipScalpPhotos} className="w-full text-center text-sm text-muted-foreground py-2">
+                    Skip for now
+                  </button>
                 </div>
               )}
 
