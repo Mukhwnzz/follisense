@@ -223,14 +223,24 @@ const Onboarding = () => {
   };
 
   const handleNext = () => {
-    // Scalp photo sub-steps
-    if (step === 6 && scalpPhotoIndex < 3) {
-      setScalpPhotoIndex(scalpPhotoIndex + 1);
+    // Scalp photo sub-steps: advance within the 4-step sequence
+    if (step === 6) {
+      if (scalpPhotoIndex < 3) {
+        setScalpPhotoIndex(prev => prev + 1);
+        return;
+      }
+      // All 4 scalp photos done, advance to length transition
+      setStep(7);
       return;
     }
     // Length photo sub-steps
-    if (step === 8 && lengthPhotoIndex < 2 && !skippedLengthPhotos) {
-      setLengthPhotoIndex(lengthPhotoIndex + 1);
+    if (step === 8) {
+      if (lengthPhotoIndex < 2 && !skippedLengthPhotos) {
+        setLengthPhotoIndex(prev => prev + 1);
+        return;
+      }
+      // All length photos done, advance to completion
+      setStep(9);
       return;
     }
 
@@ -269,9 +279,19 @@ const Onboarding = () => {
     setStep(9); // go to completion
   };
 
-  // Progress bar: screens 0-4 are main onboarding, 5-9 are photo/completion
-  const progressScreens = 10;
-  const currentProgress = step;
+  // Journey progress bar: 8 segments
+  const journeySegments = ['Gender', 'Hair type', 'Styles', 'Routine', 'Concerns', 'Guidelines', 'Scalp photos', 'Length check'];
+  const stepToSegment = (s: number): number => {
+    if (s <= 0) return 0;
+    if (s <= 1) return 1;
+    if (s <= 2) return 2;
+    if (s <= 3) return 3;
+    if (s <= 4) return 4;
+    if (s <= 5) return 5;
+    if (s <= 6) return 6; // scalp photos (all 4 sub-steps)
+    return 7; // length transition, length photos, completion
+  };
+  const activeSegment = stepToSegment(step);
 
   const hasAnyCapturedPhotos = Object.keys(scalpPhotos).length > 0 || Object.keys(lengthPhotos).length > 0;
 
@@ -279,16 +299,16 @@ const Onboarding = () => {
     <div className="min-h-screen bg-background flex flex-col">
       <div className="max-w-[430px] mx-auto px-6 flex-1 flex flex-col w-full">
 
-        {/* Header with progress */}
+        {/* Header with journey progress */}
         <div className="flex items-center justify-between py-4">
           <button onClick={handleBack} className="p-2 -ml-2 text-foreground">
             <ArrowLeft size={22} strokeWidth={1.8} />
           </button>
-          <div className="flex gap-1.5">
-            {Array.from({ length: progressScreens }).map((_, i) => (
+          <div className="flex gap-1 flex-1 mx-3">
+            {journeySegments.map((_, i) => (
               <div
                 key={i}
-                className={`h-1.5 w-6 rounded-full transition-colors duration-300 ${i <= currentProgress ? 'bg-primary' : 'bg-border'}`}
+                className={`h-1 flex-1 rounded-full transition-colors duration-300 ${i < activeSegment ? 'bg-primary' : i === activeSegment ? 'bg-primary' : 'bg-border'}`}
               />
             ))}
           </div>
