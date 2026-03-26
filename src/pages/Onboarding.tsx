@@ -17,11 +17,17 @@ import refMaleTop from '@/assets/ref-male-top.png';
 import refLengthFront from '@/assets/ref-length-front.png';
 import refLengthSide from '@/assets/ref-length-side.png';
 
-// Hair type selection images
-import hairFemaleType4 from '@/assets/hair/bw_type4_b.jpg';
-import hairFemaleType3 from '@/assets/hair/bw_type3.jpg';
+// Hair type selection images - front-facing for main cards
+import hairFemaleType4Front from '@/assets/hair/bw_type4_front.png';
+import hairFemaleType3Front from '@/assets/hair/bw_type3.jpg';
 import hairMaleType4 from '@/assets/hair/bm_type4.jpg';
 import hairMaleType3 from '@/assets/hair/bm_type3.jpg';
+
+// Sub-type back-view images
+import hair4aBack from '@/assets/hair/bw_type4_a.jpg';
+import hair4bBack from '@/assets/hair/bw_type4b_back.png';
+import hair4cBack from '@/assets/hair/bw_type4c_back.png';
+import hair3cBack from '@/assets/hair/bw_type3_c.jpg';
 
 // ─── DATA ───────────────────────────────────────────────────────────────────
 const hairTypes = [
@@ -409,69 +415,157 @@ const Onboarding = () => {
                   <h2 className="text-lg font-semibold text-foreground mb-1">What's your hair texture?</h2>
                   <p className="text-xs text-muted-foreground mb-5">{sectionExplainers[1]}</p>
                   <div className="space-y-3">
-                    {hairTypes.map(ht => (
-                      <button
-                        key={ht.id}
-                        onClick={() => { setHairType(ht.id); setHairSubType(''); setShowSubType(false); }}
-                        className={`selection-card w-full text-left !p-3 ${hairType === ht.id ? 'selected' : ''}`}
-                      >
-                        <div className="flex items-center gap-4">
-                          <div className="w-12 h-12 rounded-xl bg-accent flex items-center justify-center flex-shrink-0">
-                            <CurlIcon type={ht.id} />
-                          </div>
-                          <div className="flex-1">
-                            <p className="font-semibold text-foreground">{ht.label}</p>
-                            <p className="text-sm text-muted-foreground">{ht.desc}</p>
-                          </div>
-                        </div>
+                    {/* Type 4 Card */}
+                    <button
+                      onClick={() => { setHairType('type4'); setHairSubType(''); setShowSubType(false); }}
+                      className={`selection-card w-full text-left !p-0 overflow-hidden ${hairType === 'type4' ? 'selected' : ''}`}
+                    >
+                      <div className="w-full h-[200px] bg-accent/30">
+                        <img
+                          src={isMale ? hairMaleType4 : hairFemaleType4Front}
+                          alt="Type 4 coily hair"
+                          className="w-full h-full object-contain"
+                        />
+                      </div>
+                      <div className="p-3">
+                        <p className="font-semibold text-foreground">Type 4: Coily</p>
+                        <p className="text-xs text-muted-foreground">Tight coils or zig-zag pattern, dense texture</p>
+                      </div>
 
-                        {/* Reference image for selected type */}
-                        {hairType === ht.id && ht.id !== 'unsure' && (
-                          <div className="mt-3 rounded-xl overflow-hidden border border-border">
-                            <img
-                              src={ht.id === 'type4' ? (isMale ? hairMaleType4 : hairFemaleType4) : (isMale ? hairMaleType3 : hairFemaleType3)}
-                              alt={`${ht.label} reference`}
-                              className="w-full h-[180px] object-cover object-top"
-                            />
-                            <p className="text-[10px] text-muted-foreground text-center py-1.5 bg-accent/40">
-                              {isMale ? 'Male' : 'Female'} {ht.label.toLowerCase()} reference
-                            </p>
+                      {/* Sub-type expansion */}
+                      {hairType === 'type4' && !showSubType && (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setShowSubType(true); }}
+                          className="px-3 pb-3 text-sm text-primary font-medium flex items-center gap-1"
+                        >
+                          Want to be more specific? <ChevronDown size={14} />
+                        </button>
+                      )}
+
+                      {hairType === 'type4' && showSubType && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: 'auto' }}
+                          className="px-3 pb-3"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <p className="text-sm font-semibold text-foreground mb-2">Which sub-type?</p>
+                          <div className="grid grid-cols-3 gap-2 mb-2">
+                            {[
+                              { id: '4a', label: '4A', img: hair4aBack },
+                              { id: '4b', label: '4B', img: hair4bBack },
+                              { id: '4c', label: '4C', img: hair4cBack },
+                            ].map(st => (
+                              <button
+                                key={st.id}
+                                onClick={(e) => { e.stopPropagation(); setHairSubType(st.id); }}
+                                className={`rounded-xl border-2 overflow-hidden transition-colors ${hairSubType === st.id ? 'border-primary' : 'border-border'}`}
+                              >
+                                <div className="h-[90px] bg-accent/30">
+                                  <img src={st.img} alt={st.label} className="w-full h-full object-contain" />
+                                </div>
+                                <p className="text-xs font-semibold text-foreground text-center py-1.5">{st.label}</p>
+                              </button>
+                            ))}
                           </div>
-                        )}
+                          <div className="flex gap-2">
+                            {['Mixed', 'Not sure'].map(opt => (
+                              <button
+                                key={opt}
+                                onClick={(e) => { e.stopPropagation(); setHairSubType(opt.toLowerCase().replace(' ', '-')); }}
+                                className={`pill-option ${hairSubType === opt.toLowerCase().replace(' ', '-') ? 'selected' : ''}`}
+                              >
+                                {opt}
+                              </button>
+                            ))}
+                          </div>
+                        </motion.div>
+                      )}
+                    </button>
 
-                        {/* Sub-type expansion directly below selected card */}
-                        {hairType === ht.id && (ht.id === 'type3' || ht.id === 'type4') && !showSubType && (
-                          <button
-                            onClick={(e) => { e.stopPropagation(); setShowSubType(true); }}
-                            className="mt-3 text-sm text-primary font-medium flex items-center gap-1"
-                          >
-                            Want to be more specific? <ChevronDown size={14} />
-                          </button>
-                        )}
+                    {/* Type 3 Card */}
+                    <button
+                      onClick={() => { setHairType('type3'); setHairSubType(''); setShowSubType(false); }}
+                      className={`selection-card w-full text-left !p-0 overflow-hidden ${hairType === 'type3' ? 'selected' : ''}`}
+                    >
+                      <div className="w-full h-[200px] bg-accent/30">
+                        <img
+                          src={isMale ? hairMaleType3 : hairFemaleType3Front}
+                          alt="Type 3 curly hair"
+                          className="w-full h-full object-contain"
+                        />
+                      </div>
+                      <div className="p-3">
+                        <p className="font-semibold text-foreground">Type 3: Curly</p>
+                        <p className="text-xs text-muted-foreground">Visible curl pattern, S-shaped curls</p>
+                      </div>
 
-                        {hairType === ht.id && showSubType && subTypes[hairType] && (
-                          <motion.div
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: 'auto' }}
-                            className="mt-3"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            <p className="text-sm font-semibold text-foreground mb-2">Which sub-type?</p>
-                            <div className="flex flex-wrap gap-2">
-                              {subTypes[hairType].map(st => (
-                                <button
-                                  key={st.id}
-                                  onClick={(e) => { e.stopPropagation(); setHairSubType(st.id); }}
-                                  className={`pill-option ${hairSubType === st.id ? 'selected' : ''}`}
-                                >
-                                  {st.label}
-                                </button>
-                              ))}
-                            </div>
-                          </motion.div>
-                        )}
-                      </button>
-                    ))}
+                      {/* Sub-type expansion */}
+                      {hairType === 'type3' && !showSubType && (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setShowSubType(true); }}
+                          className="px-3 pb-3 text-sm text-primary font-medium flex items-center gap-1"
+                        >
+                          Want to be more specific? <ChevronDown size={14} />
+                        </button>
+                      )}
+
+                      {hairType === 'type3' && showSubType && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: 'auto' }}
+                          className="px-3 pb-3"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <p className="text-sm font-semibold text-foreground mb-2">Which sub-type?</p>
+                          <div className="grid grid-cols-3 gap-2 mb-2">
+                            {[
+                              { id: '3a', label: '3A', img: null },
+                              { id: '3b', label: '3B', img: null },
+                              { id: '3c', label: '3C', img: hair3cBack },
+                            ].map(st => (
+                              <button
+                                key={st.id}
+                                onClick={(e) => { e.stopPropagation(); setHairSubType(st.id); }}
+                                className={`rounded-xl border-2 overflow-hidden transition-colors ${hairSubType === st.id ? 'border-primary' : 'border-border'}`}
+                              >
+                                {st.img ? (
+                                  <div className="h-[90px] bg-accent/30">
+                                    <img src={st.img} alt={st.label} className="w-full h-full object-contain" />
+                                  </div>
+                                ) : (
+                                  <div className="h-[90px] bg-accent/30 flex items-center justify-center">
+                                    <CurlIcon type="type3" />
+                                  </div>
+                                )}
+                                <p className="text-xs font-semibold text-foreground text-center py-1.5">{st.label}</p>
+                              </button>
+                            ))}
+                          </div>
+                          <div className="flex gap-2">
+                            {['Mixed', 'Not sure'].map(opt => (
+                              <button
+                                key={opt}
+                                onClick={(e) => { e.stopPropagation(); setHairSubType(opt.toLowerCase().replace(' ', '-')); }}
+                                className={`pill-option ${hairSubType === opt.toLowerCase().replace(' ', '-') ? 'selected' : ''}`}
+                              >
+                                {opt}
+                              </button>
+                            ))}
+                          </div>
+                        </motion.div>
+                      )}
+                    </button>
+
+                    {/* Not Sure Card */}
+                    <button
+                      onClick={() => { setHairType('unsure'); setHairSubType(''); setShowSubType(false); }}
+                      className={`selection-card w-full text-center py-6 ${hairType === 'unsure' ? 'selected' : ''}`}
+                    >
+                      <HelpCircle size={24} className="text-muted-foreground mx-auto mb-2" strokeWidth={1.5} />
+                      <p className="font-semibold text-foreground">Not sure</p>
+                      <p className="text-xs text-muted-foreground mt-1">That's okay — we'll use the most inclusive experience</p>
+                    </button>
                   </div>
                 </div>
               )}
