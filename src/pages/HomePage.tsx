@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { User, ChevronRight, Leaf, Lightbulb, Scissors, X, Calendar, Target, Stethoscope, Flame, Microscope, Droplets, Camera, FlaskConical, Heart, Sparkles } from 'lucide-react';
+import { User, ChevronRight, Leaf, Lightbulb, Scissors, X, Calendar, Stethoscope, Flame, Microscope, Camera, AlertTriangle, Droplets, Eye } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 import { didYouKnowFacts } from '@/data/didYouKnowFacts';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -14,8 +14,8 @@ const serviceOptions = ['Wash', 'Treatment', 'Style installation', 'Style remova
 const HomePage = () => {
   const navigate = useNavigate();
   const {
-    onboardingData, healthProfile, addSalonVisit, checkInCount, userName,
-    research, setResearch, progressiveDismissed, dismissProgressivePrompt, checkInHistory,
+    onboardingData, addSalonVisit, checkInCount, userName,
+    research, setResearch, baselinePhotos,
   } = useApp();
   const [showSalonForm, setShowSalonForm] = useState(false);
   const [showSalonVisitPicker, setShowSalonVisitPicker] = useState(false);
@@ -29,7 +29,6 @@ const HomePage = () => {
     localStorage.setItem('follisense-last-home-visit', String(Date.now()));
   }, []);
 
-  // Show research prompt once after 3rd check-in
   useEffect(() => {
     if (checkInCount >= 3 && !research.consented && !research.dismissed) {
       const timer = setTimeout(() => setShowResearchPrompt(true), 1500);
@@ -69,37 +68,18 @@ const HomePage = () => {
   const getCheckInDesc = () => {
     if (isMale) {
       if (onboardingData.barberFrequency) return "It's been a couple of weeks since your last barber visit. Quick scalp check?";
-      if (onboardingData.locRetwistFrequency) return "Your locs have been in for 2 weeks. Time for a quick scalp check?";
       return "Ready for a quick scalp check? Takes about a minute.";
     }
     if (onboardingData.isWornOutOnly) return "It's been 2 weeks. Ready for a quick scalp check?";
-    return `Hey, it's been 2 weeks since your ${currentStyle.toLowerCase()} went in. Quick check-in?`;
+    return `Your ${currentStyle.toLowerCase()} has been in for ${currentDay} days. Quick check-in?`;
   };
 
-  // ── Progressive profiling prompts ──
-  // These appear contextually, once each, and can be dismissed
-  const showPhotosPrompt = checkInCount >= 2 && !progressiveDismissed['photos'];
-  const showChemicalPrompt = !onboardingData.chemicalProcessing && !progressiveDismissed['chemical'] && checkInCount >= 1;
-  const showProductsPrompt = !progressiveDismissed['products'] && checkInCount >= 1 && onboardingData.scalpProducts.length === 0;
-
-  // Detect symptom fluctuation for menstrual prompt
-  const hasSymptomFluctuation = checkInHistory.length >= 2 && !isMale;
-  const showMenstrualPrompt = hasSymptomFluctuation && !onboardingData.menstrualTracking && !progressiveDismissed['menstrual'] && !isMale;
-
-  const handleResearchDismiss = () => {
-    setShowResearchPrompt(false);
-    setResearch({ ...research, dismissed: true });
-  };
-
-  const handleResearchOptIn = () => {
-    setShowResearchPrompt(false);
-    setResearch({ ...research, consented: true, consentDate: new Date().toISOString() });
-  };
+  const hasBaselinePhotos = baselinePhotos.length > 0;
 
   return (
     <div className="page-container pt-6">
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
-        {/* Header */}
+        {/* 1. Greeting */}
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-2xl font-semibold">{greeting}{userName ? `, ${userName}` : ''}</h1>
@@ -110,7 +90,7 @@ const HomePage = () => {
           </button>
         </div>
 
-        {/* Streak / Progress */}
+        {/* 2. Streak counter */}
         <div className="flex items-center gap-3 mb-4 px-1">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
@@ -137,7 +117,7 @@ const HomePage = () => {
           </div>
         </div>
 
-        {/* Primary Action: Scalp Check-in */}
+        {/* 3. Primary action: Scalp check-in */}
         <button
           onClick={() => navigate('/scalp-check')}
           className="card-elevated p-5 mb-4 w-full text-left border-l-4 border-l-primary"
@@ -167,92 +147,55 @@ const HomePage = () => {
           </div>
         </button>
 
-        {/* ── Progressive Profiling Prompts ── */}
-        {showPhotosPrompt && (
-          <div className="card-elevated p-4 mb-4 border-l-4 border-l-primary/50">
-            <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-                <Camera size={18} className="text-primary" strokeWidth={1.5} />
-              </div>
-              <div className="flex-1">
-                <p className="font-medium text-foreground text-sm">Track visual changes over time?</p>
-                <p className="text-xs text-muted-foreground mt-0.5">Add your starting point so we can compare at future check-ins.</p>
-                <div className="flex gap-2 mt-2">
-                  <button onClick={() => navigate('/profile')} className="text-xs font-medium text-primary">Add photos</button>
-                  <button onClick={() => dismissProgressivePrompt('photos')} className="text-xs text-muted-foreground">Not now</button>
+        {/* 4. Your Progress */}
+        {hasBaselinePhotos ? (
+          <button onClick={() => navigate('/history')} className="card-elevated p-4 mb-4 w-full flex items-center gap-3 text-left">
+            <div className="flex gap-2">
+              {baselinePhotos.slice(0, 3).map((p, i) => (
+                <div key={i} className="w-10 h-10 rounded-lg bg-accent flex items-center justify-center">
+                  <Camera size={14} className="text-muted-foreground" />
                 </div>
-              </div>
+              ))}
             </div>
-          </div>
+            <div className="flex-1">
+              <p className="font-medium text-foreground text-sm">Your Progress</p>
+              <p className="text-xs text-primary font-medium">View timeline</p>
+            </div>
+            <ChevronRight size={16} className="text-muted-foreground" />
+          </button>
+        ) : (
+          <button onClick={() => navigate('/profile')} className="card-elevated p-3 mb-4 w-full flex items-center gap-3 text-left">
+            <div className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center flex-shrink-0">
+              <Camera size={14} className="text-muted-foreground" />
+            </div>
+            <p className="text-sm text-muted-foreground">Add your starting point</p>
+            <ChevronRight size={14} className="text-muted-foreground ml-auto" />
+          </button>
         )}
 
-        {showChemicalPrompt && (
-          <div className="card-elevated p-4 mb-4 border-l-4 border-l-primary/50">
-            <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-xl bg-accent flex items-center justify-center flex-shrink-0">
-                <FlaskConical size={18} className="text-foreground" strokeWidth={1.5} />
-              </div>
-              <div className="flex-1">
-                <p className="font-medium text-foreground text-sm">Tell us more about your hair history</p>
-                <p className="text-xs text-muted-foreground mt-0.5">This helps us tailor your check-ins more accurately.</p>
-                <div className="flex gap-2 mt-2">
-                  <button onClick={() => navigate('/profile')} className="text-xs font-medium text-primary">Complete profile</button>
-                  <button onClick={() => dismissProgressivePrompt('chemical')} className="text-xs text-muted-foreground">Not now</button>
-                </div>
-              </div>
+        {/* 5. Quick Actions */}
+        <div className="flex gap-3 mb-4 overflow-x-auto pb-1">
+          <button onClick={() => navigate('/spot-it?mode=symptoms')} className="flex-shrink-0 flex flex-col items-center gap-1.5 w-20">
+            <div className="w-12 h-12 rounded-xl bg-warning/15 flex items-center justify-center">
+              <AlertTriangle size={20} className="text-warning" strokeWidth={1.5} />
             </div>
-          </div>
-        )}
-
-        {showProductsPrompt && (
-          <div className="card-elevated p-4 mb-4 border-l-4 border-l-primary/50">
-            <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-xl bg-accent flex items-center justify-center flex-shrink-0">
-                <Sparkles size={18} className="text-primary" strokeWidth={1.5} />
-              </div>
-              <div className="flex-1">
-                <p className="font-medium text-foreground text-sm">What products are you using?</p>
-                <p className="text-xs text-muted-foreground mt-0.5">Tell us what you're using so we can flag potential irritants.</p>
-                <div className="flex gap-2 mt-2">
-                  <button onClick={() => navigate('/profile')} className="text-xs font-medium text-primary">Add products</button>
-                  <button onClick={() => dismissProgressivePrompt('products')} className="text-xs text-muted-foreground">Not now</button>
-                </div>
-              </div>
+            <span className="text-[11px] text-muted-foreground text-center leading-tight">Something feels off?</span>
+          </button>
+          <button onClick={() => setShowSalonVisitPicker(true)} className="flex-shrink-0 flex flex-col items-center gap-1.5 w-20">
+            <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+              <Scissors size={20} className="text-primary" strokeWidth={1.5} />
             </div>
-          </div>
-        )}
-
-        {showMenstrualPrompt && (
-          <div className="card-elevated p-4 mb-4 border-l-4 border-l-primary/50">
-            <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-                <Heart size={18} className="text-primary" strokeWidth={1.5} />
-              </div>
-              <div className="flex-1">
-                <p className="font-medium text-foreground text-sm">Your symptoms seem to shift in a pattern</p>
-                <p className="text-xs text-muted-foreground mt-0.5">Want to link your cycle for more accurate insights?</p>
-                <div className="flex gap-2 mt-2">
-                  <button onClick={() => navigate('/profile')} className="text-xs font-medium text-primary">Link cycle</button>
-                  <button onClick={() => dismissProgressivePrompt('menstrual')} className="text-xs text-muted-foreground">Not now</button>
-                </div>
-              </div>
+            <span className="text-[11px] text-muted-foreground text-center leading-tight">Salon visit</span>
+          </button>
+          <button onClick={() => navigate('/routine-tracker')} className="flex-shrink-0 flex flex-col items-center gap-1.5 w-20">
+            <div className="w-12 h-12 rounded-xl bg-accent flex items-center justify-center">
+              <Droplets size={20} className="text-primary" strokeWidth={1.5} />
             </div>
-          </div>
-        )}
+            <span className="text-[11px] text-muted-foreground text-center leading-tight">My routine</span>
+          </button>
+        </div>
 
-        {/* Salon Visit */}
-        <button onClick={() => setShowSalonVisitPicker(true)} className="card-elevated p-4 mb-4 w-full flex items-center gap-3 text-left">
-          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-            <Scissors size={20} className="text-primary" strokeWidth={1.5} />
-          </div>
-          <div className="flex-1">
-            <p className="font-medium text-foreground text-sm">Salon Visit</p>
-            <p className="text-xs text-muted-foreground">Log your visit or let your stylist check in</p>
-          </div>
-          <ChevronRight size={18} className="text-muted-foreground" />
-        </button>
-
-        {/* Did You Know */}
+        {/* 6. Did You Know */}
         <div className="rounded-2xl bg-sage-light p-5 mb-4">
           <div className="flex items-start gap-3">
             <Lightbulb size={20} className="text-primary mt-0.5 flex-shrink-0" strokeWidth={1.8} />
@@ -264,32 +207,6 @@ const HomePage = () => {
             </div>
           </div>
         </div>
-
-        {/* Salon Booking */}
-        {!isMale && !onboardingData.isWornOutOnly && currentDay >= totalDays - 4 && (
-          <button onClick={() => navigate('/salon-booking')} className="card-elevated p-4 mb-4 w-full flex items-center gap-3 text-left">
-            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-              <Calendar size={20} className="text-primary" strokeWidth={1.5} />
-            </div>
-            <div className="flex-1">
-              <p className="font-medium text-foreground text-sm">Time to book your next appointment?</p>
-              <p className="text-xs text-muted-foreground">Your {currentStyle.toLowerCase()} has been in for {currentDay} days</p>
-            </div>
-            <ChevronRight size={18} className="text-muted-foreground" />
-          </button>
-        )}
-
-        {/* Your Routine */}
-        <button onClick={() => navigate('/routine-tracker')} className="card-elevated p-4 mb-4 w-full flex items-center gap-3 text-left">
-          <div className="w-10 h-10 rounded-xl bg-accent flex items-center justify-center flex-shrink-0">
-            <Droplets size={20} className="text-primary" strokeWidth={1.5} />
-          </div>
-          <div className="flex-1">
-            <p className="font-medium text-foreground text-sm">Your Routine</p>
-            <p className="text-xs text-muted-foreground">View your wash cycle timeline and products</p>
-          </div>
-          <ChevronRight size={18} className="text-muted-foreground" />
-        </button>
 
         <div className="h-20" />
       </motion.div>
@@ -309,9 +226,8 @@ const HomePage = () => {
                 You've completed {checkInCount} check-ins. Want to help improve scalp health research for textured hair? Your anonymised data contributes to better understanding of scalp health.
               </p>
               <div className="space-y-2">
-                <button onClick={handleResearchOptIn} className="w-full h-12 rounded-xl bg-primary text-primary-foreground font-medium text-sm">Yes, opt me in</button>
-                <button onClick={handleResearchDismiss} className="w-full h-12 rounded-xl border border-border text-foreground font-medium text-sm">Not now</button>
-                <button onClick={() => { handleResearchDismiss(); navigate('/profile'); }} className="w-full text-center text-sm text-primary font-medium py-2">Learn more</button>
+                <button onClick={() => { setShowResearchPrompt(false); setResearch({ ...research, consented: true, consentDate: new Date().toISOString() }); }} className="w-full h-12 rounded-xl bg-primary text-primary-foreground font-medium text-sm">Yes, opt me in</button>
+                <button onClick={() => { setShowResearchPrompt(false); setResearch({ ...research, dismissed: true }); }} className="w-full h-12 rounded-xl border border-border text-foreground font-medium text-sm">Not now</button>
               </div>
             </motion.div>
           </motion.div>
