@@ -45,23 +45,7 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
-console.log("SUPABASE URL:", import.meta.env.VITE_SUPABASE_URL);
-console.log("SUPABASE KEY:", import.meta.env.VITE_SUPABASE_ANON_KEY);
-
 const App = () => {
-    useEffect(() => {
-    const test = async () => {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("*");
-
-      console.log("DATA:", data);
-      console.log("ERROR:", error);
-    };
-
-    test();
-  }, []);
- 
 return (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
