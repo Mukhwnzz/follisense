@@ -12,7 +12,8 @@ import refFemaleBack from '@/assets/ref-female-back.jpg';
 import refFemaleTop from '@/assets/ref-female-top.jpg';
 import refMaleFront from '@/assets/ref-male-front.jpg';
 import refMaleSide from '@/assets/ref-male-side.jpg';
-import refMaleBack from '@/assets/ref-male-back.png';
+import refMaleBack from '@/assets/ref-male-back.jpg';
+import refMaleTop from '@/assets/ref-male-top.jpg';
 import refLengthFront from '@/assets/ref-length-front.png';
 import refLengthSide from '@/assets/ref-length-side.png';
 import refLengthBack from '@/assets/ref-length-back.png';
@@ -159,7 +160,7 @@ const Onboarding = () => {
       if (area === 'front') return refMaleFront;
       if (area === 'side') return refMaleSide;
       if (area === 'back') return refMaleBack;
-      return refMaleFront;
+      return refMaleTop;
     }
     if (area === 'front') return refFemaleFront;
     if (area === 'side') return refFemaleSide;
