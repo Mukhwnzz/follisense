@@ -19,7 +19,7 @@ import refLengthSide from '@/assets/ref-length-side.png';
 
 // Hair type selection images - front-facing for main cards
 import hairFemaleType4Front from '@/assets/hair/bw_type4_front.png';
-import hairFemaleType3Front from '@/assets/hair/bw_type3.jpg';
+import hairFemaleType3Front from '@/assets/hair/bw_type3_front_new.png';
 import hairMaleType4 from '@/assets/hair/bm_type4.jpg';
 import hairMaleType3 from '@/assets/hair/bm_type3.jpg';
 
@@ -27,7 +27,8 @@ import hairMaleType3 from '@/assets/hair/bm_type3.jpg';
 import hair4aBack from '@/assets/hair/bw_type4_a.jpg';
 import hair4bBack from '@/assets/hair/bw_type4b_back.png';
 import hair4cBack from '@/assets/hair/bw_type4c_back.png';
-import hair3cBack from '@/assets/hair/bw_type3_c.jpg';
+import hair3aBack from '@/assets/hair/bw_type3a_back.png';
+import hair3cBack from '@/assets/hair/bw_type3c_back.png';
 
 // ─── DATA ───────────────────────────────────────────────────────────────────
 const hairTypes = [
@@ -520,7 +521,7 @@ const Onboarding = () => {
                           <p className="text-sm font-semibold text-foreground mb-2">Which sub-type?</p>
                           <div className="grid grid-cols-3 gap-2 mb-2">
                             {[
-                              { id: '3a', label: '3A', img: null },
+                              { id: '3a', label: '3A', img: hair3aBack },
                               { id: '3b', label: '3B', img: null },
                               { id: '3c', label: '3C', img: hair3cBack },
                             ].map(st => (
