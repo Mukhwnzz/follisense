@@ -264,10 +264,6 @@ const Onboarding = () => {
     else navigate(-1);
   };
 
-  const handleSkipScalpPhotos = () => {
-    setSkippedScalpPhotos(true);
-    setStep(7); // go to length transition
-  };
 
   const handleSkipLengthPhotos = () => {
     setSkippedLengthPhotos(true);
