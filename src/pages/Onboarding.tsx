@@ -223,14 +223,24 @@ const Onboarding = () => {
   };
 
   const handleNext = () => {
-    // Scalp photo sub-steps
-    if (step === 6 && scalpPhotoIndex < 3) {
-      setScalpPhotoIndex(scalpPhotoIndex + 1);
+    // Scalp photo sub-steps: advance within the 4-step sequence
+    if (step === 6) {
+      if (scalpPhotoIndex < 3) {
+        setScalpPhotoIndex(prev => prev + 1);
+        return;
+      }
+      // All 4 scalp photos done, advance to length transition
+      setStep(7);
       return;
     }
     // Length photo sub-steps
-    if (step === 8 && lengthPhotoIndex < 2 && !skippedLengthPhotos) {
-      setLengthPhotoIndex(lengthPhotoIndex + 1);
+    if (step === 8) {
+      if (lengthPhotoIndex < 2 && !skippedLengthPhotos) {
+        setLengthPhotoIndex(prev => prev + 1);
+        return;
+      }
+      // All length photos done, advance to completion
+      setStep(9);
       return;
     }
 
