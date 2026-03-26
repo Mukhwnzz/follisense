@@ -35,12 +35,12 @@ const generateMockRoutine = (data: any): Routine => {
         step: 'Scalp cleanse',
         detail: isProtectiveStyle
           ? `Part your ${styles[0] || 'style'} gently and apply diluted sulphate-free shampoo directly to the scalp. Massage with fingertips, not nails.`
-          : 'Use a gentle, sulphate-free shampoo. Focus on the scalp, not the lengths. Massage for 2–3 minutes to loosen buildup.',
+          : 'Use a gentle, sulphate-free shampoo. Focus on the scalp, not the lengths. Massage for 2 to 3 minutes to loosen buildup.',
         duration: '5 mins',
       },
       {
         step: 'Condition',
-        detail: 'Apply conditioner to your lengths and ends only. Leave for 3–5 minutes. Detangle gently with a wide-tooth comb starting from the ends.',
+        detail: 'Apply conditioner to your lengths and ends only. Leave for 3 to 5 minutes. Detangle gently with a wide-tooth comb starting from the ends.',
         duration: '5 mins',
       },
       {
@@ -58,7 +58,7 @@ const generateMockRoutine = (data: any): Routine => {
       {
         step: 'Scalp refresh',
         detail: 'Use a lightweight scalp spray or diluted witch hazel to manage buildup between washes.',
-        frequency: 'Every 5–7 days',
+        frequency: 'Every 5 to 7 days',
       },
       {
         step: 'Tension check',
@@ -73,8 +73,8 @@ const generateMockRoutine = (data: any): Routine => {
     ] : [
       {
         step: 'Scalp massage',
-        detail: 'Gentle fingertip massage for 3–4 minutes to support circulation. No product needed.',
-        frequency: '2–3 times per week',
+        detail: 'Gentle fingertip massage for 3 to 4 minutes to support circulation. No product needed.',
+        frequency: '2 to 3 times per week',
       },
       {
         step: 'Moisture check',
@@ -109,7 +109,7 @@ const generateMockRoutine = (data: any): Routine => {
       },
       {
         tip: data.medicalConditions?.includes('Vitamin D deficiency')
-          ? 'You mentioned low vitamin D. Consider supplementing 1000–2000 IU daily, especially if you have darker skin or limited sun exposure.'
+          ? 'You mentioned low vitamin D. Consider supplementing 1000 to 2000 IU daily, especially if you have darker skin or limited sun exposure.'
           : 'Vitamin D supports hair follicle health. Sources: sunlight, oily fish, fortified foods. People with darker skin synthesise less from sunlight and may benefit from supplementation.',
       },
     ],
@@ -131,7 +131,7 @@ const generateMockRoutine = (data: any): Routine => {
     notes: data.teTriggers?.length > 0 && !data.teTriggers?.includes('None of these')
       ? `You mentioned some recent life changes (${data.teTriggers.join(', ')}). Increased shedding in the next few months could be related to this and is often temporary. Monitor it through your check-ins and see a specialist if it persists beyond 6 months.`
       : data.baselineHairline === 'Very concerned' || data.baselineHairline === 'Noticeable change'
-        ? 'You flagged hairline concerns at your baseline. This is something to actively monitor. If you don\'t see improvement after reducing tension for 2–3 cycles, book a consultation with a trichologist.'
+        ? 'You flagged hairline concerns at your baseline. This is something to actively monitor. If you don\'t see improvement after reducing tension for 2 to 3 cycles, book a consultation with a trichologist.'
         : '',
   };
 };

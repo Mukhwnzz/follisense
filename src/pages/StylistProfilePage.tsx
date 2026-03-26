@@ -443,9 +443,9 @@ const StylistProfilePage = () => {
 >
   <option value="">Select experience</option>
   <option value="<1">Less than 1 year</option>
-  <option value="1-3">1–3 years</option>
-  <option value="3-5">3–5 years</option>
-  <option value="5-10">5–10 years</option>
+  <option value="1-3">1 to 3 years</option>
+  <option value="3-5">3 to 5 years</option>
+  <option value="5-10">5 to 10 years</option>
   <option value="10+">10+ years</option>
 </select>
               </div>

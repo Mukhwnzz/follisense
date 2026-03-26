@@ -86,7 +86,7 @@ const HealthProfile = () => {
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }} className="pb-24">
           <h1 className="text-2xl font-semibold mb-1">Your Health Profile</h1>
           <p className="text-muted-foreground text-sm mb-5">
-            This helps us give you better guidance. Fill in as much or as little as you like — you can always come back.
+            This helps us give you better guidance. Fill in as much or as little as you like, you can always come back.
           </p>
 
           {/* Progress */}
@@ -121,7 +121,7 @@ const HealthProfile = () => {
                 </div>
                 <div>
                   <p className="text-sm font-medium text-foreground mb-2">Do you exercise regularly?</p>
-                  <RadioGroup value={hp.exercise} options={['Rarely', '1–2 times a week', '3–5 times a week', 'Daily']} onChange={v => update('exercise', v)} />
+                  <RadioGroup value={hp.exercise} options={['Rarely', '1 to 2 times a week', '3 to 5 times a week', 'Daily']} onChange={v => update('exercise', v)} />
                 </div>
                 <div>
                   <p className="text-sm font-medium text-foreground mb-2">Do you use heat styling tools?</p>
@@ -211,7 +211,7 @@ const HealthProfile = () => {
                 </div>
                 <div>
                   <p className="text-sm font-medium text-foreground mb-2">When was your last blood test?</p>
-                  <RadioGroup value={hp.lastBloodTest} options={['Within 3 months', '3–6 months ago', '6–12 months ago', 'Over a year ago', 'Never', 'Not sure']} onChange={v => update('lastBloodTest', v)} />
+                  <RadioGroup value={hp.lastBloodTest} options={['Within 3 months', '3 to 6 months ago', '6 to 12 months ago', 'Over a year ago', 'Never', 'Not sure']} onChange={v => update('lastBloodTest', v)} />
                 </div>
                 <div>
                   <p className="text-sm font-medium text-foreground mb-3">Do you know your levels for any of these?</p>
@@ -234,7 +234,7 @@ const HealthProfile = () => {
                     ))}
                   </div>
                 </div>
-                <p className="text-xs text-muted-foreground">We don't store medical records — this is just to help contextualise your scalp health.</p>
+                <p className="text-xs text-muted-foreground">We don't store medical records, this is just to help contextualise your scalp health.</p>
               </div>
             </CollapsibleContent>
           </Collapsible>

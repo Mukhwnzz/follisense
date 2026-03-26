@@ -11,9 +11,9 @@ const ClinicianSummary = () => {
   const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
 
   const hairTypeLabel: Record<string, string> = {
-    '3b': '3b — Loose, springy curls', '3c': '3c — Tight, corkscrew curls',
-    '4a': '4a — Dense, S-shaped coils', '4b': '4b — Z-shaped, tightly coiled',
-    '4c': '4c — Very tight, densely packed coils', 'unsure': 'Mixed / Unsure',
+    '3b': '3b, Loose, springy curls', '3c': '3c, Tight, corkscrew curls',
+    '4a': '4a, Dense, S-shaped coils', '4b': '4b, Z-shaped, tightly coiled',
+    '4c': '4c, Very tight, densely packed coils', 'unsure': 'Mixed / Unsure',
   };
 
   const chemLabel = () => {
@@ -21,7 +21,7 @@ const ClinicianSummary = () => {
     if (!cp || cp === 'No, fully natural' || cp === 'Never') return null;
     let label = cp;
     if (cp === 'Multiple') label = onboardingData.chemicalProcessingMultiple?.join(', ') || 'Multiple (unspecified)';
-    if (onboardingData.lastChemicalTreatment) label += ` — last treated: ${onboardingData.lastChemicalTreatment}`;
+    if (onboardingData.lastChemicalTreatment) label += `, last treated: ${onboardingData.lastChemicalTreatment}`;
     return label;
   };
 
@@ -35,7 +35,7 @@ const ClinicianSummary = () => {
   if (onboardingData.washFrequency) fields.push({ label: 'Wash frequency', value: onboardingData.washFrequency });
   if (onboardingData.wornOutWashFrequency) fields.push({ label: 'Wash frequency', value: onboardingData.wornOutWashFrequency });
 
-  // Menstrual data — hidden for male users
+  // Menstrual data, hidden for male users
   const isMale = onboardingData.gender === 'man';
   const menstrualFields: { label: string; value: string }[] = [];
   if (!isMale && onboardingData.menstrualTracking === "Yes, I'd like to track") {
@@ -46,7 +46,7 @@ const ClinicianSummary = () => {
       return diffDays > 0 ? diffDays : null;
     };
     const getCycleLengthNum = (): number => {
-      const mapping: Record<string, number> = { '21–25 days': 23, '26–30 days': 28, '31–35 days': 33 };
+      const mapping: Record<string, number> = { '21 to 25 days': 23, '26 to 30 days': 28, '31 to 35 days': 33 };
       return mapping[onboardingData.menstrualCycleLength] || 28;
     };
     const cycleDay = getCycleDay();
@@ -170,7 +170,7 @@ const ClinicianSummary = () => {
           {/* Symptoms */}
           {symptoms.length > 0 && (
             <div className="card-elevated p-4 mb-4">
-              <h3 className="text-label mb-3">Symptoms Reported ({currentCheckIn?.type === 'wash-day' ? 'Wash Day' : 'Mid-Cycle'} — {currentCheckIn?.date})</h3>
+              <h3 className="text-label mb-3">Symptoms Reported ({currentCheckIn?.type === 'wash-day' ? 'Wash Day' : 'Mid-Cycle'}, {currentCheckIn?.date})</h3>
               <div className="space-y-2.5">
                 {symptoms.map(s => <FieldRow key={s.label} label={s.label} value={s.value} />)}
                 {currentCheckIn?.newProducts === 'Yes, I tried something new' && currentCheckIn?.newProductDetails && (

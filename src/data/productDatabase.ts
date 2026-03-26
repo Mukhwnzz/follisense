@@ -198,7 +198,7 @@ export function searchProducts(query: string, category?: 'scalp' | 'hair'): Prod
   } else if (category === 'hair') {
     pool = pool.filter(p => p.category === 'hair' || p.category === 'both' || p.category === 'tool' || p.category === 'accessory');
   } else {
-    // No category filter — search all
+    // No category filter, search all
   }
 
   return pool.filter(p => {

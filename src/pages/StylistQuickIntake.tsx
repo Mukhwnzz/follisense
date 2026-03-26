@@ -17,7 +17,7 @@ const scalpIssueOptions = [
 ];
 
 const washOptions = [
-  'Today', 'Yesterday', '2–3 days ago', '4–7 days ago',
+  'Today', 'Yesterday', '2 to 3 days ago', '4 to 7 days ago',
   'Over a week ago', 'Not sure',
 ];
 
@@ -104,7 +104,7 @@ const StylistQuickIntake = () => {
       observations: [...new Set(observations)],
       photos: photoTaken ? ['Pre-styling scalp'] : [],
       photoAreas: photoTaken ? ['General scalp'] : [],
-      notes: `Quick intake — Style: ${finalStyle} | Last wash: ${lastWash}${attentionAreas ? ` | Attention areas: ${attentionAreas}` : ''} | Thinning: ${thinning}`,
+      notes: `Quick intake, Style: ${finalStyle} | Last wash: ${lastWash}${attentionAreas ? ` | Attention areas: ${attentionAreas}` : ''} | Thinning: ${thinning}`,
       risk: computeRisk(),
       location: loc?.name,
       locationCity: loc?.city,
@@ -145,7 +145,7 @@ const StylistQuickIntake = () => {
                     <span className="text-xs font-semibold uppercase tracking-wider text-primary">Quick Intake</span>
                   </div>
                   <h2 className="text-lg font-medium mb-2 text-foreground">Client name</h2>
-                  <p className="text-muted-foreground text-sm mb-6">First name or initials only — no account needed</p>
+                  <p className="text-muted-foreground text-sm mb-6">First name or initials only, no account needed</p>
                   <input
                     type="text"
                     value={clientName}
@@ -226,7 +226,7 @@ const StylistQuickIntake = () => {
               {step === 4 && (
                 <div>
                   <h2 className="text-lg font-medium mb-2 text-foreground">Quick scalp photo</h2>
-                  <p className="text-muted-foreground text-sm mb-6">Optional — capture the scalp before you start styling</p>
+                  <p className="text-muted-foreground text-sm mb-6">Optional, capture the scalp before you start styling</p>
                   <button
                     onClick={() => setPhotoTaken(!photoTaken)}
                     className={`w-full p-8 rounded-2xl border-2 border-dashed transition-colors flex flex-col items-center gap-3 ${photoTaken ? 'border-primary bg-primary/5' : 'border-border'}`}
@@ -309,7 +309,7 @@ const StylistQuickIntake = () => {
                   </div>
 
                   <div className={`mt-4 p-3 rounded-xl text-center text-sm font-medium ${computeRisk() === 'green' ? 'bg-primary/10 text-primary' : computeRisk() === 'amber' ? 'bg-amber-500/10 text-amber-600' : 'bg-destructive/10 text-destructive'}`}>
-                    {computeRisk() === 'green' ? 'No concerns flagged' : computeRisk() === 'amber' ? 'Some concerns noted — monitor' : 'Significant concerns — consider referral'}
+                    {computeRisk() === 'green' ? 'No concerns flagged' : computeRisk() === 'amber' ? 'Some concerns noted, monitor' : 'Significant concerns, consider referral'}
                   </div>
                 </div>
               )}

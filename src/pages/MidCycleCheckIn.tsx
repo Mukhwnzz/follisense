@@ -28,8 +28,8 @@ const baseQuestions: QuestionDef[] = [
     key: 'irritation',
     q: 'Any bumps or irritation?',
     qMale: 'Any razor bumps, ingrown hairs, or irritation?',
-    options: ['None', 'A few bumps', 'Moderate — several areas', 'Significant — widespread'],
-    maleOptions: ['None', 'Minor razor bumps', 'Ingrown hairs', 'Folliculitis — clusters of bumps'],
+    options: ['None', 'A few bumps', 'Moderate, several areas', 'Significant, widespread'],
+    maleOptions: ['None', 'Minor razor bumps', 'Ingrown hairs', 'Folliculitis, clusters of bumps'],
   },
   {
     key: 'hairline',
@@ -78,8 +78,8 @@ const MidCycleCheckIn = () => {
   // Build context label
   const getContextLabel = (): string => {
     if (isMale) {
-      if (onboardingData.barberFrequency) return 'Quick scalp check — between barber visits';
-      if (onboardingData.locRetwistFrequency) return 'Loc check-in — Day 14 since retwist';
+      if (onboardingData.barberFrequency) return 'Quick scalp check, between barber visits';
+      if (onboardingData.locRetwistFrequency) return 'Loc check-in, Day 14 since retwist';
       if (onboardingData.maleStyleFrequency) return `${currentStyle} check-in`;
       return 'Scalp check-in';
     }

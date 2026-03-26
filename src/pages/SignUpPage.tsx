@@ -4,106 +4,48 @@ import { motion } from 'framer-motion';
 import { Leaf, Eye, EyeOff, Shield } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 import { supabase } from '@/lib/supabaseClient';
-import { toast } from '@/hooks/use-toast';
-
-const genderOptions = [
-  { id: 'woman', label: 'Female' },
-  { id: 'man', label: 'Male' },
-  { id: 'prefer-not-to-say', label: 'Prefer not to say' },
-];
 
 const SignUpPage = () => {
   const navigate = useNavigate();
-  const { setUserName, setOnboardingData, onboardingData } = useApp();
+  const { setUserName } = useApp();
   const [firstName, setFirstName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [gender, setGender] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
   const isStrongPassword =
-   password.length >= 8 &&
-   /[A-Z]/.test(password) &&
-   /[a-z]/.test(password) &&
-   /[0-9]/.test(password);
+    password.length >= 8 &&
+    /[A-Z]/.test(password) &&
+    /[a-z]/.test(password) &&
+    /[0-9]/.test(password);
 
   const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
- const canSubmit =
-  firstName.trim().length > 0 &&
-  isValidEmail &&
-  isStrongPassword;
+  const canSubmit = firstName.trim().length > 0 && isValidEmail && isStrongPassword;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!canSubmit) return;
-
     setError('');
     setLoading(true);
 
     try {
-      // 1️⃣ Create Supabase Auth account
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email,
-        password,
-      });
+      const { data: authData, error: authError } = await supabase.auth.signUp({ email, password });
+      if (authError) { setError(authError.message); return; }
 
-    if (authError) {
-        console.error('Auth error:', authError);
-        setError(authError.message);
-        return;
+      if (authData.user) {
+        await supabase.from('profiles').upsert([{
+          id: authData.user.id,
+          role: 'consumer',
+          first_name: firstName,
+        }]);
       }
 
-    if (authData.user) {
-       const userId = authData.user.id;
-
-        const { error: profileError } = await supabase
-          .from('profiles')
-           .upsert([
-               {
-                 id: userId,
-                 role: 'consumer',
-                 first_name: firstName,
-                 gender: gender || null,
-                },
-              ]);
-
-      if (profileError) {
-           setError(profileError.message);
-              return;
-             }
-            }
-
-       //ONLY CONTINUE IF USER IS CONFIRMED
-       const user = authData.user;
-
-      // 2️⃣ Insert user profile into your table
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .upsert([
-          {
-            id: authData.user.id,
-            role: 'consumer', // change if you implement stylist signup
-            first_name: firstName,
-            gender: gender || null,
-          },
-        ]);
-
-      if (profileError) {
-        console.error('Profile insert error:', profileError);
-        setError(profileError.message);
-        return;
-      }
-
-      // 3️⃣ Update app context and navigate
       setUserName(firstName);
-      setOnboardingData({ ...onboardingData, gender });
       navigate('/onboarding');
-
-    } catch (err) {
-      console.error('Unexpected error:', err);
+    } catch {
       setError('Something went wrong. Please try again.');
     } finally {
       setLoading(false);
@@ -128,7 +70,6 @@ const SignUpPage = () => {
         {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
 
         <form onSubmit={handleSubmit} className="space-y-4 mb-4">
-          {/* First Name */}
           <div>
             <label className="text-sm font-medium text-foreground mb-1.5 block">First name</label>
             <input
@@ -141,7 +82,6 @@ const SignUpPage = () => {
             />
           </div>
 
-          {/* Email */}
           <div>
             <label className="text-sm font-medium text-foreground mb-1.5 block">Email address</label>
             <input
@@ -151,14 +91,11 @@ const SignUpPage = () => {
               placeholder="you@example.com"
               className="w-full h-12 px-4 rounded-xl border-2 border-border bg-card text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors"
             />
-             {email && !isValidEmail && (
-             <p className="text-xs text-red-500 mt-1">
-                 Enter a valid email
-              </p>
+            {email && !isValidEmail && (
+              <p className="text-xs text-red-500 mt-1">Enter a valid email</p>
             )}
           </div>
 
-          {/* Password */}
           <div>
             <label className="text-sm font-medium text-foreground mb-1.5 block">Password</label>
             <div className="relative">
@@ -166,43 +103,21 @@ const SignUpPage = () => {
                 type={showPassword ? 'text' : 'password'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="At least 8 characters with uppercase, lowercase & number"
+                placeholder="At least 8 characters with uppercase, lowercase and number"
                 className="w-full h-12 px-4 pr-12 rounded-xl border-2 border-border bg-card text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors"
               />
               {password && !isStrongPassword && (
                 <p className="text-xs text-red-500 mt-1">
-                  Password must be 8+ chars, include uppercase, lowercase & number
+                  Password must be 8+ chars, include uppercase, lowercase and number
                 </p>
-               )}
+              )}
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-muted-foreground"
+                className="absolute right-3 top-3 p-1 text-muted-foreground"
               >
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
-            </div>
-          </div>
-
-          {/* Gender */}
-          <div>
-            <label className="text-sm font-medium text-foreground mb-1.5 block">How do you identify?</label>
-            <p className="text-xs text-muted-foreground mb-2">This helps us personalise your experience</p>
-            <div className="flex gap-2">
-              {genderOptions.map((opt) => (
-                <button
-                  key={opt.id}
-                  type="button"
-                  onClick={() => setGender(opt.id)}
-                  className={`flex-1 h-11 rounded-xl border-2 text-sm font-medium transition-colors ${
-                    gender === opt.id
-                      ? 'border-primary bg-primary/5 text-foreground'
-                      : 'border-border bg-card text-muted-foreground'
-                  }`}
-                >
-                  {opt.label}
-                </button>
-              ))}
             </div>
           </div>
 
@@ -217,10 +132,38 @@ const SignUpPage = () => {
           </button>
         </form>
 
-        <div className="flex items-center gap-3 text-muted-foreground text-xs mb-4 px-2">
+        {/* Social login buttons */}
+        <div className="flex items-center gap-3 my-4">
+          <div className="flex-1 h-px bg-border" />
+          <span className="text-xs text-muted-foreground">or</span>
+          <div className="flex-1 h-px bg-border" />
+        </div>
+        <div className="space-y-2 mb-4">
+          <button
+            onClick={() => { setUserName(firstName || 'User'); navigate('/onboarding'); }}
+            className="w-full h-12 rounded-xl border-2 border-border bg-card text-foreground font-medium text-sm flex items-center justify-center gap-2 btn-press"
+          >
+            <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="" className="w-5 h-5" />
+            Continue with Google
+          </button>
+          <button
+            onClick={() => { setUserName(firstName || 'User'); navigate('/onboarding'); }}
+            className="w-full h-12 rounded-xl border-2 border-border bg-card text-foreground font-medium text-sm flex items-center justify-center gap-2 btn-press"
+          >
+            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/></svg>
+            Continue with Apple
+          </button>
+        </div>
+
+        <div className="flex items-center gap-3 text-muted-foreground text-xs px-2">
           <Shield size={14} className="flex-shrink-0" />
           <p>Your health data is private and encrypted. We never share your information without your consent.</p>
         </div>
+
+        <p className="text-center text-sm text-muted-foreground mt-4">
+          Already have an account?{' '}
+          <button onClick={() => navigate('/login')} className="text-primary font-medium">Log in</button>
+        </p>
       </motion.div>
     </div>
   );

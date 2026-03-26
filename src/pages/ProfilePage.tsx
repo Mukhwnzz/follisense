@@ -20,17 +20,17 @@ const goalOptions = [
   'Monitor my scalp between salon visits',
   'Recover from damage (chemical, heat, or traction)',
   'General scalp and hair health',
-  "I'm not sure yet — just exploring",
+  "I'm not sure yet, just exploring",
 ];
 
 const hairTypeLabels: Record<string, string> = {
-  'type3': 'Type 3 — Curly',
-  'type4': 'Type 4 — Coily',
-  '3b': '3b — Wide, springy curls',
-  '3c': '3c — Tight, corkscrew curls',
-  '4a': '4a — Soft, defined coils',
-  '4b': '4b — Z-shaped, tightly coiled',
-  '4c': '4c — Very tight, densely packed coils',
+  'type3': 'Type 3, Curly',
+  'type4': 'Type 4, Coily',
+  '3b': '3b, Wide, springy curls',
+  '3c': '3c, Tight, corkscrew curls',
+  '4a': '4a, Soft, defined coils',
+  '4b': '4b, Z-shaped, tightly coiled',
+  '4c': '4c, Very tight, densely packed coils',
   'unsure': 'Not sure yet',
 };
 
@@ -137,7 +137,7 @@ const ProfilePage = () => {
   const handleAddBaseline = () => {
     const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
     setBaselinePhotos([
-      { area: 'Hairline — temples and edges', captured: true, date: today },
+      { area: 'Hairline, temples and edges', captured: true, date: today },
       { area: 'Crown and vertex', captured: true, date: today },
     ]);
   };
@@ -512,7 +512,7 @@ const ProfilePage = () => {
             <button onClick={() => navigate('/health-profile')} className="w-full px-4 py-3 flex items-center gap-3 text-left">
               <Heart size={16} className="text-primary flex-shrink-0" strokeWidth={1.5} />
               <div className="flex-1">
-                <p className="font-medium text-foreground text-sm">Health Profile — {hpCompleted}/5 complete</p>
+                <p className="font-medium text-foreground text-sm">Health Profile, {hpCompleted}/5 complete</p>
                 <p className="text-xs text-muted-foreground">{hpCompleted < 5 ? 'Complete your health profile' : 'Edit health profile'}</p>
               </div>
               <ChevronRight size={16} className="text-muted-foreground" />
