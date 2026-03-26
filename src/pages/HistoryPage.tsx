@@ -39,8 +39,8 @@ const HistoryPage = () => {
   const ComparisonRow = ({ label, baseline, current }: { label: string; baseline?: string; current?: string }) => (
     <div className="grid grid-cols-3 gap-2 py-2 border-b border-border last:border-0">
       <span className="text-xs text-muted-foreground">{label}</span>
-      <span className="text-xs text-foreground text-center">{baseline || '—'}</span>
-      <span className="text-xs text-foreground text-center font-medium">{current || '—'}</span>
+      <span className="text-xs text-foreground text-center">{baseline || ','}</span>
+      <span className="text-xs text-foreground text-center font-medium">{current || ','}</span>
     </div>
   );
 
@@ -132,7 +132,7 @@ const HistoryPage = () => {
           <div className="absolute left-[15px] top-4 bottom-4 w-0.5 bg-border" />
           <div className="space-y-3">
 
-            {/* Baseline entry — always first if exists */}
+            {/* Baseline entry, always first if exists */}
             {hasBaseline && (
               <div className="relative pl-10">
                 <div className={`absolute left-[9px] top-5 w-3 h-3 rounded-full border-2 border-card ${baselineRisk === 'green' ? 'bg-primary' : baselineRisk === 'amber' ? 'bg-warning' : 'bg-destructive'}`} />
@@ -187,7 +187,7 @@ const HistoryPage = () => {
               </div>
             )}
 
-            {/* Cycle entries — labeled as follow-ups when baseline exists */}
+            {/* Cycle entries, labeled as follow-ups when baseline exists */}
             {reversedHistory.map((entry, idx) => (
               <div key={entry.id} className="relative pl-10">
                 <div className={`absolute left-[9px] top-5 w-3 h-3 rounded-full border-2 border-card ${entry.risk === 'green' ? 'bg-primary' : entry.risk === 'amber' ? 'bg-warning' : 'bg-destructive'}`} />
@@ -200,7 +200,7 @@ const HistoryPage = () => {
                           <span className="text-[10px] font-medium text-muted-foreground bg-accent px-1.5 py-0.5 rounded">Follow-up</span>
                         )}
                       </div>
-                      <p className="text-xs text-muted-foreground">{entry.startDate} – {entry.endDate} · {entry.days} days</p>
+                      <p className="text-xs text-muted-foreground">{entry.startDate} to {entry.endDate} · {entry.days} days</p>
                     </div>
                     <ChevronDown size={18} className={`text-muted-foreground transition-transform ${expanded === entry.id ? 'rotate-180' : ''}`} />
                   </div>

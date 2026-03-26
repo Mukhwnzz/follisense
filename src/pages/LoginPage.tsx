@@ -65,7 +65,7 @@ const LoginPage = () => {
         {/* Lifted card */}
         <div id="login-card" style={{ backgroundColor: '#FFFFFF', borderRadius: '24px', padding: '44px 72px', border: 'none', outline: 'none', boxShadow: '0 8px 40px rgba(0,0,0,0.10), 0 2px 8px rgba(0,0,0,0.06)' }}>
 
-          {/* Logo + FolliSense — centered, inline */}
+          {/* Logo + FolliSense, centered, inline */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', marginBottom: '4px' }}>
             <img
               src="https://cdn-icons-png.flaticon.com/512/11847/11847144.png"
@@ -131,7 +131,7 @@ const LoginPage = () => {
               </button>
             </div>
 
-            {/* Log in button — beige */}
+            {/* Log in button, beige */}
             <button
               type="submit"
               disabled={!canSubmit}
