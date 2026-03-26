@@ -174,7 +174,7 @@ const ProductSearch = ({ category, selectedProducts, onProductsChange, placehold
         </div>
       )}
 
-      {/* None option — styled as comfortable opt-out card */}
+      {/* None option, styled as comfortable opt-out card */}
       {noneLabel && (
         <button
           onClick={handleNone}
