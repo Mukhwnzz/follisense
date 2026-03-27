@@ -19,7 +19,7 @@ const allSpecialties = [
 const businessTypes =['salon', 'mobile', 'both'];
 
 interface StylistProfileData {
-  role: string | string[];
+  role: string[];
   otherRole: string;
   experience: string;
   businessName: string;
@@ -31,7 +31,7 @@ interface StylistProfileData {
 }
 
 const defaultProfile: StylistProfileData = {
-  role: '', otherRole: '', experience: '', businessName: '', businessType: '',
+  role: [], otherRole: '', experience: '', businessName: '', businessType: '',
   city: '', country: '', specialties: [], bio: '',
 };
 
@@ -152,10 +152,10 @@ const StylistProfilePage = () => {
     if (data) {
      setProfile({
       role: data.roles || [], // ✅ FIX: was data.role
-      otherRole: data.other_role || '',
+      otherRole:  '',
       experience: data.experience_level || '',
       businessName: data.business_name || '',
-      businessType: data.work_type || '', // ✅ FIX: was business_type
+      businessType: data.business_type || '', // ✅ FIX: was business_type
       city: data.city || '',
       country: data.country || '',
       specialties: data.specialties || [],
@@ -168,51 +168,57 @@ const StylistProfilePage = () => {
 }, [userId]);
   
   const saveProfile = async (updated: StylistProfileData) => {
-  if (!userId) return;
-
-  const { data, error } = await supabase
-  .from('stylist_profiles')
-  .upsert(
-  {
-    user_id: userId,
-
-    roles: Array.isArray(updated.role)
-      ? updated.role
-      : [updated.role],
-
-    work_type: updated.businessType,
-
-    experience_level: updated.experience,
-
-    business_name: updated.businessName,
-    business_type: updated.businessType,
-
-    city: updated.city,
-    country: updated.country,
-
-    specialties: updated.specialties,
-
-    bio: updated.bio,
-
-    services: updated.specialties, // or separate if you collect differently
-    goals: [], // since you haven’t added this input yet
-  },
-  { onConflict: 'user_id' }
-)
-.select();
-  console.log('DATA:',JSON.stringify(data, null, 2));
-  console.log('ERROR:', error);
-
-  if (error) {
-    console.error(error);
-    toast({ title: 'Failed to save profile' });
+  if (!userId) {
+    toast ({title:'User not logged in'});
     return;
   }
 
-  setProfile(updated);
-  toast({ title: 'Profile saved successfully 🔥' });
-};
+  // 🔥 FIX: normalize values to match DB
+  const normalizeBusinessType = (type: string) => {
+    if (!type) return null;
+    return type.toLowerCase(); // Salon → salon
+  };
   
+  const payload = {
+    user_id: userId,
+
+    roles: updated.role || [],
+    other_role:updated.otherRole ? [updated.otherRole] : [],
+
+    business_name: updated.businessName || null,
+    business_type: normalizeBusinessType(updated.businessType), // ✅ FIXED
+
+    city: updated.city || null,
+    country: updated.country || null,
+
+    experience_level: updated.experience || null,
+
+    specialties: updated.specialties || [],
+    services: updated.specialties || [],
+
+    goals: [],
+    bio: updated.bio || null,
+  };
+
+  console.log('SENDING TO DB:', payload);
+
+  const { data, error } = await supabase
+    .from('stylist_profiles')
+    .upsert(payload, { onConflict: 'user_id' })
+    .select();
+
+  console.log('RESPONSE:', data);
+  console.log('ERROR:', error);
+
+  if (error) {
+    toast({ title: error.message });
+    return;
+  }
+  
+  setProfile(updated);
+  toast({ title: 'Profile saved successfully ✅' });
+  };
+
   const startEditing = (section: 'about' | 'business' | 'expertise') => {
     setEditProfile({ ...profile });
     if (section === 'about') setEditingAbout(true);
