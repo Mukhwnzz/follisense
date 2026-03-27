@@ -424,11 +424,11 @@ const Onboarding = () => {
                       onClick={() => { setHairType('type4'); setHairSubType(''); setShowSubType(false); }}
                       className={`selection-card w-full text-left !p-0 overflow-hidden ${hairType === 'type4' ? 'selected' : ''}`}
                     >
-                      <div className="w-full h-[200px] bg-accent/30">
+                      <div className="w-full h-[200px] bg-accent/30 overflow-hidden">
                         <img
                           src={isMale ? hairMaleType4 : hairFemaleType4Front}
                           alt="Type 4 coily hair"
-                          className="w-full h-full object-contain"
+                          className="w-full h-full object-cover"
                         />
                       </div>
                       <div className="p-3">
@@ -491,11 +491,11 @@ const Onboarding = () => {
                       onClick={() => { setHairType('type3'); setHairSubType(''); setShowSubType(false); }}
                       className={`selection-card w-full text-left !p-0 overflow-hidden ${hairType === 'type3' ? 'selected' : ''}`}
                     >
-                      <div className="w-full h-[200px] bg-accent/30">
+                      <div className="w-full h-[200px] bg-accent/30 overflow-hidden">
                         <img
                           src={isMale ? hairMaleType3 : hairFemaleType3Front}
                           alt="Type 3 curly hair"
-                          className="w-full h-full object-contain"
+                          className="w-full h-full object-cover"
                         />
                       </div>
                       <div className="p-3">
