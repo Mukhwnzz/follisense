@@ -174,9 +174,10 @@ const MAIN_SCREENS = 7; // Steps 0-6: gender, hair type, styles, routine, concer
 
 const Onboarding = () => {
   const navigate = useNavigate();
-  const { onboardingData, setOnboardingData, setOnboardingComplete, addToCheckInHistory, setCurrentCheckIn, setBaselineRisk, setBaselineDate } = useApp();
+  const { onboardingData, setOnboardingData, setOnboardingComplete, addToCheckInHistory, setCurrentCheckIn, setBaselineRisk, setBaselineDate, setBaselinePhotos } = useApp();
 
   const [step, setStep] = useState(0);
+  const [symptomAck, setSymptomAck] = useState<string | null>(null);
   const gender = onboardingData.gender;
   const isMale = gender === 'man';
   const isNeutral = gender === 'prefer-not-to-say';
