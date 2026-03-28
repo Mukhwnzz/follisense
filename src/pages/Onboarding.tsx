@@ -530,7 +530,7 @@ const Onboarding = () => {
           <div style={{ overflowY: 'auto', flex: 1, paddingBottom: showBottomButton ? '0' : '12px' }}>
             <AnimatePresence mode="wait">
               <motion.div
-                key={step === 8 ? `${step}-${symptomPhase}-${symptomIndex}-${symptomAck ? 'ack' : ''}` : step}
+                key={step === 8 ? `${step}-${symptomPhase}-${symptomIndex}-${symptomAck ? 'ack' : ''}` : step === 2 ? `${step}-${chemicalStep}` : step}
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
