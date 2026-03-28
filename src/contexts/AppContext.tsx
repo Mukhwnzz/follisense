@@ -52,13 +52,15 @@ export interface CheckInData {
   hairline: string;
   flaking?: string;
   shedding?: string;
+  bumps?: string;
+  dryness?: string;
   hairFeel?: string;
   hairBreakage?: string;
   hairAppearance?: string;
   hairConcern?: string;
   newProducts?: string;
   newProductDetails?: string;
-  type: 'mid-cycle' | 'wash-day';
+  type: 'mid-cycle' | 'wash-day' | 'baseline';
   date: string;
 }
 
