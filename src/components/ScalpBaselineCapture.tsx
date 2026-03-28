@@ -4,6 +4,12 @@ import { Camera, ImageIcon } from 'lucide-react';
 
 import scalpFrontFemale from '@/assets/scalp-front-female.jpeg';
 import scalpSideFemale from '@/assets/scalp-side-female.jpeg';
+import scalpBackFemale from '@/assets/scalp-back-female.jpeg';
+import scalpTopFemale from '@/assets/scalp-top-female.jpeg';
+import scalpSideMaleA from '@/assets/scalp-side-male-a.jpeg';
+import scalpSideMaleB from '@/assets/scalp-side-male-b.jpeg';
+import scalpBackMale from '@/assets/scalp-back-male.png';
+import scalpTopMale from '@/assets/scalp-top-male.png';
 
 interface ScalpStep {
   title: string;
@@ -11,28 +17,57 @@ interface ScalpStep {
   referenceImage: string;
 }
 
-const getScalpSteps = (_gender: string): ScalpStep[] => [
-  {
-    title: 'Front hairline',
-    instruction: 'Keep your forehead visible. Pull hair back to show your hairline and temples.',
-    referenceImage: scalpFrontFemale,
-  },
-  {
-    title: 'Side view',
-    instruction: 'Show your temple area and the hairline around your ear.',
-    referenceImage: scalpSideFemale,
-  },
-  {
-    title: 'Back and nape',
-    instruction: 'Show the back of your head and your nape. Use a mirror or ask someone to help.',
-    referenceImage: '', // placeholder - will show icon
-  },
-  {
-    title: 'Top of head',
-    instruction: 'Tilt your head forward. Hold your phone above and point down at your crown.',
-    referenceImage: '', // placeholder - will show icon
-  },
-];
+const getScalpSteps = (gender: string): ScalpStep[] => {
+  const isMale = gender === 'man';
+
+  if (isMale) {
+    return [
+      {
+        title: 'Front hairline',
+        instruction: 'Keep your forehead visible. Pull hair back to show your hairline and temples.',
+        referenceImage: scalpSideMaleA,
+      },
+      {
+        title: 'Side view',
+        instruction: 'Show your temple area and the hairline around your ear.',
+        referenceImage: scalpSideMaleB,
+      },
+      {
+        title: 'Back and nape',
+        instruction: 'Show the back of your head and your nape. Use a mirror or ask someone to help.',
+        referenceImage: scalpBackMale,
+      },
+      {
+        title: 'Top of head',
+        instruction: 'Tilt your head forward. Hold your phone above and point down at your crown.',
+        referenceImage: scalpTopMale,
+      },
+    ];
+  }
+
+  return [
+    {
+      title: 'Front hairline',
+      instruction: 'Keep your forehead visible. Pull hair back to show your hairline and temples.',
+      referenceImage: scalpFrontFemale,
+    },
+    {
+      title: 'Side view',
+      instruction: 'Show your temple area and the hairline around your ear.',
+      referenceImage: scalpSideFemale,
+    },
+    {
+      title: 'Back and nape',
+      instruction: 'Show the back of your head and your nape. Use a mirror or ask someone to help.',
+      referenceImage: scalpBackFemale,
+    },
+    {
+      title: 'Top of head',
+      instruction: 'Tilt your head forward. Hold your phone above and point down at your crown.',
+      referenceImage: scalpTopFemale,
+    },
+  ];
+};
 
 interface ScalpBaselineCaptureProps {
   onComplete: (photos: { area: string; dataUrl: string }[]) => void;
@@ -86,26 +121,14 @@ const ScalpBaselineCapture = ({ onComplete, onBack, gender = 'woman' }: ScalpBas
 
       {!previewUrl ? (
         <>
-          {/* Reference image */}
           <div className="rounded-xl overflow-hidden border border-border mb-5 bg-accent/30">
-            {step.referenceImage ? (
-              <img
-                src={step.referenceImage}
-                alt={`Reference: ${step.title}`}
-                style={{ width: '100%', height: '240px', objectFit: 'contain', display: 'block', background: 'hsl(var(--accent) / 0.2)' }}
-              />
-            ) : (
-              <div className="w-full flex items-center justify-center bg-accent/20" style={{ height: '240px' }}>
-                <div className="text-center px-6">
-                  <Camera size={32} className="text-muted-foreground mx-auto mb-2" strokeWidth={1.5} />
-                  <p className="text-xs text-muted-foreground">Reference: {step.title}</p>
-                  <p className="text-[10px] text-muted-foreground mt-1">Image coming in next upload</p>
-                </div>
-              </div>
-            )}
+            <img
+              src={step.referenceImage}
+              alt={`Reference: ${step.title}`}
+              style={{ width: '100%', height: '240px', objectFit: 'contain', display: 'block', background: 'hsl(var(--accent) / 0.2)' }}
+            />
           </div>
 
-          {/* Action buttons */}
           <div className="space-y-3">
             <button
               onClick={() => cameraRef.current?.click()}
@@ -139,7 +162,6 @@ const ScalpBaselineCapture = ({ onComplete, onBack, gender = 'woman' }: ScalpBas
         </>
       ) : (
         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-          {/* Photo preview */}
           <div className="rounded-xl overflow-hidden border border-border mb-5">
             <img
               src={previewUrl}
@@ -148,7 +170,6 @@ const ScalpBaselineCapture = ({ onComplete, onBack, gender = 'woman' }: ScalpBas
             />
           </div>
 
-          {/* Confirm / Retake */}
           <div className="space-y-3">
             <button
               onClick={handleUsePhoto}
