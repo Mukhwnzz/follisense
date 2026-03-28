@@ -122,26 +122,52 @@ const onboardingSymptoms = [
 const severityOptions = ['None', 'Mild', 'Moderate', 'Severe'];
 
 // ─── WARM ACKNOWLEDGMENTS ────────────────────────────────────────────────────
-const mildAcks = [
-  (label: string) => `Noted. Mild ${label.toLowerCase()} is common, especially between washes.`,
-  (label: string) => `Got it. A little ${label.toLowerCase()} now and then is quite normal.`,
-  (label: string) => `Okay, mild ${label.toLowerCase()} - we'll keep that on file.`,
-];
-const moderateAcks = [
-  () => `Thanks for flagging that. We'll keep a close eye on this for you.`,
-  () => `Noted - that's exactly the kind of thing worth tracking over time.`,
-  () => `Good to know. We'll watch how this changes at your next check-in.`,
-];
-const severeAcks = [
-  () => `We hear you. That sounds uncomfortable. We'll make sure this gets the attention it deserves.`,
-  () => `Thank you for being honest about that. We're going to make sure you get the right support.`,
-  () => `That sounds really tough. We'll flag this as a priority for you.`,
-];
-const getAck = (severity: string, label: string, index: number): string | null => {
+const symptomAcks: Record<string, { mild: string; moderate: string; severe: string }> = {
+  itch: {
+    mild: "That's really common, especially mid-cycle. We'll keep an eye on it.",
+    moderate: "That level of itching is worth tracking. We'll watch how it changes.",
+    severe: "Constant itching can really affect your day. We'll flag this as a priority.",
+  },
+  flaking: {
+    mild: "A little flaking between washes is normal. Noted.",
+    moderate: "More flaking than usual. Worth monitoring over your next few check-ins.",
+    severe: "Heavy flaking needs attention. We'll make sure this is tracked carefully.",
+  },
+  tenderness: {
+    mild: "Some sensitivity is worth noting. We'll check on this next time.",
+    moderate: "Tenderness like that can signal something underneath. We'll keep tracking.",
+    severe: "Pain on your scalp shouldn't be ignored. We'll flag this right away.",
+  },
+  hairline: {
+    mild: "Slight changes in density are hard to spot. Good that you noticed.",
+    moderate: "Noticeable thinning is worth paying attention to. We'll track this closely.",
+    severe: "Significant thinning deserves professional attention. We'll make sure you have the right next steps.",
+  },
+  shedding: {
+    mild: "Some breakage is normal with textured hair. Noted for your records.",
+    moderate: "More breakage than expected. Could be worth looking at your routine.",
+    severe: "That level of breakage can signal something deeper. We'll flag this.",
+  },
+  bumps: {
+    mild: "A few bumps can come and go. We'll see if they persist.",
+    moderate: "Multiple bumps are worth keeping an eye on. Noted.",
+    severe: "That sounds like it needs attention soon. We'll flag this as urgent.",
+  },
+  dryness: {
+    mild: "Mild dryness is common between washes. Noted.",
+    moderate: "Persistent dryness can affect your scalp barrier. We'll track this.",
+    severe: "Severe dryness can lead to other issues. We'll make sure this gets attention.",
+  },
+};
+const getAck = (severity: string, _label: string, _index: number, key?: string): string | null => {
   if (severity === 'None') return null;
-  if (severity === 'Mild') return mildAcks[index % mildAcks.length](label);
-  if (severity === 'Moderate') return moderateAcks[index % moderateAcks.length]();
-  if (severity === 'Severe') return severeAcks[index % severeAcks.length]();
+  const sevKey = severity.toLowerCase() as 'mild' | 'moderate' | 'severe';
+  const ackKey = key || _label.toLowerCase();
+  const entry = symptomAcks[ackKey];
+  if (entry && entry[sevKey]) return entry[sevKey];
+  if (severity === 'Mild') return `Noted. Mild ${_label.toLowerCase()} is common, especially between washes.`;
+  if (severity === 'Moderate') return `Thanks for flagging that. We'll keep a close eye on this for you.`;
+  if (severity === 'Severe') return `We hear you. That sounds uncomfortable. We'll make sure this gets the attention it deserves.`;
   return null;
 };
 
@@ -372,7 +398,7 @@ const Onboarding = () => {
         }
         const currentSymptom = onboardingSymptoms[symptomIndex];
         const severity = symptomResponses[currentSymptom.key];
-        const ack = getAck(severity, currentSymptom.label, symptomIndex);
+        const ack = getAck(severity, currentSymptom.label, symptomIndex, currentSymptom.key);
         if (ack) {
           setSymptomAck(ack);
           return;
@@ -535,91 +561,124 @@ const Onboarding = () => {
                 {/* ── Screen 1: Hair Type (auto-advance) ── */}
                 {step === 1 && (
                   <div>
-                    <h2 className="text-lg font-semibold text-foreground mb-1">What's your hair texture?</h2>
+                    <h2 className="text-lg font-semibold text-foreground mb-1">What's your hair type?</h2>
                     <p className="text-xs text-muted-foreground mb-4">{sectionExplainers[1]}</p>
+
                     <div className="space-y-3">
-                      {hairTypes.map(ht => {
-                        const heroImg = heroImages[ht.id];
-                        return (
-                          <button
-                            key={ht.id}
-                            onClick={() => {
-                              setHairType(ht.id);
-                              setHairSubType('');
-                              if (ht.id === 'unsure') {
-                                setStep(2);
-                              } else {
-                                setShowSubType(false);
-                              }
-                            }}
-                            className={`selection-card w-full text-left ${hairType === ht.id ? 'selected' : ''}`}
-                          >
-                            <div className="flex items-center gap-3 mb-2">
-                              <div className="w-9 h-9 rounded-lg bg-accent flex items-center justify-center flex-shrink-0">
-                                <CurlIcon type={ht.id} />
-                              </div>
-                              <div>
-                                <p className="font-semibold text-foreground text-sm">{ht.label}</p>
-                                <p className="text-xs text-muted-foreground leading-snug">{ht.desc}</p>
-                              </div>
-                            </div>
-                            {heroImg && (
-                              <div className="rounded-lg overflow-hidden border border-border mt-1">
-                                <img
-                                  src={heroImg}
-                                  alt={ht.label}
-                                  style={{ width: '100%', height: '180px', objectFit: 'contain', display: 'block', background: '#f5f3f0' }}
-                                />
-                              </div>
-                            )}
-                          </button>
-                        );
-                      })}
-                    </div>
-
-                    {(hairType === 'type3' || hairType === 'type4') && !showSubType && (
-                      <div className="mt-3 flex flex-col items-start gap-1">
-                        <button onClick={() => setShowSubType(true)} className="text-sm text-primary font-medium flex items-center gap-1">
-                          Want to be more specific? <ChevronDown size={14} />
-                        </button>
-                        <button onClick={() => setStep(2)} className="text-sm text-muted-foreground font-medium">
-                          Skip - continue →
-                        </button>
-                      </div>
-                    )}
-
-                    {showSubType && subTypes[hairType] && (
-                      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mt-3">
-                        <p className="text-sm font-semibold text-foreground mb-3">Which sub-type?</p>
-                        <div className="grid grid-cols-3 gap-2">
-                          {subTypes[hairType].filter(st => st.image !== undefined || st.id === 'mixed' || st.id === 'not-sure').map(st => (
-                            <button
-                              key={st.id}
-                              onClick={() => {
-                                setHairSubType(st.id);
-                                setTimeout(() => setStep(2), 150);
-                              }}
-                              className={`selection-card text-center !p-2 ${hairSubType === st.id ? 'selected' : ''}`}
-                            >
-                              {st.image ? (
-                                <div className="rounded-lg overflow-hidden mb-1">
-                                  <img
-                                    src={st.image}
-                                    alt={st.label}
-                                    style={{ width: '100%', height: '90px', objectFit: 'contain', display: 'block', background: '#f5f3f0' }}
-                                  />
-                                </div>
-                              ) : st.id !== 'mixed' && st.id !== 'not-sure' ? (
-                                <div className="w-full rounded-lg bg-accent/30 flex items-center justify-center mb-1" style={{ height: '90px' }}>
-                                  <span className="text-xs text-muted-foreground">Coming soon</span>
-                                </div>
-                              ) : null}
-                              <p className="text-xs font-medium text-foreground">{st.label}</p>
-                            </button>
-                          ))}
+                      {/* Type 4 card */}
+                      <button
+                        onClick={() => {
+                          setHairType('type4');
+                          setHairSubType('');
+                          setShowSubType(false);
+                        }}
+                        className="w-full text-left rounded-2xl overflow-hidden relative cursor-pointer"
+                        style={{ border: hairType === 'type4' ? '2px solid hsl(var(--primary))' : '2px solid transparent' }}
+                      >
+                        <div className="relative" style={{ height: '140px' }}>
+                          <img src={hairType4Hero} alt="Type 4: Coily" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top', display: 'block' }} />
+                          <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '24px 16px 12px', background: 'linear-gradient(to top, rgba(0,0,0,0.65), transparent)' }}>
+                            <p className="font-semibold text-sm" style={{ color: 'white' }}>Type 4: Coily</p>
+                            <p className="text-xs" style={{ color: 'rgba(255,255,255,0.85)' }}>Tight coils, Z-shaped or no visible curl pattern.</p>
+                          </div>
                         </div>
-                      </motion.div>
-                    )}
+                      </button>
+
+                      {/* Sub-type expansion for Type 4 */}
+                      {hairType === 'type4' && !showSubType && (
+                        <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} className="flex justify-center">
+                          <button onClick={() => setShowSubType(true)} className="text-sm text-primary font-medium flex items-center gap-1">
+                            Want to be more specific? <ChevronDown size={14} />
+                          </button>
+                        </motion.div>
+                      )}
+                      {hairType === 'type4' && showSubType && subTypes.type4 && (
+                        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
+                          <div className="flex gap-2 overflow-x-auto pb-1">
+                            {subTypes.type4.map(st => (
+                              <button
+                                key={st.id}
+                                onClick={() => { setHairSubType(st.id); setTimeout(() => setStep(2), 150); }}
+                                className="flex-shrink-0 rounded-xl overflow-hidden text-center"
+                                style={{ width: '80px', border: hairSubType === st.id ? '2px solid hsl(var(--primary))' : '1.5px solid hsl(var(--border))' }}
+                              >
+                                {st.image ? (
+                                  <img src={st.image} alt={st.label} style={{ width: '100%', height: '72px', objectFit: 'contain', display: 'block', background: '#f5f3f0' }} />
+                                ) : (
+                                  <div style={{ width: '100%', height: '72px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'hsl(var(--accent) / 0.3)' }}>
+                                    <span className="text-xs text-muted-foreground">{st.label}</span>
+                                  </div>
+                                )}
+                                <p className="text-xs font-medium text-foreground py-1">{st.label}</p>
+                              </button>
+                            ))}
+                          </div>
+                          <button onClick={() => setStep(2)} className="w-full text-center text-xs text-muted-foreground font-medium mt-1 py-1">Skip</button>
+                        </motion.div>
+                      )}
+
+                      {/* Type 3 card */}
+                      <button
+                        onClick={() => {
+                          setHairType('type3');
+                          setHairSubType('');
+                          setShowSubType(false);
+                        }}
+                        className="w-full text-left rounded-2xl overflow-hidden relative cursor-pointer"
+                        style={{ border: hairType === 'type3' ? '2px solid hsl(var(--primary))' : '2px solid transparent' }}
+                      >
+                        <div className="relative" style={{ height: '140px' }}>
+                          <img src={hairType3Hero} alt="Type 3: Curly" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top', display: 'block' }} />
+                          <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '24px 16px 12px', background: 'linear-gradient(to top, rgba(0,0,0,0.65), transparent)' }}>
+                            <p className="font-semibold text-sm" style={{ color: 'white' }}>Type 3: Curly</p>
+                            <p className="text-xs" style={{ color: 'rgba(255,255,255,0.85)' }}>Visible curl pattern, S-shaped curls, looser texture.</p>
+                          </div>
+                        </div>
+                      </button>
+
+                      {/* Sub-type expansion for Type 3 */}
+                      {hairType === 'type3' && !showSubType && (
+                        <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} className="flex justify-center">
+                          <button onClick={() => setShowSubType(true)} className="text-sm text-primary font-medium flex items-center gap-1">
+                            Want to be more specific? <ChevronDown size={14} />
+                          </button>
+                        </motion.div>
+                      )}
+                      {hairType === 'type3' && showSubType && subTypes.type3 && (
+                        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
+                          <div className="flex gap-2 overflow-x-auto pb-1">
+                            {subTypes.type3.map(st => (
+                              <button
+                                key={st.id}
+                                onClick={() => { setHairSubType(st.id); setTimeout(() => setStep(2), 150); }}
+                                className="flex-shrink-0 rounded-xl overflow-hidden text-center"
+                                style={{ width: '80px', border: hairSubType === st.id ? '2px solid hsl(var(--primary))' : '1.5px solid hsl(var(--border))' }}
+                              >
+                                {st.image ? (
+                                  <img src={st.image} alt={st.label} style={{ width: '100%', height: '72px', objectFit: 'contain', display: 'block', background: '#f5f3f0' }} />
+                                ) : (
+                                  <div style={{ width: '100%', height: '72px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'hsl(var(--accent) / 0.3)' }}>
+                                    <span className="text-xs text-muted-foreground">{st.label}</span>
+                                  </div>
+                                )}
+                                <p className="text-xs font-medium text-foreground py-1">{st.label}</p>
+                              </button>
+                            ))}
+                          </div>
+                          <button onClick={() => setStep(2)} className="w-full text-center text-xs text-muted-foreground font-medium mt-1 py-1">Skip</button>
+                        </motion.div>
+                      )}
+
+                      {/* Not sure */}
+                      <button
+                        onClick={() => { setHairType('unsure'); setHairSubType(''); setStep(2); }}
+                        className="w-full rounded-2xl py-4 px-4 text-left cursor-pointer"
+                        style={{ border: '1.5px solid hsl(var(--border))', background: 'hsl(var(--accent) / 0.3)' }}
+                      >
+                        <p className="font-semibold text-foreground text-sm">Not sure</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">That's okay. We'll use the most inclusive settings.</p>
+                      </button>
+                    </div>
                   </div>
                 )}
 
