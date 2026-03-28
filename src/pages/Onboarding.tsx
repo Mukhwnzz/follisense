@@ -88,18 +88,13 @@ const chemicalOptions = [
 ];
 
 const chemicalTypeOptions = ['Relaxer', 'Texturiser', 'Keratin treatment', 'Other'];
-const chemicalBrandOptions = [
-  'Dark and Lovely', 'ORS Olive Oil', 'TCB', 'Just for Me', 'Affirm',
-  'Mizani', 'SoftSheen-Carson', 'Motions', 'Hawaiian Silky', 'Namaste',
-  'Design Essentials', 'Other',
-];
 const lastTreatmentOptions = [
   'Less than 4 weeks ago', '4 to 8 weeks ago', '2 to 3 months ago',
   '3 to 6 months ago', 'More than 6 months ago', 'Currently growing out',
 ];
 const chemicalFreqOptions = [
   'Every 4 to 6 weeks', 'Every 8 to 12 weeks', 'Every 3 to 6 months',
-  'Less often', 'Stopped / growing out',
+  'Less often', 'Stopped',
 ];
 
 // ─── GENDER OPTIONS ──────────────────────────────────────────────────────────
@@ -218,13 +213,11 @@ const Onboarding = () => {
 
   // Chemical processing
   const [chemicalStatus, setChemicalStatus] = useState(onboardingData.chemicalProcessing || '');
+  const [chemicalStep, setChemicalStep] = useState(0); // 0=status, 1=type, 2=timing, 3=frequency
   const [chemicalTypes, setChemicalTypes] = useState<string[]>(onboardingData.chemicalProcessingMultiple || []);
   const [chemicalOtherType, setChemicalOtherType] = useState('');
-  const [chemicalBrand, setChemicalBrand] = useState(onboardingData.chemicalBrand || '');
-  const [chemicalBrandOther, setChemicalBrandOther] = useState(onboardingData.chemicalBrandOther || '');
   const [lastTreatment, setLastTreatment] = useState(onboardingData.lastChemicalTreatment || '');
   const [chemicalFreq, setChemicalFreq] = useState(onboardingData.chemicalFrequency || '');
-  const [brandSearch, setBrandSearch] = useState('');
 
   // Styles
   const [styles, setStyles] = useState<string[]>(onboardingData.protectiveStyles || []);
@@ -290,10 +283,11 @@ const Onboarding = () => {
       case 0: return !!gender;
       case 1: return !!hairType;
       case 2: {
-        if (!chemicalStatus) return false;
-        if (chemicalStatus === 'natural' || chemicalStatus === 'unsure') return true;
-        // Need follow-up filled
-        return chemicalTypes.length > 0 && (chemicalBrand || chemicalBrandOther) && lastTreatment && chemicalFreq;
+        if (chemicalStep === 0) return false; // auto-advance handles this
+        if (chemicalStep === 1) return chemicalTypes.length > 0;
+        if (chemicalStep === 2) return false; // auto-advance
+        if (chemicalStep === 3) return false; // auto-advance
+        return false;
       }
       case 3: return styles.length > 0 && (!styles.includes('Other') || otherStyle.trim().length > 0) && !!protectiveFreq;
       case 4: return !!cycleLength && betweenWash.length > 0 && (!betweenWash.includes('Other') || otherBetweenWash.trim().length > 0);
@@ -332,8 +326,6 @@ const Onboarding = () => {
       hairType: effectiveHairType,
       chemicalProcessing: chemicalStatus,
       chemicalProcessingMultiple: chemicalTypes,
-      chemicalBrand: chemicalBrand === 'Other' ? chemicalBrandOther : chemicalBrand,
-      chemicalBrandOther,
       chemicalFrequency: chemicalFreq,
       lastChemicalTreatment: lastTreatment,
       protectiveStyles: styles,
@@ -386,6 +378,13 @@ const Onboarding = () => {
   };
 
   const handleNext = () => {
+    if (step === 2) {
+      // Chemical sub-steps: step 1 (type) has a Next button
+      if (chemicalStep === 1) {
+        setChemicalStep(2);
+        return;
+      }
+    }
     if (step < 7) {
       setStep(step + 1);
     } else if (step === 8) {
@@ -444,7 +443,10 @@ const Onboarding = () => {
       } else {
         setStep(7);
       }
+    } else if (step === 2 && chemicalStep > 0) {
+      setChemicalStep(chemicalStep - 1);
     } else if (step > 0) {
+      if (step === 2) setChemicalStep(0); // reset when leaving chemical
       setStep(step - 1);
     } else {
       navigate(-1);
@@ -457,6 +459,7 @@ const Onboarding = () => {
   );
 
   const getButtonText = () => {
+    if (step === 2 && chemicalStep === 1) return 'Next';
     if (step === 6) return "Let's go";
     if (step === 8) {
       if (symptomPhase === 'ask') return '';
@@ -474,7 +477,7 @@ const Onboarding = () => {
   // Hide bottom button on auto-advance screens and photo capture
   const showBottomButton = step !== 0 && step !== 1 && step !== 7 && step !== 9
     && !(step === 8 && symptomPhase === 'ask')
-    && !(step === 2 && (chemicalStatus === '' || chemicalStatus === 'natural' || chemicalStatus === 'unsure'));
+    && !(step === 2 && chemicalStep !== 1); // only show Next on chemical step 1 (type multi-select)
 
   const activeSegment = getProgressSegment();
 
@@ -527,7 +530,7 @@ const Onboarding = () => {
           <div style={{ overflowY: 'auto', flex: 1, paddingBottom: showBottomButton ? '0' : '12px' }}>
             <AnimatePresence mode="wait">
               <motion.div
-                key={step === 8 ? `${step}-${symptomPhase}-${symptomIndex}-${symptomAck ? 'ack' : ''}` : step}
+                key={step === 8 ? `${step}-${symptomPhase}-${symptomIndex}-${symptomAck ? 'ack' : ''}` : step === 2 ? `${step}-${chemicalStep}` : step}
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
@@ -692,14 +695,14 @@ const Onboarding = () => {
                   </div>
                 )}
 
-                {/* ── Screen 2: Chemical Processing ── */}
-                {step === 2 && (
+                {/* ── Screen 2: Chemical Processing (sequential sub-steps) ── */}
+                {step === 2 && chemicalStep === 0 && (
                   <div>
                     <h2 className="text-lg font-semibold text-foreground mb-1">Is your hair chemically processed?</h2>
                     <p className="text-xs text-muted-foreground mb-4">
                       This means treatments that permanently change your hair's natural texture.
                     </p>
-                    <div className="space-y-3 mb-4">
+                    <div className="space-y-3">
                       {chemicalOptions.map(opt => (
                         <button
                           key={opt.id}
@@ -707,6 +710,8 @@ const Onboarding = () => {
                             setChemicalStatus(opt.id);
                             if (opt.id === 'natural' || opt.id === 'unsure') {
                               setTimeout(() => setStep(3), 150);
+                            } else {
+                              setTimeout(() => setChemicalStep(1), 150);
                             }
                           }}
                           className={`selection-card w-full text-left ${chemicalStatus === opt.id ? 'selected' : ''}`}
@@ -715,88 +720,71 @@ const Onboarding = () => {
                         </button>
                       ))}
                     </div>
+                    <p className="text-xs text-muted-foreground mt-4 italic">{sectionExplainers[2]}</p>
+                  </div>
+                )}
 
-                    {(chemicalStatus === 'current' || chemicalStatus === 'growing-out') && (
-                      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-5">
-                        {/* Type */}
-                        <div>
-                          <p className="font-semibold text-foreground text-sm mb-2">What type?</p>
-                          <div className="flex flex-wrap gap-2">
-                            {chemicalTypeOptions.map(t => (
-                              <button key={t} onClick={() => toggleChemicalType(t)} className={`pill-option ${chemicalTypes.includes(t) ? 'selected' : ''}`}>
-                                {t}
-                              </button>
-                            ))}
-                          </div>
-                          {chemicalTypes.includes('Other') && (
-                            <input
-                              type="text" value={chemicalOtherType}
-                              onChange={e => setChemicalOtherType(e.target.value)}
-                              placeholder="Describe treatment"
-                              className="w-full h-11 px-4 rounded-xl border border-border bg-card text-foreground text-sm mt-2"
-                            />
-                          )}
-                        </div>
-
-                        {/* Brand */}
-                        <div>
-                          <p className="font-semibold text-foreground text-sm mb-2">Which brand do you use?</p>
-                          <input
-                            type="text" value={brandSearch}
-                            onChange={e => {
-                              setBrandSearch(e.target.value);
-                              // If they type, clear the selection
-                              if (chemicalBrand !== 'Other') setChemicalBrand('');
-                            }}
-                            placeholder="Search brands..."
-                            className="w-full h-11 px-4 rounded-xl border border-border bg-card text-foreground text-sm mb-2"
-                          />
-                          <div className="flex flex-wrap gap-2">
-                            {chemicalBrandOptions
-                              .filter(b => !brandSearch || b.toLowerCase().includes(brandSearch.toLowerCase()))
-                              .map(b => (
-                                <button key={b} onClick={() => { setChemicalBrand(b); setBrandSearch(''); }} className={`pill-option text-xs ${chemicalBrand === b ? 'selected' : ''}`}>
-                                  {b}
-                                </button>
-                              ))}
-                          </div>
-                          {chemicalBrand === 'Other' && (
-                            <input
-                              type="text" value={chemicalBrandOther}
-                              onChange={e => setChemicalBrandOther(e.target.value)}
-                              placeholder="Brand name"
-                              className="w-full h-11 px-4 rounded-xl border border-border bg-card text-foreground text-sm mt-2"
-                            />
-                          )}
-                        </div>
-
-                        {/* Last treatment */}
-                        <div>
-                          <p className="font-semibold text-foreground text-sm mb-2">When was your last treatment?</p>
-                          <div className="flex flex-wrap gap-2">
-                            {lastTreatmentOptions.map(o => (
-                              <button key={o} onClick={() => setLastTreatment(o)} className={`pill-option text-xs ${lastTreatment === o ? 'selected' : ''}`}>
-                                {o}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-
-                        {/* Frequency */}
-                        <div>
-                          <p className="font-semibold text-foreground text-sm mb-2">How often?</p>
-                          <div className="flex flex-wrap gap-2">
-                            {chemicalFreqOptions.map(o => (
-                              <button key={o} onClick={() => setChemicalFreq(o)} className={`pill-option text-xs ${chemicalFreq === o ? 'selected' : ''}`}>
-                                {o}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-
-                        <p className="text-xs text-muted-foreground italic">{sectionExplainers[2]}</p>
-                      </motion.div>
+                {step === 2 && chemicalStep === 1 && (
+                  <div>
+                    <h2 className="text-lg font-semibold text-foreground mb-1">What type of processing?</h2>
+                    <p className="text-xs text-muted-foreground mb-4">Select all that apply.</p>
+                    <div className="space-y-3">
+                      {chemicalTypeOptions.map(t => (
+                        <button key={t} onClick={() => toggleChemicalType(t)} className={`selection-card w-full text-left ${chemicalTypes.includes(t) ? 'selected' : ''}`}>
+                          <p className="font-medium text-foreground text-sm">{t}</p>
+                        </button>
+                      ))}
+                    </div>
+                    {chemicalTypes.includes('Other') && (
+                      <input
+                        type="text" value={chemicalOtherType}
+                        onChange={e => setChemicalOtherType(e.target.value)}
+                        placeholder="Describe treatment"
+                        className="w-full h-11 px-4 rounded-xl border border-border bg-card text-foreground text-sm mt-3"
+                      />
                     )}
+                  </div>
+                )}
+
+                {step === 2 && chemicalStep === 2 && (
+                  <div>
+                    <h2 className="text-lg font-semibold text-foreground mb-1">When was your last treatment?</h2>
+                    <p className="text-xs text-muted-foreground mb-4">Tap to select.</p>
+                    <div className="space-y-3">
+                      {lastTreatmentOptions.map(o => (
+                        <button
+                          key={o}
+                          onClick={() => {
+                            setLastTreatment(o);
+                            setTimeout(() => setChemicalStep(3), 150);
+                          }}
+                          className={`selection-card w-full text-left ${lastTreatment === o ? 'selected' : ''}`}
+                        >
+                          <p className="font-medium text-foreground text-sm">{o}</p>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {step === 2 && chemicalStep === 3 && (
+                  <div>
+                    <h2 className="text-lg font-semibold text-foreground mb-1">How often do you get it done?</h2>
+                    <p className="text-xs text-muted-foreground mb-4">Tap to select.</p>
+                    <div className="space-y-3">
+                      {chemicalFreqOptions.map(o => (
+                        <button
+                          key={o}
+                          onClick={() => {
+                            setChemicalFreq(o);
+                            setTimeout(() => { setChemicalStep(0); setStep(3); }, 150);
+                          }}
+                          className={`selection-card w-full text-left ${chemicalFreq === o ? 'selected' : ''}`}
+                        >
+                          <p className="font-medium text-foreground text-sm">{o}</p>
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 )}
 
