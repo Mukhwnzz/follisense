@@ -574,9 +574,11 @@ const Onboarding = () => {
                       {/* Type 4 card */}
                       <button
                         onClick={() => {
+                          if (hairAutoAdvanceRef.current) clearTimeout(hairAutoAdvanceRef.current);
                           setHairType('type4');
                           setHairSubType('');
                           setShowSubType(false);
+                          hairAutoAdvanceRef.current = setTimeout(() => setStep(2), 1200);
                         }}
                         className="w-full text-left rounded-2xl overflow-hidden relative cursor-pointer"
                         style={{ border: hairType === 'type4' ? '2px solid hsl(var(--primary))' : '2px solid transparent' }}
