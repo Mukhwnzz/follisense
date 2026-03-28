@@ -40,7 +40,7 @@ export const quizQuestions: QuizQuestion[] = [
     incorrectExplanationTemplate: 'This is traction alopecia at the nape. The thinning pattern follows where the sew-in gripped. Unlike telogen effluvium which causes diffuse shedding everywhere, traction creates localised thinning at tension points.',
     options: ['Traction alopecia', 'Telogen effluvium', 'Normal hairline variation', 'Alopecia areata'],
     learnMoreId: 'traction-alopecia',
-    skinToneTip: 'On your clients: feel the nape area — reduced density and smooth skin are more reliable signs than visual redness.',
+    skinToneTip: 'On your clients: feel the nape area, reduced density and smooth skin are more reliable signs than visual redness.',
   },
   {
     id: 4, conditionId: 'ccca', stageIndex: 1,
@@ -50,7 +50,7 @@ export const quizQuestions: QuizQuestion[] = [
     incorrectExplanationTemplate: 'This is CCCA. The thinning starts at the crown and spreads in a circular pattern outward. Unlike androgenetic alopecia which is gradual and genetic, CCCA involves scarring and needs urgent medical attention.',
     options: ['CCCA', 'Traction alopecia', 'Androgenetic alopecia', 'Telogen effluvium'],
     learnMoreId: 'ccca',
-    skinToneTip: 'On darker skin: compare crown density to the sides — the shiny smooth scarring may actually be easier to spot due to contrast.',
+    skinToneTip: 'On darker skin: compare crown density to the sides, the shiny smooth scarring may actually be easier to spot due to contrast.',
   },
   {
     id: 5, conditionId: 'ccca', stageIndex: 2,
@@ -90,7 +90,7 @@ export const quizQuestions: QuizQuestion[] = [
     incorrectExplanationTemplate: 'This is scalp psoriasis. The key features are the raised, well-defined patch with silvery scales. Seb derm is more diffuse and oily.',
     options: ['Scalp psoriasis', 'Seborrheic dermatitis', 'Fungal infection', 'Eczema'],
     learnMoreId: 'scalp-psoriasis',
-    skinToneTip: 'On darker skin: plaques may appear purple or dark brown — the defined borders are your best clue regardless of skin tone.',
+    skinToneTip: 'On darker skin: plaques may appear purple or dark brown, the defined borders are your best clue regardless of skin tone.',
   },
   {
     id: 9, conditionId: 'scalp-psoriasis', stageIndex: 2,
@@ -100,7 +100,7 @@ export const quizQuestions: QuizQuestion[] = [
     incorrectExplanationTemplate: 'This is scalp psoriasis extending beyond the hairline. The key differentiator is that psoriasis crosses the hairline boundary with defined borders.',
     options: ['Scalp psoriasis', 'Seborrheic dermatitis', 'Contact dermatitis', 'Ringworm'],
     learnMoreId: 'scalp-psoriasis',
-    skinToneTip: 'On your clients: silvery scaling on darker skin creates a visible contrast — use this as a diagnostic aid.',
+    skinToneTip: 'On your clients: silvery scaling on darker skin creates a visible contrast, use this as a diagnostic aid.',
   },
   {
     id: 10, conditionId: 'alopecia-areata', stageIndex: 0,
@@ -116,11 +116,11 @@ export const quizQuestions: QuizQuestion[] = [
     id: 11, conditionId: 'alopecia-areata', stageIndex: 2,
     scenario: 'Close-up of the edge of a bald patch. You see these short tapered hairs.',
     correctAnswer: 'Alopecia areata',
-    correctExplanation: 'These are "exclamation point hairs" — short hairs that are thinner at the base than the tip. They\'re a hallmark sign of active alopecia areata.',
+    correctExplanation: 'These are "exclamation point hairs", short hairs that are thinner at the base than the tip. They\'re a hallmark sign of active alopecia areata.',
     incorrectExplanationTemplate: 'These are exclamation point hairs, a classic sign of alopecia areata. Unlike breakage from tension which creates blunt ends, these hairs taper at the base.',
     options: ['Alopecia areata', 'Breakage from tension', 'New growth', 'Folliculitis'],
     learnMoreId: 'alopecia-areata',
-    skinToneTip: 'On your clients: exclamation point hairs look the same on all skin tones — short, tapered at the root.',
+    skinToneTip: 'On your clients: exclamation point hairs look the same on all skin tones, short, tapered at the root.',
   },
   {
     id: 12, conditionId: 'folliculitis', stageIndex: 1,
@@ -147,10 +147,10 @@ export const quizQuestions: QuizQuestion[] = [
     scenario: 'Young client has this patch with tiny black dots where hair used to be.',
     correctAnswer: 'Tinea capitis (fungal)',
     correctExplanation: 'The black dot pattern is a hallmark of tinea capitis. The dots are hair stubs that broke off at the scalp surface due to the fungal infection. Refer immediately.',
-    incorrectExplanationTemplate: 'This is tinea capitis (fungal infection). The black dots are broken hair stubs — the fungus weakens the hair shaft causing it to snap off.',
+    incorrectExplanationTemplate: 'This is tinea capitis (fungal infection). The black dots are broken hair stubs, the fungus weakens the hair shaft causing it to snap off.',
     options: ['Tinea capitis (fungal)', 'Alopecia areata', 'Traction alopecia', 'Folliculitis'],
     learnMoreId: 'tinea-capitis',
-    skinToneTip: 'On darker skin: black dot pattern is the most reliable sign regardless of skin tone — focus on the dots, not colour changes.',
+    skinToneTip: 'On darker skin: black dot pattern is the most reliable sign regardless of skin tone, focus on the dots, not colour changes.',
   },
   {
     id: 15, conditionId: 'tinea-capitis', stageIndex: 2,
@@ -160,7 +160,7 @@ export const quizQuestions: QuizQuestion[] = [
     incorrectExplanationTemplate: 'This is tinea capitis with a characteristic ring-shaped border. Unlike psoriasis which has silvery scales, tinea creates a raised circular border.',
     options: ['Tinea capitis', 'Psoriasis', 'Seborrheic dermatitis', 'Eczema'],
     learnMoreId: 'tinea-capitis',
-    skinToneTip: 'On darker skin: the ring border may be subtle — scaling that appears ashy or greyish is your secondary clue.',
+    skinToneTip: 'On darker skin: the ring border may be subtle, scaling that appears ashy or greyish is your secondary clue.',
   },
   {
     id: 16, conditionId: 'chemical-damage', stageIndex: 1,
@@ -190,7 +190,7 @@ export const quizQuestions: QuizQuestion[] = [
     incorrectExplanationTemplate: 'This is most likely androgenetic alopecia. Without protective style history and with years of gradual progression in a male, this is pattern hair loss.',
     options: ['Androgenetic alopecia', 'CCCA', 'Traction alopecia', 'Telogen effluvium'],
     learnMoreId: 'ccca',
-    skinToneTip: 'On your clients: gradual crown thinning in men looks similar across skin tones — the pattern is the key diagnostic clue.',
+    skinToneTip: 'On your clients: gradual crown thinning in men looks similar across skin tones, the pattern is the key diagnostic clue.',
   },
   {
     id: 19, conditionId: 'traction-alopecia', stageIndex: 0,
@@ -200,7 +200,7 @@ export const quizQuestions: QuizQuestion[] = [
     incorrectExplanationTemplate: 'This is telogen effluvium triggered by postpartum hormonal changes. The key clues are the timing (4 months post-baby) and the diffuse, all-over thinning.',
     options: ['Telogen effluvium (postpartum)', 'Androgenetic alopecia', 'CCCA', 'Nutritional deficiency'],
     learnMoreId: 'traction-alopecia',
-    skinToneTip: 'On your clients: diffuse thinning can be harder to see on darker hair — part the hair in multiple places and compare density.',
+    skinToneTip: 'On your clients: diffuse thinning can be harder to see on darker hair, part the hair in multiple places and compare density.',
   },
   {
     id: 20, conditionId: 'traction-alopecia', stageIndex: 1,

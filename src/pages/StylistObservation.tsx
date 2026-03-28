@@ -390,7 +390,7 @@ const StylistObservation = () => {
             {step === 6 && (
               <div>
                 <h2 className="text-lg font-medium mb-2 text-foreground">Anything else to note?</h2>
-                <p className="text-muted-foreground text-sm mb-4">Optional — add any additional observations or recommendations</p>
+                <p className="text-muted-foreground text-sm mb-4">Optional, add any additional observations or recommendations</p>
                 <textarea
                   value={notes}
                   onChange={e => setNotes(e.target.value)}

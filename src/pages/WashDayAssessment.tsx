@@ -128,8 +128,8 @@ const scalpSteps: StepDef[] = [
     key: 'shedding',
     q: 'How much hair came out at wash time?',
     qMale: 'Noticed any unusual shedding or thinning?',
-    qRegular: 'How much shedding have you noticed recently — in the shower, on your pillow, or while styling?',
-    qMaleRegular: 'Any unusual shedding — in the shower, on your pillow, or after a cut?',
+    qRegular: 'How much shedding have you noticed recently, in the shower, on your pillow, or while styling?',
+    qMaleRegular: 'Any unusual shedding, in the shower, on your pillow, or after a cut?',
     options: [
       { label: 'Normal', desc: "About what I'd expect" },
       { label: 'More than usual', desc: 'A bit more than usual' },
@@ -163,15 +163,15 @@ const hairHealthSteps: StepDef[] = [
     qMale: 'Any breakage or thinning?',
     options: [
       { label: 'No breakage', desc: '' },
-      { label: 'A little — mostly at the ends', desc: '' },
-      { label: 'Moderate — breaking along the length', desc: '' },
-      { label: 'Significant — breaking at the root or in patches', desc: '' },
+      { label: 'A little, mostly at the ends', desc: '' },
+      { label: 'Moderate, breaking along the length', desc: '' },
+      { label: 'Significant, breaking at the root or in patches', desc: '' },
     ],
     maleOptions: [
       { label: 'No breakage', desc: '' },
-      { label: 'A little — at the ends or edges', desc: '' },
-      { label: 'Moderate — noticeable thinning', desc: '' },
-      { label: 'Significant — patches or widespread', desc: '' },
+      { label: 'A little, at the ends or edges', desc: '' },
+      { label: 'Moderate, noticeable thinning', desc: '' },
+      { label: 'Significant, patches or widespread', desc: '' },
     ],
   },
   {
@@ -196,15 +196,15 @@ const productStep: StepDef = {
 };
 
 const photoAreasFemale = [
-  { id: 'hairline', label: 'Temples / edges', baselineLabel: 'Hairline — temples and edges' },
+  { id: 'hairline', label: 'Temples / edges', baselineLabel: 'Hairline, temples and edges' },
   { id: 'crown', label: 'Crown / vertex', baselineLabel: 'Crown and vertex' },
-  { id: 'hair-condition', label: 'Hair condition — mid-lengths and ends', baselineLabel: 'Hair condition — mid-lengths and ends' },
+  { id: 'hair-condition', label: 'Hair condition, mid-lengths and ends', baselineLabel: 'Hair condition, mid-lengths and ends' },
 ];
 
 const photoAreasMale = [
-  { id: 'hairline', label: 'Hairline / temples', baselineLabel: 'Hairline — temples and edges' },
+  { id: 'hairline', label: 'Hairline / temples', baselineLabel: 'Hairline, temples and edges' },
   { id: 'crown', label: 'Crown / top', baselineLabel: 'Crown and vertex' },
-  { id: 'nape', label: 'Nape / back of neck', baselineLabel: 'Nape — clipper line' },
+  { id: 'nape', label: 'Nape / back of neck', baselineLabel: 'Nape, clipper line' },
   { id: 'areas-of-concern', label: 'Any areas of concern', baselineLabel: 'Areas of concern' },
 ];
 
@@ -234,13 +234,13 @@ const WashDayAssessment = () => {
     if (isMale) {
       if (onboardingData.barberFrequency) return 'Barber check-in';
       if (onboardingData.locRetwistFrequency) return 'Loc check-in';
-      return `${currentStyle} — scalp check`;
+      return `${currentStyle}, scalp check`;
     }
-    return `${currentStyle} — Day 28 of 28`;
+    return `${currentStyle}, Day 28 of 28`;
   };
 
   const getContextSubtext = (): string => {
-    if (isRegularCheckIn) return "Time for your scalp check-in — takes about 2 minutes";
+    if (isRegularCheckIn) return "Time for your scalp check-in, takes about 2 minutes";
     if (isMale) {
       if (onboardingData.barberFrequency) return "Quick check on how your scalp is doing since your last cut";
       return "Let's see how your scalp is doing";
@@ -434,7 +434,7 @@ const WashDayAssessment = () => {
                             <div className="w-10 h-10 rounded-lg bg-border flex items-center justify-center flex-shrink-0">
                               <Camera size={14} className="text-muted-foreground" strokeWidth={1.5} />
                             </div>
-                            <p className="text-xs text-muted-foreground">Baseline — {baseline.date}</p>
+                            <p className="text-xs text-muted-foreground">Baseline, {baseline.date}</p>
                           </div>
                         )}
                       </div>

@@ -3,7 +3,24 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Flame, Trophy, ChevronRight, Star, Home, Timer, Zap } from 'lucide-react';
 import { quizQuestions, QuizQuestion, dummyLeaderboard } from '@/data/quizQuestions';
+import { supabase } from '@/lib/supabaseClient';
+import toast, { Toaster } from 'react-hot-toast';
 import ScalpIllustration from '@/components/ScalpIllustration';
+
+// ---------------------------
+// Helpers
+// ---------------------------
+
+// ✅ Get logged-in user ID
+const getUserId = async (): Promise<string | null> => {
+  const { data, error } = await supabase.auth.getUser();
+  if (error || !data?.user) return null;
+  return data.user.id;
+};
+
+// ---------------------------
+// Local storage state management
+// ---------------------------
 
 interface QuizState {
   totalPoints: number;
@@ -28,6 +45,10 @@ const saveQuizState = (state: QuizState) => {
   localStorage.setItem('follisense-quiz', JSON.stringify(state));
 };
 
+// ---------------------------
+// Utilities
+// ---------------------------
+
 const shuffleArray = <T,>(arr: T[]): T[] => {
   const a = [...arr];
   for (let i = a.length - 1; i > 0; i--) {
@@ -45,22 +66,36 @@ const getMultiplier = (timeLeft: number): { label: string; value: number } => {
   return { label: '1×', value: 1 };
 };
 
+// ---------------------------
+// Component
+// ---------------------------
+
 const ScalpQuiz = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const isChallenge = searchParams.get('mode') === 'challenge';
 
   const [quizState, setQuizState] = useState<QuizState>(loadQuizState);
+
+  // ---------------------------
+  // Quiz phase state
+  // ---------------------------
+
   const [phase, setPhase] = useState<'playing' | 'roundSummary'>('playing');
+  const [userAttempts, setUserAttempts] = useState<any[]>([]); // previous attempts
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [showExplanation, setShowExplanation] = useState(false);
   const [roundQuestions, setRoundQuestions] = useState<QuizQuestion[]>([]);
   const [questionIndex, setQuestionIndex] = useState(0);
   const [roundCorrect, setRoundCorrect] = useState(0);
   const [roundPoints, setRoundPoints] = useState(0);
+  const [hasSaved, setHasSaved] = useState(false);
   const [usedIds, setUsedIds] = useState<Set<number>>(new Set());
 
-  // Challenge mode state
+  // ---------------------------
+  // Challenge timer
+  // ---------------------------
+
   const [timeLeft, setTimeLeft] = useState(TIMER_DURATION);
   const [answeredMultiplier, setAnsweredMultiplier] = useState<{ label: string; value: number } | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -79,6 +114,7 @@ const ScalpQuiz = () => {
       setTimeLeft(prev => {
         if (prev <= 1) {
           clearTimer();
+          handleTimeout();
           return 0;
         }
         return prev - 1;
@@ -86,52 +122,36 @@ const ScalpQuiz = () => {
     }, 1000);
   };
 
-  // Auto-timeout in challenge mode
   useEffect(() => {
-    if (isChallenge && timeLeft === 0 && !selectedAnswer && phase === 'playing' && currentQuestion) {
-      handleTimeout();
-    }
-  }, [timeLeft]);
-
-  const handleTimeout = () => {
-    if (selectedAnswer) return;
-    setSelectedAnswer('__timeout__');
-    setShowExplanation(true);
-    setAnsweredMultiplier({ label: '0×', value: 0 });
-
-    const newState = { ...quizState, currentStreak: 0 };
-    if (!newState.wrongQuestionIds.includes(currentQuestion.id)) {
-      newState.wrongQuestionIds.push(currentQuestion.id);
-    }
-    setQuizState(newState);
-    saveQuizState(newState);
-  };
-
-  const pickQuestions = useCallback((currentUsedIds: Set<number>) => {
-    const wrong = quizQuestions.filter(q => quizState.wrongQuestionIds.includes(q.id) && !currentUsedIds.has(q.id));
-    const rest = quizQuestions.filter(q => !quizState.wrongQuestionIds.includes(q.id) && !currentUsedIds.has(q.id));
-    const pool = [...shuffleArray(wrong), ...shuffleArray(rest)];
-    if (pool.length < 5) {
-      return shuffleArray([...quizQuestions]).slice(0, 5);
-    }
-    return pool.slice(0, 5);
-  }, [quizState.wrongQuestionIds]);
-
-  useEffect(() => {
-    setRoundQuestions(pickQuestions(new Set()));
-    setQuestionIndex(0);
-    setRoundCorrect(0);
-    setRoundPoints(0);
-    if (isChallenge) startTimer();
+    if (!isChallenge && phase === 'playing') startTimer();
     return () => clearTimer();
+  }, [phase]);
+
+  // ---------------------------
+  // Question handling
+  // ---------------------------
+
+  const pickQuestions = useCallback(
+    (currentUsedIds: Set<number>) => {
+      const wrong = quizQuestions.filter(q => quizState.wrongQuestionIds.includes(q.id) && !currentUsedIds.has(q.id));
+      const rest = quizQuestions.filter(q => !quizState.wrongQuestionIds.includes(q.id) && !currentUsedIds.has(q.id));
+      const pool = [...shuffleArray(wrong), ...shuffleArray(rest)];
+      if (pool.length < 5) return shuffleArray([...quizQuestions]).slice(0, 5);
+      return pool.slice(0, 5);
+    },
+    [quizState.wrongQuestionIds]
+  );
+
+  useEffect(() => {
+    startNewRound();
   }, []);
 
   const currentQuestion = roundQuestions[questionIndex];
+  const shuffledOptions = useMemo(() => currentQuestion ? shuffleArray(currentQuestion.options) : [], [currentQuestion?.id]);
 
-  const shuffledOptions = useMemo(() => {
-    if (!currentQuestion) return [];
-    return shuffleArray(currentQuestion.options);
-  }, [currentQuestion?.id]);
+  // ---------------------------
+  // Answer handling
+  // ---------------------------
 
   const handleAnswer = (answer: string) => {
     if (selectedAnswer) return;
@@ -160,11 +180,21 @@ const ScalpQuiz = () => {
         setRoundPoints(prev => prev + 3);
       }
       newState.currentStreak = 0;
-      if (!newState.wrongQuestionIds.includes(currentQuestion.id)) {
-        newState.wrongQuestionIds.push(currentQuestion.id);
-      }
+      if (!newState.wrongQuestionIds.includes(currentQuestion.id)) newState.wrongQuestionIds.push(currentQuestion.id);
     }
 
+    setQuizState(newState);
+    saveQuizState(newState);
+  };
+
+  const handleTimeout = () => {
+    if (selectedAnswer) return;
+    setSelectedAnswer('__timeout__');
+    setShowExplanation(true);
+    setAnsweredMultiplier({ label: '0×', value: 0 });
+
+    const newState = { ...quizState, currentStreak: 0 };
+    if (!newState.wrongQuestionIds.includes(currentQuestion.id)) newState.wrongQuestionIds.push(currentQuestion.id);
     setQuizState(newState);
     saveQuizState(newState);
   };
@@ -177,13 +207,20 @@ const ScalpQuiz = () => {
     const nextIdx = questionIndex + 1;
     if (nextIdx >= 5) {
       const roundBonus = 5;
+      const finalPoints = roundPoints + roundBonus;
+
       const newState = { ...quizState, totalPoints: quizState.totalPoints + roundBonus };
-      if (isChallenge && roundPoints + roundBonus > quizState.challengeHighScore) {
-        newState.challengeHighScore = roundPoints + roundBonus;
-      }
+      if (isChallenge && finalPoints > quizState.challengeHighScore) newState.challengeHighScore = finalPoints;
+
       setQuizState(newState);
       saveQuizState(newState);
-      setRoundPoints(prev => prev + roundBonus);
+      setRoundPoints(finalPoints);
+
+      if (!hasSaved) {
+        saveQuizAttempt(finalPoints, roundCorrect, quizState.currentStreak);
+        setHasSaved(true);
+      }
+
       setPhase('roundSummary');
       clearTimer();
     } else {
@@ -201,15 +238,73 @@ const ScalpQuiz = () => {
     setRoundCorrect(0);
     setRoundPoints(0);
     setPhase('playing');
+    setHasSaved(false);
     if (isChallenge) startTimer();
   };
 
+  // ---------------------------
+  // Supabase integration
+  // ---------------------------
+
+  const saveQuizAttempt = async (score: number, correct: number, streak: number) => {
+    const userId = await getUserId();
+    if (!userId) {
+      toast.error("You must be logged in to save your quiz!");
+      return;
+    }
+
+    const { error } = await supabase.from('quiz_attempts').insert([
+      {
+        stylist_user_id: userId,
+        score,
+        questions_answered: roundQuestions.length,
+        correct_answers: correct,
+        streak_at_time: streak,
+      }
+    ]);
+
+    if (error) toast.error("Failed to save your quiz. Try again!");
+    else toast.success("Your quiz was saved!");
+  };
+
+  const fetchUserAttempts = async () => {
+    const userId = await getUserId();
+    if (!userId) return [];
+
+    const { data, error } = await supabase
+      .from('quiz_attempts')
+      .select('*')
+      .eq('stylist_user_id', userId)
+      .order('created_at', { ascending: false });
+
+    if (error) toast.error("Failed to fetch your attempts");
+    return data || [];
+  };
+
+  useEffect(() => {
+    fetchUserAttempts().then((attempts) => setUserAttempts(attempts));
+  }, []);
+
+  // ---------------------------
+  // Rendering
+  // ---------------------------
+
   if (!currentQuestion && phase === 'playing') return null;
 
-  // Round summary
+  const question = currentQuestion!;
+  const isCorrect = selectedAnswer === question.correctAnswer;
+  const isTimeout = selectedAnswer === '__timeout__';
+  const timerPercent = (timeLeft / TIMER_DURATION) * 100;
+  const timerColor = timeLeft > 7 ? 'bg-primary' : timeLeft > 4 ? 'bg-[hsl(40,70%,50%)]' : 'bg-destructive';
+
+  // ---------------------------
+  // Round Summary
+  // ---------------------------
+
   if (phase === 'roundSummary') {
     return (
       <div className="page-container pt-6">
+        <Toaster position="top-right" />
         <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="text-center pt-8">
           <div className="w-16 h-16 rounded-full bg-primary/15 flex items-center justify-center mx-auto mb-4">
             <Trophy size={28} className="text-primary" />
@@ -240,7 +335,9 @@ const ScalpQuiz = () => {
             </div>
             <div className="flex justify-between">
               <span className="text-sm text-muted-foreground">Current streak</span>
-              <span className="text-sm font-semibold flex items-center gap-1"><Flame size={14} className="text-primary" />{quizState.currentStreak}</span>
+              <span className="text-sm font-semibold flex items-center gap-1">
+                <Flame size={14} className="text-primary" />{quizState.currentStreak}
+              </span>
             </div>
           </div>
 
@@ -255,13 +352,13 @@ const ScalpQuiz = () => {
     );
   }
 
-  const isCorrect = selectedAnswer === currentQuestion.correctAnswer;
-  const isTimeout = selectedAnswer === '__timeout__';
-  const timerPercent = (timeLeft / TIMER_DURATION) * 100;
-  const timerColor = timeLeft > 7 ? 'bg-primary' : timeLeft > 4 ? 'bg-[hsl(40,70%,50%)]' : 'bg-destructive';
+  // ---------------------------
+  // Quiz Playing Phase
+  // ---------------------------
 
   return (
     <div className="page-container pt-6 pb-24">
+      <Toaster position="top-right" />
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
         {/* Header */}
         <div className="flex items-center justify-between mb-3">
@@ -279,7 +376,7 @@ const ScalpQuiz = () => {
           </div>
         </div>
 
-        {/* Timer bar (challenge mode) */}
+        {/* Timer bar */}
         {isChallenge && !selectedAnswer && (
           <div className="mb-3">
             <div className="flex items-center justify-between mb-1">
@@ -309,23 +406,23 @@ const ScalpQuiz = () => {
           ))}
         </div>
 
+        {/* Question */}
         <h1 className="text-lg font-semibold mb-4">What are you looking at?</h1>
 
-        {/* Illustration */}
+        {/* Illustration & Options */}
         <AnimatePresence mode="wait">
-          <motion.div key={currentQuestion.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
+          <motion.div key={question.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
             <div className="w-full aspect-square max-w-[240px] mx-auto rounded-2xl overflow-hidden mb-4">
-              <ScalpIllustration conditionId={currentQuestion.conditionId} stageIndex={currentQuestion.stageIndex} />
+              <ScalpIllustration conditionId={question.conditionId} stageIndex={question.stageIndex} />
             </div>
-
-            <p className="text-sm text-muted-foreground text-center mb-5 italic">"{currentQuestion.scenario}"</p>
+            <p className="text-sm text-muted-foreground text-center mb-5 italic">"{question.scenario}"</p>
 
             {/* Options */}
             <div className="space-y-2.5 mb-4">
-              {shuffledOptions.map((option) => {
+              {shuffledOptions.map(option => {
                 let bg = 'bg-card border border-border';
                 if (selectedAnswer) {
-                  if (option === currentQuestion.correctAnswer) bg = 'bg-primary/15 border border-primary/40 text-foreground';
+                  if (option === question.correctAnswer) bg = 'bg-primary/15 border border-primary/40 text-foreground';
                   else if (option === selectedAnswer && !isCorrect) bg = 'bg-destructive/10 border border-destructive/30 text-foreground';
                 }
                 return (
@@ -348,22 +445,19 @@ const ScalpQuiz = () => {
                   {isTimeout ? "Time's up!" : isCorrect ? "That's right!" : 'Not quite'}
                 </p>
                 <p className="text-sm text-muted-foreground leading-relaxed mb-2">
-                  {isTimeout
-                    ? `The correct answer was ${currentQuestion.correctAnswer}. ${currentQuestion.incorrectExplanationTemplate}`
-                    : isCorrect ? currentQuestion.correctExplanation : currentQuestion.incorrectExplanationTemplate}
+                  {isTimeout ? `The correct answer was ${question.correctAnswer}. ${question.incorrectExplanationTemplate}` : isCorrect ? question.correctExplanation : question.incorrectExplanationTemplate}
                 </p>
-                {/* Skin tone tip */}
-                <p className="text-xs text-primary font-medium italic mb-2">{currentQuestion.skinToneTip}</p>
+                <p className="text-xs text-primary font-medium italic mb-2">{question.skinToneTip}</p>
                 <p className="text-xs text-primary font-medium mb-1">
                   {isTimeout
-                    ? '0 points — too slow!'
+                    ? '0 points, too slow!'
                     : isCorrect
                       ? `+${isChallenge && answeredMultiplier ? Math.round(10 * answeredMultiplier.value) : 10} points${isChallenge && answeredMultiplier ? ` (${answeredMultiplier.label})` : ''}${isCorrect && quizState.currentStreak % 5 === 0 && quizState.currentStreak > 0 ? ' + 15 streak bonus!' : ''}`
                       : isChallenge ? '0 points' : '+3 points'}
                 </p>
 
                 <button
-                  onClick={() => navigate(`/stylist/learn?condition=${currentQuestion.learnMoreId}`)}
+                  onClick={() => navigate(`/stylist/learn?condition=${question.learnMoreId}`)}
                   className="text-xs text-primary font-medium flex items-center gap-1 mt-2 btn-press"
                 >
                   Learn more about this condition <ChevronRight size={12} />
@@ -371,6 +465,7 @@ const ScalpQuiz = () => {
               </motion.div>
             )}
 
+            {/* Next button */}
             {showExplanation && (
               <button onClick={handleNext} className="w-full h-12 bg-primary text-primary-foreground rounded-xl font-semibold text-sm btn-press">
                 {questionIndex >= 4 ? 'See results' : 'Next question'}
