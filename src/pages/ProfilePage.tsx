@@ -214,6 +214,17 @@ const ProfilePage = () => {
   const toggleEditGoal      = (g: string) =>
     setEditGoals(prev => prev.includes(g) ? prev.filter(x => x !== g) : prev.length >= 3 ? prev : [...prev, g]);
   const saveGoals           = () => { setOnboardingData({ ...onboardingData, goals: editGoals }); setShowGoalEditor(false); };
+  const saveChemical        = () => {
+    setOnboardingData({
+      ...onboardingData,
+      chemicalProcessing: editChemStatus,
+      chemicalProcessingMultiple: editChemTypes,
+      chemicalBrand: editChemBrand,
+      chemicalBrandOther: editChemBrandOther,
+      chemicalFrequency: editChemFreq,
+    });
+    setShowChemicalEditor(false);
+  };
   const toggleMenstrual     = () => {
     const newVal = onboardingData.menstrualTracking === "Yes, I'd like to track" ? 'No thanks' : "Yes, I'd like to track";
     setOnboardingData({ ...onboardingData, menstrualTracking: newVal });
