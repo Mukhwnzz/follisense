@@ -363,7 +363,7 @@ const Onboarding = () => {
   };
 
   const handlePhotosComplete = (photos: { area: string; dataUrl: string }[]) => {
-    setBaselinePhotos(photos.map(p => ({ area: p.area, captured: true })));
+    setBaselinePhotos(photos.map(p => ({ area: p.area, captured: true, date: new Date().toISOString() })));
     setStep(7);
     setSymptomPhase('ask');
   };
