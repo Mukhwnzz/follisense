@@ -111,13 +111,25 @@ const ScalpBaselineCapture = ({ onComplete, onBack, gender = 'woman' }: ScalpBas
     setPreviewUrl(null);
   };
 
+  const handleSkipStep = () => {
+    if (currentStep < scalpSteps.length - 1) {
+      setCurrentStep(currentStep + 1);
+    } else {
+      onComplete(capturedPhotos);
+    }
+  };
+
   return (
     <div>
       <p className="text-xs text-muted-foreground mb-1">
         Step {currentStep + 1} of {scalpSteps.length}
       </p>
       <h2 className="text-lg font-semibold text-foreground mb-1">{step.title}</h2>
-      <p className="text-sm text-muted-foreground mb-5 leading-relaxed">{step.instruction}</p>
+      <p className="text-sm text-muted-foreground mb-5 leading-relaxed">
+        {currentStep === 2
+          ? "Show the back of your head and your nape. This one's tricky on your own."
+          : step.instruction}
+      </p>
 
       {!previewUrl ? (
         <>
@@ -143,6 +155,20 @@ const ScalpBaselineCapture = ({ onComplete, onBack, gender = 'woman' }: ScalpBas
               <ImageIcon size={18} strokeWidth={1.8} /> Choose from gallery
             </button>
           </div>
+
+          {currentStep === 2 && (
+            <div className="mt-4 text-center">
+              <button
+                onClick={handleSkipStep}
+                className="text-sm font-medium text-primary underline underline-offset-2"
+              >
+                Skip this one for now
+              </button>
+              <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">
+                You can add this later, or ask someone to help next time you're at the salon.
+              </p>
+            </div>
+          )}
 
           <input
             ref={cameraRef}

@@ -121,37 +121,37 @@ const symptomAcks: Record<string, { mild: string; moderate: string; severe: stri
   itch: {
     mild: "That's really common, especially mid-cycle. We'll keep an eye on it.",
     moderate: "That level of itching is worth tracking. We'll watch how it changes.",
-    severe: "Constant itching can really affect your day. We'll flag this as a priority.",
+    severe: "Constant itching can really affect your day. Let's make this a priority.",
   },
   flaking: {
     mild: "A little flaking between washes is normal. Noted.",
     moderate: "More flaking than usual. Worth monitoring over your next few check-ins.",
-    severe: "Heavy flaking needs attention. We'll make sure this is tracked carefully.",
+    severe: "Heavy flaking like that needs attention. We'll stay on top of this with you.",
   },
   tenderness: {
     mild: "Some sensitivity is worth noting. We'll check on this next time.",
     moderate: "Tenderness like that can signal something underneath. We'll keep tracking.",
-    severe: "Pain on your scalp shouldn't be ignored. We'll flag this right away.",
+    severe: "Pain on your scalp shouldn't be ignored. That's important information.",
   },
   hairline: {
     mild: "Slight changes in density are hard to spot. Good that you noticed.",
     moderate: "Noticeable thinning is worth paying attention to. We'll track this closely.",
-    severe: "Significant thinning deserves professional attention. We'll make sure you have the right next steps.",
+    severe: "Significant thinning deserves professional input. We'll help you take the right next step.",
   },
   shedding: {
     mild: "Some breakage is normal with textured hair. Noted for your records.",
     moderate: "More breakage than expected. Could be worth looking at your routine.",
-    severe: "That level of breakage can signal something deeper. We'll flag this.",
+    severe: "That level of breakage can signal something deeper going on. Good that you're telling us.",
   },
   bumps: {
     mild: "A few bumps can come and go. We'll see if they persist.",
     moderate: "Multiple bumps are worth keeping an eye on. Noted.",
-    severe: "That sounds like it needs attention soon. We'll flag this as urgent.",
+    severe: "That sounds really uncomfortable. A professional should take a look at this soon.",
   },
   dryness: {
     mild: "Mild dryness is common between washes. Noted.",
     moderate: "Persistent dryness can affect your scalp barrier. We'll track this.",
-    severe: "Severe dryness can lead to other issues. We'll make sure this gets attention.",
+    severe: "Severe dryness can lead to other problems if left unchecked. We're noting this carefully.",
   },
 };
 const getAck = (severity: string, _label: string, _index: number, key?: string): string | null => {
