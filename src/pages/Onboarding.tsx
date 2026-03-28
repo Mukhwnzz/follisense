@@ -209,6 +209,12 @@ const Onboarding = () => {
   const [hairType, setHairType] = useState(onboardingData.hairType || '');
   const [hairSubType, setHairSubType] = useState('');
   const [showSubType, setShowSubType] = useState(false);
+  const hairAutoAdvanceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Cancel hair auto-advance on unmount or step change
+  useEffect(() => {
+    return () => { if (hairAutoAdvanceRef.current) clearTimeout(hairAutoAdvanceRef.current); };
+  }, [step]);
 
   // Chemical processing
   const [chemicalStatus, setChemicalStatus] = useState(onboardingData.chemicalProcessing || '');
