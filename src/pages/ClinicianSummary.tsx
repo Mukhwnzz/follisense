@@ -22,6 +22,11 @@ const ClinicianSummary = () => {
     let label = cp;
     if (cp === 'Multiple') label = onboardingData.chemicalProcessingMultiple?.join(', ') || 'Multiple (unspecified)';
     if (onboardingData.lastChemicalTreatment) label += `, last treated: ${onboardingData.lastChemicalTreatment}`;
+    if (onboardingData.chemicalBrand) {
+      const brandDisplay = onboardingData.chemicalBrand === 'Other' ? (onboardingData.chemicalBrandOther || 'Other') : onboardingData.chemicalBrand;
+      label += `, brand: ${brandDisplay}`;
+    }
+    if (onboardingData.chemicalFrequency) label += `, frequency: ${onboardingData.chemicalFrequency}`;
     return label;
   };
 
