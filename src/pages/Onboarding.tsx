@@ -609,7 +609,7 @@ const Onboarding = () => {
                   </div>
                 )}
 
-                {step === 4 && symptomPhase === 'symptoms' && (
+                {step === 5 && symptomPhase === 'symptoms' && (
                   <div>
                     <p className="text-xs text-muted-foreground mb-1">{symptomIndex + 1} of {onboardingSymptoms.length}</p>
                     <h2 className="text-lg font-semibold text-foreground mb-6">{onboardingSymptoms[symptomIndex].question}</h2>
@@ -627,7 +627,7 @@ const Onboarding = () => {
                   </div>
                 )}
 
-                {step === 4 && symptomPhase === 'result' && triageResult === 'green' && (
+                {step === 5 && symptomPhase === 'result' && triageResult === 'green' && (
                   <div>
                     <div className="flex justify-center mb-6">
                       <motion.div initial={{ scale: 0.8 }} animate={{ scale: 1 }} transition={{ duration: 0.5, ease: 'easeOut' }} className="w-20 h-20 rounded-full bg-primary/15 flex items-center justify-center">
@@ -641,7 +641,7 @@ const Onboarding = () => {
                   </div>
                 )}
 
-                {step === 4 && symptomPhase === 'result' && triageResult === 'amber' && (
+                {step === 5 && symptomPhase === 'result' && triageResult === 'amber' && (
                   <div>
                     <div className="flex justify-center mb-6">
                       <motion.div initial={{ scale: 0.8 }} animate={{ scale: 1 }} transition={{ duration: 0.5, ease: 'easeOut' }} className="w-20 h-20 rounded-full bg-warning/15 flex items-center justify-center">
@@ -673,7 +673,7 @@ const Onboarding = () => {
                   </div>
                 )}
 
-                {step === 4 && symptomPhase === 'result' && triageResult === 'red' && (
+                {step === 5 && symptomPhase === 'result' && triageResult === 'red' && (
                   <div>
                     <div className="flex justify-center mb-6">
                       <motion.div initial={{ scale: 0.8 }} animate={{ scale: 1 }} transition={{ duration: 0.5, ease: 'easeOut' }} className="w-20 h-20 rounded-full bg-destructive/15 flex items-center justify-center">
