@@ -88,18 +88,13 @@ const chemicalOptions = [
 ];
 
 const chemicalTypeOptions = ['Relaxer', 'Texturiser', 'Keratin treatment', 'Other'];
-const chemicalBrandOptions = [
-  'Dark and Lovely', 'ORS Olive Oil', 'TCB', 'Just for Me', 'Affirm',
-  'Mizani', 'SoftSheen-Carson', 'Motions', 'Hawaiian Silky', 'Namaste',
-  'Design Essentials', 'Other',
-];
 const lastTreatmentOptions = [
   'Less than 4 weeks ago', '4 to 8 weeks ago', '2 to 3 months ago',
   '3 to 6 months ago', 'More than 6 months ago', 'Currently growing out',
 ];
 const chemicalFreqOptions = [
   'Every 4 to 6 weeks', 'Every 8 to 12 weeks', 'Every 3 to 6 months',
-  'Less often', 'Stopped / growing out',
+  'Less often', 'Stopped',
 ];
 
 // ─── GENDER OPTIONS ──────────────────────────────────────────────────────────
@@ -218,13 +213,11 @@ const Onboarding = () => {
 
   // Chemical processing
   const [chemicalStatus, setChemicalStatus] = useState(onboardingData.chemicalProcessing || '');
+  const [chemicalStep, setChemicalStep] = useState(0); // 0=status, 1=type, 2=timing, 3=frequency
   const [chemicalTypes, setChemicalTypes] = useState<string[]>(onboardingData.chemicalProcessingMultiple || []);
   const [chemicalOtherType, setChemicalOtherType] = useState('');
-  const [chemicalBrand, setChemicalBrand] = useState(onboardingData.chemicalBrand || '');
-  const [chemicalBrandOther, setChemicalBrandOther] = useState(onboardingData.chemicalBrandOther || '');
   const [lastTreatment, setLastTreatment] = useState(onboardingData.lastChemicalTreatment || '');
   const [chemicalFreq, setChemicalFreq] = useState(onboardingData.chemicalFrequency || '');
-  const [brandSearch, setBrandSearch] = useState('');
 
   // Styles
   const [styles, setStyles] = useState<string[]>(onboardingData.protectiveStyles || []);
@@ -290,10 +283,11 @@ const Onboarding = () => {
       case 0: return !!gender;
       case 1: return !!hairType;
       case 2: {
-        if (!chemicalStatus) return false;
-        if (chemicalStatus === 'natural' || chemicalStatus === 'unsure') return true;
-        // Need follow-up filled
-        return chemicalTypes.length > 0 && (chemicalBrand || chemicalBrandOther) && lastTreatment && chemicalFreq;
+        if (chemicalStep === 0) return false; // auto-advance handles this
+        if (chemicalStep === 1) return chemicalTypes.length > 0;
+        if (chemicalStep === 2) return false; // auto-advance
+        if (chemicalStep === 3) return false; // auto-advance
+        return false;
       }
       case 3: return styles.length > 0 && (!styles.includes('Other') || otherStyle.trim().length > 0) && !!protectiveFreq;
       case 4: return !!cycleLength && betweenWash.length > 0 && (!betweenWash.includes('Other') || otherBetweenWash.trim().length > 0);
@@ -332,8 +326,6 @@ const Onboarding = () => {
       hairType: effectiveHairType,
       chemicalProcessing: chemicalStatus,
       chemicalProcessingMultiple: chemicalTypes,
-      chemicalBrand: chemicalBrand === 'Other' ? chemicalBrandOther : chemicalBrand,
-      chemicalBrandOther,
       chemicalFrequency: chemicalFreq,
       lastChemicalTreatment: lastTreatment,
       protectiveStyles: styles,
@@ -386,6 +378,13 @@ const Onboarding = () => {
   };
 
   const handleNext = () => {
+    if (step === 2) {
+      // Chemical sub-steps: step 1 (type) has a Next button
+      if (chemicalStep === 1) {
+        setChemicalStep(2);
+        return;
+      }
+    }
     if (step < 7) {
       setStep(step + 1);
     } else if (step === 8) {
@@ -444,7 +443,10 @@ const Onboarding = () => {
       } else {
         setStep(7);
       }
+    } else if (step === 2 && chemicalStep > 0) {
+      setChemicalStep(chemicalStep - 1);
     } else if (step > 0) {
+      if (step === 2) setChemicalStep(0); // reset when leaving chemical
       setStep(step - 1);
     } else {
       navigate(-1);
@@ -457,6 +459,7 @@ const Onboarding = () => {
   );
 
   const getButtonText = () => {
+    if (step === 2 && chemicalStep === 1) return 'Next';
     if (step === 6) return "Let's go";
     if (step === 8) {
       if (symptomPhase === 'ask') return '';
@@ -474,7 +477,7 @@ const Onboarding = () => {
   // Hide bottom button on auto-advance screens and photo capture
   const showBottomButton = step !== 0 && step !== 1 && step !== 7 && step !== 9
     && !(step === 8 && symptomPhase === 'ask')
-    && !(step === 2 && (chemicalStatus === '' || chemicalStatus === 'natural' || chemicalStatus === 'unsure'));
+    && !(step === 2 && chemicalStep !== 1); // only show Next on chemical step 1 (type multi-select)
 
   const activeSegment = getProgressSegment();
 
