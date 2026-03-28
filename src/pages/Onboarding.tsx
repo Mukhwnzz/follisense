@@ -10,9 +10,20 @@ import ScalpBaselineCapture from '@/components/ScalpBaselineCapture';
 // ─── Image imports ───────────────────────────────────────────────────────────
 import hairType4Hero from '@/assets/hair-type4-hero.png';
 import hairType3Hero from '@/assets/hair-type3-hero.png';
+import hair4aBack from '@/assets/hair-4a-back.png';
 import hair4bBack from '@/assets/hair-4b-back.png';
 import hair4cBack from '@/assets/hair-4c-back.png';
 import hair3bBack from '@/assets/hair-3b-back.png';
+import hair3cBack from '@/assets/hair-3c-back.png';
+
+import scalpFrontFemale from '@/assets/scalp-front-female.jpeg';
+import scalpSideFemale from '@/assets/scalp-side-female.jpeg';
+import scalpBackFemale from '@/assets/scalp-back-female.jpeg';
+import scalpTopFemale from '@/assets/scalp-top-female.jpeg';
+import scalpSideMaleA from '@/assets/scalp-side-male-a.jpeg';
+import scalpSideMaleB from '@/assets/scalp-side-male-b.jpeg';
+import scalpBackMale from '@/assets/scalp-back-male.png';
+import scalpTopMale from '@/assets/scalp-top-male.png';
 
 // ─── HAIR TYPE DATA ──────────────────────────────────────────────────────────
 const hairTypes = [
@@ -34,7 +45,7 @@ interface SubTypeOption {
 
 const subTypes: Record<string, SubTypeOption[]> = {
   type4: [
-    { id: '4a', label: '4A', image: '' },
+    { id: '4a', label: '4A', image: hair4aBack },
     { id: '4b', label: '4B', image: hair4bBack },
     { id: '4c', label: '4C', image: hair4cBack },
     { id: 'mixed', label: 'Mixed' },
@@ -43,7 +54,7 @@ const subTypes: Record<string, SubTypeOption[]> = {
   type3: [
     { id: '3a', label: '3A', image: '' },
     { id: '3b', label: '3B', image: hair3bBack },
-    { id: '3c', label: '3C', image: '' },
+    { id: '3c', label: '3C', image: hair3cBack },
     { id: 'mixed', label: 'Mixed' },
     { id: 'not-sure', label: 'Not sure' },
   ],
@@ -1034,6 +1045,7 @@ const Onboarding = () => {
                 {step === 10 && (
                   <LengthCheckPhotos
                     isShortHair={isShortHairStyle}
+                    gender={gender}
                     onComplete={(photos) => {
                       setLengthPhotos(photos);
                       setStep(11);
@@ -1087,6 +1099,7 @@ const Onboarding = () => {
 // ─── Length Check Photos Component ────────────────────────────────────────────
 interface LengthCheckPhotosProps {
   isShortHair: boolean;
+  gender: string;
   onComplete: (photos: { area: string; dataUrl: string }[]) => void;
   onSkip: () => void;
 }
@@ -1103,15 +1116,21 @@ const lengthStepsShort = [
   { title: 'Back', instruction: 'Take a photo from the back showing your hair.' },
 ];
 
-const LengthCheckPhotos = ({ isShortHair, onComplete, onSkip }: LengthCheckPhotosProps) => {
+const getLengthReferenceImage = (gender: string, index: number) => {
+  const isMale = gender === 'man';
+  const femaleRefs = [scalpFrontFemale, scalpSideFemale, scalpBackFemale];
+  const maleRefs = [scalpSideMaleA, scalpSideMaleB, scalpBackMale];
+  return (isMale ? maleRefs : femaleRefs)[index] || femaleRefs[index] || '';
+};
+
+const LengthCheckPhotos = ({ isShortHair, gender, onComplete, onSkip }: LengthCheckPhotosProps) => {
   const steps = isShortHair ? lengthStepsShort : lengthStepsLong;
   const [currentStep, setCurrentStep] = useState(0);
   const [photos, setPhotos] = useState<{ area: string; dataUrl: string }[]>([]);
   const [preview, setPreview] = useState<string | null>(null);
-  const cameraRef = useState<HTMLInputElement | null>(null);
-  const galleryRef = useState<HTMLInputElement | null>(null);
 
   const step = steps[currentStep];
+  const referenceImage = getLengthReferenceImage(gender, currentStep);
 
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -1143,13 +1162,11 @@ const LengthCheckPhotos = ({ isShortHair, onComplete, onSkip }: LengthCheckPhoto
       {!preview ? (
         <>
           <div className="rounded-xl overflow-hidden border border-border mb-5 bg-accent/20">
-            <div className="w-full flex items-center justify-center" style={{ height: '200px' }}>
-              <div className="text-center px-6">
-                <Camera size={28} className="text-muted-foreground mx-auto mb-2" strokeWidth={1.5} />
-                <p className="text-xs text-muted-foreground">Reference: {step.title}</p>
-                <p className="text-[10px] text-muted-foreground mt-1">Image coming in next upload</p>
-              </div>
-            </div>
+            <img
+              src={referenceImage}
+              alt={`Reference: ${step.title}`}
+              style={{ width: '100%', height: '200px', objectFit: 'contain', display: 'block', background: 'hsl(var(--accent) / 0.15)' }}
+            />
           </div>
           <div className="space-y-3">
             <label className="w-full h-14 rounded-xl bg-primary text-primary-foreground font-semibold text-sm flex items-center justify-center gap-2 cursor-pointer">
