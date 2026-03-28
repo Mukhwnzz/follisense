@@ -1,102 +1,104 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, HelpCircle, ChevronDown, ChevronLeft, ChevronRight, Check, Eye, Stethoscope, Search, Camera, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, HelpCircle, ChevronDown, Check, Eye, Stethoscope, Search, Camera, ShieldCheck, ImageIcon } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 import { computeHistoricalRisk } from '@/utils/triageLogic';
 import type { CheckInData } from '@/contexts/AppContext';
 import ScalpBaselineCapture from '@/components/ScalpBaselineCapture';
 
-// ─── HAIR REFERENCE PHOTOS ───────────────────────────────────────────────────
-const hairPhotos: Record<string, Record<string, { src: string; label: string }[]>> = {
-  type3: {
-    female: [
-      { src: 'https://i.pinimg.com/736x/99/59/67/995967923455cf9abd0b8ef9d4e4ba81.jpg', label: 'Type 3: S-shaped curls, bouncy' },
-      { src: 'https://i.pinimg.com/1200x/59/e2/50/59e250e2cbe1244e3e2196678551b14b.jpg', label: 'Type 3: Tighter curls, voluminous' },
-    ],
-    male: [
-      { src: 'https://i.pinimg.com/736x/a2/24/c0/a224c05d0dfbda56c5e6841df83067ef.jpg', label: 'Type 3: Defined curls, medium density' },
-    ],
-  },
-  type4: {
-    female: [
-      { src: 'https://i.pinimg.com/1200x/35/a3/1c/35a31cd46add2f0f7c933f348c60420e.jpg', label: 'Type 4a: Defined coils, springy' },
-      { src: 'https://i.pinimg.com/1200x/1b/47/2c/1b472c56063b6145d0945cc232fd056d.jpg', label: 'Type 4b: Z-pattern coils, dense' },
-      { src: 'https://i.pinimg.com/736x/a7/e7/9a/a7e79acc50020c6f6d793291e1c4c2e9.jpg', label: 'Type 4c: Tight coils, significant shrinkage' },
-    ],
-    male: [
-      { src: 'https://i.pinimg.com/1200x/c1/f8/13/c1f8138c7a1b36c682dd42554dc9b227.jpg', label: 'Type 4: Tight coils, dense, afro' },
-      { src: 'https://i.pinimg.com/736x/f5/ea/1e/f5ea1e1fe243495ddf4c22800791e0c6.jpg', label: 'Type 4: Coily texture, fade' },
-    ],
-  },
-};
-// ─────────────────────────────────────────────────────────────────────────────
+// ─── Image imports ───────────────────────────────────────────────────────────
+import hairType4Hero from '@/assets/hair-type4-hero.png';
+import hairType3Hero from '@/assets/hair-type3-hero.png';
+import hair4bBack from '@/assets/hair-4b-back.png';
+import hair4cBack from '@/assets/hair-4c-back.png';
+import hair3bBack from '@/assets/hair-3b-back.png';
 
+// ─── HAIR TYPE DATA ──────────────────────────────────────────────────────────
 const hairTypes = [
   { id: 'type4', label: 'Type 4: Coily', desc: 'Tight coils or zig-zag pattern, dense texture, significant shrinkage' },
   { id: 'type3', label: 'Type 3: Curly', desc: 'Visible curl pattern, S-shaped curls, looser texture' },
-  { id: 'unsure', label: 'Not sure', desc: "That's okay. We'll use the most inclusive experience" },
+  { id: 'unsure', label: 'Not sure', desc: "That's okay. We'll use the most inclusive settings" },
 ];
 
-const subTypes: Record<string, { id: string; label: string }[]> = {
+const heroImages: Record<string, string> = {
+  type4: hairType4Hero,
+  type3: hairType3Hero,
+};
+
+interface SubTypeOption {
+  id: string;
+  label: string;
+  image?: string;
+}
+
+const subTypes: Record<string, SubTypeOption[]> = {
   type4: [
-    { id: '4a', label: '4a: Soft, defined coils' },
-    { id: '4b', label: '4b: Z-shaped, tightly coiled' },
-    { id: '4c', label: '4c: Very tight, densely packed' },
+    { id: '4a', label: '4A', image: '' },
+    { id: '4b', label: '4B', image: hair4bBack },
+    { id: '4c', label: '4C', image: hair4cBack },
     { id: 'mixed', label: 'Mixed' },
     { id: 'not-sure', label: 'Not sure' },
   ],
   type3: [
-    { id: '3a', label: '3a: Loose, wide curls' },
-    { id: '3b', label: '3b: Springy, defined curls' },
-    { id: '3c', label: '3c: Tight corkscrew curls' },
+    { id: '3a', label: '3A', image: '' },
+    { id: '3b', label: '3B', image: hair3bBack },
+    { id: '3c', label: '3C', image: '' },
     { id: 'mixed', label: 'Mixed' },
     { id: 'not-sure', label: 'Not sure' },
   ],
 };
 
+// ─── STYLE OPTIONS ───────────────────────────────────────────────────────────
 const femaleStyleOptions = [
-  'Worn out / loose (natural)', 'Worn out / loose (relaxed or straightened)',
-  'Silk press / blowout', 'Twist out / braid out',
-  'Wash and go', 'Box braids',
-  'Knotless braids', 'Cornrows / flat twists',
-  'Twists (two-strand)', 'Crochet braids',
-  'Locs / faux locs', 'Weave / sew-in',
-  'Wig (lace front)', 'Wig (other)',
-  'Hair extensions (k-tips, micro links, etc.)', 'Bantu knots',
-  'Other',
+  'Braids', 'Locs', 'Twists', 'Twist out', 'Wig', 'Weave', 'Silk press',
+  'Blow out', 'Loose natural', 'Wash and go', 'Cornrows', 'Other',
 ];
 
 const maleStyleOptions = [
-  'Fade or low cut (barber-maintained)', 'Free-form (no manipulation)',
-  'Waves (with durag or wave cap)', 'High top or frohawk',
-  'Short natural (TWA, tapered)', 'Locs or faux locs',
-  'Box braids', 'Cornrows or flat twists',
-  'Twists (two-strand)', 'Other',
+  'Low cut / fade', 'Waves', 'Locs', 'Twists', 'Cornrows', 'Afro',
+  'Bald / shaved', 'Other',
 ];
 
 const protectiveFreqOptions = ['Most of the time', 'Sometimes', 'Rarely', 'Never'];
 const cycleLengthOptions = ['1-2 weeks', '3-4 weeks', '5-6 weeks', '7-8 weeks', 'Longer than 8 weeks', 'It varies'];
-const betweenWashOptions = ['Nothing', 'Oil my scalp', 'Use a scalp spray or tonic', 'Rinse with water only', 'Other'];
+const betweenWashOptions = ['Nothing', 'Oil my scalp', 'Scalp spray or tonic', 'Rinse with water only', 'Other'];
 const concernOptions = [
   'Itching', 'Flaking', 'Thinning', 'Tenderness', 'Breakage', 'Dryness',
   'I just want to stay on top of things', 'Not sure',
 ];
 
+// ─── CHEMICAL PROCESSING ─────────────────────────────────────────────────────
+const chemicalOptions = [
+  { id: 'natural', label: 'No, fully natural' },
+  { id: 'current', label: 'Yes, currently' },
+  { id: 'growing-out', label: 'Previously, growing out' },
+  { id: 'unsure', label: 'Not sure' },
+];
+
+const chemicalTypeOptions = ['Relaxer', 'Texturiser', 'Keratin treatment', 'Other'];
+const chemicalBrandOptions = [
+  'Dark and Lovely', 'ORS Olive Oil', 'TCB', 'Just for Me', 'Affirm',
+  'Mizani', 'SoftSheen-Carson', 'Motions', 'Hawaiian Silky', 'Namaste',
+  'Design Essentials', 'Other',
+];
+const lastTreatmentOptions = [
+  'Less than 4 weeks ago', '4 to 8 weeks ago', '2 to 3 months ago',
+  '3 to 6 months ago', 'More than 6 months ago', 'Currently growing out',
+];
+const chemicalFreqOptions = [
+  'Every 4 to 6 weeks', 'Every 8 to 12 weeks', 'Every 3 to 6 months',
+  'Less often', 'Stopped / growing out',
+];
+
+// ─── GENDER OPTIONS ──────────────────────────────────────────────────────────
 const genderOptions = [
   { id: 'woman', label: 'Female', icon: '♀' },
   { id: 'man', label: 'Male', icon: '♂' },
   { id: 'prefer-not-to-say', label: 'Prefer not to say', icon: '—' },
 ];
 
-const sectionExplainers: Record<number, string> = {
-  1: "This helps us tailor scalp check-in questions to your hair's needs.",
-  2: "Different styles create different tension and coverage patterns. This helps us know what to watch for.",
-  3: "This is how we time your check-ins and reminders to your actual routine.",
-  4: "This personalises your experience so we focus on what matters to you.",
-};
-
-// ─── SYMPTOM CHECKLIST ──────────────────────────────────────────────────────
+// ─── SYMPTOM CHECKLIST ───────────────────────────────────────────────────────
 const onboardingSymptoms = [
   { key: 'itch', label: 'Itching', question: 'Any scalp itching?' },
   { key: 'flaking', label: 'Flaking', question: 'Any flaking or dandruff?' },
@@ -108,15 +110,15 @@ const onboardingSymptoms = [
 ];
 const severityOptions = ['None', 'Mild', 'Moderate', 'Severe'];
 
-// ─── WARM ACKNOWLEDGMENTS ──────────────────────────────────────────────────
+// ─── WARM ACKNOWLEDGMENTS ────────────────────────────────────────────────────
 const mildAcks = [
   (label: string) => `Noted. Mild ${label.toLowerCase()} is common, especially between washes.`,
   (label: string) => `Got it. A little ${label.toLowerCase()} now and then is quite normal.`,
-  (label: string) => `Okay, mild ${label.toLowerCase()} — we'll keep that on file.`,
+  (label: string) => `Okay, mild ${label.toLowerCase()} - we'll keep that on file.`,
 ];
 const moderateAcks = [
   () => `Thanks for flagging that. We'll keep a close eye on this for you.`,
-  () => `Noted — that's exactly the kind of thing worth tracking over time.`,
+  () => `Noted - that's exactly the kind of thing worth tracking over time.`,
   () => `Good to know. We'll watch how this changes at your next check-in.`,
 ];
 const severeAcks = [
@@ -131,36 +133,14 @@ const getAck = (severity: string, label: string, index: number): string | null =
   if (severity === 'Severe') return severeAcks[index % severeAcks.length]();
   return null;
 };
-// ─────────────────────────────────────────────────────────────────────────────
 
-const PhotoGallery = ({ photos }: { photos: { src: string; label: string }[] }) => {
-  const [idx, setIdx] = useState(0);
-  if (photos.length === 0) return null;
-  if (photos.length === 1) {
-    return (
-      <div className="rounded-xl overflow-hidden border border-border">
-        <img src={photos[0].src} alt={photos[0].label} style={{ width: '100%', height: '260px', objectFit: 'cover', display: 'block' }} />
-        <p className="text-[10px] text-muted-foreground text-center py-1.5 bg-accent/40">{photos[0].label}</p>
-      </div>
-    );
-  }
-  return (
-    <div className="relative rounded-xl overflow-hidden border border-border">
-      <img src={photos[idx].src} alt={photos[idx].label} style={{ width: '100%', height: '260px', objectFit: 'cover', display: 'block' }} />
-      <p className="text-[10px] text-muted-foreground text-center py-1.5 bg-accent/40">{photos[idx].label}</p>
-      <button onClick={(e) => { e.stopPropagation(); setIdx(i => (i - 1 + photos.length) % photos.length); }} className="absolute left-2 top-[120px] -translate-y-1/2 w-7 h-7 rounded-full bg-background/90 flex items-center justify-center shadow">
-        <ChevronLeft size={14} />
-      </button>
-      <button onClick={(e) => { e.stopPropagation(); setIdx(i => (i + 1) % photos.length); }} className="absolute right-2 top-[120px] -translate-y-1/2 w-7 h-7 rounded-full bg-background/90 flex items-center justify-center shadow">
-        <ChevronRight size={14} />
-      </button>
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-1">
-        {photos.map((_, i) => (
-          <div key={i} className={`w-1.5 h-1.5 rounded-full ${i === idx ? 'bg-foreground' : 'bg-foreground/30'}`} />
-        ))}
-      </div>
-    </div>
-  );
+// ─── EXPLAINERS ──────────────────────────────────────────────────────────────
+const sectionExplainers: Record<number, string> = {
+  1: "This helps us tailor scalp check-in questions to your hair's needs.",
+  2: "Chemical processing changes how your scalp and hair respond to styling and products. This helps us tailor your check-ins.",
+  3: "Different styles create different tension and coverage patterns. This helps us know what to watch for.",
+  4: "This is how we time your check-ins and reminders to your actual routine.",
+  5: "This personalises your experience so we focus on what matters to you.",
 };
 
 const CurlIcon = ({ type }: { type: string }) => {
@@ -170,42 +150,72 @@ const CurlIcon = ({ type }: { type: string }) => {
   return null;
 };
 
-const MAIN_SCREENS = 7; // Steps 0-6: gender, hair type, styles, routine, concerns, photo guidelines, scalp photos
+// Total main screens: 0=gender, 1=hair type, 2=chemical, 3=styles, 4=routine, 5=concerns,
+// 6=photo guidelines, 7=scalp photos, 8=symptoms, 9=length check transition, 10=length photos, 11=completion
+const TOTAL_PROGRESS_SEGMENTS = 8; // gender, hair, chemical, styles, routine, concerns, guidelines+photos, symptoms
 
 const Onboarding = () => {
   const navigate = useNavigate();
-  const { onboardingData, setOnboardingData, setOnboardingComplete, addToCheckInHistory, setCurrentCheckIn, setBaselineRisk, setBaselineDate, setBaselinePhotos } = useApp();
+  const {
+    onboardingData, setOnboardingData, setOnboardingComplete,
+    addToCheckInHistory, setCurrentCheckIn, setBaselineRisk, setBaselineDate, setBaselinePhotos,
+  } = useApp();
 
   const [step, setStep] = useState(0);
   const [symptomAck, setSymptomAck] = useState<string | null>(null);
+  const [consentChecked, setConsentChecked] = useState(false);
   const gender = onboardingData.gender;
   const isMale = gender === 'man';
   const isNeutral = gender === 'prefer-not-to-say';
 
+  // Hair type
   const [hairType, setHairType] = useState(onboardingData.hairType || '');
   const [hairSubType, setHairSubType] = useState('');
   const [showSubType, setShowSubType] = useState(false);
 
+  // Chemical processing
+  const [chemicalStatus, setChemicalStatus] = useState(onboardingData.chemicalProcessing || '');
+  const [chemicalTypes, setChemicalTypes] = useState<string[]>(onboardingData.chemicalProcessingMultiple || []);
+  const [chemicalOtherType, setChemicalOtherType] = useState('');
+  const [chemicalBrand, setChemicalBrand] = useState(onboardingData.chemicalBrand || '');
+  const [chemicalBrandOther, setChemicalBrandOther] = useState(onboardingData.chemicalBrandOther || '');
+  const [lastTreatment, setLastTreatment] = useState(onboardingData.lastChemicalTreatment || '');
+  const [chemicalFreq, setChemicalFreq] = useState(onboardingData.chemicalFrequency || '');
+  const [brandSearch, setBrandSearch] = useState('');
+
+  // Styles
   const [styles, setStyles] = useState<string[]>(onboardingData.protectiveStyles || []);
   const [otherStyle, setOtherStyle] = useState(onboardingData.otherStyle || '');
   const [protectiveFreq, setProtectiveFreq] = useState(onboardingData.protectiveStyleFrequency || '');
   const [showMoreStyles, setShowMoreStyles] = useState(false);
 
+  // Routine
   const [cycleLength, setCycleLength] = useState(onboardingData.cycleLength || '');
   const [betweenWash, setBetweenWash] = useState<string[]>(onboardingData.betweenWashCare || []);
   const [otherBetweenWash, setOtherBetweenWash] = useState(onboardingData.otherBetweenWashCare || '');
 
+  // Concerns
   const [concerns, setConcerns] = useState<string[]>(onboardingData.goals || []);
 
-  // ─── Symptom flow state ─────────────────────────────────────────────────
+  // Symptom flow
   const [symptomPhase, setSymptomPhase] = useState<'ask' | 'symptoms' | 'result'>('ask');
   const [symptomIndex, setSymptomIndex] = useState(0);
   const [symptomResponses, setSymptomResponses] = useState<Record<string, string>>({});
   const [triageResult, setTriageResult] = useState<'green' | 'amber' | 'red' | null>(null);
-  // ────────────────────────────────────────────────────────────────────────
 
+  // Length check
+  const [lengthStep, setLengthStep] = useState(0);
+  const [lengthPhotos, setLengthPhotos] = useState<{ area: string; dataUrl: string }[]>([]);
+  const [lengthPreview, setLengthPreview] = useState<string | null>(null);
+  const lengthCameraRef = useState<HTMLInputElement | null>(null);
+  const lengthGalleryRef = useState<HTMLInputElement | null>(null);
+
+  // Compute style options with chemical filtering
   const rawStyleOptions = isMale ? maleStyleOptions : isNeutral ? [...new Set([...femaleStyleOptions, ...maleStyleOptions])] : femaleStyleOptions;
-  const genderKey = isMale ? 'male' : isNeutral ? 'both' : 'female';
+  const isRelaxedOrTexturised = chemicalStatus === 'current' && (chemicalTypes.includes('Relaxer') || chemicalTypes.includes('Texturiser'));
+  const filteredStyleOptions = isRelaxedOrTexturised
+    ? rawStyleOptions.filter(s => s !== 'Loose natural' && s !== 'Wash and go')
+    : rawStyleOptions;
 
   const toggleStyle = (s: string) => setStyles(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s]);
   const toggleBetweenWash = (v: string) => {
@@ -219,51 +229,70 @@ const Onboarding = () => {
     }
   };
   const toggleConcern = (c: string) => setConcerns(prev => prev.includes(c) ? prev.filter(x => x !== c) : [...prev, c]);
+  const toggleChemicalType = (t: string) => setChemicalTypes(prev => prev.includes(t) ? prev.filter(x => x !== t) : [...prev, t]);
 
-  // Total steps: 0-6 (main) + 7 (symptom flow)
-  const totalProgressDots = 8;
+  const getProgressSegment = () => {
+    if (step <= 1) return step;
+    if (step === 2) return 2; // chemical
+    if (step === 3) return 3; // styles
+    if (step === 4) return 4; // routine
+    if (step === 5) return 5; // concerns
+    if (step === 6 || step === 7) return 6; // guidelines + photos
+    if (step >= 8) return 7; // symptoms + length + completion
+    return 0;
+  };
 
   const canProceed = () => {
     switch (step) {
       case 0: return !!gender;
       case 1: return !!hairType;
-      case 2: return styles.length > 0 && (!styles.includes('Other') || otherStyle.trim().length > 0) && !!protectiveFreq;
-      case 3: return !!cycleLength && betweenWash.length > 0 && (!betweenWash.includes('Other') || otherBetweenWash.trim().length > 0);
-      case 4: return concerns.length > 0;
-      case 5: return true; // photo guidelines — just a "Next" button
-      case 6: return false; // photo capture — handled by component
-      case 7: {
+      case 2: {
+        if (!chemicalStatus) return false;
+        if (chemicalStatus === 'natural' || chemicalStatus === 'unsure') return true;
+        // Need follow-up filled
+        return chemicalTypes.length > 0 && (chemicalBrand || chemicalBrandOther) && lastTreatment && chemicalFreq;
+      }
+      case 3: return styles.length > 0 && (!styles.includes('Other') || otherStyle.trim().length > 0) && !!protectiveFreq;
+      case 4: return !!cycleLength && betweenWash.length > 0 && (!betweenWash.includes('Other') || otherBetweenWash.trim().length > 0);
+      case 5: return concerns.length > 0;
+      case 6: return consentChecked;
+      case 7: return false; // photo capture handled by component
+      case 8: {
         if (symptomPhase === 'ask') return true;
-        if (symptomPhase === 'symptoms') {
-          const currentSymptom = onboardingSymptoms[symptomIndex];
-          return !!symptomResponses[currentSymptom.key];
-        }
+        if (symptomPhase === 'symptoms') return !!symptomResponses[onboardingSymptoms[symptomIndex].key];
         if (symptomPhase === 'result') return true;
         return false;
       }
+      case 9: return true; // length check transition
+      case 10: return true; // length photos (skippable)
+      case 11: return true; // completion
       default: return false;
     }
   };
 
-  const buildCheckInFromSymptoms = (responses: Record<string, string>): CheckInData => {
-    return {
-      itch: responses.itch || 'None',
-      tenderness: responses.tenderness || 'None',
-      hairline: responses.hairline || 'None',
-      flaking: responses.flaking || 'None',
-      shedding: responses.shedding || 'None',
-      bumps: responses.bumps || 'None',
-      dryness: responses.dryness || 'None',
-      type: 'baseline',
-      date: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }),
-    };
-  };
+  const buildCheckInFromSymptoms = (responses: Record<string, string>): CheckInData => ({
+    itch: responses.itch || 'None',
+    tenderness: responses.tenderness || 'None',
+    hairline: responses.hairline || 'None',
+    flaking: responses.flaking || 'None',
+    shedding: responses.shedding || 'None',
+    bumps: responses.bumps || 'None',
+    dryness: responses.dryness || 'None',
+    type: 'baseline',
+    date: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }),
+  });
 
   const saveAndComplete = (checkIn: CheckInData, risk: 'green' | 'amber' | 'red') => {
     const effectiveHairType = hairSubType || hairType;
     setOnboardingData({
       ...onboardingData,
       hairType: effectiveHairType,
+      chemicalProcessing: chemicalStatus,
+      chemicalProcessingMultiple: chemicalTypes,
+      chemicalBrand: chemicalBrand === 'Other' ? chemicalBrandOther : chemicalBrand,
+      chemicalBrandOther,
+      chemicalFrequency: chemicalFreq,
+      lastChemicalTreatment: lastTreatment,
       protectiveStyles: styles,
       otherStyle,
       protectiveStyleFrequency: protectiveFreq,
@@ -289,19 +318,35 @@ const Onboarding = () => {
       type: 'baseline',
       date: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }),
     };
-    saveAndComplete(cleanCheckIn, 'green');
+    setTriageResult('green');
+    setSymptomPhase('result');
+    setSymptomResponses({});
+    // We'll save on "Continue to dashboard"
+    setStep(8);
+    // Actually let's just go to result directly
+    setTimeout(() => {
+      setTriageResult('green');
+      setSymptomPhase('result');
+    }, 0);
+  };
+
+  const finishOnboarding = () => {
+    const checkIn = buildCheckInFromSymptoms(symptomResponses);
+    const risk = triageResult || 'green';
+    saveAndComplete(checkIn, risk);
+  };
+
+  const handlePhotosComplete = (photos: { area: string; dataUrl: string }[]) => {
+    setBaselinePhotos(photos.map(p => ({ area: p.area, captured: true, date: new Date().toISOString() })));
+    setStep(8);
+    setSymptomPhase('ask');
   };
 
   const handleNext = () => {
-    if (step < MAIN_SCREENS - 1) {
+    if (step < 7) {
       setStep(step + 1);
-    } else if (step === MAIN_SCREENS - 1) {
-      // Step 6 is photo capture — skip to symptom flow after photos complete
-      // This shouldn't be reached for step 6 since it's handled by the component
-      setStep(step + 1);
-    } else if (step === 7) {
+    } else if (step === 8) {
       if (symptomPhase === 'symptoms') {
-        // If showing an ack, clear it and advance
         if (symptomAck) {
           setSymptomAck(null);
           if (symptomIndex < onboardingSymptoms.length - 1) {
@@ -314,7 +359,6 @@ const Onboarding = () => {
           }
           return;
         }
-        // Show ack if severity is not None
         const currentSymptom = onboardingSymptoms[symptomIndex];
         const severity = symptomResponses[currentSymptom.key];
         const ack = getAck(severity, currentSymptom.label, symptomIndex);
@@ -322,7 +366,6 @@ const Onboarding = () => {
           setSymptomAck(ack);
           return;
         }
-        // None — advance directly
         if (symptomIndex < onboardingSymptoms.length - 1) {
           setSymptomIndex(symptomIndex + 1);
         } else {
@@ -332,14 +375,17 @@ const Onboarding = () => {
           setSymptomPhase('result');
         }
       } else if (symptomPhase === 'result') {
-        const checkIn = buildCheckInFromSymptoms(symptomResponses);
-        saveAndComplete(checkIn, triageResult || 'green');
+        setStep(9); // length check transition
       }
+    } else if (step === 9 || step === 10) {
+      setStep(step + 1);
+    } else if (step === 11) {
+      finishOnboarding();
     }
   };
 
   const handleBack = () => {
-    if (step === 7) {
+    if (step === 8) {
       if (symptomPhase === 'result') {
         setSymptomPhase('symptoms');
         setSymptomIndex(onboardingSymptoms.length - 1);
@@ -353,7 +399,7 @@ const Onboarding = () => {
         setSymptomPhase('ask');
         setSymptomAck(null);
       } else {
-        setStep(6);
+        setStep(7);
       }
     } else if (step > 0) {
       setStep(step - 1);
@@ -362,53 +408,48 @@ const Onboarding = () => {
     }
   };
 
-  const handlePhotosComplete = (photos: { area: string; dataUrl: string }[]) => {
-    setBaselinePhotos(photos.map(p => ({ area: p.area, captured: true, date: new Date().toISOString() })));
-    setStep(7);
-    setSymptomPhase('ask');
-  };
+  const isShortHairStyle = styles.some(s =>
+    ['Low cut / fade', 'Bald / shaved', 'Afro'].includes(s) ||
+    s.toLowerCase().includes('twa')
+  );
 
-  // Determine which progress dot is active
-  const activeProgressDot = step <= 6 ? step : 7;
-
-  // Button text
   const getButtonText = () => {
-    if (step === 5) return 'Next';
-    if (step === 7) {
+    if (step === 6) return "Let's go";
+    if (step === 8) {
       if (symptomPhase === 'ask') return '';
       if (symptomPhase === 'symptoms') {
         if (symptomAck) return 'Continue';
         return symptomIndex < onboardingSymptoms.length - 1 ? 'Next' : 'See results';
       }
-      if (symptomPhase === 'result') return 'Continue to dashboard';
+      if (symptomPhase === 'result') return 'Continue';
     }
-    if (step === MAIN_SCREENS - 1) return 'Next';
+    if (step === 9) return '';
+    if (step === 11) return 'Take me to my dashboard';
     return 'Next';
   };
 
-  // Hide bottom button on: gender (auto-advance), hair type (auto-advance), photo capture (step 6), symptom ask phase
-  const showBottomButton = step !== 0 && step !== 1 && step !== 6 && !(step === 7 && symptomPhase === 'ask');
+  // Hide bottom button on auto-advance screens and photo capture
+  const showBottomButton = step !== 0 && step !== 1 && step !== 7 && step !== 9
+    && !(step === 8 && symptomPhase === 'ask')
+    && !(step === 2 && (chemicalStatus === '' || chemicalStatus === 'natural' || chemicalStatus === 'unsure'));
+
+  const activeSegment = getProgressSegment();
 
   return (
-   <div style={{
-      position: 'fixed',
-      inset: 0,
+    <div style={{
+      position: 'fixed', inset: 0,
       backgroundImage: 'url(https://i.pinimg.com/1200x/21/df/fe/21dffea6ca5d2c69edb5c8b926e41b50.jpg)',
-      backgroundSize: 'cover',
-      backgroundPosition: 'center',
-      backgroundRepeat: 'no-repeat',
-      overflowY: 'auto',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '24px 16px',
+      backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat',
+      overflowY: 'auto', display: 'flex', flexDirection: 'column',
+      alignItems: 'center', justifyContent: 'center', padding: '24px 16px',
     }}>
       <style>{`
-        .selection-card { border: 1.5px solid #E8DDD2 !important; }
-        .selection-card.selected { border: 1.5px solid #7fa896 !important; }
-        .pill-option { border: 1.5px solid #E8DDD2 !important; }
-        .pill-option.selected { border: 1.5px solid #7fa896 !important; }
+        .selection-card { border: 1.5px solid #E8DDD2 !important; border-radius: 14px; padding: 14px; background: white; cursor: pointer; transition: all 0.15s ease; }
+        .selection-card:hover { border-color: #d4c5b5 !important; }
+        .selection-card.selected { border: 1.5px solid #7fa896 !important; background: rgba(127,168,150,0.06); }
+        .pill-option { border: 1.5px solid #E8DDD2 !important; border-radius: 100px; padding: 10px 18px; background: white; cursor: pointer; font-size: 13px; font-weight: 500; transition: all 0.15s ease; }
+        .pill-option:hover { border-color: #d4c5b5 !important; }
+        .pill-option.selected { border: 1.5px solid #7fa896 !important; background: rgba(127,168,150,0.06); color: #5a8f74; }
       `}</style>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -416,40 +457,47 @@ const Onboarding = () => {
         transition={{ duration: 0.4 }}
         style={{ width: '100%', maxWidth: '560px' }}
       >
-        <div style={{ backgroundColor: '#FFFFFF', borderRadius: '24px', boxShadow: '0 8px 40px rgba(0,0,0,0.10), 0 2px 8px rgba(0,0,0,0.06)', padding: '24px 36px 28px', display: 'flex', flexDirection: 'column' }}>
+        <div style={{
+          backgroundColor: '#FFFFFF', borderRadius: '24px',
+          boxShadow: '0 8px 40px rgba(0,0,0,0.10), 0 2px 8px rgba(0,0,0,0.06)',
+          padding: '24px 28px 28px', display: 'flex', flexDirection: 'column',
+          maxHeight: 'calc(100vh - 48px)', overflow: 'hidden',
+        }}>
 
           {/* Header with progress */}
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-4 flex-shrink-0">
             <button onClick={handleBack} className="p-2 -ml-2 text-foreground">
               <ArrowLeft size={22} strokeWidth={1.8} />
             </button>
-            <div className="flex gap-2">
-              {Array.from({ length: totalProgressDots }).map((_, i) => (
+            <div className="flex gap-1.5">
+              {Array.from({ length: TOTAL_PROGRESS_SEGMENTS }).map((_, i) => (
                 <div
                   key={i}
-                  className={`h-1.5 w-8 rounded-full transition-colors duration-300 ${i <= activeProgressDot ? 'bg-primary' : 'bg-border'}`}
+                  className={`h-1 rounded-full transition-colors duration-300 ${i <= activeSegment ? 'bg-primary' : 'bg-border'}`}
+                  style={{ width: '28px' }}
                 />
               ))}
             </div>
             <div className="w-10" />
           </div>
 
-          <div>
+          <div style={{ overflowY: 'auto', flex: 1, paddingBottom: showBottomButton ? '0' : '12px' }}>
             <AnimatePresence mode="wait">
               <motion.div
-                key={step === 7 ? `${step}-${symptomPhase}-${symptomIndex}-${symptomAck ? 'ack' : ''}` : step}
+                key={step === 8 ? `${step}-${symptomPhase}-${symptomIndex}-${symptomAck ? 'ack' : ''}` : step}
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
                 transition={{ duration: 0.2 }}
-                className="pt-2 pb-8"
+                className="pt-2 pb-4"
               >
 
                 {/* ── Screen 0: Gender Selection (auto-advance) ── */}
                 {step === 0 && (
                   <div>
-                    <h2 className="text-lg font-semibold text-foreground mb-2">How do you identify?</h2>
-                    <p className="text-sm text-muted-foreground mb-6">This helps us personalise your experience</p>
+                    <h2 className="text-lg font-semibold text-foreground mb-1">Welcome to FolliSense</h2>
+                    <p className="text-base text-foreground mb-1">Let's personalise your experience.</p>
+                    <p className="text-sm text-muted-foreground mb-6">How do you identify?</p>
                     <div className="space-y-3">
                       {genderOptions.map(opt => (
                         <button
@@ -458,7 +506,7 @@ const Onboarding = () => {
                             setOnboardingData({ ...onboardingData, gender: opt.id });
                             setStep(1);
                           }}
-                          className="selection-card w-full text-left !p-5 flex items-center gap-4"
+                          className="selection-card w-full text-left flex items-center gap-4"
                         >
                           <div className="w-12 h-12 rounded-xl bg-accent flex items-center justify-center flex-shrink-0">
                             <span className="text-xl text-foreground">{opt.icon}</span>
@@ -467,25 +515,20 @@ const Onboarding = () => {
                         </button>
                       ))}
                     </div>
+                    <p className="text-xs text-muted-foreground mt-4 text-center">
+                      This helps us show you the right content, symptoms, and reference images.
+                    </p>
                   </div>
                 )}
 
-                {/* ── Screen 1: Hair Texture (auto-advance) ── */}
+                {/* ── Screen 1: Hair Type (auto-advance) ── */}
                 {step === 1 && (
                   <div>
                     <h2 className="text-lg font-semibold text-foreground mb-1">What's your hair texture?</h2>
-                    <p className="text-xs text-muted-foreground mb-3">{sectionExplainers[1]}</p>
-                    <p className="text-xs text-muted-foreground mb-3 italic">
-                      Type 4 coils are tighter than a pen spring. Type 3 curls wrap around a finger.
-                    </p>
+                    <p className="text-xs text-muted-foreground mb-4">{sectionExplainers[1]}</p>
                     <div className="space-y-3">
                       {hairTypes.map(ht => {
-                        const hasPhotos = ht.id !== 'unsure' && hairPhotos[ht.id];
-                        const photos = hasPhotos
-                          ? genderKey === 'both'
-                            ? [...(hairPhotos[ht.id].female || []), ...(hairPhotos[ht.id].male || [])]
-                            : hairPhotos[ht.id][genderKey] || []
-                          : [];
+                        const heroImg = heroImages[ht.id];
                         return (
                           <button
                             key={ht.id}
@@ -493,15 +536,14 @@ const Onboarding = () => {
                               setHairType(ht.id);
                               setHairSubType('');
                               if (ht.id === 'unsure') {
-                                // Auto-advance for "Not sure"
                                 setStep(2);
                               } else {
                                 setShowSubType(false);
                               }
                             }}
-                            className={`selection-card w-full text-left !p-3 ${hairType === ht.id ? 'selected' : ''}`}
+                            className={`selection-card w-full text-left ${hairType === ht.id ? 'selected' : ''}`}
                           >
-                            <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-3 mb-2">
                               <div className="w-9 h-9 rounded-lg bg-accent flex items-center justify-center flex-shrink-0">
                                 <CurlIcon type={ht.id} />
                               </div>
@@ -510,9 +552,13 @@ const Onboarding = () => {
                                 <p className="text-xs text-muted-foreground leading-snug">{ht.desc}</p>
                               </div>
                             </div>
-                            {photos.length > 0 && (
-                              <div className="mt-2">
-                                <PhotoGallery photos={photos} />
+                            {heroImg && (
+                              <div className="rounded-lg overflow-hidden border border-border mt-1">
+                                <img
+                                  src={heroImg}
+                                  alt={ht.label}
+                                  style={{ width: '100%', height: '180px', objectFit: 'contain', display: 'block', background: '#f5f3f0' }}
+                                />
                               </div>
                             )}
                           </button>
@@ -521,33 +567,43 @@ const Onboarding = () => {
                     </div>
 
                     {(hairType === 'type3' || hairType === 'type4') && !showSubType && (
-                      <button onClick={() => setShowSubType(true)} className="mt-3 text-sm text-primary font-medium flex items-center gap-1">
-                        Want to be more specific? <ChevronDown size={14} />
-                      </button>
-                    )}
-
-                    {/* Auto-advance to styles if they selected a main type but don't want sub-type */}
-                    {(hairType === 'type3' || hairType === 'type4') && !showSubType && (
-                      <button onClick={() => setStep(2)} className="mt-2 text-sm text-muted-foreground font-medium">
-                        Skip — continue →
-                      </button>
+                      <div className="mt-3 flex flex-col items-start gap-1">
+                        <button onClick={() => setShowSubType(true)} className="text-sm text-primary font-medium flex items-center gap-1">
+                          Want to be more specific? <ChevronDown size={14} />
+                        </button>
+                        <button onClick={() => setStep(2)} className="text-sm text-muted-foreground font-medium">
+                          Skip - continue →
+                        </button>
+                      </div>
                     )}
 
                     {showSubType && subTypes[hairType] && (
                       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mt-3">
                         <p className="text-sm font-semibold text-foreground mb-3">Which sub-type?</p>
-                        <div className="flex flex-wrap gap-2">
-                          {subTypes[hairType].map(st => (
+                        <div className="grid grid-cols-3 gap-2">
+                          {subTypes[hairType].filter(st => st.image !== undefined || st.id === 'mixed' || st.id === 'not-sure').map(st => (
                             <button
                               key={st.id}
                               onClick={() => {
                                 setHairSubType(st.id);
-                                // Auto-advance on sub-type selection
                                 setTimeout(() => setStep(2), 150);
                               }}
-                              className={`pill-option ${hairSubType === st.id ? 'selected' : ''}`}
+                              className={`selection-card text-center !p-2 ${hairSubType === st.id ? 'selected' : ''}`}
                             >
-                              {st.label}
+                              {st.image ? (
+                                <div className="rounded-lg overflow-hidden mb-1">
+                                  <img
+                                    src={st.image}
+                                    alt={st.label}
+                                    style={{ width: '100%', height: '90px', objectFit: 'contain', display: 'block', background: '#f5f3f0' }}
+                                  />
+                                </div>
+                              ) : st.id !== 'mixed' && st.id !== 'not-sure' ? (
+                                <div className="w-full rounded-lg bg-accent/30 flex items-center justify-center mb-1" style={{ height: '90px' }}>
+                                  <span className="text-xs text-muted-foreground">Coming soon</span>
+                                </div>
+                              ) : null}
+                              <p className="text-xs font-medium text-foreground">{st.label}</p>
                             </button>
                           ))}
                         </div>
@@ -556,31 +612,139 @@ const Onboarding = () => {
                   </div>
                 )}
 
-                {/* ── Screen 2: Styles + Frequency ── */}
+                {/* ── Screen 2: Chemical Processing ── */}
                 {step === 2 && (
                   <div>
+                    <h2 className="text-lg font-semibold text-foreground mb-1">Is your hair chemically processed?</h2>
+                    <p className="text-xs text-muted-foreground mb-4">
+                      This means treatments that permanently change your hair's natural texture.
+                    </p>
+                    <div className="space-y-3 mb-4">
+                      {chemicalOptions.map(opt => (
+                        <button
+                          key={opt.id}
+                          onClick={() => {
+                            setChemicalStatus(opt.id);
+                            if (opt.id === 'natural' || opt.id === 'unsure') {
+                              setTimeout(() => setStep(3), 150);
+                            }
+                          }}
+                          className={`selection-card w-full text-left ${chemicalStatus === opt.id ? 'selected' : ''}`}
+                        >
+                          <p className="font-medium text-foreground text-sm">{opt.label}</p>
+                        </button>
+                      ))}
+                    </div>
+
+                    {(chemicalStatus === 'current' || chemicalStatus === 'growing-out') && (
+                      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-5">
+                        {/* Type */}
+                        <div>
+                          <p className="font-semibold text-foreground text-sm mb-2">What type?</p>
+                          <div className="flex flex-wrap gap-2">
+                            {chemicalTypeOptions.map(t => (
+                              <button key={t} onClick={() => toggleChemicalType(t)} className={`pill-option ${chemicalTypes.includes(t) ? 'selected' : ''}`}>
+                                {t}
+                              </button>
+                            ))}
+                          </div>
+                          {chemicalTypes.includes('Other') && (
+                            <input
+                              type="text" value={chemicalOtherType}
+                              onChange={e => setChemicalOtherType(e.target.value)}
+                              placeholder="Describe treatment"
+                              className="w-full h-11 px-4 rounded-xl border border-border bg-card text-foreground text-sm mt-2"
+                            />
+                          )}
+                        </div>
+
+                        {/* Brand */}
+                        <div>
+                          <p className="font-semibold text-foreground text-sm mb-2">Which brand do you use?</p>
+                          <input
+                            type="text" value={brandSearch}
+                            onChange={e => {
+                              setBrandSearch(e.target.value);
+                              // If they type, clear the selection
+                              if (chemicalBrand !== 'Other') setChemicalBrand('');
+                            }}
+                            placeholder="Search brands..."
+                            className="w-full h-11 px-4 rounded-xl border border-border bg-card text-foreground text-sm mb-2"
+                          />
+                          <div className="flex flex-wrap gap-2">
+                            {chemicalBrandOptions
+                              .filter(b => !brandSearch || b.toLowerCase().includes(brandSearch.toLowerCase()))
+                              .map(b => (
+                                <button key={b} onClick={() => { setChemicalBrand(b); setBrandSearch(''); }} className={`pill-option text-xs ${chemicalBrand === b ? 'selected' : ''}`}>
+                                  {b}
+                                </button>
+                              ))}
+                          </div>
+                          {chemicalBrand === 'Other' && (
+                            <input
+                              type="text" value={chemicalBrandOther}
+                              onChange={e => setChemicalBrandOther(e.target.value)}
+                              placeholder="Brand name"
+                              className="w-full h-11 px-4 rounded-xl border border-border bg-card text-foreground text-sm mt-2"
+                            />
+                          )}
+                        </div>
+
+                        {/* Last treatment */}
+                        <div>
+                          <p className="font-semibold text-foreground text-sm mb-2">When was your last treatment?</p>
+                          <div className="flex flex-wrap gap-2">
+                            {lastTreatmentOptions.map(o => (
+                              <button key={o} onClick={() => setLastTreatment(o)} className={`pill-option text-xs ${lastTreatment === o ? 'selected' : ''}`}>
+                                {o}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Frequency */}
+                        <div>
+                          <p className="font-semibold text-foreground text-sm mb-2">How often?</p>
+                          <div className="flex flex-wrap gap-2">
+                            {chemicalFreqOptions.map(o => (
+                              <button key={o} onClick={() => setChemicalFreq(o)} className={`pill-option text-xs ${chemicalFreq === o ? 'selected' : ''}`}>
+                                {o}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        <p className="text-xs text-muted-foreground italic">{sectionExplainers[2]}</p>
+                      </motion.div>
+                    )}
+                  </div>
+                )}
+
+                {/* ── Screen 3: Styles + Frequency ── */}
+                {step === 3 && (
+                  <div>
                     <h2 className="text-lg font-semibold text-foreground mb-1">How do you usually wear your hair?</h2>
-                    <p className="text-xs text-muted-foreground mb-3">{sectionExplainers[2]}</p>
-                    <p className="text-muted-foreground mb-5 text-sm">Select everything you rotate between</p>
+                    <p className="text-xs text-muted-foreground mb-3">{sectionExplainers[3]}</p>
+                    <p className="text-muted-foreground mb-4 text-sm">Select everything you rotate between</p>
                     {(() => {
                       const defaultCount = isMale ? 6 : 8;
                       return (
                         <>
                           <div className="grid grid-cols-2 gap-3">
-                            {rawStyleOptions.slice(0, defaultCount).map(s => (
+                            {filteredStyleOptions.slice(0, defaultCount).map(s => (
                               <button key={s} onClick={() => toggleStyle(s)} className={`selection-card text-center py-4 ${styles.includes(s) ? 'selected' : ''}`}>
                                 <p className="font-medium text-foreground text-sm">{s}</p>
                               </button>
                             ))}
                           </div>
-                          {rawStyleOptions.length > defaultCount && !showMoreStyles && (
+                          {filteredStyleOptions.length > defaultCount && !showMoreStyles && (
                             <button onClick={() => setShowMoreStyles(true)} className="w-full flex items-center justify-center gap-1.5 text-sm font-medium text-primary mt-3 py-2">
                               Show more styles <ChevronDown size={16} strokeWidth={2} />
                             </button>
                           )}
                           {showMoreStyles && (
                             <div className="grid grid-cols-2 gap-3 mt-3">
-                              {rawStyleOptions.slice(defaultCount).map(s => (
+                              {filteredStyleOptions.slice(defaultCount).map(s => (
                                 <button key={s} onClick={() => toggleStyle(s)} className={`selection-card text-center py-4 ${styles.includes(s) ? 'selected' : ''}`}>
                                   <p className="font-medium text-foreground text-sm">{s}</p>
                                 </button>
@@ -591,10 +755,10 @@ const Onboarding = () => {
                       );
                     })()}
                     {styles.includes('Other') && (
-                      <input type="text" value={otherStyle} onChange={e => setOtherStyle(e.target.value)} placeholder="Describe your style" className="w-full h-12 px-4 rounded-xl border-2 border-border bg-card text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors mt-3" />
+                      <input type="text" value={otherStyle} onChange={e => setOtherStyle(e.target.value)} placeholder="Describe your style" className="w-full h-12 px-4 rounded-xl border border-border bg-card text-foreground text-sm mt-3" />
                     )}
                     {styles.length > 0 && (
-                      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mt-8">
+                      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mt-6">
                         <p className="font-semibold text-foreground mb-3">How often are you in protective styles?</p>
                         <div className="flex flex-wrap gap-2">
                           {protectiveFreqOptions.map(o => (
@@ -606,13 +770,13 @@ const Onboarding = () => {
                   </div>
                 )}
 
-                {/* ── Screen 3: Cycle Length + Between-Wash Care ── */}
-                {step === 3 && (
+                {/* ── Screen 4: Cycle + Between-Wash ── */}
+                {step === 4 && (
                   <div>
                     <h2 className="text-lg font-semibold text-foreground mb-1">Your routine</h2>
-                    <p className="text-xs text-muted-foreground mb-5">{sectionExplainers[3]}</p>
+                    <p className="text-xs text-muted-foreground mb-5">{sectionExplainers[4]}</p>
                     <p className="font-semibold text-foreground mb-3">How long do you usually keep a style in?</p>
-                    <div className="flex flex-wrap gap-2 mb-8">
+                    <div className="flex flex-wrap gap-2 mb-6">
                       {cycleLengthOptions.map(o => (
                         <button key={o} onClick={() => setCycleLength(o)} className={`pill-option ${cycleLength === o ? 'selected' : ''}`}>{o}</button>
                       ))}
@@ -624,17 +788,17 @@ const Onboarding = () => {
                       ))}
                     </div>
                     {betweenWash.includes('Other') && (
-                      <input type="text" value={otherBetweenWash} onChange={e => setOtherBetweenWash(e.target.value)} placeholder="What else do you do?" className="w-full h-12 px-4 rounded-xl border-2 border-border bg-card text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors mt-3" />
+                      <input type="text" value={otherBetweenWash} onChange={e => setOtherBetweenWash(e.target.value)} placeholder="What else do you do?" className="w-full h-12 px-4 rounded-xl border border-border bg-card text-foreground text-sm mt-3" />
                     )}
                   </div>
                 )}
 
-                {/* ── Screen 4: Top Concerns ── */}
-                {step === 4 && (
+                {/* ── Screen 5: Top Concerns ── */}
+                {step === 5 && (
                   <div>
                     <h2 className="text-lg font-semibold text-foreground mb-1">What matters most to you right now?</h2>
-                    <p className="text-xs text-muted-foreground mb-5">{sectionExplainers[4]}</p>
-                    <p className="text-muted-foreground mb-5 text-sm">Select all that apply</p>
+                    <p className="text-xs text-muted-foreground mb-4">{sectionExplainers[5]}</p>
+                    <p className="text-muted-foreground mb-4 text-sm">Select all that apply</p>
                     <div className="space-y-3">
                       {concernOptions.map(c => (
                         <button key={c} onClick={() => toggleConcern(c)} className={`selection-card w-full text-left ${concerns.includes(c) ? 'selected' : ''}`}>
@@ -645,65 +809,96 @@ const Onboarding = () => {
                   </div>
                 )}
 
-                {/* ── Screen 5: Photo Guidelines ── */}
-                {step === 5 && (
+                {/* ── Screen 6: Photo Guidelines + Consent ── */}
+                {step === 6 && (
                   <div>
-                    <div className="flex justify-center mb-5">
-                      <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
-                        <Camera size={28} className="text-primary" strokeWidth={1.5} />
+                    <div className="flex justify-center mb-4">
+                      <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center">
+                        <Camera size={26} className="text-primary" strokeWidth={1.5} />
                       </div>
                     </div>
-                    <h2 className="text-lg font-semibold text-foreground text-center mb-2">Let's capture your baseline</h2>
-                    <p className="text-sm text-muted-foreground text-center mb-6 leading-relaxed">
-                      We'll take four quick photos of your scalp from different angles. These stay on your device and help us track changes over time.
+                    <h2 className="text-lg font-semibold text-foreground text-center mb-1">Let's capture your starting point</h2>
+                    <p className="text-sm text-muted-foreground text-center mb-5 leading-relaxed">
+                      These photos stay private to you. They help you spot changes that happen too slowly to notice day to day.
                     </p>
-                    <div className="card-elevated p-4 mb-4">
-                      <div className="flex items-start gap-3 mb-3">
-                        <ShieldCheck size={18} className="text-primary mt-0.5 flex-shrink-0" strokeWidth={1.8} />
-                        <div>
-                          <p className="text-sm font-medium text-foreground">Your photos stay private</p>
-                          <p className="text-xs text-muted-foreground mt-1">Images are stored locally on your device. They're never uploaded or shared without your permission.</p>
-                        </div>
+
+                    <div className="space-y-2 mb-4">
+                      <div className="flex items-start gap-2">
+                        <span className="text-xs mt-0.5">💡</span>
+                        <p className="text-xs text-muted-foreground">Use good lighting, no flash</p>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <span className="text-xs mt-0.5">💡</span>
+                        <p className="text-xs text-muted-foreground">Stand in front of a plain background</p>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <span className="text-xs mt-0.5">💡</span>
+                        <p className="text-xs text-muted-foreground">Hair and scalp should be dry and clearly visible</p>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <span className="text-xs mt-0.5">💡</span>
+                        <p className="text-xs text-muted-foreground">Use your front (selfie) camera. For back and top shots, use a mirror or ask someone to help</p>
+                      </div>
+                      <div className="flex items-start gap-2">
+                        <span className="text-xs mt-0.5">💡</span>
+                        <p className="text-xs text-muted-foreground">Ideally take photos on wash day or takedown day</p>
                       </div>
                     </div>
-                    <div className="card-elevated p-4">
-                      <p className="text-sm font-medium text-foreground mb-2">Tips for best results</p>
-                      <ul className="space-y-1.5 text-xs text-muted-foreground">
-                        <li>• Use natural or bright light</li>
-                        <li>• Pull hair back where possible</li>
-                        <li>• Hold your phone about 15-20cm away</li>
-                        <li>• Keep the area in focus before snapping</li>
-                      </ul>
+
+                    <div className="rounded-xl border border-border p-3 mb-4 bg-accent/20">
+                      <p className="text-xs text-muted-foreground">
+                        <ShieldCheck size={12} className="inline mr-1" strokeWidth={2} />
+                        This tool provides personalised scalp health insights, not medical diagnoses.
+                      </p>
                     </div>
+
+                    <label className="flex items-start gap-3 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={consentChecked}
+                        onChange={e => setConsentChecked(e.target.checked)}
+                        className="mt-1 w-4 h-4 rounded border-border accent-primary"
+                      />
+                      <p className="text-xs text-muted-foreground leading-relaxed">
+                        I consent to my photos and personal data being stored securely for tracking my scalp and hair health over time.{' '}
+                        <button className="text-primary font-medium underline">Privacy Policy</button>
+                      </p>
+                    </label>
                   </div>
                 )}
 
-                {/* ── Screen 6: Scalp Baseline Photo Capture ── */}
-                {step === 6 && (
+                {/* ── Screen 7: Scalp Baseline Photos ── */}
+                {step === 7 && (
                   <ScalpBaselineCapture
                     onComplete={handlePhotosComplete}
-                    onBack={() => setStep(5)}
+                    onBack={() => setStep(6)}
+                    gender={gender}
                   />
                 )}
 
-                {/* ── Screen 7: Scalp Symptom Flow ── */}
-                {step === 7 && symptomPhase === 'ask' && (
+                {/* ── Screen 8: Symptom Flow ── */}
+                {step === 8 && symptomPhase === 'ask' && (
                   <div>
-                    <h2 className="text-lg font-semibold text-foreground mb-2">While we're here…</h2>
-                    <p className="text-muted-foreground mb-8 text-sm leading-relaxed">
-                      Is there anything about your scalp you'd like to flag? This helps us establish your baseline so we can track changes over time.
+                    <h2 className="text-lg font-semibold text-foreground mb-2">While we're here...</h2>
+                    <p className="text-muted-foreground mb-6 text-sm leading-relaxed">
+                      Is there anything about your scalp you'd like to flag?
                     </p>
                     <div className="space-y-3">
                       <button
                         onClick={() => { setSymptomPhase('symptoms'); setSymptomIndex(0); setSymptomAck(null); }}
-                        className="selection-card w-full text-left !p-4"
+                        className="selection-card w-full text-left"
                       >
                         <p className="font-semibold text-foreground text-sm">Yes, I'd like to note something</p>
-                        <p className="text-xs text-muted-foreground mt-1">Quick checklist — takes about 30 seconds</p>
+                        <p className="text-xs text-muted-foreground mt-1">Quick checklist - takes about 30 seconds</p>
                       </button>
                       <button
-                        onClick={handleSkipSymptoms}
-                        className="selection-card w-full text-left !p-4"
+                        onClick={() => {
+                          const cleanCheckIn = buildCheckInFromSymptoms({});
+                          setSymptomResponses({});
+                          setTriageResult('green');
+                          setSymptomPhase('result');
+                        }}
+                        className="selection-card w-full text-left"
                       >
                         <p className="font-semibold text-foreground text-sm">No, everything looks fine</p>
                         <p className="text-xs text-muted-foreground mt-1">We'll record a clean baseline</p>
@@ -712,7 +907,7 @@ const Onboarding = () => {
                   </div>
                 )}
 
-                {step === 7 && symptomPhase === 'symptoms' && !symptomAck && (
+                {step === 8 && symptomPhase === 'symptoms' && !symptomAck && (
                   <div>
                     <p className="text-xs text-muted-foreground mb-1">{symptomIndex + 1} of {onboardingSymptoms.length}</p>
                     <h2 className="text-lg font-semibold text-foreground mb-6">{onboardingSymptoms[symptomIndex].question}</h2>
@@ -721,7 +916,7 @@ const Onboarding = () => {
                         <button
                           key={sev}
                           onClick={() => setSymptomResponses(prev => ({ ...prev, [onboardingSymptoms[symptomIndex].key]: sev }))}
-                          className={`selection-card w-full text-left !p-4 ${symptomResponses[onboardingSymptoms[symptomIndex].key] === sev ? 'selected' : ''}`}
+                          className={`selection-card w-full text-left ${symptomResponses[onboardingSymptoms[symptomIndex].key] === sev ? 'selected' : ''}`}
                         >
                           <p className="font-medium text-foreground text-sm">{sev}</p>
                         </button>
@@ -730,19 +925,15 @@ const Onboarding = () => {
                   </div>
                 )}
 
-                {step === 7 && symptomPhase === 'symptoms' && symptomAck && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3 }}
-                  >
+                {step === 8 && symptomPhase === 'symptoms' && symptomAck && (
+                  <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
                     <p className="text-sm text-muted-foreground mb-1">{symptomIndex + 1} of {onboardingSymptoms.length}</p>
                     <h2 className="text-lg font-semibold text-foreground mb-3">{onboardingSymptoms[symptomIndex].label}: {symptomResponses[onboardingSymptoms[symptomIndex].key]}</h2>
                     <p className="text-sm text-muted-foreground leading-relaxed">{symptomAck}</p>
                   </motion.div>
                 )}
 
-                {step === 7 && symptomPhase === 'result' && triageResult === 'green' && (
+                {step === 8 && symptomPhase === 'result' && triageResult === 'green' && (
                   <div>
                     <div className="flex justify-center mb-6">
                       <motion.div initial={{ scale: 0.8 }} animate={{ scale: 1 }} transition={{ duration: 0.5, ease: 'easeOut' }} className="w-20 h-20 rounded-full bg-primary/15 flex items-center justify-center">
@@ -750,24 +941,24 @@ const Onboarding = () => {
                       </motion.div>
                     </div>
                     <h2 className="text-lg font-semibold text-foreground text-center mb-3">Your scalp is looking good</h2>
-                    <p className="text-muted-foreground text-center text-sm leading-relaxed mb-2">
+                    <p className="text-muted-foreground text-center text-sm leading-relaxed">
                       We'll check in again at your next cycle. You're doing great.
                     </p>
                   </div>
                 )}
 
-                {step === 7 && symptomPhase === 'result' && triageResult === 'amber' && (
+                {step === 8 && symptomPhase === 'result' && triageResult === 'amber' && (
                   <div>
                     <div className="flex justify-center mb-6">
-                      <motion.div initial={{ scale: 0.8 }} animate={{ scale: 1 }} transition={{ duration: 0.5, ease: 'easeOut' }} className="w-20 h-20 rounded-full bg-warning/15 flex items-center justify-center">
-                        <Eye size={32} className="text-warning" strokeWidth={1.8} />
+                      <motion.div initial={{ scale: 0.8 }} animate={{ scale: 1 }} transition={{ duration: 0.5, ease: 'easeOut' }} className="w-20 h-20 rounded-full flex items-center justify-center" style={{ backgroundColor: 'rgba(245, 166, 35, 0.15)' }}>
+                        <Eye size={32} style={{ color: '#F5A623' }} strokeWidth={1.8} />
                       </motion.div>
                     </div>
                     <h2 className="text-lg font-semibold text-foreground text-center mb-3">We've noted a few things worth watching</h2>
-                    <p className="text-muted-foreground text-center text-sm leading-relaxed mb-6">
+                    <p className="text-muted-foreground text-center text-sm leading-relaxed mb-5">
                       Here are some steps that might help, and if they don't improve, a professional can take a closer look.
                     </p>
-                    <div className="card-elevated p-4 mb-4">
+                    <div className="rounded-xl border border-border p-4 mb-4">
                       <h3 className="font-semibold text-foreground text-sm mb-2">What you shared</h3>
                       <div className="space-y-1.5">
                         {onboardingSymptoms.filter(s => symptomResponses[s.key] && symptomResponses[s.key] !== 'None').map(s => (
@@ -777,18 +968,13 @@ const Onboarding = () => {
                         ))}
                       </div>
                     </div>
-                    <div className="card-elevated p-4 mb-4">
-                      <p className="text-sm text-muted-foreground leading-relaxed">
-                        We'll track these over time and let you know if anything changes. If things don't settle, seeing a trichologist or dermatologist early gives you the most options.
-                      </p>
-                    </div>
-                    <button onClick={() => navigate('/find-specialist')} className="w-full text-center text-sm text-primary font-medium mb-2">
+                    <button onClick={() => navigate('/find-specialist')} className="w-full text-center text-sm text-primary font-medium">
                       Find a specialist
                     </button>
                   </div>
                 )}
 
-                {step === 7 && symptomPhase === 'result' && triageResult === 'red' && (
+                {step === 8 && symptomPhase === 'result' && triageResult === 'red' && (
                   <div>
                     <div className="flex justify-center mb-6">
                       <motion.div initial={{ scale: 0.8 }} animate={{ scale: 1 }} transition={{ duration: 0.5, ease: 'easeOut' }} className="w-20 h-20 rounded-full bg-destructive/15 flex items-center justify-center">
@@ -796,10 +982,10 @@ const Onboarding = () => {
                       </motion.div>
                     </div>
                     <h2 className="text-lg font-semibold text-foreground text-center mb-3">We'd really recommend seeing a specialist</h2>
-                    <p className="text-muted-foreground text-center text-sm leading-relaxed mb-6">
-                      Based on what you've shared, we'd really recommend seeing a trichologist or dermatologist. It's nothing to worry about on its own, but getting a professional opinion early makes a real difference. Here's a summary you can take with you.
+                    <p className="text-muted-foreground text-center text-sm leading-relaxed mb-5">
+                      Based on what you've shared, we'd really recommend seeing a trichologist or dermatologist. Getting a professional opinion early makes a real difference. Here's a summary you can take with you.
                     </p>
-                    <div className="card-elevated p-4 mb-4">
+                    <div className="rounded-xl border border-border p-4 mb-4">
                       <h3 className="font-semibold text-foreground text-sm mb-2">What you shared</h3>
                       <div className="space-y-1.5">
                         {onboardingSymptoms.filter(s => symptomResponses[s.key] && symptomResponses[s.key] !== 'None').map(s => (
@@ -809,12 +995,67 @@ const Onboarding = () => {
                         ))}
                       </div>
                     </div>
-                    <button onClick={() => navigate('/clinician-summary')} className="w-full h-12 rounded-xl border-2 border-border font-semibold text-sm btn-press mb-3 flex items-center justify-center gap-2">
+                    <button onClick={() => navigate('/clinician-summary')} className="w-full h-12 rounded-xl border-2 border-border font-semibold text-sm flex items-center justify-center gap-2 mb-3">
                       <Stethoscope size={16} strokeWidth={1.8} /> View clinical summary
                     </button>
-                    <button onClick={() => navigate('/find-specialist')} className="w-full h-12 rounded-xl border-2 border-border font-medium text-sm btn-press mb-2 flex items-center justify-center gap-2">
+                    <button onClick={() => navigate('/find-specialist')} className="w-full h-12 rounded-xl border-2 border-border font-medium text-sm flex items-center justify-center gap-2">
                       <Search size={16} strokeWidth={1.8} /> Find a specialist
                     </button>
+                  </div>
+                )}
+
+                {/* ── Screen 9: Length Check Transition ── */}
+                {step === 9 && (
+                  <div>
+                    <h2 className="text-lg font-semibold text-foreground mb-2">Want to track your hair length too?</h2>
+                    <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
+                      {isShortHairStyle
+                        ? "Take a photo of your hair as it is now. This tracks your growth over time."
+                        : "Pull a section straight to show your true length past shrinkage."}
+                    </p>
+                    <div className="space-y-3">
+                      <button
+                        onClick={() => { setLengthStep(0); setStep(10); }}
+                        className="selection-card w-full text-left"
+                      >
+                        <p className="font-semibold text-foreground text-sm">Yes, let's do it</p>
+                      </button>
+                      <button
+                        onClick={() => setStep(11)}
+                        className="selection-card w-full text-left"
+                      >
+                        <p className="font-semibold text-foreground text-sm">Skip for now</p>
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* ── Screen 10: Length Check Photos ── */}
+                {step === 10 && (
+                  <LengthCheckPhotos
+                    isShortHair={isShortHairStyle}
+                    onComplete={(photos) => {
+                      setLengthPhotos(photos);
+                      setStep(11);
+                    }}
+                    onSkip={() => setStep(11)}
+                  />
+                )}
+
+                {/* ── Screen 11: Completion ── */}
+                {step === 11 && (
+                  <div>
+                    <div className="flex justify-center mb-6">
+                      <motion.div initial={{ scale: 0.8 }} animate={{ scale: 1 }} transition={{ duration: 0.5, ease: 'easeOut' }} className="w-20 h-20 rounded-full bg-primary/15 flex items-center justify-center">
+                        <Check size={32} className="text-primary" strokeWidth={1.8} />
+                      </motion.div>
+                    </div>
+                    <h2 className="text-lg font-semibold text-foreground text-center mb-3">
+                      {lengthPhotos.length > 0 ? "Baseline set. You're ready to go." : "You're all set."}
+                    </h2>
+                    <p className="text-sm text-muted-foreground text-center leading-relaxed mb-6">
+                      Tip: Tap 'My Routine' on your dashboard to add the products you use. This helps us spot what might be helping or irritating your scalp.
+                    </p>
                   </div>
                 )}
 
@@ -823,12 +1064,12 @@ const Onboarding = () => {
           </div>
 
           {/* Bottom button */}
-          {showBottomButton && (
-            <div style={{ paddingTop: '12px' }}>
+          {showBottomButton && (step !== 2 || (chemicalStatus === 'current' || chemicalStatus === 'growing-out')) && getButtonText() && (
+            <div className="flex-shrink-0 pt-2 pb-1" style={{ position: 'sticky', bottom: 0, background: 'white' }}>
               <button
                 onClick={handleNext}
                 disabled={!canProceed()}
-                className={`w-full h-14 rounded-xl font-semibold text-base btn-press transition-colors ${
+                className={`w-full h-14 rounded-xl font-semibold text-base transition-colors ${
                   canProceed() ? 'bg-primary text-primary-foreground' : 'bg-border text-muted-foreground cursor-not-allowed'
                 }`}
               >
@@ -839,6 +1080,106 @@ const Onboarding = () => {
 
         </div>
       </motion.div>
+    </div>
+  );
+};
+
+// ─── Length Check Photos Component ────────────────────────────────────────────
+interface LengthCheckPhotosProps {
+  isShortHair: boolean;
+  onComplete: (photos: { area: string; dataUrl: string }[]) => void;
+  onSkip: () => void;
+}
+
+const lengthStepsLong = [
+  { title: 'Front', instruction: 'Pull a section of hair straight down alongside your face. Show your true length past shrinkage.' },
+  { title: 'Side', instruction: 'Pull a section over your ear to show side length.' },
+  { title: 'Back', instruction: 'Pull a section down your back to show back length.' },
+];
+
+const lengthStepsShort = [
+  { title: 'Front', instruction: 'Take a photo of your hair from the front as it is now.' },
+  { title: 'Side', instruction: 'Take a photo from the side showing your hair profile.' },
+  { title: 'Back', instruction: 'Take a photo from the back showing your hair.' },
+];
+
+const LengthCheckPhotos = ({ isShortHair, onComplete, onSkip }: LengthCheckPhotosProps) => {
+  const steps = isShortHair ? lengthStepsShort : lengthStepsLong;
+  const [currentStep, setCurrentStep] = useState(0);
+  const [photos, setPhotos] = useState<{ area: string; dataUrl: string }[]>([]);
+  const [preview, setPreview] = useState<string | null>(null);
+  const cameraRef = useState<HTMLInputElement | null>(null);
+  const galleryRef = useState<HTMLInputElement | null>(null);
+
+  const step = steps[currentStep];
+
+  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => setPreview(reader.result as string);
+    reader.readAsDataURL(file);
+    e.target.value = '';
+  };
+
+  const handleUse = () => {
+    if (!preview) return;
+    const newPhotos = [...photos, { area: step.title, dataUrl: preview }];
+    setPhotos(newPhotos);
+    setPreview(null);
+    if (currentStep < steps.length - 1) {
+      setCurrentStep(currentStep + 1);
+    } else {
+      onComplete(newPhotos);
+    }
+  };
+
+  return (
+    <div>
+      <p className="text-xs text-muted-foreground mb-1">{currentStep + 1} of {steps.length}</p>
+      <h2 className="text-lg font-semibold text-foreground mb-1">{step.title}</h2>
+      <p className="text-sm text-muted-foreground mb-5 leading-relaxed">{step.instruction}</p>
+
+      {!preview ? (
+        <>
+          <div className="rounded-xl overflow-hidden border border-border mb-5 bg-accent/20">
+            <div className="w-full flex items-center justify-center" style={{ height: '200px' }}>
+              <div className="text-center px-6">
+                <Camera size={28} className="text-muted-foreground mx-auto mb-2" strokeWidth={1.5} />
+                <p className="text-xs text-muted-foreground">Reference: {step.title}</p>
+                <p className="text-[10px] text-muted-foreground mt-1">Image coming in next upload</p>
+              </div>
+            </div>
+          </div>
+          <div className="space-y-3">
+            <label className="w-full h-14 rounded-xl bg-primary text-primary-foreground font-semibold text-sm flex items-center justify-center gap-2 cursor-pointer">
+              <Camera size={18} strokeWidth={1.8} /> Take photo
+              <input type="file" accept="image/*" capture="user" onChange={handleFile} className="hidden" />
+            </label>
+            <label className="w-full h-14 rounded-xl border-2 border-border font-semibold text-sm text-foreground flex items-center justify-center gap-2 cursor-pointer">
+              <ImageIcon size={18} strokeWidth={1.8} /> Choose from gallery
+              <input type="file" accept="image/*" onChange={handleFile} className="hidden" />
+            </label>
+          </div>
+          <button onClick={onSkip} className="w-full text-center text-sm text-muted-foreground font-medium mt-4 py-2">
+            Skip for now
+          </button>
+        </>
+      ) : (
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+          <div className="rounded-xl overflow-hidden border border-border mb-5">
+            <img src={preview} alt={`Preview: ${step.title}`} style={{ width: '100%', height: '240px', objectFit: 'contain', display: 'block', background: 'hsl(var(--accent) / 0.1)' }} />
+          </div>
+          <div className="space-y-3">
+            <button onClick={handleUse} className="w-full h-14 rounded-xl bg-primary text-primary-foreground font-semibold text-sm">
+              Use this photo
+            </button>
+            <button onClick={() => setPreview(null)} className="w-full h-14 rounded-xl border-2 border-border font-semibold text-sm text-foreground">
+              Retake
+            </button>
+          </div>
+        </motion.div>
+      )}
     </div>
   );
 };
