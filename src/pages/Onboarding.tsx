@@ -595,7 +595,7 @@ const Onboarding = () => {
                       {/* Sub-type expansion for Type 4 */}
                       {hairType === 'type4' && !showSubType && (
                         <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} className="flex justify-center">
-                          <button onClick={() => setShowSubType(true)} className="text-sm text-primary font-medium flex items-center gap-1">
+                          <button onClick={() => { if (hairAutoAdvanceRef.current) clearTimeout(hairAutoAdvanceRef.current); setShowSubType(true); }} className="text-sm text-primary font-medium flex items-center gap-1">
                             Want to be more specific? <ChevronDown size={14} />
                           </button>
                         </motion.div>
@@ -628,9 +628,11 @@ const Onboarding = () => {
                       {/* Type 3 card */}
                       <button
                         onClick={() => {
+                          if (hairAutoAdvanceRef.current) clearTimeout(hairAutoAdvanceRef.current);
                           setHairType('type3');
                           setHairSubType('');
                           setShowSubType(false);
+                          hairAutoAdvanceRef.current = setTimeout(() => setStep(2), 1200);
                         }}
                         className="w-full text-left rounded-2xl overflow-hidden relative cursor-pointer"
                         style={{ border: hairType === 'type3' ? '2px solid hsl(var(--primary))' : '2px solid transparent' }}
