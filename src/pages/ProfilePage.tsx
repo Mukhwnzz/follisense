@@ -29,6 +29,12 @@ const C = {
   white:      '#FFFFFF',
 };
 
+const chemicalBrandOptions = [
+  'Dark and Lovely', 'ORS Olive Oil', 'TCB', 'Just for Me', 'Affirm',
+  'Mizani', 'SoftSheen-Carson', 'Motions', 'Hawaiian Silky', 'Other',
+];
+const chemicalFreqOptions = ['Every 4-6 weeks', 'Every 8-12 weeks', 'Every 3-6 months', 'Less often'];
+
 const goalOptions = [
   'Protect my edges / grow my hairline back',
   'Reduce scalp irritation or itching',
@@ -166,6 +172,12 @@ const ProfilePage = () => {
   const [preferredSalon, setPreferredSalon]     = useState('');
   const [bookingMethod, setBookingMethod]       = useState('');
   const [salonContact, setSalonContact]         = useState('');
+  const [showChemicalEditor, setShowChemicalEditor] = useState(false);
+  const [editChemStatus, setEditChemStatus]     = useState(onboardingData.chemicalProcessing || '');
+  const [editChemTypes, setEditChemTypes]       = useState<string[]>(onboardingData.chemicalProcessingMultiple || []);
+  const [editChemBrand, setEditChemBrand]       = useState(onboardingData.chemicalBrand || '');
+  const [editChemBrandOther, setEditChemBrandOther] = useState(onboardingData.chemicalBrandOther || '');
+  const [editChemFreq, setEditChemFreq]         = useState(onboardingData.chemicalFrequency || '');
 
   const isMale = onboardingData.gender === 'man';
 
