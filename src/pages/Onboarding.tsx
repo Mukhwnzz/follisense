@@ -495,10 +495,10 @@ const Onboarding = () => {
                 )}
 
                 {/* ── Screen 2: Styles + Frequency ── */}
-                {step === 1 && (
+                {step === 2 && (
                   <div>
                     <h2 className="text-lg font-semibold text-foreground mb-1">How do you usually wear your hair?</h2>
-                    <p className="text-xs text-muted-foreground mb-3">{sectionExplainers[1]}</p>
+                    <p className="text-xs text-muted-foreground mb-3">{sectionExplainers[2]}</p>
                     <p className="text-muted-foreground mb-5 text-sm">Select everything you rotate between</p>
                     {(() => {
                       const defaultCount = isMale ? 6 : 8;
@@ -545,10 +545,10 @@ const Onboarding = () => {
                 )}
 
                 {/* ── Screen 3: Cycle Length + Between-Wash Care ── */}
-                {step === 2 && (
+                {step === 3 && (
                   <div>
                     <h2 className="text-lg font-semibold text-foreground mb-1">Your routine</h2>
-                    <p className="text-xs text-muted-foreground mb-5">{sectionExplainers[2]}</p>
+                    <p className="text-xs text-muted-foreground mb-5">{sectionExplainers[3]}</p>
                     <p className="font-semibold text-foreground mb-3">How long do you usually keep a style in?</p>
                     <div className="flex flex-wrap gap-2 mb-8">
                       {cycleLengthOptions.map(o => (
@@ -568,10 +568,10 @@ const Onboarding = () => {
                 )}
 
                 {/* ── Screen 4: Top Concerns ── */}
-                {step === 3 && (
+                {step === 4 && (
                   <div>
                     <h2 className="text-lg font-semibold text-foreground mb-1">What matters most to you right now?</h2>
-                    <p className="text-xs text-muted-foreground mb-5">{sectionExplainers[3]}</p>
+                    <p className="text-xs text-muted-foreground mb-5">{sectionExplainers[4]}</p>
                     <p className="text-muted-foreground mb-5 text-sm">Select all that apply</p>
                     <div className="space-y-3">
                       {concernOptions.map(c => (
@@ -584,7 +584,7 @@ const Onboarding = () => {
                 )}
 
                 {/* ── Screen 5: Scalp Symptom Flow ── */}
-                {step === 4 && symptomPhase === 'ask' && (
+                {step === 5 && symptomPhase === 'ask' && (
                   <div>
                     <h2 className="text-lg font-semibold text-foreground mb-2">While we're here…</h2>
                     <p className="text-muted-foreground mb-8 text-sm leading-relaxed">
