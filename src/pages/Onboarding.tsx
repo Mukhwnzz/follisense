@@ -107,6 +107,30 @@ const onboardingSymptoms = [
   { key: 'dryness', label: 'Dryness', question: 'Any scalp dryness?' },
 ];
 const severityOptions = ['None', 'Mild', 'Moderate', 'Severe'];
+
+// ─── WARM ACKNOWLEDGMENTS ──────────────────────────────────────────────────
+const mildAcks = [
+  (label: string) => `Noted. Mild ${label.toLowerCase()} is common, especially between washes.`,
+  (label: string) => `Got it. A little ${label.toLowerCase()} now and then is quite normal.`,
+  (label: string) => `Okay, mild ${label.toLowerCase()} — we'll keep that on file.`,
+];
+const moderateAcks = [
+  () => `Thanks for flagging that. We'll keep a close eye on this for you.`,
+  () => `Noted — that's exactly the kind of thing worth tracking over time.`,
+  () => `Good to know. We'll watch how this changes at your next check-in.`,
+];
+const severeAcks = [
+  () => `We hear you. That sounds uncomfortable. We'll make sure this gets the attention it deserves.`,
+  () => `Thank you for being honest about that. We're going to make sure you get the right support.`,
+  () => `That sounds really tough. We'll flag this as a priority for you.`,
+];
+const getAck = (severity: string, label: string, index: number): string | null => {
+  if (severity === 'None') return null;
+  if (severity === 'Mild') return mildAcks[index % mildAcks.length](label);
+  if (severity === 'Moderate') return moderateAcks[index % moderateAcks.length]();
+  if (severity === 'Severe') return severeAcks[index % severeAcks.length]();
+  return null;
+};
 // ─────────────────────────────────────────────────────────────────────────────
 
 const PhotoGallery = ({ photos }: { photos: { src: string; label: string }[] }) => {
