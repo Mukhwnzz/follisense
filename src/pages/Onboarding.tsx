@@ -695,14 +695,14 @@ const Onboarding = () => {
                   </div>
                 )}
 
-                {/* ── Screen 2: Chemical Processing ── */}
-                {step === 2 && (
+                {/* ── Screen 2: Chemical Processing (sequential sub-steps) ── */}
+                {step === 2 && chemicalStep === 0 && (
                   <div>
                     <h2 className="text-lg font-semibold text-foreground mb-1">Is your hair chemically processed?</h2>
                     <p className="text-xs text-muted-foreground mb-4">
                       This means treatments that permanently change your hair's natural texture.
                     </p>
-                    <div className="space-y-3 mb-4">
+                    <div className="space-y-3">
                       {chemicalOptions.map(opt => (
                         <button
                           key={opt.id}
@@ -710,6 +710,8 @@ const Onboarding = () => {
                             setChemicalStatus(opt.id);
                             if (opt.id === 'natural' || opt.id === 'unsure') {
                               setTimeout(() => setStep(3), 150);
+                            } else {
+                              setTimeout(() => setChemicalStep(1), 150);
                             }
                           }}
                           className={`selection-card w-full text-left ${chemicalStatus === opt.id ? 'selected' : ''}`}
@@ -718,88 +720,71 @@ const Onboarding = () => {
                         </button>
                       ))}
                     </div>
+                    <p className="text-xs text-muted-foreground mt-4 italic">{sectionExplainers[2]}</p>
+                  </div>
+                )}
 
-                    {(chemicalStatus === 'current' || chemicalStatus === 'growing-out') && (
-                      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-5">
-                        {/* Type */}
-                        <div>
-                          <p className="font-semibold text-foreground text-sm mb-2">What type?</p>
-                          <div className="flex flex-wrap gap-2">
-                            {chemicalTypeOptions.map(t => (
-                              <button key={t} onClick={() => toggleChemicalType(t)} className={`pill-option ${chemicalTypes.includes(t) ? 'selected' : ''}`}>
-                                {t}
-                              </button>
-                            ))}
-                          </div>
-                          {chemicalTypes.includes('Other') && (
-                            <input
-                              type="text" value={chemicalOtherType}
-                              onChange={e => setChemicalOtherType(e.target.value)}
-                              placeholder="Describe treatment"
-                              className="w-full h-11 px-4 rounded-xl border border-border bg-card text-foreground text-sm mt-2"
-                            />
-                          )}
-                        </div>
-
-                        {/* Brand */}
-                        <div>
-                          <p className="font-semibold text-foreground text-sm mb-2">Which brand do you use?</p>
-                          <input
-                            type="text" value={brandSearch}
-                            onChange={e => {
-                              setBrandSearch(e.target.value);
-                              // If they type, clear the selection
-                              if (chemicalBrand !== 'Other') setChemicalBrand('');
-                            }}
-                            placeholder="Search brands..."
-                            className="w-full h-11 px-4 rounded-xl border border-border bg-card text-foreground text-sm mb-2"
-                          />
-                          <div className="flex flex-wrap gap-2">
-                            {chemicalBrandOptions
-                              .filter(b => !brandSearch || b.toLowerCase().includes(brandSearch.toLowerCase()))
-                              .map(b => (
-                                <button key={b} onClick={() => { setChemicalBrand(b); setBrandSearch(''); }} className={`pill-option text-xs ${chemicalBrand === b ? 'selected' : ''}`}>
-                                  {b}
-                                </button>
-                              ))}
-                          </div>
-                          {chemicalBrand === 'Other' && (
-                            <input
-                              type="text" value={chemicalBrandOther}
-                              onChange={e => setChemicalBrandOther(e.target.value)}
-                              placeholder="Brand name"
-                              className="w-full h-11 px-4 rounded-xl border border-border bg-card text-foreground text-sm mt-2"
-                            />
-                          )}
-                        </div>
-
-                        {/* Last treatment */}
-                        <div>
-                          <p className="font-semibold text-foreground text-sm mb-2">When was your last treatment?</p>
-                          <div className="flex flex-wrap gap-2">
-                            {lastTreatmentOptions.map(o => (
-                              <button key={o} onClick={() => setLastTreatment(o)} className={`pill-option text-xs ${lastTreatment === o ? 'selected' : ''}`}>
-                                {o}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-
-                        {/* Frequency */}
-                        <div>
-                          <p className="font-semibold text-foreground text-sm mb-2">How often?</p>
-                          <div className="flex flex-wrap gap-2">
-                            {chemicalFreqOptions.map(o => (
-                              <button key={o} onClick={() => setChemicalFreq(o)} className={`pill-option text-xs ${chemicalFreq === o ? 'selected' : ''}`}>
-                                {o}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-
-                        <p className="text-xs text-muted-foreground italic">{sectionExplainers[2]}</p>
-                      </motion.div>
+                {step === 2 && chemicalStep === 1 && (
+                  <div>
+                    <h2 className="text-lg font-semibold text-foreground mb-1">What type of processing?</h2>
+                    <p className="text-xs text-muted-foreground mb-4">Select all that apply.</p>
+                    <div className="space-y-3">
+                      {chemicalTypeOptions.map(t => (
+                        <button key={t} onClick={() => toggleChemicalType(t)} className={`selection-card w-full text-left ${chemicalTypes.includes(t) ? 'selected' : ''}`}>
+                          <p className="font-medium text-foreground text-sm">{t}</p>
+                        </button>
+                      ))}
+                    </div>
+                    {chemicalTypes.includes('Other') && (
+                      <input
+                        type="text" value={chemicalOtherType}
+                        onChange={e => setChemicalOtherType(e.target.value)}
+                        placeholder="Describe treatment"
+                        className="w-full h-11 px-4 rounded-xl border border-border bg-card text-foreground text-sm mt-3"
+                      />
                     )}
+                  </div>
+                )}
+
+                {step === 2 && chemicalStep === 2 && (
+                  <div>
+                    <h2 className="text-lg font-semibold text-foreground mb-1">When was your last treatment?</h2>
+                    <p className="text-xs text-muted-foreground mb-4">Tap to select.</p>
+                    <div className="space-y-3">
+                      {lastTreatmentOptions.map(o => (
+                        <button
+                          key={o}
+                          onClick={() => {
+                            setLastTreatment(o);
+                            setTimeout(() => setChemicalStep(3), 150);
+                          }}
+                          className={`selection-card w-full text-left ${lastTreatment === o ? 'selected' : ''}`}
+                        >
+                          <p className="font-medium text-foreground text-sm">{o}</p>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {step === 2 && chemicalStep === 3 && (
+                  <div>
+                    <h2 className="text-lg font-semibold text-foreground mb-1">How often do you get it done?</h2>
+                    <p className="text-xs text-muted-foreground mb-4">Tap to select.</p>
+                    <div className="space-y-3">
+                      {chemicalFreqOptions.map(o => (
+                        <button
+                          key={o}
+                          onClick={() => {
+                            setChemicalFreq(o);
+                            setTimeout(() => { setChemicalStep(0); setStep(3); }, 150);
+                          }}
+                          className={`selection-card w-full text-left ${chemicalFreq === o ? 'selected' : ''}`}
+                        >
+                          <p className="font-medium text-foreground text-sm">{o}</p>
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 )}
 
