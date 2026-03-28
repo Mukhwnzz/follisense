@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, HelpCircle, ChevronDown, ChevronLeft, ChevronRight, Check, Eye, Stethoscope, Search } from 'lucide-react';
+import { ArrowLeft, HelpCircle, ChevronDown, ChevronLeft, ChevronRight, Check, Eye, Stethoscope, Search, User } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 import { computeHistoricalRisk } from '@/utils/triageLogic';
 import type { CheckInData } from '@/contexts/AppContext';
@@ -82,11 +82,17 @@ const concernOptions = [
   'I just want to stay on top of things', 'Not sure',
 ];
 
+const genderOptions = [
+  { id: 'woman', label: 'Female', icon: '♀' },
+  { id: 'man', label: 'Male', icon: '♂' },
+  { id: 'prefer-not-to-say', label: 'Prefer not to say', icon: '—' },
+];
+
 const sectionExplainers: Record<number, string> = {
-  0: "This helps us tailor scalp check-in questions to your hair's needs.",
-  1: "Different styles create different tension and coverage patterns. This helps us know what to watch for.",
-  2: "This is how we time your check-ins and reminders to your actual routine.",
-  3: "This personalises your experience so we focus on what matters to you.",
+  1: "This helps us tailor scalp check-in questions to your hair's needs.",
+  2: "Different styles create different tension and coverage patterns. This helps us know what to watch for.",
+  3: "This is how we time your check-ins and reminders to your actual routine.",
+  4: "This personalises your experience so we focus on what matters to you.",
 };
 
 // ─── SYMPTOM CHECKLIST ──────────────────────────────────────────────────────
@@ -139,7 +145,7 @@ const CurlIcon = ({ type }: { type: string }) => {
   return null;
 };
 
-const MAIN_SCREENS = 4; // Steps 0-3: hair type, styles, routine, concerns
+const MAIN_SCREENS = 5; // Steps 0-4: gender, hair type, styles, routine, concerns
 
 const Onboarding = () => {
   const navigate = useNavigate();
@@ -188,17 +194,18 @@ const Onboarding = () => {
   };
   const toggleConcern = (c: string) => setConcerns(prev => prev.includes(c) ? prev.filter(x => x !== c) : [...prev, c]);
 
-  // Total steps: 0-3 (main) + 4 (symptom flow)
-  const totalProgressDots = 5;
+  // Total steps: 0-4 (main) + 5 (symptom flow)
+  const totalProgressDots = 6;
 
   const canProceed = () => {
     switch (step) {
-      case 0: return !!hairType;
-      case 1: return styles.length > 0 && (!styles.includes('Other') || otherStyle.trim().length > 0) && !!protectiveFreq;
-      case 2: return !!cycleLength && betweenWash.length > 0 && (!betweenWash.includes('Other') || otherBetweenWash.trim().length > 0);
-      case 3: return concerns.length > 0;
-      case 4: {
-        if (symptomPhase === 'ask') return true; // buttons handle navigation
+      case 0: return !!gender; // auto-advance handles this
+      case 1: return !!hairType;
+      case 2: return styles.length > 0 && (!styles.includes('Other') || otherStyle.trim().length > 0) && !!protectiveFreq;
+      case 3: return !!cycleLength && betweenWash.length > 0 && (!betweenWash.includes('Other') || otherBetweenWash.trim().length > 0);
+      case 4: return concerns.length > 0;
+      case 5: {
+        if (symptomPhase === 'ask') return true;
         if (symptomPhase === 'symptoms') {
           const currentSymptom = onboardingSymptoms[symptomIndex];
           return !!symptomResponses[currentSymptom.key];
@@ -263,16 +270,15 @@ const Onboarding = () => {
       setStep(step + 1);
     } else if (step === MAIN_SCREENS - 1) {
       // Moving from concerns to symptom flow
-      setStep(4);
+      setStep(5);
       setSymptomPhase('ask');
-    } else if (step === 4) {
+    } else if (step === 5) {
       if (symptomPhase === 'symptoms') {
         if (symptomIndex < onboardingSymptoms.length - 1) {
           setSymptomIndex(symptomIndex + 1);
         } else {
-          // All symptoms answered → run triage
           const checkIn = buildCheckInFromSymptoms(symptomResponses);
-          const risk = computeHistoricalRisk(checkIn, []); // first check-in, empty history
+          const risk = computeHistoricalRisk(checkIn, []);
           setTriageResult(risk);
           setSymptomPhase('result');
         }
@@ -284,7 +290,7 @@ const Onboarding = () => {
   };
 
   const handleBack = () => {
-    if (step === 4) {
+    if (step === 5) {
       if (symptomPhase === 'result') {
         setSymptomPhase('symptoms');
         setSymptomIndex(onboardingSymptoms.length - 1);
@@ -293,7 +299,7 @@ const Onboarding = () => {
       } else if (symptomPhase === 'symptoms' && symptomIndex === 0) {
         setSymptomPhase('ask');
       } else {
-        setStep(3);
+        setStep(4);
       }
     } else if (step > 0) {
       setStep(step - 1);
@@ -303,27 +309,23 @@ const Onboarding = () => {
   };
 
   // Determine which progress dot is active
-  const activeProgressDot = step <= 3 ? step : 4;
+  const activeProgressDot = step <= 4 ? step : 5;
 
   // Button text
   const getButtonText = () => {
-    if (step === 4) {
-      if (symptomPhase === 'ask') return ''; // hidden, buttons inline
+    if (step === 5) {
+      if (symptomPhase === 'ask') return '';
       if (symptomPhase === 'symptoms') {
         return symptomIndex < onboardingSymptoms.length - 1 ? 'Next' : 'See results';
       }
-      if (symptomPhase === 'result') {
-        if (triageResult === 'green') return 'Continue to dashboard';
-        if (triageResult === 'amber') return 'Continue to dashboard';
-        return 'Continue to dashboard';
-      }
+      if (symptomPhase === 'result') return 'Continue to dashboard';
     }
     if (step === MAIN_SCREENS - 1) return 'Next';
     return 'Next';
   };
 
-  // Hide bottom button on ask phase (we use inline buttons)
-  const showBottomButton = !(step === 4 && symptomPhase === 'ask');
+  // Hide bottom button on: gender (auto-advance), hair type (auto-advance), symptom ask phase
+  const showBottomButton = step !== 0 && step !== 1 && !(step === 5 && symptomPhase === 'ask');
 
   return (
    <div style={{
