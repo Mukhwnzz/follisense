@@ -87,42 +87,25 @@ const sectionExplainers: Record<number, string> = {
   3: "This personalises your experience so we focus on what matters to you.",
 };
 
-// Photo gallery — full image visible, no cropping
 const PhotoGallery = ({ photos }: { photos: { src: string; label: string }[] }) => {
   const [idx, setIdx] = useState(0);
   if (photos.length === 0) return null;
   if (photos.length === 1) {
     return (
       <div className="rounded-xl overflow-hidden border border-border">
-        <img
-          src={photos[0].src}
-          alt={photos[0].label}
-          className="w-full"
-         style={{ width: '100%', height: '200px', objectFit: 'cover' }}
-        />
+        <img src={photos[0].src} alt={photos[0].label} style={{ width: '100%', height: '260px', objectFit: 'cover', display: 'block' }} />
         <p className="text-[10px] text-muted-foreground text-center py-1.5 bg-accent/40">{photos[0].label}</p>
       </div>
     );
   }
   return (
     <div className="relative rounded-xl overflow-hidden border border-border">
-      <img
-        src={photos[idx].src}
-        alt={photos[idx].label}
-        className="w-full"
-        style={{ width: '100%', height: '200px', objectFit: 'cover' }}
-      />
+      <img src={photos[idx].src} alt={photos[idx].label} style={{ width: '100%', height: '260px', objectFit: 'cover', display: 'block' }} />
       <p className="text-[10px] text-muted-foreground text-center py-1.5 bg-accent/40">{photos[idx].label}</p>
-      <button
-        onClick={(e) => { e.stopPropagation(); setIdx(i => (i - 1 + photos.length) % photos.length); }}
-        className="absolute left-2 top-[90px] -translate-y-1/2 w-7 h-7 rounded-full bg-background/90 flex items-center justify-center shadow"
-      >
+      <button onClick={(e) => { e.stopPropagation(); setIdx(i => (i - 1 + photos.length) % photos.length); }} className="absolute left-2 top-[120px] -translate-y-1/2 w-7 h-7 rounded-full bg-background/90 flex items-center justify-center shadow">
         <ChevronLeft size={14} />
       </button>
-      <button
-        onClick={(e) => { e.stopPropagation(); setIdx(i => (i + 1) % photos.length); }}
-        className="absolute right-2 top-[90px] -translate-y-1/2 w-7 h-7 rounded-full bg-background/90 flex items-center justify-center shadow"
-      >
+      <button onClick={(e) => { e.stopPropagation(); setIdx(i => (i + 1) % photos.length); }} className="absolute right-2 top-[120px] -translate-y-1/2 w-7 h-7 rounded-full bg-background/90 flex items-center justify-center shadow">
         <ChevronRight size={14} />
       </button>
       <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-1">
@@ -135,9 +118,9 @@ const PhotoGallery = ({ photos }: { photos: { src: string; label: string }[] }) 
 };
 
 const CurlIcon = ({ type }: { type: string }) => {
-  if (type === 'unsure') return <HelpCircle size={24} className="text-muted-foreground" strokeWidth={1.5} />;
-  if (type === 'type3') return <svg width="28" height="28" viewBox="0 0 28 28"><path d="M6 20 C10 8, 14 24, 18 12 C20 6, 24 18, 24 14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="text-foreground"/></svg>;
-  if (type === 'type4') return <svg width="28" height="28" viewBox="0 0 28 28"><path d="M6 14 L7 10 L9 16 L10 10 L12 16 L13 10 L15 16 L16 10 L18 16 L19 10 L21 16 L22 10 L24 14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-foreground"/></svg>;
+  if (type === 'unsure') return <HelpCircle size={20} className="text-muted-foreground" strokeWidth={1.5} />;
+  if (type === 'type3') return <svg width="22" height="22" viewBox="0 0 28 28"><path d="M6 20 C10 8, 14 24, 18 12 C20 6, 24 18, 24 14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" className="text-foreground"/></svg>;
+  if (type === 'type4') return <svg width="22" height="22" viewBox="0 0 28 28"><path d="M6 14 L7 10 L9 16 L10 10 L12 16 L13 10 L15 16 L16 10 L18 16 L19 10 L21 16 L22 10 L24 14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-foreground"/></svg>;
   return null;
 };
 
@@ -222,238 +205,231 @@ const Onboarding = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <div className="max-w-[430px] mx-auto px-6 flex-1 flex flex-col w-full">
+   <div style={{
+      position: 'fixed',
+      inset: 0,
+      backgroundImage: 'url(https://i.pinimg.com/1200x/21/df/fe/21dffea6ca5d2c69edb5c8b926e41b50.jpg)',
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      backgroundRepeat: 'no-repeat',
+      overflowY: 'auto',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '24px 16px',
+    }}>
+      <style>{`
+        .selection-card { border: 1.5px solid #E8DDD2 !important; }
+        .selection-card.selected { border: 1.5px solid #7fa896 !important; }
+        .pill-option { border: 1.5px solid #E8DDD2 !important; }
+        .pill-option.selected { border: 1.5px solid #7fa896 !important; }
+      `}</style>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        style={{ width: '100%', maxWidth: '560px' }}
+      >
+        <div style={{ backgroundColor: '#FFFFFF', borderRadius: '24px', boxShadow: '0 8px 40px rgba(0,0,0,0.10), 0 2px 8px rgba(0,0,0,0.06)', padding: '24px 36px 28px', display: 'flex', flexDirection: 'column' }}>
 
-        {/* Header with progress */}
-        <div className="flex items-center justify-between py-4">
-          <button onClick={handleBack} className="p-2 -ml-2 text-foreground">
-            <ArrowLeft size={22} strokeWidth={1.8} />
-          </button>
-          <div className="flex gap-2">
-            {Array.from({ length: TOTAL_SCREENS }).map((_, i) => (
-              <div
-                key={i}
-                className={`h-1.5 w-8 rounded-full transition-colors duration-300 ${i <= step ? 'bg-primary' : 'bg-border'}`}
-              />
-            ))}
+          {/* Header with progress */}
+          <div className="flex items-center justify-between mb-4">
+            <button onClick={handleBack} className="p-2 -ml-2 text-foreground">
+              <ArrowLeft size={22} strokeWidth={1.8} />
+            </button>
+            <div className="flex gap-2">
+              {Array.from({ length: TOTAL_SCREENS }).map((_, i) => (
+                <div
+                  key={i}
+                  className={`h-1.5 w-8 rounded-full transition-colors duration-300 ${i <= step ? 'bg-primary' : 'bg-border'}`}
+                />
+              ))}
+            </div>
+            <div className="w-10" />
           </div>
-          <div className="w-10" />
-        </div>
 
-        <div className="flex-1 overflow-y-auto min-h-0">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={step}
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.2 }}
-              className="pt-2 pb-8"
-            >
+          <div>
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={step}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.2 }}
+                className="pt-2 pb-8"
+              >
 
-              {/* ── Screen 1: Hair Texture ── */}
-              {step === 0 && (
-                <div>
-                  <h2 className="text-lg font-semibold text-foreground mb-1">What's your hair texture?</h2>
-                  <p className="text-xs text-muted-foreground mb-5">{sectionExplainers[0]}</p>
-                  <p className="text-xs text-muted-foreground mb-4 italic">
-                    Type 4 coils are tighter than a pen spring. Type 3 curls wrap around a finger.
-                  </p>
-                  <div className="space-y-4">
-                    {hairTypes.map(ht => {
-                      const hasPhotos = ht.id !== 'unsure' && hairPhotos[ht.id];
-                      const photos = hasPhotos
-                        ? genderKey === 'both'
-                          ? [...(hairPhotos[ht.id].female || []), ...(hairPhotos[ht.id].male || [])]
-                          : hairPhotos[ht.id][genderKey] || []
-                        : [];
-                      return (
-                        <button
-                          key={ht.id}
-                          onClick={() => { setHairType(ht.id); setHairSubType(''); setShowSubType(false); }}
-                          className={`selection-card w-full text-left !p-2 ${hairType === ht.id ? 'selected' : ''}`}
-                        >
-                          <div className="flex items-center gap-4 mb-2">
-                            <div className="w-12 h-12 rounded-xl bg-accent flex items-center justify-center flex-shrink-0">
-                              <CurlIcon type={ht.id} />
-                            </div>
-                            <div>
-                              <p className="font-semibold text-foreground">{ht.label}</p>
-                              <p className="text-sm text-muted-foreground">{ht.desc}</p>
-                            </div>
-                          </div>
-
-                          {photos.length > 0 && (
-                            <div className="mt-3 space-y-2">
-                              <div className="rounded-xl bg-accent/50 border border-border p-4 flex flex-col items-center justify-center">
-                                <CurlIcon type={ht.id} />
-                                <span className="text-[10px] text-muted-foreground mt-2 text-center">Pattern illustration</span>
-                              </div>
-                              <PhotoGallery photos={photos} />
-                            </div>
-                          )}
-                        </button>
-                      );
-                    })}
-                  </div>
-
-                  {(hairType === 'type3' || hairType === 'type4') && !showSubType && (
-                    <button
-                      onClick={() => setShowSubType(true)}
-                      className="mt-4 text-sm text-primary font-medium flex items-center gap-1"
-                    >
-                      Want to be more specific? <ChevronDown size={14} />
-                    </button>
-                  )}
-
-                  {showSubType && subTypes[hairType] && (
-                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mt-4">
-                      <p className="text-sm font-semibold text-foreground mb-3">Which sub-type?</p>
-                      <div className="flex flex-wrap gap-2">
-                        {subTypes[hairType].map(st => (
+                {/* ── Screen 1: Hair Texture ── */}
+                {step === 0 && (
+                  <div>
+                    <h2 className="text-lg font-semibold text-foreground mb-1">What's your hair texture?</h2>
+                    <p className="text-xs text-muted-foreground mb-3">{sectionExplainers[0]}</p>
+                    <p className="text-xs text-muted-foreground mb-3 italic">
+                      Type 4 coils are tighter than a pen spring. Type 3 curls wrap around a finger.
+                    </p>
+                    <div className="space-y-3">
+                      {hairTypes.map(ht => {
+                        const hasPhotos = ht.id !== 'unsure' && hairPhotos[ht.id];
+                        const photos = hasPhotos
+                          ? genderKey === 'both'
+                            ? [...(hairPhotos[ht.id].female || []), ...(hairPhotos[ht.id].male || [])]
+                            : hairPhotos[ht.id][genderKey] || []
+                          : [];
+                        return (
                           <button
-                            key={st.id}
-                            onClick={() => setHairSubType(st.id)}
-                            className={`pill-option ${hairSubType === st.id ? 'selected' : ''}`}
+                            key={ht.id}
+                            onClick={() => { setHairType(ht.id); setHairSubType(''); setShowSubType(false); }}
+                            className={`selection-card w-full text-left !p-3 ${hairType === ht.id ? 'selected' : ''}`}
                           >
-                            {st.label}
+                            <div className="flex items-center gap-3">
+                              <div className="w-9 h-9 rounded-lg bg-accent flex items-center justify-center flex-shrink-0">
+                                <CurlIcon type={ht.id} />
+                              </div>
+                              <div>
+                                <p className="font-semibold text-foreground text-sm">{ht.label}</p>
+                                <p className="text-xs text-muted-foreground leading-snug">{ht.desc}</p>
+                              </div>
+                            </div>
+                            {photos.length > 0 && (
+                              <div className="mt-2">
+                                <PhotoGallery photos={photos} />
+                              </div>
+                            )}
                           </button>
-                        ))}
-                      </div>
-                    </motion.div>
-                  )}
-                </div>
-              )}
+                        );
+                      })}
+                    </div>
 
-              {/* ── Screen 2: Styles + Frequency ── */}
-              {step === 1 && (
-                <div>
-                  <h2 className="text-lg font-semibold text-foreground mb-1">How do you usually wear your hair?</h2>
-                  <p className="text-xs text-muted-foreground mb-3">{sectionExplainers[1]}</p>
-                  <p className="text-muted-foreground mb-5 text-sm">Select everything you rotate between</p>
+                    {(hairType === 'type3' || hairType === 'type4') && !showSubType && (
+                      <button onClick={() => setShowSubType(true)} className="mt-3 text-sm text-primary font-medium flex items-center gap-1">
+                        Want to be more specific? <ChevronDown size={14} />
+                      </button>
+                    )}
 
-                  {(() => {
-                    const defaultCount = isMale ? 6 : 8;
-                    return (
-                      <>
-                        <div className="grid grid-cols-2 gap-3">
-                          {rawStyleOptions.slice(0, defaultCount).map(s => (
-                            <button key={s} onClick={() => toggleStyle(s)} className={`selection-card text-center py-4 ${styles.includes(s) ? 'selected' : ''}`}>
-                              <p className="font-medium text-foreground text-sm">{s}</p>
+                    {showSubType && subTypes[hairType] && (
+                      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mt-3">
+                        <p className="text-sm font-semibold text-foreground mb-3">Which sub-type?</p>
+                        <div className="flex flex-wrap gap-2">
+                          {subTypes[hairType].map(st => (
+                            <button key={st.id} onClick={() => setHairSubType(st.id)} className={`pill-option ${hairSubType === st.id ? 'selected' : ''}`}>
+                              {st.label}
                             </button>
                           ))}
                         </div>
-                        {rawStyleOptions.length > defaultCount && !showMoreStyles && (
-                          <button onClick={() => setShowMoreStyles(true)} className="w-full flex items-center justify-center gap-1.5 text-sm font-medium text-primary mt-3 py-2">
-                            Show more styles <ChevronDown size={16} strokeWidth={2} />
-                          </button>
-                        )}
-                        {showMoreStyles && (
-                          <div className="grid grid-cols-2 gap-3 mt-3">
-                            {rawStyleOptions.slice(defaultCount).map(s => (
+                      </motion.div>
+                    )}
+                  </div>
+                )}
+
+                {/* ── Screen 2: Styles + Frequency ── */}
+                {step === 1 && (
+                  <div>
+                    <h2 className="text-lg font-semibold text-foreground mb-1">How do you usually wear your hair?</h2>
+                    <p className="text-xs text-muted-foreground mb-3">{sectionExplainers[1]}</p>
+                    <p className="text-muted-foreground mb-5 text-sm">Select everything you rotate between</p>
+                    {(() => {
+                      const defaultCount = isMale ? 6 : 8;
+                      return (
+                        <>
+                          <div className="grid grid-cols-2 gap-3">
+                            {rawStyleOptions.slice(0, defaultCount).map(s => (
                               <button key={s} onClick={() => toggleStyle(s)} className={`selection-card text-center py-4 ${styles.includes(s) ? 'selected' : ''}`}>
                                 <p className="font-medium text-foreground text-sm">{s}</p>
                               </button>
                             ))}
                           </div>
-                        )}
-                      </>
-                    );
-                  })()}
-
-                  {styles.includes('Other') && (
-                    <input
-                      type="text"
-                      value={otherStyle}
-                      onChange={e => setOtherStyle(e.target.value)}
-                      placeholder="Describe your style"
-                      className="w-full h-12 px-4 rounded-xl border-2 border-border bg-card text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors mt-3"
-                    />
-                  )}
-
-                  {styles.length > 0 && (
-                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mt-8">
-                      <p className="font-semibold text-foreground mb-3">How often are you in protective styles?</p>
-                      <div className="flex flex-wrap gap-2">
-                        {protectiveFreqOptions.map(o => (
-                          <button key={o} onClick={() => setProtectiveFreq(o)} className={`pill-option ${protectiveFreq === o ? 'selected' : ''}`}>{o}</button>
-                        ))}
-                      </div>
-                    </motion.div>
-                  )}
-                </div>
-              )}
-
-              {/* ── Screen 3: Cycle Length + Between-Wash Care ── */}
-              {step === 2 && (
-                <div>
-                  <h2 className="text-lg font-semibold text-foreground mb-1">Your routine</h2>
-                  <p className="text-xs text-muted-foreground mb-5">{sectionExplainers[2]}</p>
-
-                  <p className="font-semibold text-foreground mb-3">How long do you usually keep a style in?</p>
-                  <div className="flex flex-wrap gap-2 mb-8">
-                    {cycleLengthOptions.map(o => (
-                      <button key={o} onClick={() => setCycleLength(o)} className={`pill-option ${cycleLength === o ? 'selected' : ''}`}>{o}</button>
-                    ))}
+                          {rawStyleOptions.length > defaultCount && !showMoreStyles && (
+                            <button onClick={() => setShowMoreStyles(true)} className="w-full flex items-center justify-center gap-1.5 text-sm font-medium text-primary mt-3 py-2">
+                              Show more styles <ChevronDown size={16} strokeWidth={2} />
+                            </button>
+                          )}
+                          {showMoreStyles && (
+                            <div className="grid grid-cols-2 gap-3 mt-3">
+                              {rawStyleOptions.slice(defaultCount).map(s => (
+                                <button key={s} onClick={() => toggleStyle(s)} className={`selection-card text-center py-4 ${styles.includes(s) ? 'selected' : ''}`}>
+                                  <p className="font-medium text-foreground text-sm">{s}</p>
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </>
+                      );
+                    })()}
+                    {styles.includes('Other') && (
+                      <input type="text" value={otherStyle} onChange={e => setOtherStyle(e.target.value)} placeholder="Describe your style" className="w-full h-12 px-4 rounded-xl border-2 border-border bg-card text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors mt-3" />
+                    )}
+                    {styles.length > 0 && (
+                      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mt-8">
+                        <p className="font-semibold text-foreground mb-3">How often are you in protective styles?</p>
+                        <div className="flex flex-wrap gap-2">
+                          {protectiveFreqOptions.map(o => (
+                            <button key={o} onClick={() => setProtectiveFreq(o)} className={`pill-option ${protectiveFreq === o ? 'selected' : ''}`}>{o}</button>
+                          ))}
+                        </div>
+                      </motion.div>
+                    )}
                   </div>
+                )}
 
-                  <p className="font-semibold text-foreground mb-3">What do you do for your scalp between washes?</p>
-                  <div className="flex flex-wrap gap-2">
-                    {betweenWashOptions.map(o => (
-                      <button key={o} onClick={() => toggleBetweenWash(o)} className={`pill-option ${betweenWash.includes(o) ? 'selected' : ''}`}>{o}</button>
-                    ))}
+                {/* ── Screen 3: Cycle Length + Between-Wash Care ── */}
+                {step === 2 && (
+                  <div>
+                    <h2 className="text-lg font-semibold text-foreground mb-1">Your routine</h2>
+                    <p className="text-xs text-muted-foreground mb-5">{sectionExplainers[2]}</p>
+                    <p className="font-semibold text-foreground mb-3">How long do you usually keep a style in?</p>
+                    <div className="flex flex-wrap gap-2 mb-8">
+                      {cycleLengthOptions.map(o => (
+                        <button key={o} onClick={() => setCycleLength(o)} className={`pill-option ${cycleLength === o ? 'selected' : ''}`}>{o}</button>
+                      ))}
+                    </div>
+                    <p className="font-semibold text-foreground mb-3">What do you do for your scalp between washes?</p>
+                    <div className="flex flex-wrap gap-2">
+                      {betweenWashOptions.map(o => (
+                        <button key={o} onClick={() => toggleBetweenWash(o)} className={`pill-option ${betweenWash.includes(o) ? 'selected' : ''}`}>{o}</button>
+                      ))}
+                    </div>
+                    {betweenWash.includes('Other') && (
+                      <input type="text" value={otherBetweenWash} onChange={e => setOtherBetweenWash(e.target.value)} placeholder="What else do you do?" className="w-full h-12 px-4 rounded-xl border-2 border-border bg-card text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors mt-3" />
+                    )}
                   </div>
-                  {betweenWash.includes('Other') && (
-                    <input
-                      type="text"
-                      value={otherBetweenWash}
-                      onChange={e => setOtherBetweenWash(e.target.value)}
-                      placeholder="What else do you do?"
-                      className="w-full h-12 px-4 rounded-xl border-2 border-border bg-card text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors mt-3"
-                    />
-                  )}
-                </div>
-              )}
+                )}
 
-              {/* ── Screen 4: Top Concerns ── */}
-              {step === 3 && (
-                <div>
-                  <h2 className="text-lg font-semibold text-foreground mb-1">What matters most to you right now?</h2>
-                  <p className="text-xs text-muted-foreground mb-5">{sectionExplainers[3]}</p>
-                  <p className="text-muted-foreground mb-5 text-sm">Select all that apply</p>
-                  <div className="space-y-3">
-                    {concernOptions.map(c => (
-                      <button
-                        key={c}
-                        onClick={() => toggleConcern(c)}
-                        className={`selection-card w-full text-left ${concerns.includes(c) ? 'selected' : ''}`}
-                      >
-                        <p className="font-medium text-foreground text-sm">{c}</p>
-                      </button>
-                    ))}
+                {/* ── Screen 4: Top Concerns ── */}
+                {step === 3 && (
+                  <div>
+                    <h2 className="text-lg font-semibold text-foreground mb-1">What matters most to you right now?</h2>
+                    <p className="text-xs text-muted-foreground mb-5">{sectionExplainers[3]}</p>
+                    <p className="text-muted-foreground mb-5 text-sm">Select all that apply</p>
+                    <div className="space-y-3">
+                      {concernOptions.map(c => (
+                        <button key={c} onClick={() => toggleConcern(c)} className={`selection-card w-full text-left ${concerns.includes(c) ? 'selected' : ''}`}>
+                          <p className="font-medium text-foreground text-sm">{c}</p>
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
-            </motion.div>
-          </AnimatePresence>
+              </motion.div>
+            </AnimatePresence>
+          </div>
+
+          {/* Bottom button */}
+          <div style={{ paddingTop: '12px' }}>
+            <button
+              onClick={handleNext}
+              disabled={!canProceed()}
+              className={`w-full h-14 rounded-xl font-semibold text-base btn-press transition-colors ${
+                canProceed() ? 'bg-primary text-primary-foreground' : 'bg-border text-muted-foreground cursor-not-allowed'
+              }`}
+            >
+              {step === TOTAL_SCREENS - 1 ? "Let's go" : 'Next'}
+            </button>
+          </div>
+
         </div>
-
-        {/* Bottom button */}
-        <div className="flex-shrink-0 py-4">
-          <button
-            onClick={handleNext}
-            disabled={!canProceed()}
-            className={`w-full h-14 rounded-xl font-semibold text-base btn-press transition-colors ${
-              canProceed() ? 'bg-primary text-primary-foreground' : 'bg-border text-muted-foreground cursor-not-allowed'
-            }`}
-          >
-            {step === TOTAL_SCREENS - 1 ? "Let's go" : 'Next'}
-          </button>
-        </div>
-
-      </div>
+      </motion.div>
     </div>
   );
 };

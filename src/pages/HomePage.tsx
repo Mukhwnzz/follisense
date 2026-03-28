@@ -1,7 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { User, ChevronRight, Leaf, Lightbulb, Scissors, X, Calendar, Target, Stethoscope, Flame, Microscope, Droplets, Camera, FlaskConical, Heart, Sparkles } from 'lucide-react';
+import {
+  User, ChevronRight, Lightbulb, Scissors, X,
+  Calendar, Stethoscope, Flame, Microscope, Droplets,
+  Camera, FlaskConical, Heart, Sparkles,
+} from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 import { didYouKnowFacts } from '@/data/didYouKnowFacts';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -9,56 +13,120 @@ import { Calendar as CalendarPicker } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 
-const serviceOptions = ['Wash', 'Treatment', 'Style installation', 'Style removal/takedown', 'Trim', 'Colour', 'Lineup or shape-up', 'Retwist (locs)', 'Barber fade or cut', 'Scalp treatment', 'Other'];
+const serviceOptions = [
+  'Wash', 'Treatment', 'Style installation', 'Style removal/takedown',
+  'Trim', 'Colour', 'Lineup or shape-up', 'Retwist (locs)',
+  'Barber fade or cut', 'Scalp treatment', 'Other',
+];
+
+const dm       = "'DM Sans', sans-serif";
+const playfair = "'Playfair Display', serif";
+
+// ─── Pure white + gold palette ────────────────────────────────────────────────
+const C = {
+  // backgrounds
+  bg:       '#FFFFFF',
+  surface:  '#F8F8F8',
+  // primary dark — near black, warm undertone
+  ink:      '#1C1C1C',
+  // gold accent
+  gold:     '#D4A866',
+  goldDeep: '#B8893E',
+  gold10:   'rgba(212,168,102,0.10)',
+  goldBorder:'rgba(212,168,102,0.22)',
+  // neutrals
+  mid:      '#EBEBEB',
+  muted:    '#999999',
+  warm:     '#666666',
+  white:    '#FFFFFF',
+};
+
+// ─── Shared card style ────────────────────────────────────────────────────────
+const cardBase: React.CSSProperties = {
+  background: C.white,
+  border: `1.5px solid ${C.mid}`,
+  borderRadius: 18,
+  boxShadow: '0 2px 12px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04)',
+  fontFamily: dm,
+};
+
+const SectionLabel = ({ children }: { children: React.ReactNode }) => (
+  <p style={{
+    fontFamily: dm, fontSize: 10, fontWeight: 700,
+    letterSpacing: '0.1em', color: C.muted,
+    textTransform: 'uppercase', marginBottom: 12, marginTop: 4,
+  }}>
+    {children}
+  </p>
+);
+
+const FormLabel = ({ children }: { children: React.ReactNode }) => (
+  <p style={{ fontFamily: dm, fontSize: 13, fontWeight: 500, color: C.ink, marginBottom: 8 }}>
+    {children}
+  </p>
+);
 
 const HomePage = () => {
   const navigate = useNavigate();
   const {
-    onboardingData, healthProfile, addSalonVisit, checkInCount, userName,
+    onboardingData, addSalonVisit, checkInCount, userName,
     research, setResearch, progressiveDismissed, dismissProgressivePrompt, checkInHistory,
   } = useApp();
-  const [showSalonForm, setShowSalonForm] = useState(false);
+
+  const [showSalonForm, setShowSalonForm]               = useState(false);
   const [showSalonVisitPicker, setShowSalonVisitPicker] = useState(false);
-  const [visitDate, setVisitDate] = useState<Date>(new Date());
-  const [services, setServices] = useState<string[]>([]);
-  const [stylistName, setStylistName] = useState('');
-  const [visitNotes, setVisitNotes] = useState('');
-  const [showResearchPrompt, setShowResearchPrompt] = useState(false);
+  const [visitDate, setVisitDate]                       = useState<Date>(new Date());
+  const [services, setServices]                         = useState<string[]>([]);
+  const [stylistName, setStylistName]                   = useState('');
+  const [visitNotes, setVisitNotes]                     = useState('');
+  const [showResearchPrompt, setShowResearchPrompt]     = useState(false);
 
   useEffect(() => {
     localStorage.setItem('follisense-last-home-visit', String(Date.now()));
   }, []);
 
-  // Show research prompt once after 3rd check-in
   useEffect(() => {
     if (checkInCount >= 3 && !research.consented && !research.dismissed) {
-      const timer = setTimeout(() => setShowResearchPrompt(true), 1500);
-      return () => clearTimeout(timer);
+      const t = setTimeout(() => setShowResearchPrompt(true), 1500);
+      return () => clearTimeout(t);
     }
   }, [checkInCount, research.consented, research.dismissed]);
 
-  const isMale = onboardingData.gender === 'man';
+  const isMale       = onboardingData.gender === 'man';
   const currentStyle = onboardingData.protectiveStyles[0] || 'Braids';
-  const currentDay = 14;
-  const totalDays = 28;
-  const progress = (currentDay / totalDays) * 100;
+  const currentDay   = 14;
+  const totalDays    = 28;
+  const progress     = (currentDay / totalDays) * 100;
 
-  const hour = new Date().getHours();
+  const hour     = new Date().getHours();
   const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
-  const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000);
+  const dayOfYear = Math.floor(
+    (Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000,
+  );
 
-  const size = 120;
-  const stroke = 8;
-  const radius = (size - stroke) / 2;
-  const circumference = 2 * Math.PI * radius;
-  const offset = circumference - (progress / 100) * circumference;
+  const ringSize = 60;
+  const stroke   = 4;
+  const r        = (ringSize - stroke) / 2;
+  const circ     = 2 * Math.PI * r;
+  const offset   = circ - (progress / 100) * circ;
 
-  const streak = checkInCount;
+  const showPhotosPrompt    = checkInCount >= 2 && !progressiveDismissed['photos'];
+  const showChemicalPrompt  = !onboardingData.chemicalProcessing && !progressiveDismissed['chemical'] && checkInCount >= 1 && !showPhotosPrompt;
+  const showProductsPrompt  = !progressiveDismissed['products'] && checkInCount >= 1 && onboardingData.scalpProducts.length === 0 && !showPhotosPrompt && !showChemicalPrompt;
+  const hasSymptomFluctuation = checkInHistory.length >= 2 && !isMale;
+  const showMenstrualPrompt = hasSymptomFluctuation && !onboardingData.menstrualTracking && !progressiveDismissed['menstrual'] && !isMale && !showPhotosPrompt && !showChemicalPrompt && !showProductsPrompt;
 
-  const toggleService = (s: string) => setServices(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s]);
+  const toggleService = (s: string) =>
+    setServices(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s]);
 
   const handleSaveSalon = () => {
-    addSalonVisit({ id: `sv-${Date.now()}`, date: format(visitDate, 'MMM d'), services, stylistName: stylistName || undefined, notes: visitNotes || undefined });
+    addSalonVisit({
+      id: `sv-${Date.now()}`,
+      date: format(visitDate, 'MMM d'),
+      services,
+      stylistName: stylistName || undefined,
+      notes: visitNotes || undefined,
+    });
     setShowSalonForm(false);
     setServices([]);
     setStylistName('');
@@ -66,342 +134,641 @@ const HomePage = () => {
     setVisitDate(new Date());
   };
 
-  const getCheckInDesc = () => {
-    if (isMale) {
-      if (onboardingData.barberFrequency) return "It's been a couple of weeks since your last barber visit. Quick scalp check?";
-      if (onboardingData.locRetwistFrequency) return "Your locs have been in for 2 weeks. Time for a quick scalp check?";
-      return "Ready for a quick scalp check? Takes about a minute.";
-    }
-    if (onboardingData.isWornOutOnly) return "It's been 2 weeks. Ready for a quick scalp check?";
-    return `Hey, it's been 2 weeks since your ${currentStyle.toLowerCase()} went in. Quick check-in?`;
-  };
-
-  // ── Progressive profiling prompts ──
-  // These appear contextually, once each, and can be dismissed
-  const showPhotosPrompt = checkInCount >= 2 && !progressiveDismissed['photos'];
-  const showChemicalPrompt = !onboardingData.chemicalProcessing && !progressiveDismissed['chemical'] && checkInCount >= 1;
-  const showProductsPrompt = !progressiveDismissed['products'] && checkInCount >= 1 && onboardingData.scalpProducts.length === 0;
-
-  // Detect symptom fluctuation for menstrual prompt
-  const hasSymptomFluctuation = checkInHistory.length >= 2 && !isMale;
-  const showMenstrualPrompt = hasSymptomFluctuation && !onboardingData.menstrualTracking && !progressiveDismissed['menstrual'] && !isMale;
-
   const handleResearchDismiss = () => {
     setShowResearchPrompt(false);
     setResearch({ ...research, dismissed: true });
   };
-
   const handleResearchOptIn = () => {
     setShowResearchPrompt(false);
     setResearch({ ...research, consented: true, consentDate: new Date().toISOString() });
   };
 
+  const progressiveCard = () => {
+    if (showPhotosPrompt) return (
+      <ProgressiveCard
+        icon={<Camera size={16} color={C.gold} strokeWidth={1.8} />}
+        iconBg={C.gold10}
+        title="Track visual changes over time?"
+        desc="Add your starting point so we can compare at future check-ins."
+        cta="Add photos"
+        onCta={() => navigate('/profile')}
+        onDismiss={() => dismissProgressivePrompt('photos')}
+      />
+    );
+    if (showChemicalPrompt) return (
+      <ProgressiveCard
+        icon={<FlaskConical size={16} color={C.muted} strokeWidth={1.8} />}
+        iconBg={C.surface}
+        title="Tell us more about your hair history"
+        desc="Helps us tailor your check-ins more accurately."
+        cta="Complete profile"
+        onCta={() => navigate('/profile')}
+        onDismiss={() => dismissProgressivePrompt('chemical')}
+      />
+    );
+    if (showProductsPrompt) return (
+      <ProgressiveCard
+        icon={<Sparkles size={16} color={C.gold} strokeWidth={1.8} />}
+        iconBg={C.gold10}
+        title="What products are you using?"
+        desc="We'll flag potential irritants for you."
+        cta="Add products"
+        onCta={() => navigate('/profile')}
+        onDismiss={() => dismissProgressivePrompt('products')}
+      />
+    );
+    if (showMenstrualPrompt) return (
+      <ProgressiveCard
+        icon={<Heart size={16} color="#C06080" strokeWidth={1.8} />}
+        iconBg="rgba(192,96,128,0.08)"
+        title="Your symptoms seem to shift in a pattern"
+        desc="Want to link your cycle for more accurate insights?"
+        cta="Link cycle"
+        onCta={() => navigate('/profile')}
+        onDismiss={() => dismissProgressivePrompt('menstrual')}
+      />
+    );
+    return null;
+  };
+
   return (
-    <div className="page-container pt-6">
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-2xl font-semibold">{greeting}{userName ? `, ${userName}` : ''}</h1>
-            <p className="text-muted-foreground text-sm">{new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
+    <div style={{ fontFamily: dm, background: C.bg, minHeight: '100vh' }}>
+
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Playfair+Display:wght@500;600&display=swap');
+        input::placeholder, textarea::placeholder { color: #BBBBBB; font-family: 'DM Sans', sans-serif; }
+      `}</style>
+
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.35 }}>
+
+        {/* ── Hero ─────────────────────────────────────────────────────────── */}
+        <div style={{ position: 'relative', height: 210, overflow: 'hidden', background: '#C4B5A5' }}>
+          <img
+            src="https://i.pinimg.com/1200x/27/cc/b9/27ccb9853ed4ccced03567b73f7902c5.jpg"
+            alt=""
+            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+          />
+          {/* Fade to pure white */}
+          <div style={{
+            position: 'absolute', bottom: 0, left: 0, right: 0, height: 100,
+            background: `linear-gradient(to top, ${C.bg}, transparent)`,
+          }} />
+          {/* Top overlay for legibility */}
+          <div style={{
+            position: 'absolute', top: 0, left: 0, right: 0, height: '50%',
+            background: 'linear-gradient(to bottom, rgba(28,28,28,0.5), transparent)',
+          }} />
+
+          <div style={{
+            position: 'absolute', top: 0, left: 0, right: 0,
+            padding: '48px 20px 0',
+            display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between',
+          }}>
+            <div>
+              {/* Brand row */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 10 }}>
+                <div style={{ width: 7, height: 7, borderRadius: '50%', background: C.gold }} />
+                <span style={{ fontFamily: dm, fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.85)', letterSpacing: '0.12em', textTransform: 'uppercase' }}>
+                  FolliSense
+                </span>
+              </div>
+              <h1 style={{
+                fontFamily: playfair, fontSize: 22, fontWeight: 500,
+                color: '#fff', lineHeight: 1.15, margin: 0,
+                textShadow: '0 1px 8px rgba(0,0,0,0.25)',
+              }}>
+                {greeting}{userName ? `, ${userName}` : ''}
+              </h1>
+              <p style={{ fontFamily: dm, fontSize: 12, color: 'rgba(255,255,255,0.7)', marginTop: 3, fontWeight: 300 }}>
+                {new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}
+              </p>
+            </div>
+
+            <button
+              onClick={() => navigate('/profile')}
+              style={{
+                width: 36, height: 36, borderRadius: '50%',
+                background: 'rgba(255,255,255,0.7)',
+                border: 'none', display: 'flex', alignItems: 'center',
+                justifyContent: 'center', cursor: 'pointer', backdropFilter: 'blur(4px)',
+              }}
+            >
+              <User size={15} color={C.ink} strokeWidth={1.8} />
+            </button>
           </div>
-          <button onClick={() => navigate('/profile')} className="w-10 h-10 rounded-full bg-accent flex items-center justify-center">
-            <User size={20} className="text-muted-foreground" strokeWidth={1.8} />
-          </button>
         </div>
 
-        {/* Streak / Progress */}
-        <div className="flex items-center gap-3 mb-4 px-1">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-              <Flame size={16} className="text-primary" strokeWidth={1.8} />
+        {/* ── Body ─────────────────────────────────────────────────────────── */}
+        <div style={{ padding: '4px 20px 110px' }}>
+
+          {/* Streak pill */}
+          <motion.div
+            initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 }}
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: 8,
+              background: C.ink, color: '#f5f5f5',
+              borderRadius: 100, padding: '6px 14px',
+              fontFamily: dm, fontSize: 12, fontWeight: 500, marginBottom: 16,
+            }}
+          >
+            <Flame size={12} color={C.gold} fill={C.gold} strokeWidth={0} />
+            {checkInCount} check-in{checkInCount !== 1 ? 's' : ''} · keep it up
+            <div style={{ display: 'flex', gap: 3 }}>
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} style={{
+                  width: 5, height: 5, borderRadius: '50%',
+                  background: i < checkInCount ? C.gold : 'rgba(255,255,255,0.2)',
+                }} />
+              ))}
+            </div>
+          </motion.div>
+
+          {/* ── Primary CTA ──────────────────────────────────────────────────── */}
+          <motion.button
+            onClick={() => navigate('/scalp-check')}
+            initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            whileTap={{ scale: 0.98 }}
+            style={{
+              width: '100%', background: C.ink, borderRadius: 22,
+              padding: '20px 22px', marginBottom: 20, border: 'none',
+              display: 'flex', alignItems: 'center', gap: 18, cursor: 'pointer',
+              textAlign: 'left', fontFamily: dm,
+              boxShadow: '0 4px 20px rgba(0,0,0,0.14)',
+            }}
+          >
+            {/* Progress ring */}
+            <div style={{ position: 'relative', flexShrink: 0 }}>
+              <svg width={ringSize} height={ringSize} style={{ transform: 'rotate(-90deg)' }}>
+                <circle cx={ringSize/2} cy={ringSize/2} r={r}
+                  fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth={stroke} />
+                <motion.circle
+                  cx={ringSize/2} cy={ringSize/2} r={r}
+                  fill="none" stroke={C.gold} strokeWidth={stroke}
+                  strokeDasharray={circ} strokeDashoffset={offset}
+                  strokeLinecap="round"
+                  initial={{ strokeDashoffset: circ }}
+                  animate={{ strokeDashoffset: offset }}
+                  transition={{ duration: 1.2, ease: 'easeOut', delay: 0.3 }}
+                />
+              </svg>
+              <div style={{
+                position: 'absolute', inset: 0,
+                display: 'flex', flexDirection: 'column',
+                alignItems: 'center', justifyContent: 'center',
+              }}>
+                <span style={{ fontFamily: playfair, fontSize: 17, fontWeight: 500, color: '#f5f5f5', lineHeight: 1 }}>
+                  {currentDay}
+                </span>
+                <span style={{ fontFamily: dm, fontSize: 9, color: C.gold }}>/ {totalDays}</span>
+              </div>
+            </div>
+
+            <div style={{ flex: 1 }}>
+              <p style={{ fontFamily: playfair, fontSize: 17, color: '#f5f5f5', margin: '0 0 5px' }}>
+                Scalp check-in
+              </p>
+              <p style={{ fontFamily: dm, fontSize: 12, color: 'rgba(245,245,245,0.55)', lineHeight: 1.45, margin: 0 }}>
+                {isMale
+                  ? 'Quick scalp check — takes about a minute.'
+                  : `${currentStyle} day ${currentDay}. Ready for a quick check?`}
+              </p>
+            </div>
+
+            <ChevronRight size={17} color={C.gold} strokeWidth={1.8} style={{ flexShrink: 0 }} />
+          </motion.button>
+
+          {/* ── Quick actions ─────────────────────────────────────────────────── */}
+          <SectionLabel>Quick actions</SectionLabel>
+          <motion.div
+            initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.25 }}
+            style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 20 }}
+          >
+            <MiniCard
+              iconBg={C.gold10}
+              icon={<Droplets size={17} color={C.goldDeep} strokeWidth={1.8} />}
+              title="Your Routine"
+              desc="Wash cycle & products"
+              onClick={() => navigate('/routine-tracker')}
+            />
+            <MiniCard
+              iconBg={C.surface}
+              icon={<Scissors size={17} color={C.warm} strokeWidth={1.8} />}
+              title="Salon Visit"
+              desc="Log or stylist check-in"
+              onClick={() => setShowSalonVisitPicker(true)}
+            />
+          </motion.div>
+
+          {/* ── Did you know ──────────────────────────────────────────────────── */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            style={{
+              ...cardBase,
+              padding: '16px 18px', marginBottom: 14,
+              display: 'flex', gap: 14, alignItems: 'flex-start',
+            }}
+          >
+            <div style={{
+              width: 34, height: 34, background: C.gold10, borderRadius: 10,
+              flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              <Lightbulb size={15} color={C.gold} strokeWidth={1.8} />
             </div>
             <div>
-              <p className="text-sm font-medium text-foreground">
-                {checkInCount} check-in{checkInCount !== 1 ? 's' : ''} completed
+              <p style={{ fontFamily: dm, fontSize: 12, fontWeight: 700, color: C.ink, marginBottom: 4, letterSpacing: '0.01em' }}>
+                Did you know?
               </p>
-              {streak >= 2 && (
-                <p className="text-xs text-primary font-medium">{streak} in a row. Keep it up</p>
-              )}
+              <p style={{ fontFamily: dm, fontSize: 11, color: C.warm, lineHeight: 1.6, margin: 0 }}>
+                {didYouKnowFacts[dayOfYear % didYouKnowFacts.length]}
+              </p>
+              <button
+                onClick={() => navigate('/learn')}
+                style={{
+                  fontFamily: dm, fontSize: 11, fontWeight: 600, color: C.goldDeep,
+                  background: 'none', border: 'none', cursor: 'pointer', padding: '6px 0 0',
+                }}
+              >
+                Learn more →
+              </button>
             </div>
-          </div>
-          <div className="flex-1 flex justify-end">
-            <div className="flex gap-1">
-              {Array.from({ length: Math.min(streak, 5) }).map((_, i) => (
-                <div key={i} className="w-2 h-2 rounded-full bg-primary" />
-              ))}
-              {Array.from({ length: Math.max(0, 5 - streak) }).map((_, i) => (
-                <div key={`e-${i}`} className="w-2 h-2 rounded-full bg-border" />
-              ))}
-            </div>
-          </div>
-        </div>
+          </motion.div>
 
-        {/* Primary Action: Scalp Check-in */}
-        <button
-          onClick={() => navigate('/scalp-check')}
-          className="card-elevated p-5 mb-4 w-full text-left border-l-4 border-l-primary"
-        >
-          <div className="flex items-center gap-4">
-            {!isMale && !onboardingData.isWornOutOnly ? (
-              <div className="relative flex-shrink-0">
-                <svg width={size} height={size} className="-rotate-90">
-                  <circle cx={size/2} cy={size/2} r={radius} fill="none" stroke="hsl(var(--border))" strokeWidth={stroke} />
-                  <motion.circle cx={size/2} cy={size/2} r={radius} fill="none" stroke="hsl(var(--primary))" strokeWidth={stroke} strokeDasharray={circumference} strokeDashoffset={offset} strokeLinecap="round" initial={{ strokeDashoffset: circumference }} animate={{ strokeDashoffset: offset }} transition={{ duration: 1, ease: 'easeOut' }} />
-                </svg>
-                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span className="text-xl font-semibold text-foreground">{currentDay}</span>
-                  <span className="text-[11px] text-muted-foreground">of {totalDays} days</span>
-                </div>
-              </div>
-            ) : (
-              <div className="w-14 h-14 rounded-2xl bg-sage-light flex items-center justify-center flex-shrink-0">
-                <Leaf size={24} className="text-primary" strokeWidth={1.8} />
-              </div>
+          {/* ── Progressive profiling ─────────────────────────────────────────── */}
+          <AnimatePresence>
+            {progressiveCard() && (
+              <motion.div
+                key="progressive"
+                initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }} transition={{ delay: 0.35 }}
+              >
+                {progressiveCard()}
+              </motion.div>
             )}
-            <div className="flex-1">
-              <p className="font-semibold text-foreground mb-1">Scalp check-in</p>
-              <p className="text-sm text-muted-foreground leading-relaxed">{getCheckInDesc()}</p>
-            </div>
-            <ChevronRight size={18} className="text-muted-foreground flex-shrink-0" />
-          </div>
-        </button>
+          </AnimatePresence>
 
-        {/* ── Progressive Profiling Prompts ── */}
-        {showPhotosPrompt && (
-          <div className="card-elevated p-4 mb-4 border-l-4 border-l-primary/50">
-            <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-                <Camera size={18} className="text-primary" strokeWidth={1.5} />
-              </div>
-              <div className="flex-1">
-                <p className="font-medium text-foreground text-sm">Track visual changes over time?</p>
-                <p className="text-xs text-muted-foreground mt-0.5">Add your starting point so we can compare at future check-ins.</p>
-                <div className="flex gap-2 mt-2">
-                  <button onClick={() => navigate('/profile')} className="text-xs font-medium text-primary">Add photos</button>
-                  <button onClick={() => dismissProgressivePrompt('photos')} className="text-xs text-muted-foreground">Not now</button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+          {/* ── Profile section ───────────────────────────────────────────────── */}
+          <SectionLabel>Your profile</SectionLabel>
 
-        {showChemicalPrompt && (
-          <div className="card-elevated p-4 mb-4 border-l-4 border-l-primary/50">
-            <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-xl bg-accent flex items-center justify-center flex-shrink-0">
-                <FlaskConical size={18} className="text-foreground" strokeWidth={1.5} />
-              </div>
-              <div className="flex-1">
-                <p className="font-medium text-foreground text-sm">Tell us more about your hair history</p>
-                <p className="text-xs text-muted-foreground mt-0.5">This helps us tailor your check-ins more accurately.</p>
-                <div className="flex gap-2 mt-2">
-                  <button onClick={() => navigate('/profile')} className="text-xs font-medium text-primary">Complete profile</button>
-                  <button onClick={() => dismissProgressivePrompt('chemical')} className="text-xs text-muted-foreground">Not now</button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {showProductsPrompt && (
-          <div className="card-elevated p-4 mb-4 border-l-4 border-l-primary/50">
-            <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-xl bg-accent flex items-center justify-center flex-shrink-0">
-                <Sparkles size={18} className="text-primary" strokeWidth={1.5} />
-              </div>
-              <div className="flex-1">
-                <p className="font-medium text-foreground text-sm">What products are you using?</p>
-                <p className="text-xs text-muted-foreground mt-0.5">Tell us what you're using so we can flag potential irritants.</p>
-                <div className="flex gap-2 mt-2">
-                  <button onClick={() => navigate('/profile')} className="text-xs font-medium text-primary">Add products</button>
-                  <button onClick={() => dismissProgressivePrompt('products')} className="text-xs text-muted-foreground">Not now</button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {showMenstrualPrompt && (
-          <div className="card-elevated p-4 mb-4 border-l-4 border-l-primary/50">
-            <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-                <Heart size={18} className="text-primary" strokeWidth={1.5} />
-              </div>
-              <div className="flex-1">
-                <p className="font-medium text-foreground text-sm">Your symptoms seem to shift in a pattern</p>
-                <p className="text-xs text-muted-foreground mt-0.5">Want to link your cycle for more accurate insights?</p>
-                <div className="flex gap-2 mt-2">
-                  <button onClick={() => navigate('/profile')} className="text-xs font-medium text-primary">Link cycle</button>
-                  <button onClick={() => dismissProgressivePrompt('menstrual')} className="text-xs text-muted-foreground">Not now</button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Salon Visit */}
-        <button onClick={() => setShowSalonVisitPicker(true)} className="card-elevated p-4 mb-4 w-full flex items-center gap-3 text-left">
-          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-            <Scissors size={20} className="text-primary" strokeWidth={1.5} />
-          </div>
-          <div className="flex-1">
-            <p className="font-medium text-foreground text-sm">Salon Visit</p>
-            <p className="text-xs text-muted-foreground">Log your visit or let your stylist check in</p>
-          </div>
-          <ChevronRight size={18} className="text-muted-foreground" />
-        </button>
-
-        {/* Did You Know */}
-        <div className="rounded-2xl bg-sage-light p-5 mb-4">
-          <div className="flex items-start gap-3">
-            <Lightbulb size={20} className="text-primary mt-0.5 flex-shrink-0" strokeWidth={1.8} />
-            <div>
-              <p className="text-sm text-foreground">
-                <strong>Did you know?</strong> {didYouKnowFacts[dayOfYear % didYouKnowFacts.length]}
-              </p>
-              <button onClick={() => navigate('/learn')} className="text-sm text-primary font-medium mt-2">Learn more</button>
-            </div>
-          </div>
+          {!isMale && !onboardingData.isWornOutOnly && currentDay >= totalDays - 4 && (
+            <FullCard
+              iconBg={C.gold10}
+              icon={<Calendar size={17} color={C.goldDeep} strokeWidth={1.6} />}
+              title="Time to book your next appointment?"
+              desc={`${currentStyle} has been in for ${currentDay} days`}
+              onClick={() => navigate('/salon-booking')}
+            />
+          )}
         </div>
 
-        {/* Salon Booking */}
-        {!isMale && !onboardingData.isWornOutOnly && currentDay >= totalDays - 4 && (
-          <button onClick={() => navigate('/salon-booking')} className="card-elevated p-4 mb-4 w-full flex items-center gap-3 text-left">
-            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-              <Calendar size={20} className="text-primary" strokeWidth={1.5} />
-            </div>
-            <div className="flex-1">
-              <p className="font-medium text-foreground text-sm">Time to book your next appointment?</p>
-              <p className="text-xs text-muted-foreground">Your {currentStyle.toLowerCase()} has been in for {currentDay} days</p>
-            </div>
-            <ChevronRight size={18} className="text-muted-foreground" />
-          </button>
-        )}
-
-        {/* Your Routine */}
-        <button onClick={() => navigate('/routine-tracker')} className="card-elevated p-4 mb-4 w-full flex items-center gap-3 text-left">
-          <div className="w-10 h-10 rounded-xl bg-accent flex items-center justify-center flex-shrink-0">
-            <Droplets size={20} className="text-primary" strokeWidth={1.5} />
-          </div>
-          <div className="flex-1">
-            <p className="font-medium text-foreground text-sm">Your Routine</p>
-            <p className="text-xs text-muted-foreground">View your wash cycle timeline and products</p>
-          </div>
-          <ChevronRight size={18} className="text-muted-foreground" />
-        </button>
-
-        <div className="h-20" />
       </motion.div>
 
-      {/* Research Prompt Modal */}
+      {/* ── Research Prompt Modal ─────────────────────────────────────────────── */}
       <AnimatePresence>
         {showResearchPrompt && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-foreground/30 z-[55] flex items-center justify-center px-6">
-            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="bg-card rounded-3xl p-6 max-w-sm w-full shadow-card">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-                  <Microscope size={20} className="text-primary" strokeWidth={1.5} />
-                </div>
-                <h3 className="text-base font-semibold text-foreground">Help improve scalp health research</h3>
+          <Modal onClose={handleResearchDismiss}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+              <div style={{
+                width: 40, height: 40, borderRadius: 13, background: C.gold10,
+                display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+              }}>
+                <Microscope size={19} color={C.goldDeep} strokeWidth={1.6} />
               </div>
-              <p className="text-sm text-muted-foreground mb-5 leading-relaxed">
-                You've completed {checkInCount} check-ins. Want to help improve scalp health research for textured hair? Your anonymised data contributes to better understanding of scalp health.
-              </p>
-              <div className="space-y-2">
-                <button onClick={handleResearchOptIn} className="w-full h-12 rounded-xl bg-primary text-primary-foreground font-medium text-sm">Yes, opt me in</button>
-                <button onClick={handleResearchDismiss} className="w-full h-12 rounded-xl border border-border text-foreground font-medium text-sm">Not now</button>
-                <button onClick={() => { handleResearchDismiss(); navigate('/profile'); }} className="w-full text-center text-sm text-primary font-medium py-2">Learn more</button>
-              </div>
-            </motion.div>
-          </motion.div>
+              <h3 style={{ fontFamily: playfair, fontSize: 17, color: C.ink, margin: 0, lineHeight: 1.2 }}>
+                Help improve scalp health research
+              </h3>
+            </div>
+            <p style={{ fontFamily: dm, fontSize: 13, color: C.warm, lineHeight: 1.6, marginBottom: 20 }}>
+              You've completed {checkInCount} check-ins. Your anonymised data helps us better
+              understand scalp health for textured hair.
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <button onClick={handleResearchOptIn} style={primaryBtn}>Yes, opt me in</button>
+              <button onClick={handleResearchDismiss} style={outlineBtn}>Not now</button>
+              <button onClick={() => { handleResearchDismiss(); navigate('/profile'); }} style={{ ...ghostBtn, marginTop: 4 }}>
+                Learn more
+              </button>
+            </div>
+          </Modal>
         )}
       </AnimatePresence>
 
-      {/* Salon Visit Picker Modal */}
+      {/* ── Salon Visit Picker Modal ──────────────────────────────────────────── */}
       <AnimatePresence>
         {showSalonVisitPicker && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-foreground/30 z-[55] flex items-center justify-center px-6">
-            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="bg-card rounded-3xl p-6 max-w-sm w-full shadow-card">
-              <div className="flex items-center justify-between mb-5">
-                <h3 className="text-lg font-semibold text-foreground">Salon Visit</h3>
-                <button onClick={() => setShowSalonVisitPicker(false)} className="p-1"><X size={22} className="text-muted-foreground" strokeWidth={1.8} /></button>
-              </div>
-              <p className="text-sm text-muted-foreground mb-5">What would you like to do?</p>
-              <button onClick={() => { setShowSalonVisitPicker(false); setShowSalonForm(true); }} className="w-full card-elevated p-4 mb-3 flex items-center gap-3 text-left">
-                <div className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center flex-shrink-0">
-                  <Calendar size={20} className="text-foreground" strokeWidth={1.5} />
-                </div>
-                <div className="flex-1">
-                  <p className="font-medium text-foreground text-sm">Log my own visit</p>
-                  <p className="text-xs text-muted-foreground">Record your salon or barber experience</p>
-                </div>
-                <ChevronRight size={16} className="text-muted-foreground" />
-              </button>
-              <button onClick={() => { setShowSalonVisitPicker(false); navigate('/salon-checkin'); }} className="w-full card-elevated p-4 flex items-center gap-3 text-left">
-                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-                  <Stethoscope size={20} className="text-primary" strokeWidth={1.5} />
-                </div>
-                <div className="flex-1">
-                  <p className="font-medium text-foreground text-sm">Stylist check-in</p>
-                  <p className="text-xs text-muted-foreground">Hand your phone to your stylist for photo capture</p>
-                </div>
-                <ChevronRight size={16} className="text-muted-foreground" />
-              </button>
-            </motion.div>
-          </motion.div>
+          <Modal onClose={() => setShowSalonVisitPicker(false)} title="Salon Visit">
+            <p style={{ fontFamily: dm, fontSize: 13, color: C.warm, marginBottom: 20 }}>
+              What would you like to do?
+            </p>
+            <ModalOption
+              iconBg={C.surface}
+              icon={<Calendar size={19} color={C.ink} strokeWidth={1.6} />}
+              title="Log my own visit"
+              desc="Record your salon or barber experience"
+              onClick={() => { setShowSalonVisitPicker(false); setShowSalonForm(true); }}
+            />
+            <ModalOption
+              iconBg={C.gold10}
+              icon={<Stethoscope size={19} color={C.goldDeep} strokeWidth={1.6} />}
+              title="Stylist check-in"
+              desc="Hand your phone to your stylist for photo capture"
+              onClick={() => { setShowSalonVisitPicker(false); navigate('/salon-checkin'); }}
+            />
+          </Modal>
         )}
       </AnimatePresence>
 
-      {/* Salon Visit Form Modal */}
+      {/* ── Salon Visit Form Sheet ────────────────────────────────────────────── */}
       <AnimatePresence>
         {showSalonForm && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-foreground/30 z-50 flex items-end justify-center">
-            <motion.div initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }} transition={{ type: 'spring', damping: 25, stiffness: 300 }} className="bg-card rounded-t-3xl w-full max-w-[430px] max-h-[85vh] overflow-y-auto">
-              <div className="p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-lg font-semibold">{isMale ? 'Log a salon or barber visit' : 'Log a salon visit'}</h3>
-                  <button onClick={() => setShowSalonForm(false)} className="p-1"><X size={22} className="text-muted-foreground" strokeWidth={1.8} /></button>
-                </div>
-                <div className="mb-5">
-                  <label className="text-sm font-medium text-foreground mb-2 block">Date of visit</label>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <button className="w-full h-12 px-4 rounded-xl border-2 border-border bg-card text-left text-sm flex items-center gap-2">
-                        <span className="text-foreground">{format(visitDate, 'PPP')}</span>
-                      </button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0" align="start">
-                      <CalendarPicker mode="single" selected={visitDate} onSelect={(d) => d && setVisitDate(d)} initialFocus className={cn("p-3 pointer-events-auto")} />
-                    </PopoverContent>
-                  </Popover>
-                </div>
-                <div className="mb-5">
-                  <label className="text-sm font-medium text-foreground mb-2 block">Services</label>
-                  <div className="flex flex-wrap gap-2">
-                    {serviceOptions.map(s => (
-                      <button key={s} onClick={() => toggleService(s)} className={`pill-option ${services.includes(s) ? 'selected' : ''}`}>{s}</button>
-                    ))}
-                  </div>
-                </div>
-                <div className="mb-5">
-                  <label className="text-sm font-medium text-foreground mb-2 block">Stylist name (optional)</label>
-                  <input type="text" value={stylistName} onChange={e => setStylistName(e.target.value)} placeholder="Who did your hair?" className="w-full h-12 px-4 rounded-xl border-2 border-border bg-card text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors" />
-                </div>
-                <div className="mb-6">
-                  <label className="text-sm font-medium text-foreground mb-2 block">Notes (optional)</label>
-                  <textarea value={visitNotes} onChange={e => setVisitNotes(e.target.value)} placeholder="Anything to remember?" rows={3} className="w-full px-4 py-3 rounded-xl border-2 border-border bg-card text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors resize-none" />
-                </div>
-                <button onClick={handleSaveSalon} disabled={services.length === 0} className={`w-full h-14 rounded-xl font-semibold text-base btn-press transition-colors ${services.length > 0 ? 'bg-primary text-primary-foreground' : 'bg-border text-muted-foreground cursor-not-allowed'}`}>
-                  Save visit
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            style={{
+              position: 'fixed', inset: 0,
+              background: 'rgba(0,0,0,0.3)', zIndex: 50,
+              display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+            }}
+          >
+            <motion.div
+              initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 28, stiffness: 320 }}
+              style={{
+                background: C.white, borderRadius: '28px 28px 0 0',
+                width: '100%', maxWidth: 430, maxHeight: '85vh',
+                overflowY: 'auto', padding: 24,
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
+                <h3 style={{ fontFamily: playfair, fontSize: 18, color: C.ink, margin: 0 }}>
+                  {isMale ? 'Log a salon or barber visit' : 'Log a salon visit'}
+                </h3>
+                <button onClick={() => setShowSalonForm(false)} style={iconBtn}>
+                  <X size={19} color={C.muted} strokeWidth={1.8} />
                 </button>
               </div>
+
+              <FormLabel>Date of visit</FormLabel>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <button style={formField}>{format(visitDate, 'PPP')}</button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <CalendarPicker
+                    mode="single" selected={visitDate}
+                    onSelect={(d) => d && setVisitDate(d)}
+                    initialFocus className={cn("p-3 pointer-events-auto")}
+                  />
+                </PopoverContent>
+              </Popover>
+
+              <FormLabel>Services</FormLabel>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 20 }}>
+                {serviceOptions.map(s => (
+                  <button
+                    key={s}
+                    onClick={() => toggleService(s)}
+                    style={{
+                      padding: '7px 14px', borderRadius: 100,
+                      fontFamily: dm, fontSize: 12, fontWeight: 500,
+                      border: services.includes(s)
+                        ? `1.5px solid ${C.gold}` : `1.5px solid ${C.mid}`,
+                      background: services.includes(s) ? C.gold10 : C.white,
+                      color: services.includes(s) ? C.goldDeep : C.warm,
+                      cursor: 'pointer', transition: 'all 0.15s',
+                    }}
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+
+              <FormLabel>Stylist name (optional)</FormLabel>
+              <input
+                type="text" value={stylistName}
+                onChange={e => setStylistName(e.target.value)}
+                placeholder="Who did your hair?"
+                style={{ ...formField, marginBottom: 20 }}
+              />
+
+              <FormLabel>Notes (optional)</FormLabel>
+              <textarea
+                value={visitNotes} onChange={e => setVisitNotes(e.target.value)}
+                placeholder="Anything to remember?" rows={3}
+                style={{
+                  ...(formField as React.CSSProperties),
+                  height: 'auto', padding: '12px 16px',
+                  resize: 'none', marginBottom: 24,
+                }}
+              />
+
+              <button
+                onClick={handleSaveSalon}
+                disabled={services.length === 0}
+                style={{
+                  ...primaryBtn,
+                  opacity: services.length === 0 ? 0.4 : 1,
+                  cursor: services.length === 0 ? 'not-allowed' : 'pointer',
+                }}
+              >
+                Save visit
+              </button>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
     </div>
   );
+};
+
+// ─── Sub-components ───────────────────────────────────────────────────────────
+
+const MiniCard = ({
+  iconBg, icon, title, desc, onClick,
+}: { iconBg: string; icon: React.ReactNode; title: string; desc: string; onClick: () => void }) => (
+  <motion.button
+    onClick={onClick} whileTap={{ scale: 0.97 }}
+    style={{
+      background: '#fff', border: '1.5px solid #EBEBEB',
+      borderRadius: 18, padding: 18, cursor: 'pointer',
+      display: 'flex', flexDirection: 'column', gap: 10,
+      textAlign: 'left', fontFamily: "'DM Sans', sans-serif",
+      boxShadow: '0 2px 10px rgba(0,0,0,0.05)',
+    }}
+  >
+    <div style={{
+      width: 34, height: 34, borderRadius: 10, background: iconBg,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+    }}>
+      {icon}
+    </div>
+    <div>
+      <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 13, fontWeight: 600, color: '#1C1C1C', margin: '0 0 3px' }}>{title}</p>
+      <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, color: '#999', margin: 0 }}>{desc}</p>
+    </div>
+  </motion.button>
+);
+
+const FullCard = ({
+  iconBg, icon, title, desc, onClick,
+}: { iconBg: string; icon: React.ReactNode; title: string; desc: string; onClick: () => void }) => (
+  <motion.button
+    onClick={onClick} whileTap={{ scale: 0.98 }}
+    style={{
+      width: '100%', background: '#fff', border: '1.5px solid #EBEBEB',
+      borderRadius: 18, padding: '15px 18px', marginBottom: 10,
+      cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 14,
+      textAlign: 'left', fontFamily: "'DM Sans', sans-serif",
+      boxShadow: '0 2px 10px rgba(0,0,0,0.05)',
+    }}
+  >
+    <div style={{
+      width: 38, height: 38, borderRadius: 12, background: iconBg,
+      display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+    }}>
+      {icon}
+    </div>
+    <div style={{ flex: 1 }}>
+      <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 13, fontWeight: 600, color: '#1C1C1C', margin: '0 0 3px' }}>{title}</p>
+      <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, color: '#999', margin: 0 }}>{desc}</p>
+    </div>
+    <ChevronRight size={14} color="#CCCCCC" strokeWidth={1.8} style={{ flexShrink: 0 }} />
+  </motion.button>
+);
+
+const ProgressiveCard = ({
+  icon, iconBg, title, desc, cta, onCta, onDismiss,
+}: {
+  icon: React.ReactNode; iconBg: string;
+  title: string; desc: string; cta: string;
+  onCta: () => void; onDismiss: () => void;
+}) => (
+  <div style={{
+    background: '#fff', border: '1.5px solid #EBEBEB',
+    borderLeft: '3px solid #D4A866',
+    borderRadius: 18, padding: '15px 18px', marginBottom: 14,
+    display: 'flex', gap: 14, alignItems: 'flex-start',
+    boxShadow: '0 2px 10px rgba(0,0,0,0.05)',
+  }}>
+    <div style={{
+      width: 34, height: 34, borderRadius: 10, background: iconBg,
+      display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+    }}>
+      {icon}
+    </div>
+    <div style={{ flex: 1 }}>
+      <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 13, fontWeight: 600, color: '#1C1C1C', margin: '0 0 4px' }}>{title}</p>
+      <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, color: '#999', margin: 0, lineHeight: 1.55 }}>{desc}</p>
+      <div style={{ display: 'flex', gap: 16, marginTop: 10 }}>
+        <button onClick={onCta} style={{
+          fontFamily: "'DM Sans', sans-serif", fontSize: 12, fontWeight: 700,
+          color: '#B8893E', background: 'none', border: 'none', cursor: 'pointer', padding: 0,
+        }}>
+          {cta}
+        </button>
+        <button onClick={onDismiss} style={{
+          fontFamily: "'DM Sans', sans-serif", fontSize: 12, color: '#BBBBBB',
+          background: 'none', border: 'none', cursor: 'pointer', padding: 0,
+        }}>
+          Not now
+        </button>
+      </div>
+    </div>
+  </div>
+);
+
+const Modal = ({
+  children, onClose, title,
+}: { children: React.ReactNode; onClose: () => void; title?: string }) => (
+  <motion.div
+    initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+    style={{
+      position: 'fixed', inset: 0,
+      background: 'rgba(0,0,0,0.3)', zIndex: 55,
+      display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 24px',
+    }}
+  >
+    <motion.div
+      initial={{ scale: 0.94, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+      exit={{ scale: 0.94, opacity: 0 }}
+      style={{
+        background: '#fff', borderRadius: 28, padding: 24,
+        maxWidth: 360, width: '100%', fontFamily: "'DM Sans', sans-serif",
+      }}
+    >
+      {title && (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+          <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: 18, color: '#1C1C1C', margin: 0 }}>{title}</h3>
+          <button onClick={onClose} style={iconBtn}>
+            <X size={19} color="#999" strokeWidth={1.8} />
+          </button>
+        </div>
+      )}
+      {children}
+    </motion.div>
+  </motion.div>
+);
+
+const ModalOption = ({
+  iconBg, icon, title, desc, onClick,
+}: { iconBg: string; icon: React.ReactNode; title: string; desc: string; onClick: () => void }) => (
+  <motion.button
+    onClick={onClick} whileTap={{ scale: 0.98 }}
+    style={{
+      width: '100%', background: '#F8F8F8',
+      border: '1.5px solid #EBEBEB',
+      borderRadius: 16, padding: '14px 16px', marginBottom: 10,
+      cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 14,
+      textAlign: 'left', fontFamily: "'DM Sans', sans-serif",
+    }}
+  >
+    <div style={{
+      width: 40, height: 40, borderRadius: 13, background: iconBg,
+      display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+    }}>
+      {icon}
+    </div>
+    <div style={{ flex: 1 }}>
+      <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 13, fontWeight: 600, color: '#1C1C1C', margin: '0 0 2px' }}>{title}</p>
+      <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, color: '#999', margin: 0 }}>{desc}</p>
+    </div>
+    <ChevronRight size={14} color="#CCCCCC" strokeWidth={1.8} />
+  </motion.button>
+);
+
+// ─── Shared styles ────────────────────────────────────────────────────────────
+const primaryBtn: React.CSSProperties = {
+  width: '100%', height: 52, borderRadius: 16,
+  background: '#1C1C1C', color: '#f5f5f5',
+  border: 'none', fontFamily: "'DM Sans', sans-serif", fontSize: 14, fontWeight: 600, cursor: 'pointer',
+};
+
+const outlineBtn: React.CSSProperties = {
+  width: '100%', height: 52, borderRadius: 16,
+  background: 'transparent', color: '#1C1C1C',
+  border: '1.5px solid #EBEBEB', fontFamily: "'DM Sans', sans-serif", fontSize: 14, fontWeight: 500, cursor: 'pointer',
+};
+
+const ghostBtn: React.CSSProperties = {
+  width: '100%', height: 40, borderRadius: 16,
+  background: 'none', color: '#D4A866', border: 'none',
+  fontFamily: "'DM Sans', sans-serif", fontSize: 13, fontWeight: 600, cursor: 'pointer',
+};
+
+const iconBtn: React.CSSProperties = {
+  background: 'none', border: 'none', cursor: 'pointer',
+  padding: 4, display: 'flex', alignItems: 'center', justifyContent: 'center',
+};
+
+const formField: React.CSSProperties = {
+  width: '100%', height: 48, padding: '0 16px',
+  borderRadius: 14, border: '1.5px solid #EBEBEB',
+  background: '#F8F8F8', fontFamily: "'DM Sans', sans-serif",
+  fontSize: 13, color: '#1C1C1C',
+  marginBottom: 20, outline: 'none', cursor: 'pointer',
+  display: 'flex', alignItems: 'center', boxSizing: 'border-box',
 };
 
 export default HomePage;

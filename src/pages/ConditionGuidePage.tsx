@@ -1,11 +1,10 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, ChevronRight, ExternalLink, Shield, AlertTriangle, Eye, Search as SearchIcon, CheckCircle2, XCircle, ArrowRight, MessageCircle, Camera, ImageIcon } from 'lucide-react';
+import { ArrowLeft, ChevronRight, ExternalLink, Eye, Search as SearchIcon, CheckCircle2, XCircle, ImageIcon } from 'lucide-react';
 import { consumerConditions, ConsumerCondition } from '@/data/conditionGuide';
 import { stylistConditions, getConditionById as getStylistCondition } from '@/data/stylistConditions';
 import ScalpIllustration from '@/components/ScalpIllustration';
-import ImageViewer, { useImageViewer } from '@/components/ImageViewer';
 
 const ConditionDetail = ({ condition, onBack }: { condition: ConsumerCondition; onBack: () => void }) => {
   const navigate = useNavigate();
@@ -37,16 +36,35 @@ const ConditionDetail = ({ condition, onBack }: { condition: ConsumerCondition; 
         <p className="text-sm text-muted-foreground leading-relaxed">{condition.whatIsIt}</p>
       </div>
 
-      {/* Section 2: Photo gallery placeholders */}
+      {/* Section 2: Photo gallery — styled placeholders */}
       <div className="mb-5">
-        <h3 className="text-sm font-semibold text-foreground mb-3">What does it look like?</h3>
+        <h3 className="text-sm font-semibold text-foreground mb-1">What does it look like?</h3>
         <p className="text-xs text-muted-foreground mb-3">Reference photos on textured hair and darker skin tones</p>
         <div className="flex gap-3 overflow-x-auto pb-3 -mx-1 px-1 scrollbar-hide" style={{ WebkitOverflowScrolling: 'touch' }}>
           {condition.photoGallery.map((photo, i) => (
             <div key={i} className="flex-shrink-0 w-[200px]">
-              <div className="w-[200px] h-[150px] rounded-xl border-2 border-dashed border-border bg-muted/30 flex flex-col items-center justify-center gap-2 mb-2">
-                <ImageIcon size={24} className="text-muted-foreground/50" />
-                <span className="text-[10px] text-muted-foreground text-center px-3 leading-tight">{photo.description}</span>
+              <div
+                className="w-[200px] h-[160px] rounded-2xl mb-2 flex flex-col items-center justify-center gap-2"
+                style={{
+                  background: 'linear-gradient(135deg, #f0ece8 0%, #e8e2db 100%)',
+                  border: '1.5px solid #e0d8d0',
+                }}
+              >
+                <div
+                  className="w-10 h-10 rounded-full flex items-center justify-center"
+                  style={{ background: 'rgba(127, 168, 150, 0.15)' }}
+                >
+                  <ImageIcon size={20} style={{ color: '#7fa896' }} />
+                </div>
+                <p className="text-[10px] text-center px-4 leading-snug" style={{ color: '#9a8f87' }}>
+                  {photo.description}
+                </p>
+                <span
+                  className="text-[9px] font-medium px-2 py-0.5 rounded-full"
+                  style={{ background: 'rgba(127,168,150,0.15)', color: '#7fa896' }}
+                >
+                  Photo coming soon
+                </span>
               </div>
               <p className="text-xs font-medium text-foreground">{photo.label}</p>
             </div>
@@ -70,7 +88,6 @@ const ConditionDetail = ({ condition, onBack }: { condition: ConsumerCondition; 
             ))}
           </div>
 
-          {/* Darker skin note */}
           <div className="rounded-xl bg-secondary/60 border border-secondary p-4 mt-3">
             <div className="flex items-center gap-2 mb-2">
               <Eye size={14} className="text-primary" />
@@ -101,7 +118,7 @@ const ConditionDetail = ({ condition, onBack }: { condition: ConsumerCondition; 
             <p className={`text-sm leading-relaxed ${getResultMessage().color}`}>{getResultMessage().text}</p>
             <div className="flex gap-2 mt-4">
               <button onClick={() => navigate('/find-specialist')} className="flex-1 h-10 rounded-xl bg-primary text-primary-foreground text-sm font-medium btn-press">Find a specialist</button>
-              <button onClick={() => navigate('/wash-day')} className="flex-1 h-10 rounded-xl border border-border text-sm font-medium text-foreground btn-press">Log in a check-in</button>
+              <button onClick={() => navigate('/wash-day')} className="flex-1 h-10 rounded-xl border border-border text-sm font-medium text-foreground btn-press">Log a check-in</button>
             </div>
           </motion.div>
         )}
@@ -153,7 +170,6 @@ const ConditionDetail = ({ condition, onBack }: { condition: ConsumerCondition; 
         </a>
       </div>
 
-      {/* Bottom back button */}
       <div className="pt-4 border-t border-border mb-20">
         <button onClick={onBack} className="w-full h-12 rounded-xl border-2 border-border text-foreground font-medium text-sm btn-press flex items-center justify-center gap-2">
           <ArrowLeft size={16} /> Back
@@ -180,14 +196,12 @@ const ConditionGuidePage = ({ onBack }: { onBack: () => void }) => {
       <h2 className="text-lg font-semibold text-foreground mb-1">What does that look like?</h2>
       <p className="text-sm text-muted-foreground mb-5">A visual guide to common scalp and hair conditions</p>
 
-      {/* Disclaimer */}
       <div className="rounded-xl bg-secondary/60 border border-secondary p-4 mb-5">
         <p className="text-xs text-muted-foreground leading-relaxed">
           This guide is for awareness, not diagnosis. If anything here looks familiar, that's a reason to see a professional, not a reason to panic. Most scalp conditions are treatable, especially when caught early.
         </p>
       </div>
 
-      {/* Condition cards */}
       <div className="space-y-2.5 mb-8">
         {consumerConditions.map(c => (
           <button key={c.id} onClick={() => setSelectedId(c.id)} className="card-elevated p-4 w-full text-left flex items-center gap-3 btn-press">
@@ -203,14 +217,12 @@ const ConditionGuidePage = ({ onBack }: { onBack: () => void }) => {
         ))}
       </div>
 
-      {/* DermNet NZ note */}
       <div className="rounded-xl bg-secondary/40 border border-secondary p-4 mb-6">
         <p className="text-xs text-muted-foreground leading-relaxed italic">
           DermNet NZ is a free, trusted dermatology resource used by medical professionals worldwide. Images are provided for educational reference only.
         </p>
       </div>
 
-      {/* Bottom back button */}
       <div className="pt-4 border-t border-border mb-20">
         <button onClick={onBack} className="w-full h-12 rounded-xl border-2 border-border text-foreground font-medium text-sm btn-press flex items-center justify-center gap-2">
           <ArrowLeft size={16} /> Back to Learn

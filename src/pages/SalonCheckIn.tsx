@@ -4,30 +4,60 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, Camera, Upload, Check, X, ClipboardCheck } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
+const dm       = "'DM Sans', sans-serif";
+const playfair = "'Playfair Display', serif";
+
+const C = {
+  bg:          'var(--color-background-tertiary)',
+  card:        'var(--color-background-primary)',
+  text:        'var(--color-text-primary)',
+  muted:       'var(--color-text-secondary)',
+  green:       '#2d6e55',
+  darkGreen:   '#1a4d3a',
+  greenLight:  '#e8f4ef',
+  greenBorder: 'rgba(45,110,85,0.18)',
+  green10:     'rgba(45,110,85,0.10)',
+  mid:         'var(--color-border-tertiary)',
+  shadow:      '0 2px 12px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04)',
+};
+
 const regions = ['Front hairline', 'Crown / vertex', 'Nape', 'Left temple', 'Right temple', 'Part line', 'Area of concern'];
 
 const observations = [
-  { id: 'thinning', label: 'Thinning' },
-  { id: 'redness', label: 'Redness / irritation' },
-  { id: 'flaking', label: 'Flaking / buildup' },
-  { id: 'tenderness', label: 'Tenderness (reported by client)' },
-  { id: 'bumps', label: 'Bumps / folliculitis' },
-  { id: 'healthy', label: 'Healthy / no concerns' },
+  { id: 'thinning',    label: 'Thinning' },
+  { id: 'redness',     label: 'Redness / irritation' },
+  { id: 'flaking',     label: 'Flaking / buildup' },
+  { id: 'tenderness',  label: 'Tenderness (reported by client)' },
+  { id: 'bumps',       label: 'Bumps / folliculitis' },
+  { id: 'healthy',     label: 'Healthy / no concerns' },
 ];
 
 interface CapturedPhoto {
-  id: string;
-  region: string;
-  dataUrl: string;
+  id: string; region: string; dataUrl: string;
 }
+
+// ─── Shared styles ────────────────────────────────────────────────────────────
+const cardStyle: React.CSSProperties = {
+  background: C.card,
+  border: `1.5px solid ${C.greenBorder}`,
+  borderRadius: 16,
+  boxShadow: C.shadow,
+};
+
+const primaryBtn: React.CSSProperties = {
+  width: '100%', height: 52, borderRadius: 16, border: 'none',
+  background: C.green, color: '#fff',
+  fontFamily: dm, fontSize: 14, fontWeight: 600, cursor: 'pointer',
+  boxShadow: '0 4px 14px rgba(45,110,85,0.28)',
+};
 
 const SalonCheckIn = () => {
   const navigate = useNavigate();
-  const [step, setStep] = useState(0); // 0=intro, 1=photos, 2=observations, 3=notes, 4=done
-  const [photos, setPhotos] = useState<CapturedPhoto[]>([]);
+  const [step, setStep]                     = useState(0);
+  const [photos, setPhotos]                 = useState<CapturedPhoto[]>([]);
   const [selectedRegion, setSelectedRegion] = useState(regions[0]);
   const [selectedObservations, setSelectedObservations] = useState<string[]>([]);
-  const [note, setNote] = useState('');
+  const [note, setNote]                     = useState('');
 
   const toggleObservation = (id: string) => {
     if (id === 'healthy') {
@@ -40,45 +70,23 @@ const SalonCheckIn = () => {
     });
   };
 
-  const handleTakePhoto = () => {
+  const handleCapture = (capture?: string) => {
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = 'image/*';
-    input.capture = 'environment';
+    if (capture) input.capture = capture as any;
     input.onchange = (e: any) => {
       const file = e.target.files?.[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = (ev) => {
-          setPhotos(prev => [...prev, {
-            id: `photo-${Date.now()}`,
-            region: selectedRegion,
-            dataUrl: ev.target?.result as string,
-          }]);
-        };
-        reader.readAsDataURL(file);
-      }
-    };
-    input.click();
-  };
-
-  const handleUpload = () => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
-    input.onchange = (e: any) => {
-      const file = e.target.files?.[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = (ev) => {
-          setPhotos(prev => [...prev, {
-            id: `photo-${Date.now()}`,
-            region: selectedRegion,
-            dataUrl: ev.target?.result as string,
-          }]);
-        };
-        reader.readAsDataURL(file);
-      }
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = ev => {
+        setPhotos(prev => [...prev, {
+          id: `photo-${Date.now()}`,
+          region: selectedRegion,
+          dataUrl: ev.target?.result as string,
+        }]);
+      };
+      reader.readAsDataURL(file);
     };
     input.click();
   };
@@ -86,7 +94,6 @@ const SalonCheckIn = () => {
   const removePhoto = (id: string) => setPhotos(prev => prev.filter(p => p.id !== id));
 
   const handleComplete = () => {
-    // Save check-in data to localStorage for the client's timeline
     try {
       const existing = JSON.parse(localStorage.getItem('follisense-salon-checkins') || '[]');
       existing.push({
@@ -103,91 +110,150 @@ const SalonCheckIn = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <div className="max-w-[430px] w-full mx-auto flex-1 flex flex-col px-6 pt-8 pb-6">
+    <div style={{ minHeight: '100vh', background: C.bg, fontFamily: dm, display: 'flex', flexDirection: 'column' }}>
 
-        {/* Header with back */}
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Playfair+Display:wght@500;600&display=swap');`}</style>
+
+      <div style={{ maxWidth: 480, width: '100%', margin: '0 auto', flex: 1, display: 'flex', flexDirection: 'column', padding: '52px 20px 32px' }}>
+
+        {/* Header */}
         {step < 4 && (
-          <div className="flex items-center justify-between mb-6">
-            <button onClick={() => step === 0 ? navigate(-1) : setStep(step - 1)} className="flex items-center gap-1.5 text-sm text-muted-foreground btn-press">
-              <ArrowLeft size={16} /> {step === 0 ? 'Back' : 'Previous'}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28 }}>
+            <button
+              onClick={() => step === 0 ? navigate(-1) : setStep(step - 1)}
+              style={{ display: 'flex', alignItems: 'center', gap: 6, fontFamily: dm, fontSize: 13, fontWeight: 500, color: C.green, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+            >
+              <ArrowLeft size={16} strokeWidth={2} color={C.green} />
+              {step === 0 ? 'Back' : 'Previous'}
             </button>
-            <div className="flex gap-1">
+            {/* Progress dots */}
+            <div style={{ display: 'flex', gap: 6 }}>
               {[0, 1, 2, 3].map(s => (
-                <div key={s} className={`w-8 h-1.5 rounded-full ${s <= step ? 'bg-primary' : 'bg-border'}`} />
+                <div key={s} style={{
+                  width: 28, height: 4, borderRadius: 4,
+                  background: s <= step ? C.green : C.greenBorder,
+                  transition: 'background 0.2s',
+                }} />
               ))}
             </div>
           </div>
         )}
 
         <AnimatePresence mode="wait">
-          {/* Step 0: Intro */}
+
+          {/* ── Step 0: Intro ── */}
           {step === 0 && (
-            <motion.div key="intro" initial={{ opacity: 0, x: 15 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -15 }} className="flex-1 flex flex-col">
-              <div className="flex-1 flex flex-col items-center justify-center text-center px-4">
-                <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mb-6">
-                  <ClipboardCheck size={36} className="text-primary" />
+            <motion.div key="intro"
+              initial={{ opacity: 0, x: 15 }} animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -15 }}
+              style={{ flex: 1, display: 'flex', flexDirection: 'column' }}
+            >
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '0 8px' }}>
+                <div style={{
+                  width: 80, height: 80, borderRadius: '50%',
+                  background: C.green10, border: `2px solid ${C.greenBorder}`,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 24,
+                }}>
+                  <ClipboardCheck size={34} color={C.green} strokeWidth={1.6} />
                 </div>
-                <h1 className="text-2xl font-bold text-foreground mb-3">Salon Check-in</h1>
-                <p className="text-base text-muted-foreground leading-relaxed mb-4">
-                  Hand your phone to your stylist. They'll capture your scalp condition during your appointment.
+                {/* Brand */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12, justifyContent: 'center' }}>
+                  <div style={{ width: 6, height: 6, borderRadius: '50%', background: C.green }} />
+                  <span style={{ fontFamily: dm, fontSize: 10, fontWeight: 600, color: C.muted, letterSpacing: '0.1em', textTransform: 'uppercase' }}>FolliSense</span>
+                  <span style={{ fontFamily: dm, fontSize: 9, fontWeight: 600, background: C.greenLight, color: C.darkGreen, border: `1px solid ${C.greenBorder}`, padding: '1px 8px', borderRadius: 100 }}>Stylist</span>
+                </div>
+                <h1 style={{ fontFamily: playfair, fontSize: 24, fontWeight: 500, color: C.text, margin: '0 0 10px', lineHeight: 1.2 }}>
+                  Salon Check-in
+                </h1>
+                <p style={{ fontFamily: dm, fontSize: 13, color: C.muted, lineHeight: 1.6, marginBottom: 24 }}>
+                  Hand your phone to your stylist. They'll capture the scalp condition during your appointment.
                 </p>
-                <div className="rounded-xl bg-secondary/60 border border-secondary p-4 w-full">
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    🔒 All data stays in your account. Your stylist doesn't need to log in or create an account.
+                <div style={{ ...cardStyle, padding: '14px 16px', width: '100%', textAlign: 'left', display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                  <div style={{ width: 20, height: 20, borderRadius: '50%', background: C.green10, border: `1px solid ${C.greenBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 1 }}>
+                    <div style={{ width: 6, height: 6, borderRadius: '50%', background: C.green }} />
+                  </div>
+                  <p style={{ fontFamily: dm, fontSize: 12, color: C.muted, lineHeight: 1.55, margin: 0 }}>
+                    All data stays in your account. Your stylist doesn't need to log in or create an account.
                   </p>
                 </div>
               </div>
-              <button onClick={() => setStep(1)} className="w-full h-14 bg-primary text-primary-foreground rounded-xl font-semibold text-base btn-press mt-6">
+              <button onClick={() => setStep(1)} style={{ ...primaryBtn, marginTop: 24 }}>
                 Start Check-in
               </button>
             </motion.div>
           )}
 
-          {/* Step 1: Photo capture */}
+          {/* ── Step 1: Photos ── */}
           {step === 1 && (
-            <motion.div key="photos" initial={{ opacity: 0, x: 15 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -15 }} className="flex-1 flex flex-col">
-              <h2 className="text-xl font-bold text-foreground mb-1">Capture the scalp</h2>
-              <p className="text-sm text-muted-foreground mb-5">Take photos of different areas. Tag each with the region.</p>
+            <motion.div key="photos"
+              initial={{ opacity: 0, x: 15 }} animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -15 }}
+              style={{ flex: 1, display: 'flex', flexDirection: 'column' }}
+            >
+              <h2 style={{ fontFamily: playfair, fontSize: 22, fontWeight: 500, color: C.text, margin: '0 0 4px' }}>Capture the scalp</h2>
+              <p style={{ fontFamily: dm, fontSize: 13, color: C.muted, margin: '0 0 20px' }}>Take photos of different areas. Tag each with the region.</p>
 
-              {/* Region selector */}
-              <div className="flex gap-2 overflow-x-auto pb-3 mb-4 scrollbar-hide" style={{ WebkitOverflowScrolling: 'touch' }}>
+              {/* Region pills */}
+              <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 14, marginBottom: 4, scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' as any }}>
                 {regions.map(r => (
-                  <button
-                    key={r}
-                    onClick={() => setSelectedRegion(r)}
-                    className={`flex-shrink-0 px-3.5 py-2 rounded-full text-xs font-medium transition-colors ${
-                      selectedRegion === r ? 'bg-primary text-primary-foreground' : 'bg-card border border-border text-foreground'
-                    }`}
-                  >
+                  <button key={r} onClick={() => setSelectedRegion(r)} style={{
+                    flexShrink: 0, padding: '6px 14px', borderRadius: 100,
+                    fontFamily: dm, fontSize: 11, fontWeight: 600,
+                    border: selectedRegion === r ? 'none' : `1.5px solid ${C.greenBorder}`,
+                    background: selectedRegion === r ? C.green : C.card,
+                    color: selectedRegion === r ? '#fff' : C.muted,
+                    cursor: 'pointer', transition: 'all 0.15s',
+                    boxShadow: selectedRegion === r ? '0 2px 8px rgba(45,110,85,0.28)' : 'none',
+                  }}>
                     {r}
                   </button>
                 ))}
               </div>
 
-              {/* Photo buttons */}
-              <div className="flex gap-3 mb-5">
-                <button onClick={handleTakePhoto} className="flex-1 h-28 rounded-xl border-2 border-dashed border-primary/40 bg-primary/5 flex flex-col items-center justify-center gap-2 btn-press">
-                  <Camera size={28} className="text-primary" />
-                  <span className="text-sm font-medium text-primary">Take photo</span>
+              {/* Camera / upload buttons */}
+              <div style={{ display: 'flex', gap: 12, marginBottom: 20 }}>
+                <button onClick={() => handleCapture('environment')} style={{
+                  flex: 1, height: 110, borderRadius: 18,
+                  border: `1.5px dashed ${C.green}`,
+                  background: C.green10,
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8,
+                  cursor: 'pointer', fontFamily: dm,
+                }}>
+                  <Camera size={26} color={C.green} strokeWidth={1.6} />
+                  <span style={{ fontFamily: dm, fontSize: 13, fontWeight: 600, color: C.green }}>Take photo</span>
                 </button>
-                <button onClick={handleUpload} className="flex-1 h-28 rounded-xl border-2 border-dashed border-border flex flex-col items-center justify-center gap-2 btn-press">
-                  <Upload size={28} className="text-muted-foreground" />
-                  <span className="text-sm font-medium text-muted-foreground">Upload</span>
+                <button onClick={() => handleCapture()} style={{
+                  flex: 1, height: 110, borderRadius: 18,
+                  border: `1.5px dashed ${C.greenBorder}`,
+                  background: C.card,
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8,
+                  cursor: 'pointer',
+                }}>
+                  <Upload size={26} color={C.muted} strokeWidth={1.6} />
+                  <span style={{ fontFamily: dm, fontSize: 13, fontWeight: 600, color: C.muted }}>Upload</span>
                 </button>
               </div>
 
               {/* Photo grid */}
               {photos.length > 0 && (
-                <div className="mb-5">
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">{photos.length} photo{photos.length !== 1 ? 's' : ''} captured</p>
-                  <div className="grid grid-cols-3 gap-2">
+                <div style={{ marginBottom: 20 }}>
+                  <p style={{ fontFamily: dm, fontSize: 10, fontWeight: 700, color: C.muted, letterSpacing: '0.09em', textTransform: 'uppercase', marginBottom: 10 }}>
+                    {photos.length} photo{photos.length !== 1 ? 's' : ''} captured
+                  </p>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
                     {photos.map(photo => (
-                      <div key={photo.id} className="relative rounded-xl overflow-hidden aspect-square">
-                        <img src={photo.dataUrl} alt={photo.region} className="w-full h-full object-cover" />
-                        <span className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-[10px] px-2 py-1 text-center truncate">{photo.region}</span>
-                        <button onClick={() => removePhoto(photo.id)} className="absolute top-1 right-1 w-6 h-6 rounded-full bg-black/60 flex items-center justify-center">
-                          <X size={12} className="text-white" />
+                      <div key={photo.id} style={{ position: 'relative', borderRadius: 14, overflow: 'hidden', aspectRatio: '1' }}>
+                        <img src={photo.dataUrl} alt={photo.region} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'rgba(26,77,58,0.75)', padding: '3px 6px', textAlign: 'center' }}>
+                          <span style={{ fontFamily: dm, fontSize: 9, color: '#d3ede0', fontWeight: 600 }}>{photo.region}</span>
+                        </div>
+                        <button onClick={() => removePhoto(photo.id)} style={{
+                          position: 'absolute', top: 6, right: 6,
+                          width: 22, height: 22, borderRadius: '50%',
+                          background: 'rgba(26,77,58,0.75)', border: 'none', cursor: 'pointer',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        }}>
+                          <X size={11} color="#fff" strokeWidth={2.5} />
                         </button>
                       </div>
                     ))}
@@ -195,91 +261,156 @@ const SalonCheckIn = () => {
                 </div>
               )}
 
-              <div className="mt-auto">
-                <button onClick={() => setStep(2)} className="w-full h-14 bg-primary text-primary-foreground rounded-xl font-semibold text-base btn-press">
+              <div style={{ marginTop: 'auto' }}>
+                <button onClick={() => setStep(2)} style={primaryBtn}>
                   {photos.length > 0 ? 'Next — Add observations' : 'Skip photos'}
                 </button>
               </div>
             </motion.div>
           )}
 
-          {/* Step 2: Observations */}
+          {/* ── Step 2: Observations ── */}
           {step === 2 && (
-            <motion.div key="observations" initial={{ opacity: 0, x: 15 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -15 }} className="flex-1 flex flex-col">
-              <h2 className="text-xl font-bold text-foreground mb-1">What do you see?</h2>
-              <p className="text-sm text-muted-foreground mb-5">Tap all that apply</p>
+            <motion.div key="observations"
+              initial={{ opacity: 0, x: 15 }} animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -15 }}
+              style={{ flex: 1, display: 'flex', flexDirection: 'column' }}
+            >
+              <h2 style={{ fontFamily: playfair, fontSize: 22, fontWeight: 500, color: C.text, margin: '0 0 4px' }}>What do you see?</h2>
+              <p style={{ fontFamily: dm, fontSize: 13, color: C.muted, margin: '0 0 20px' }}>Tap all that apply</p>
 
-              <div className="space-y-2.5 mb-6">
-                {observations.map(obs => (
-                  <button
-                    key={obs.id}
-                    onClick={() => toggleObservation(obs.id)}
-                    className={`w-full text-left p-4 rounded-xl border-2 transition-colors ${
-                      selectedObservations.includes(obs.id) ? 'border-primary bg-primary/5' : 'border-border'
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className={`w-5 h-5 rounded flex items-center justify-center flex-shrink-0 ${
-                        selectedObservations.includes(obs.id) ? 'bg-primary' : 'border-2 border-border'
-                      }`}>
-                        {selectedObservations.includes(obs.id) && <Check size={12} className="text-primary-foreground" strokeWidth={2.5} />}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 24 }}>
+                {observations.map(obs => {
+                  const selected = selectedObservations.includes(obs.id);
+                  return (
+                    <button
+                      key={obs.id}
+                      onClick={() => toggleObservation(obs.id)}
+                      style={{
+                        width: '100%', textAlign: 'left',
+                        padding: '14px 16px', borderRadius: 16,
+                        border: `1.5px solid ${selected ? C.green : C.greenBorder}`,
+                        background: selected ? C.green10 : C.card,
+                        cursor: 'pointer', fontFamily: dm,
+                        display: 'flex', alignItems: 'center', gap: 12,
+                        boxShadow: selected ? `0 2px 10px rgba(45,110,85,0.1)` : C.shadow,
+                        transition: 'all 0.15s',
+                      }}
+                    >
+                      <div style={{
+                        width: 22, height: 22, borderRadius: 7, flexShrink: 0,
+                        background: selected ? C.green : 'transparent',
+                        border: `2px solid ${selected ? C.green : C.greenBorder}`,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        transition: 'all 0.15s',
+                      }}>
+                        {selected && <Check size={12} color="#fff" strokeWidth={2.8} />}
                       </div>
-                      <span className="text-base text-foreground font-medium">{obs.label}</span>
-                    </div>
-                  </button>
-                ))}
+                      <span style={{ fontFamily: dm, fontSize: 14, fontWeight: 500, color: selected ? C.darkGreen : C.text }}>
+                        {obs.label}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
 
-              <div className="mt-auto">
-                <button onClick={() => setStep(3)} disabled={selectedObservations.length === 0} className={`w-full h-14 rounded-xl font-semibold text-base btn-press transition-colors ${
-                  selectedObservations.length > 0 ? 'bg-primary text-primary-foreground' : 'bg-border text-muted-foreground cursor-not-allowed'
-                }`}>
+              <div style={{ marginTop: 'auto' }}>
+                <button
+                  onClick={() => setStep(3)}
+                  disabled={selectedObservations.length === 0}
+                  style={{
+                    ...primaryBtn,
+                    opacity: selectedObservations.length === 0 ? 0.4 : 1,
+                    cursor: selectedObservations.length === 0 ? 'not-allowed' : 'pointer',
+                    boxShadow: selectedObservations.length === 0 ? 'none' : '0 4px 14px rgba(45,110,85,0.28)',
+                  }}
+                >
                   Next — Add notes
                 </button>
               </div>
             </motion.div>
           )}
 
-          {/* Step 3: Notes */}
+          {/* ── Step 3: Notes ── */}
           {step === 3 && (
-            <motion.div key="notes" initial={{ opacity: 0, x: 15 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -15 }} className="flex-1 flex flex-col">
-              <h2 className="text-xl font-bold text-foreground mb-1">Anything else to note?</h2>
-              <p className="text-sm text-muted-foreground mb-5">Optional — add anything the client should know</p>
+            <motion.div key="notes"
+              initial={{ opacity: 0, x: 15 }} animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -15 }}
+              style={{ flex: 1, display: 'flex', flexDirection: 'column' }}
+            >
+              <h2 style={{ fontFamily: playfair, fontSize: 22, fontWeight: 500, color: C.text, margin: '0 0 4px' }}>Anything else to note?</h2>
+              <p style={{ fontFamily: dm, fontSize: 13, color: C.muted, margin: '0 0 20px' }}>Optional — add anything the client should know</p>
 
               <textarea
                 value={note}
                 onChange={e => setNote(e.target.value)}
                 placeholder="e.g. Edges are thinning — suggested looser braid tension next time. Noticed some flaking at the crown."
-                className="w-full h-40 px-4 py-3 rounded-xl border-2 border-border bg-card text-foreground text-base resize-none focus:outline-none focus:border-primary placeholder:text-muted-foreground"
+                rows={5}
+                style={{
+                  width: '100%', padding: '14px 16px',
+                  borderRadius: 16, border: `1.5px solid ${C.greenBorder}`,
+                  background: C.card, color: C.text,
+                  fontFamily: dm, fontSize: 13, lineHeight: 1.6,
+                  resize: 'none', outline: 'none',
+                  boxShadow: C.shadow, boxSizing: 'border-box',
+                }}
+                onFocus={e => (e.currentTarget.style.border = `1.5px solid ${C.green}`)}
+                onBlur={e => (e.currentTarget.style.border = `1.5px solid ${C.greenBorder}`)}
               />
 
-              <div className="mt-auto pt-4">
-                <button onClick={handleComplete} className="w-full h-14 bg-primary text-primary-foreground rounded-xl font-semibold text-base btn-press">
+              <div style={{ marginTop: 'auto', paddingTop: 16 }}>
+                <button onClick={handleComplete} style={primaryBtn}>
                   Complete check-in
                 </button>
               </div>
             </motion.div>
           )}
 
-          {/* Step 4: Done */}
+          {/* ── Step 4: Done ── */}
           {step === 4 && (
-            <motion.div key="done" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="flex-1 flex flex-col items-center justify-center text-center px-4">
-              <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center mb-6">
-                <Check size={36} className="text-primary" />
+            <motion.div key="done"
+              initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
+              style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '0 8px' }}
+            >
+              <div style={{
+                width: 80, height: 80, borderRadius: '50%',
+                background: C.green10, border: `2px solid ${C.greenBorder}`,
+                display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 24,
+              }}>
+                <Check size={34} color={C.green} strokeWidth={1.8} />
               </div>
-              <h2 className="text-2xl font-bold text-foreground mb-2">Check-in complete</h2>
-              <p className="text-base text-muted-foreground mb-2">Hand the phone back to your client.</p>
-              <div className="card-elevated p-4 w-full text-left mb-6">
-                <p className="text-sm text-foreground font-medium mb-2">Summary</p>
-                <p className="text-sm text-muted-foreground">{photos.length} photo{photos.length !== 1 ? 's' : ''} captured</p>
-                <p className="text-sm text-muted-foreground">{selectedObservations.length} observation{selectedObservations.length !== 1 ? 's' : ''} flagged</p>
-                {note && <p className="text-sm text-muted-foreground mt-1">Note included</p>}
+              <h2 style={{ fontFamily: playfair, fontSize: 24, fontWeight: 500, color: C.text, margin: '0 0 8px' }}>
+                Check-in complete
+              </h2>
+              <p style={{ fontFamily: dm, fontSize: 13, color: C.muted, marginBottom: 28, lineHeight: 1.5 }}>
+                Hand the phone back to your client.
+              </p>
+
+              {/* Summary card */}
+              <div style={{ ...cardStyle, padding: '16px 18px', width: '100%', textAlign: 'left', marginBottom: 24 }}>
+                <p style={{ fontFamily: dm, fontSize: 11, fontWeight: 700, color: C.muted, letterSpacing: '0.09em', textTransform: 'uppercase', margin: '0 0 10px' }}>
+                  Summary
+                </p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  {[
+                    `${photos.length} photo${photos.length !== 1 ? 's' : ''} captured`,
+                    `${selectedObservations.length} observation${selectedObservations.length !== 1 ? 's' : ''} flagged`,
+                    ...(note ? ['Note included'] : []),
+                  ].map((line, i) => (
+                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <div style={{ width: 5, height: 5, borderRadius: '50%', background: C.green, flexShrink: 0 }} />
+                      <span style={{ fontFamily: dm, fontSize: 13, color: C.text }}>{line}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
-              <button onClick={() => navigate('/home')} className="w-full h-14 bg-primary text-primary-foreground rounded-xl font-semibold text-base btn-press">
+
+              <button onClick={() => navigate('/home')} style={{ ...primaryBtn, width: '100%' }}>
                 Back to dashboard
               </button>
             </motion.div>
           )}
+
         </AnimatePresence>
       </div>
     </div>

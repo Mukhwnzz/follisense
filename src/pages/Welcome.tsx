@@ -7,12 +7,12 @@ const Welcome = () => {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center relative overflow-hidden" style={{
-      backgroundImage: 'url(https://i.pinimg.com/1200x/09/81/0a/09810ac2a1c3330798f0f8373f64e18e.jpg)',
-      backgroundSize: '100% 100%',
-      backgroundPosition: 'center',
-      backgroundRepeat: 'no-repeat',
-      width: '100%',
-    }}>
+  backgroundImage: 'url(https://i.pinimg.com/1200x/33/db/0b/33db0b45d854152416ab14b23bb5619d.jpg)',
+  backgroundSize: 'cover',
+  backgroundPosition: 'center',
+  backgroundRepeat: 'no-repeat',
+  width: '100%',
+}}>
       {/* Dark overlay for readability */}
       <div style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(0,0,0,0.45)' }} />
 

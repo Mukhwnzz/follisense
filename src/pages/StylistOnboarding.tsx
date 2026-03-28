@@ -1,9 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { Leaf, Check, ChevronDown } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ArrowLeft, Check, ChevronDown } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
-import { Progress } from '@/components/ui/progress';
 
 const countries = [
   'United Kingdom', 'United States', 'Nigeria', 'Ghana', 'South Africa', 'Jamaica', 'Canada',
@@ -26,6 +25,8 @@ interface StylistProfile {
   workplace: string; clientCount: string; services: string[]; otherService: string; goals: string[];
 }
 
+const TOTAL_STEPS = 4;
+
 const StylistOnboarding = () => {
   const navigate = useNavigate();
   const { setStylistMode } = useApp();
@@ -34,9 +35,6 @@ const StylistOnboarding = () => {
     role: [], otherRole: '', experience: '', businessName: '', city: '', country: '',
     workplace: '', clientCount: '', services: [], otherService: '', goals: [],
   });
-
-  const totalSteps = 4;
-  const progress = ((step + 1) / totalSteps) * 100;
 
   const toggleRole = (r: string) => setProfile(p => ({ ...p, role: p.role.includes(r) ? p.role.filter(x => x !== r) : [...p.role, r] }));
   const toggleService = (s: string) => setProfile(p => ({ ...p, services: p.services.includes(s) ? p.services.filter(x => x !== s) : [...p.services, s] }));
@@ -51,128 +49,224 @@ const StylistOnboarding = () => {
   };
 
   const handleNext = () => {
-    if (step < 3) { setStep(step + 1); return; }
+    if (step < TOTAL_STEPS - 1) { setStep(step + 1); return; }
     localStorage.setItem('follisense-stylist-profile', JSON.stringify(profile));
     setStylistMode(true);
     navigate('/stylist');
   };
 
-  const SelectButton = ({ selected, label, onClick }: { selected: boolean; label: string; onClick: () => void }) => (
-    <button onClick={onClick} className={`w-full text-left p-3 rounded-xl border-2 transition-colors ${selected ? 'border-primary bg-primary/5' : 'border-border'}`}>
-      <div className="flex items-center gap-2">
-        <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${selected ? 'bg-primary border-primary' : 'border-border'}`}>
-          {selected && <Check size={10} className="text-primary-foreground" strokeWidth={2.5} />}
-        </div>
-        <span className="text-sm text-foreground">{label}</span>
-      </div>
-    </button>
-  );
+  const handleBack = () => {
+    if (step > 0) setStep(step - 1);
+    else navigate(-1);
+  };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col px-6 pt-8 pb-6">
-      <div className="max-w-[430px] w-full mx-auto flex-1 flex flex-col min-h-0">
-        <div className="flex items-center gap-2 mb-4">
-          <Leaf size={20} className="text-primary" strokeWidth={1.8} />
-          <span className="text-sm font-semibold text-foreground">FolliSense</span>
-          <span className="text-[10px] font-medium bg-secondary text-foreground px-2 py-0.5 rounded-full">Stylist</span>
-        </div>
-        <Progress value={progress} className="h-1.5 mb-6" />
+    <div style={{ minHeight: '100vh', backgroundColor: '#FFFFFF', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px 16px' }}>
+      <style>{`
+        .sel-card { border: 1.5px solid #E8DDD2 !important; border-radius: 12px; padding: 12px; width: 100%; text-align: left; background: #fff; cursor: pointer; transition: border-color 0.15s; }
+        .sel-card.selected { border: 1.5px solid #7fa896 !important; background: rgba(127,168,150,0.04); }
+        .pill-opt { border: 1.5px solid #E8DDD2 !important; border-radius: 100px; padding: 8px 16px; background: #fff; cursor: pointer; font-size: 0.875rem; transition: border-color 0.15s; }
+        .pill-opt.selected { border: 1.5px solid #7fa896 !important; background: rgba(127,168,150,0.04); }
+      `}</style>
 
-        <motion.div key={step} initial={{ opacity: 0, x: 15 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.2 }} className="flex-1 overflow-y-auto min-h-0">
-          {step === 0 && (
-            <div>
-              <h1 className="text-xl font-semibold mb-6">Tell us about you</h1>
-              <p className="text-sm font-medium text-foreground mb-2">What do you do?</p>
-              <p className="text-xs text-muted-foreground mb-3">Select all that apply</p>
-              <div className="grid grid-cols-2 gap-2 mb-4">
-                {roles.map(r => (
-                  <button key={r} onClick={() => toggleRole(r)} className={`p-3 rounded-xl border-2 text-left text-xs font-medium transition-colors ${profile.role.includes(r) ? 'border-primary bg-primary/5 text-foreground' : 'border-border text-muted-foreground'}`}>
-                    <div className="flex items-center gap-2">
-                      <div className={`w-4 h-4 rounded flex items-center justify-center flex-shrink-0 ${profile.role.includes(r) ? 'bg-primary' : 'border-2 border-border'}`}>
-                        {profile.role.includes(r) && <Check size={10} className="text-primary-foreground" strokeWidth={2.5} />}
-                      </div>
-                      <span>{r}</span>
-                    </div>
-                  </button>
-                ))}
-              </div>
-              {profile.role.includes('Other') && (
-                <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
-                  <input type="text" value={profile.otherRole} onChange={e => setProfile(p => ({ ...p, otherRole: e.target.value }))} placeholder="Tell us your role" className="w-full h-12 px-4 rounded-xl border-2 border-border bg-card text-foreground text-sm focus:outline-none focus:border-primary" />
-                </motion.div>
-              )}
-              <p className="text-sm font-medium text-foreground mb-3">How long have you been practising?</p>
-              <div className="space-y-2 pb-2">
-                {experience.map(e => <SelectButton key={e} selected={profile.experience === e} label={e} onClick={() => setProfile(p => ({ ...p, experience: e }))} />)}
-              </div>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        style={{ width: '100%', maxWidth: '560px' }}
+      >
+        <div style={{ backgroundColor: '#FFFFFF', borderRadius: '24px', boxShadow: '0 8px 40px rgba(0,0,0,0.10), 0 2px 8px rgba(0,0,0,0.06)', padding: '24px 36px 28px', display: 'flex', flexDirection: 'column' }}>
+
+          {/* Header with progress dots */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+            <button onClick={handleBack} style={{ padding: '8px', marginLeft: '-8px', background: 'none', border: 'none', cursor: 'pointer', color: 'inherit' }}>
+              <ArrowLeft size={22} strokeWidth={1.8} />
+            </button>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              {Array.from({ length: TOTAL_STEPS }).map((_, i) => (
+                <div
+                  key={i}
+                  style={{
+                    height: '6px', width: '32px', borderRadius: '100px',
+                    backgroundColor: i <= step ? '#7fa896' : '#e8e8e8',
+                    transition: 'background-color 0.3s',
+                  }}
+                />
+              ))}
             </div>
-          )}
-          {step === 1 && (
-            <div>
-              <h1 className="text-xl font-semibold mb-6">Where do you work?</h1>
-              <div className="space-y-4 mb-6">
-                <div><label className="text-sm font-medium text-foreground mb-1.5 block">Business or salon name</label><input type="text" value={profile.businessName} onChange={e => setProfile(p => ({ ...p, businessName: e.target.value }))} className="w-full h-12 px-4 rounded-xl border-2 border-border bg-card text-foreground text-sm focus:outline-none focus:border-primary" /></div>
-                <div className="flex gap-3">
-                  <div className="flex-1"><label className="text-sm font-medium text-foreground mb-1.5 block">City</label><input type="text" value={profile.city} onChange={e => setProfile(p => ({ ...p, city: e.target.value }))} className="w-full h-12 px-4 rounded-xl border-2 border-border bg-card text-foreground text-sm focus:outline-none focus:border-primary" /></div>
-                  <div className="flex-1">
-                    <label className="text-sm font-medium text-foreground mb-1.5 block">Country</label>
-                    <div className="relative">
-                      <select
-                        value={profile.country}
-                        onChange={e => setProfile(p => ({ ...p, country: e.target.value }))}
-                        className="w-full h-12 px-4 pr-10 rounded-xl border-2 border-border bg-card text-foreground text-sm focus:outline-none focus:border-primary appearance-none"
-                      >
-                        <option value="">Select</option>
-                        {countries.map(c => <option key={c} value={c}>{c}</option>)}
-                      </select>
-                      <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
-                    </div>
+            <div style={{ width: '40px' }} />
+          </div>
+
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={step}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.2 }}
+              style={{ paddingTop: '8px', paddingBottom: '32px' }}
+            >
+
+              {/* ── Step 0: Role + Experience ── */}
+              {step === 0 && (
+                <div>
+                  <h2 style={{ fontSize: '1.125rem', fontWeight: 600, marginBottom: '4px' }}>Tell us about you</h2>
+                  <p style={{ fontSize: '0.75rem', color: '#9e9e9e', marginBottom: '20px' }}>This helps us tailor your FolliSense experience.</p>
+
+                  <p style={{ fontSize: '0.875rem', fontWeight: 500, color: '#2d2d2d', marginBottom: '4px' }}>What do you do?</p>
+                  <p style={{ fontSize: '0.75rem', color: '#9e9e9e', marginBottom: '12px' }}>Select all that apply</p>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '16px' }}>
+                    {roles.map(r => (
+                      <button key={r} onClick={() => toggleRole(r)} className={`sel-card ${profile.role.includes(r) ? 'selected' : ''}`}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <div style={{ width: '16px', height: '16px', borderRadius: '4px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: profile.role.includes(r) ? '#7fa896' : 'transparent', border: profile.role.includes(r) ? 'none' : '2px solid #e0e0e0' }}>
+                            {profile.role.includes(r) && <Check size={10} color="#fff" strokeWidth={2.5} />}
+                          </div>
+                          <span style={{ fontSize: '0.8rem', fontWeight: 500, color: profile.role.includes(r) ? '#2d2d2d' : '#9e9e9e' }}>{r}</span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+
+                  {profile.role.includes('Other') && (
+                    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} style={{ marginBottom: '20px' }}>
+                      <input
+                        type="text"
+                        value={profile.otherRole}
+                        onChange={e => setProfile(p => ({ ...p, otherRole: e.target.value }))}
+                        placeholder="Tell us your role"
+                        style={{ width: '100%', height: '48px', padding: '0 16px', borderRadius: '12px', border: '1.5px solid #e0e0e0', backgroundColor: '#fff', fontSize: '0.875rem', outline: 'none', boxSizing: 'border-box' }}
+                      />
+                    </motion.div>
+                  )}
+
+                  <p style={{ fontSize: '0.875rem', fontWeight: 500, color: '#2d2d2d', marginBottom: '12px' }}>How long have you been practising?</p>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {experience.map(e => (
+                      <button key={e} onClick={() => setProfile(p => ({ ...p, experience: e }))} className={`sel-card ${profile.experience === e ? 'selected' : ''}`}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <div style={{ width: '16px', height: '16px', borderRadius: '50%', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: profile.experience === e ? '#7fa896' : 'transparent', border: profile.experience === e ? 'none' : '2px solid #e0e0e0' }}>
+                            {profile.experience === e && <Check size={10} color="#fff" strokeWidth={2.5} />}
+                          </div>
+                          <span style={{ fontSize: '0.875rem', color: '#2d2d2d' }}>{e}</span>
+                        </div>
+                      </button>
+                    ))}
                   </div>
                 </div>
-              </div>
-              <p className="text-sm font-medium text-foreground mb-3">Do you work from:</p>
-              <div className="space-y-2 mb-6">{workplaces.map(w => <SelectButton key={w} selected={profile.workplace === w} label={w} onClick={() => setProfile(p => ({ ...p, workplace: w }))} />)}</div>
-              <p className="text-sm font-medium text-foreground mb-3">How many clients do you see per week?</p>
-              <div className="space-y-2 pb-2">{clientCounts.map(c => <SelectButton key={c} selected={profile.clientCount === c} label={c} onClick={() => setProfile(p => ({ ...p, clientCount: c }))} />)}</div>
-            </div>
-          )}
-          {step === 2 && (
-            <div>
-              <h1 className="text-xl font-semibold mb-1">What services do you offer?</h1>
-              <p className="text-sm text-muted-foreground mb-5">Select all that apply</p>
-              <div className="grid grid-cols-2 gap-2 pb-2">
-                {services.map(s => (
-                  <button key={s} onClick={() => toggleService(s)} className={`p-3 rounded-xl border-2 text-left text-xs font-medium transition-colors ${profile.services.includes(s) ? 'border-primary bg-primary/5 text-foreground' : 'border-border text-muted-foreground'}`}>{s}</button>
-                ))}
-              </div>
-            </div>
-          )}
-          {step === 3 && (
-            <div>
-              <h1 className="text-xl font-semibold mb-1">What do you want from FolliSense?</h1>
-              <p className="text-sm text-muted-foreground mb-5">Pick all that apply</p>
-              <div className="space-y-2 pb-2">
-                {goals.map(g => (
-                  <button key={g} onClick={() => toggleGoal(g)} className={`w-full text-left p-3 rounded-xl border-2 transition-colors ${profile.goals.includes(g) ? 'border-primary bg-primary/5' : 'border-border'}`}>
-                    <div className="flex items-center gap-2">
-                      <div className={`w-4 h-4 rounded flex items-center justify-center flex-shrink-0 ${profile.goals.includes(g) ? 'bg-primary' : 'border-2 border-border'}`}>
-                        {profile.goals.includes(g) && <Check size={10} className="text-primary-foreground" strokeWidth={2.5} />}
-                      </div>
-                      <span className="text-sm text-foreground">{g}</span>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-        </motion.div>
+              )}
 
-        <div className="flex-shrink-0 pt-4 pb-2">
-          <button onClick={handleNext} disabled={!canNext()} className={`w-full h-14 rounded-xl font-semibold text-base btn-press transition-colors ${canNext() ? 'bg-primary text-primary-foreground' : 'bg-border text-muted-foreground cursor-not-allowed'}`}>
-            {step === 3 ? 'Get started' : 'Next'}
-          </button>
+              {/* ── Step 1: Location + Workplace ── */}
+              {step === 1 && (
+                <div>
+                  <h2 style={{ fontSize: '1.125rem', fontWeight: 600, marginBottom: '4px' }}>Where do you work?</h2>
+                  <p style={{ fontSize: '0.75rem', color: '#9e9e9e', marginBottom: '20px' }}>Help us understand your work context.</p>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '24px' }}>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: '#2d2d2d', marginBottom: '6px' }}>Business or salon name</label>
+                      <input type="text" value={profile.businessName} onChange={e => setProfile(p => ({ ...p, businessName: e.target.value }))} style={{ width: '100%', height: '48px', padding: '0 16px', borderRadius: '12px', border: '1.5px solid #e0e0e0', backgroundColor: '#fff', fontSize: '0.875rem', outline: 'none', boxSizing: 'border-box' }} />
+                    </div>
+                    <div style={{ display: 'flex', gap: '12px' }}>
+                      <div style={{ flex: 1 }}>
+                        <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: '#2d2d2d', marginBottom: '6px' }}>City</label>
+                        <input type="text" value={profile.city} onChange={e => setProfile(p => ({ ...p, city: e.target.value }))} style={{ width: '100%', height: '48px', padding: '0 16px', borderRadius: '12px', border: '1.5px solid #e0e0e0', backgroundColor: '#fff', fontSize: '0.875rem', outline: 'none', boxSizing: 'border-box' }} />
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: '#2d2d2d', marginBottom: '6px' }}>Country</label>
+                        <div style={{ position: 'relative' }}>
+                          <select value={profile.country} onChange={e => setProfile(p => ({ ...p, country: e.target.value }))} style={{ width: '100%', height: '48px', padding: '0 36px 0 16px', borderRadius: '12px', border: '1.5px solid #e0e0e0', backgroundColor: '#fff', fontSize: '0.875rem', outline: 'none', boxSizing: 'border-box', appearance: 'none' }}>
+                            <option value="">Select</option>
+                            {countries.map(c => <option key={c} value={c}>{c}</option>)}
+                          </select>
+                          <ChevronDown size={16} style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', color: '#9e9e9e', pointerEvents: 'none' }} />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <p style={{ fontSize: '0.875rem', fontWeight: 500, color: '#2d2d2d', marginBottom: '12px' }}>Do you work from:</p>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '24px' }}>
+                    {workplaces.map(w => (
+                      <button key={w} onClick={() => setProfile(p => ({ ...p, workplace: w }))} className={`sel-card ${profile.workplace === w ? 'selected' : ''}`}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <div style={{ width: '16px', height: '16px', borderRadius: '50%', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: profile.workplace === w ? '#7fa896' : 'transparent', border: profile.workplace === w ? 'none' : '2px solid #e0e0e0' }}>
+                            {profile.workplace === w && <Check size={10} color="#fff" strokeWidth={2.5} />}
+                          </div>
+                          <span style={{ fontSize: '0.875rem', color: '#2d2d2d' }}>{w}</span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+
+                  <p style={{ fontSize: '0.875rem', fontWeight: 500, color: '#2d2d2d', marginBottom: '12px' }}>How many clients do you see per week?</p>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                    {clientCounts.map(c => (
+                      <button key={c} onClick={() => setProfile(p => ({ ...p, clientCount: c }))} className={`pill-opt ${profile.clientCount === c ? 'selected' : ''}`}>
+                        {c}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* ── Step 2: Services ── */}
+              {step === 2 && (
+                <div>
+                  <h2 style={{ fontSize: '1.125rem', fontWeight: 600, marginBottom: '4px' }}>What services do you offer?</h2>
+                  <p style={{ fontSize: '0.75rem', color: '#9e9e9e', marginBottom: '20px' }}>Select all that apply</p>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                    {services.map(s => (
+                      <button key={s} onClick={() => toggleService(s)} className={`sel-card ${profile.services.includes(s) ? 'selected' : ''}`}>
+                        <span style={{ fontSize: '0.8rem', fontWeight: 500, color: profile.services.includes(s) ? '#2d2d2d' : '#9e9e9e' }}>{s}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* ── Step 3: Goals ── */}
+              {step === 3 && (
+                <div>
+                  <h2 style={{ fontSize: '1.125rem', fontWeight: 600, marginBottom: '4px' }}>What do you want from FolliSense?</h2>
+                  <p style={{ fontSize: '0.75rem', color: '#9e9e9e', marginBottom: '20px' }}>Pick all that apply</p>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {goals.map(g => (
+                      <button key={g} onClick={() => toggleGoal(g)} className={`sel-card ${profile.goals.includes(g) ? 'selected' : ''}`}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <div style={{ width: '16px', height: '16px', borderRadius: '4px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: profile.goals.includes(g) ? '#7fa896' : 'transparent', border: profile.goals.includes(g) ? 'none' : '2px solid #e0e0e0' }}>
+                            {profile.goals.includes(g) && <Check size={10} color="#fff" strokeWidth={2.5} />}
+                          </div>
+                          <span style={{ fontSize: '0.875rem', color: '#2d2d2d' }}>{g}</span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+            </motion.div>
+          </AnimatePresence>
+
+          {/* Bottom button */}
+          <div style={{ paddingTop: '12px' }}>
+            <button
+              onClick={handleNext}
+              disabled={!canNext()}
+              style={{
+                width: '100%', height: '56px', borderRadius: '12px', border: 'none',
+                fontWeight: 600, fontSize: '1rem', cursor: canNext() ? 'pointer' : 'not-allowed',
+                backgroundColor: canNext() ? '#7fa896' : '#e0e0e0',
+                color: canNext() ? '#FFFFFF' : '#b0b0b0',
+                transition: 'all 0.2s ease',
+              }}
+            >
+              {step === TOTAL_STEPS - 1 ? "Get started" : 'Next'}
+            </button>
+          </div>
+
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 };
