@@ -1,169 +1,189 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Leaf, Eye, EyeOff, Shield } from 'lucide-react';
+import { Eye, EyeOff, Shield } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
-import { supabase } from '@/lib/supabaseClient';
+
+const genderOptions = [
+  { id: 'woman', label: 'Female' },
+  { id: 'man', label: 'Male' },
+  { id: 'prefer-not-to-say', label: 'Prefer not to say' },
+];
 
 const SignUpPage = () => {
   const navigate = useNavigate();
-  const { setUserName } = useApp();
+  const { setUserName, setOnboardingData, onboardingData } = useApp();
   const [firstName, setFirstName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [gender, setGender] = useState('');
 
-  const isStrongPassword =
-    password.length >= 8 &&
-    /[A-Z]/.test(password) &&
-    /[a-z]/.test(password) &&
-    /[0-9]/.test(password);
+  const canSubmit = firstName.trim().length > 0 && email.trim().length > 0 && password.length >= 6 && !!gender;
 
-  const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-
-  const canSubmit = firstName.trim().length > 0 && isValidEmail && isStrongPassword;
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!canSubmit) return;
-    setError('');
-    setLoading(true);
-
-    try {
-      const { data: authData, error: authError } = await supabase.auth.signUp({ email, password });
-      if (authError) { setError(authError.message); return; }
-
-      if (authData.user) {
-        await supabase.from('profiles').upsert([{
-          id: authData.user.id,
-          role: 'consumer',
-          first_name: firstName,
-        }]);
-      }
-
-      setUserName(firstName);
-      navigate('/onboarding');
-    } catch {
-      setError('Something went wrong. Please try again.');
-    } finally {
-      setLoading(false);
-    }
+    setUserName(firstName.trim());
+    setOnboardingData({ ...onboardingData, gender });
+    navigate('/onboarding');
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center px-6">
+    <div style={{ position: 'fixed', inset: 0, backgroundImage: 'url(https://i.pinimg.com/736x/85/b5/21/85b5213cc3ef90542dc510c9953790d4.jpg)', backgroundSize: '100%', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', overflowY: 'auto', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '40px 16px' }}>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
-        className="max-w-[430px] w-full"
+        style={{ width: '100%', maxWidth: '620px', border: 'none', outline: 'none' }}
       >
-        <div className="flex items-center justify-center gap-2 mb-6">
-          <Leaf size={24} className="text-primary" strokeWidth={1.8} />
-          <span className="text-xl font-semibold text-foreground">FolliSense</span>
-        </div>
+        <div style={{ background: 'rgba(255, 255, 255, 0.75)', backdropFilter: 'blur(18px)', WebkitBackdropFilter: 'blur(18px)', borderRadius: '24px', padding: '28px 52px', border: '1px solid rgba(255, 255, 255, 0.6)', outline: 'none', boxShadow: '0 8px 40px rgba(0,0,0,0.12)' }}>
 
-        <h1 className="text-2xl font-semibold text-foreground text-center mb-6">Create your account</h1>
-
-        {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
-
-        <form onSubmit={handleSubmit} className="space-y-4 mb-4">
-          <div>
-            <label className="text-sm font-medium text-foreground mb-1.5 block">First name</label>
-            <input
-              type="text"
-              value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
-              placeholder="Your first name"
-              className="w-full h-12 px-4 rounded-xl border-2 border-border bg-card text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors"
-              autoFocus
+          {/* Logo + FolliSense */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', marginBottom: '4px' }}>
+            <img
+              src="https://cdn-icons-png.flaticon.com/512/11847/11847144.png"
+              alt="FolliSense logo"
+              style={{ width: '34px', height: '34px', filter: 'invert(60%) sepia(0%) saturate(0%) brightness(40%) contrast(85%)', flexShrink: 0 }}
             />
+            <span style={{ fontFamily: "'Montserrat', sans-serif", fontSize: '1.75rem', fontWeight: 700, color: '#1a1a1a', letterSpacing: '0.01em', lineHeight: '1' }}>
+              FolliSense
+            </span>
           </div>
 
-          <div>
-            <label className="text-sm font-medium text-foreground mb-1.5 block">Email address</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
-              className="w-full h-12 px-4 rounded-xl border-2 border-border bg-card text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors"
-            />
-            {email && !isValidEmail && (
-              <p className="text-xs text-red-500 mt-1">Enter a valid email</p>
-            )}
-          </div>
+          <p style={{ textAlign: 'center', fontSize: '0.75rem', fontWeight: 400, color: '#6b6b6b', letterSpacing: '0.04em', marginBottom: '32px' }}>
+            Create your account
+          </p>
 
-          <div>
-            <label className="text-sm font-medium text-foreground mb-1.5 block">Password</label>
-            <div className="relative">
+          <form onSubmit={handleSubmit} style={{ marginBottom: '20px' }}>
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: '#1a1a1a', marginBottom: '6px' }}>First name</label>
               <input
-                type={showPassword ? 'text' : 'password'}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="At least 8 characters with uppercase, lowercase and number"
-                className="w-full h-12 px-4 pr-12 rounded-xl border-2 border-border bg-card text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors"
+                type="text"
+                value={firstName}
+                onChange={e => setFirstName(e.target.value)}
+                placeholder="Your first name"
+                style={{ width: '100%', height: '48px', padding: '0 16px', borderRadius: '12px', border: '1.5px solid rgba(0,0,0,0.15)', backgroundColor: 'rgba(255,255,255,0.9)', fontSize: '0.875rem', outline: 'none', boxSizing: 'border-box', fontFamily: "'Montserrat', sans-serif", color: '#1a1a1a' }}
+                autoFocus
               />
-              {password && !isStrongPassword && (
-                <p className="text-xs text-red-500 mt-1">
-                  Password must be 8+ chars, include uppercase, lowercase and number
-                </p>
-              )}
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-3 p-1 text-muted-foreground"
-              >
-                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-              </button>
             </div>
+
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: '#1a1a1a', marginBottom: '6px' }}>Email address</label>
+              <input
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                placeholder="you@example.com"
+                style={{ width: '100%', height: '48px', padding: '0 16px', borderRadius: '12px', border: '1.5px solid rgba(0,0,0,0.15)', backgroundColor: 'rgba(255,255,255,0.9)', fontSize: '0.875rem', outline: 'none', boxSizing: 'border-box', fontFamily: "'Montserrat', sans-serif", color: '#1a1a1a' }}
+              />
+            </div>
+
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: '#1a1a1a', marginBottom: '6px' }}>Password</label>
+              <div style={{ position: 'relative' }}>
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  placeholder="At least 6 characters"
+                  style={{ width: '100%', height: '48px', padding: '0 48px 0 16px', borderRadius: '12px', border: '1.5px solid rgba(0,0,0,0.15)', backgroundColor: 'rgba(255,255,255,0.9)', fontSize: '0.875rem', outline: 'none', boxSizing: 'border-box', fontFamily: "'Montserrat', sans-serif", color: '#1a1a1a' }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#9e9e9e' }}
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
+            </div>
+
+            {/* Gender selection */}
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: '#1a1a1a', marginBottom: '6px' }}>How do you identify?</label>
+              <p style={{ fontSize: '0.75rem', color: '#8a8a8a', marginBottom: '8px', marginTop: 0 }}>This helps us personalise your experience</p>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                {genderOptions.map(opt => (
+                  <button
+                    key={opt.id}
+                    type="button"
+                    onClick={() => setGender(opt.id)}
+                    style={{
+                      flex: 1,
+                      height: '44px',
+                      borderRadius: '12px',
+                      border: `1.5px solid ${gender === opt.id ? '#7fa896' : 'rgba(0,0,0,0.15)'}`,
+                      backgroundColor: gender === opt.id ? 'rgba(127,168,150,0.08)' : 'rgba(255,255,255,0.9)',
+                      fontSize: '0.875rem',
+                      fontWeight: 500,
+                      color: gender === opt.id ? '#2d2d2d' : '#9e9e9e',
+                      cursor: 'pointer',
+                      fontFamily: "'Montserrat', sans-serif",
+                      transition: 'all 0.15s ease',
+                    }}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={!canSubmit}
+              style={{ width: '100%', height: '50px', borderRadius: '12px', border: 'none', fontFamily: "'Montserrat', sans-serif", fontWeight: 600, fontSize: '1rem', cursor: canSubmit ? 'pointer' : 'not-allowed', backgroundColor: '#7fa896', color: '#ffffff', transition: 'all 0.2s ease', opacity: canSubmit ? 1 : 0.6 }}
+            >
+              Create account
+            </button>
+          </form>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#8a8a8a', fontSize: '0.75rem', marginBottom: '16px' }}>
+            <Shield size={14} style={{ flexShrink: 0 }} />
+            <p style={{ margin: 0 }}>Your health data is private and encrypted. We never share your information without your consent.</p>
           </div>
 
-          <button
-            type="submit"
-            disabled={!canSubmit || loading}
-            className={`w-full h-14 rounded-xl font-semibold text-base btn-press transition-colors ${
-              canSubmit ? 'bg-primary text-primary-foreground' : 'bg-border text-muted-foreground cursor-not-allowed'
-            }`}
-          >
-            {loading ? 'Creating account...' : 'Create account'}
-          </button>
-        </form>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+            <div style={{ flex: 1, height: '1px', backgroundColor: 'rgba(0,0,0,0.12)' }} />
+            <span style={{ fontSize: '0.75rem', color: '#9e9e9e' }}>or</span>
+            <div style={{ flex: 1, height: '1px', backgroundColor: 'rgba(0,0,0,0.12)' }} />
+          </div>
 
-        {/* Social login buttons */}
-        <div className="flex items-center gap-3 my-4">
-          <div className="flex-1 h-px bg-border" />
-          <span className="text-xs text-muted-foreground">or</span>
-          <div className="flex-1 h-px bg-border" />
-        </div>
-        <div className="space-y-2 mb-4">
-          <button
-            onClick={() => { setUserName(firstName || 'User'); navigate('/onboarding'); }}
-            className="w-full h-12 rounded-xl border-2 border-border bg-card text-foreground font-medium text-sm flex items-center justify-center gap-2 btn-press"
-          >
-            <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="" className="w-5 h-5" />
-            Continue with Google
-          </button>
-          <button
-            onClick={() => { setUserName(firstName || 'User'); navigate('/onboarding'); }}
-            className="w-full h-12 rounded-xl border-2 border-border bg-card text-foreground font-medium text-sm flex items-center justify-center gap-2 btn-press"
-          >
-            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/></svg>
-            Continue with Apple
-          </button>
-        </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '24px' }}>
+            <button
+              onClick={() => { setUserName('Ama'); setOnboardingData({ ...onboardingData, gender: 'woman' }); navigate('/onboarding'); }}
+              style={{ width: '100%', height: '48px', borderRadius: '12px', border: '1.5px solid rgba(0,0,0,0.12)', backgroundColor: 'rgba(255,255,255,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', cursor: 'pointer', fontSize: '0.875rem', fontWeight: 500, fontFamily: "'Montserrat', sans-serif", color: '#1a1a1a' }}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24">
+                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/>
+                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+              </svg>
+              Continue with Google
+            </button>
+            <button
+              onClick={() => { setUserName('Ama'); setOnboardingData({ ...onboardingData, gender: 'woman' }); navigate('/onboarding'); }}
+              style={{ width: '100%', height: '48px', borderRadius: '12px', border: '1.5px solid rgba(0,0,0,0.12)', backgroundColor: 'rgba(255,255,255,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', cursor: 'pointer', fontSize: '0.875rem', fontWeight: 500, fontFamily: "'Montserrat', sans-serif", color: '#1a1a1a' }}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M17.05 20.28c-.98.95-2.05.88-3.08.4-1.09-.5-2.08-.48-3.24 0-1.44.62-2.2.44-3.06-.4C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
+              </svg>
+              Continue with Apple
+            </button>
+          </div>
 
-        <div className="flex items-center gap-3 text-muted-foreground text-xs px-2">
-          <Shield size={14} className="flex-shrink-0" />
-          <p>Your health data is private and encrypted. We never share your information without your consent.</p>
-        </div>
+          <p style={{ textAlign: 'center', fontSize: '0.875rem', color: '#6b6b6b' }}>
+            Already have an account?{' '}
+            <button onClick={() => navigate('/login')} style={{ color: '#7fa896', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer' }}>Log in</button>
+          </p>
 
-        <p className="text-center text-sm text-muted-foreground mt-4">
-          Already have an account?{' '}
-          <button onClick={() => navigate('/login')} className="text-primary font-medium">Log in</button>
-        </p>
+          <p style={{ textAlign: 'center', fontSize: '0.75rem', color: '#9e9e9e', marginTop: '12px' }}>
+            Are you a stylist?{' '}
+            <button onClick={() => navigate('/stylist/signup')} style={{ color: '#7fa896', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer' }}>Sign up here</button>
+          </p>
+
+        </div>
       </motion.div>
     </div>
   );
