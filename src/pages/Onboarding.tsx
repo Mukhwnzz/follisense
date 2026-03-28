@@ -170,7 +170,7 @@ const CurlIcon = ({ type }: { type: string }) => {
   return null;
 };
 
-const MAIN_SCREENS = 5; // Steps 0-4: gender, hair type, styles, routine, concerns
+const MAIN_SCREENS = 7; // Steps 0-6: gender, hair type, styles, routine, concerns, photo guidelines, scalp photos
 
 const Onboarding = () => {
   const navigate = useNavigate();
