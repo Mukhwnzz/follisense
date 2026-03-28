@@ -649,7 +649,7 @@ const Onboarding = () => {
                       {/* Sub-type expansion for Type 3 */}
                       {hairType === 'type3' && !showSubType && (
                         <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} className="flex justify-center">
-                          <button onClick={() => setShowSubType(true)} className="text-sm text-primary font-medium flex items-center gap-1">
+                          <button onClick={() => { if (hairAutoAdvanceRef.current) clearTimeout(hairAutoAdvanceRef.current); setShowSubType(true); }} className="text-sm text-primary font-medium flex items-center gap-1">
                             Want to be more specific? <ChevronDown size={14} />
                           </button>
                         </motion.div>
