@@ -375,7 +375,7 @@ const Onboarding = () => {
           <div>
             <AnimatePresence mode="wait">
               <motion.div
-                key={step === 4 ? `${step}-${symptomPhase}-${symptomIndex}` : step}
+                key={step === 5 ? `${step}-${symptomPhase}-${symptomIndex}` : step}
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
@@ -383,11 +383,36 @@ const Onboarding = () => {
                 className="pt-2 pb-8"
               >
 
-                {/* ── Screen 1: Hair Texture ── */}
+                {/* ── Screen 0: Gender Selection (auto-advance) ── */}
                 {step === 0 && (
                   <div>
+                    <h2 className="text-lg font-semibold text-foreground mb-2">How do you identify?</h2>
+                    <p className="text-sm text-muted-foreground mb-6">This helps us personalise your experience</p>
+                    <div className="space-y-3">
+                      {genderOptions.map(opt => (
+                        <button
+                          key={opt.id}
+                          onClick={() => {
+                            setOnboardingData({ ...onboardingData, gender: opt.id });
+                            setStep(1);
+                          }}
+                          className="selection-card w-full text-left !p-5 flex items-center gap-4"
+                        >
+                          <div className="w-12 h-12 rounded-xl bg-accent flex items-center justify-center flex-shrink-0">
+                            <span className="text-xl text-foreground">{opt.icon}</span>
+                          </div>
+                          <p className="font-semibold text-foreground text-base">{opt.label}</p>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* ── Screen 1: Hair Texture (auto-advance) ── */}
+                {step === 1 && (
+                  <div>
                     <h2 className="text-lg font-semibold text-foreground mb-1">What's your hair texture?</h2>
-                    <p className="text-xs text-muted-foreground mb-3">{sectionExplainers[0]}</p>
+                    <p className="text-xs text-muted-foreground mb-3">{sectionExplainers[1]}</p>
                     <p className="text-xs text-muted-foreground mb-3 italic">
                       Type 4 coils are tighter than a pen spring. Type 3 curls wrap around a finger.
                     </p>
@@ -402,7 +427,16 @@ const Onboarding = () => {
                         return (
                           <button
                             key={ht.id}
-                            onClick={() => { setHairType(ht.id); setHairSubType(''); setShowSubType(false); }}
+                            onClick={() => {
+                              setHairType(ht.id);
+                              setHairSubType('');
+                              if (ht.id === 'unsure') {
+                                // Auto-advance for "Not sure"
+                                setStep(2);
+                              } else {
+                                setShowSubType(false);
+                              }
+                            }}
                             className={`selection-card w-full text-left !p-3 ${hairType === ht.id ? 'selected' : ''}`}
                           >
                             <div className="flex items-center gap-3">
@@ -430,12 +464,27 @@ const Onboarding = () => {
                       </button>
                     )}
 
+                    {/* Auto-advance to styles if they selected a main type but don't want sub-type */}
+                    {(hairType === 'type3' || hairType === 'type4') && !showSubType && (
+                      <button onClick={() => setStep(2)} className="mt-2 text-sm text-muted-foreground font-medium">
+                        Skip — continue →
+                      </button>
+                    )}
+
                     {showSubType && subTypes[hairType] && (
                       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mt-3">
                         <p className="text-sm font-semibold text-foreground mb-3">Which sub-type?</p>
                         <div className="flex flex-wrap gap-2">
                           {subTypes[hairType].map(st => (
-                            <button key={st.id} onClick={() => setHairSubType(st.id)} className={`pill-option ${hairSubType === st.id ? 'selected' : ''}`}>
+                            <button
+                              key={st.id}
+                              onClick={() => {
+                                setHairSubType(st.id);
+                                // Auto-advance on sub-type selection
+                                setTimeout(() => setStep(2), 150);
+                              }}
+                              className={`pill-option ${hairSubType === st.id ? 'selected' : ''}`}
+                            >
                               {st.label}
                             </button>
                           ))}
