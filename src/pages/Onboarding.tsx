@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, HelpCircle, ChevronDown, ChevronLeft, ChevronRight, Check, Eye, Stethoscope, Search } from 'lucide-react';
+import { ArrowLeft, HelpCircle, ChevronDown, ChevronLeft, ChevronRight, Check, Eye, Stethoscope, Search, Camera, ShieldCheck } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 import { computeHistoricalRisk } from '@/utils/triageLogic';
 import type { CheckInData } from '@/contexts/AppContext';
+import ScalpBaselineCapture from '@/components/ScalpBaselineCapture';
 
 // ─── HAIR REFERENCE PHOTOS ───────────────────────────────────────────────────
 const hairPhotos: Record<string, Record<string, { src: string; label: string }[]>> = {
@@ -106,6 +107,30 @@ const onboardingSymptoms = [
   { key: 'dryness', label: 'Dryness', question: 'Any scalp dryness?' },
 ];
 const severityOptions = ['None', 'Mild', 'Moderate', 'Severe'];
+
+// ─── WARM ACKNOWLEDGMENTS ──────────────────────────────────────────────────
+const mildAcks = [
+  (label: string) => `Noted. Mild ${label.toLowerCase()} is common, especially between washes.`,
+  (label: string) => `Got it. A little ${label.toLowerCase()} now and then is quite normal.`,
+  (label: string) => `Okay, mild ${label.toLowerCase()} — we'll keep that on file.`,
+];
+const moderateAcks = [
+  () => `Thanks for flagging that. We'll keep a close eye on this for you.`,
+  () => `Noted — that's exactly the kind of thing worth tracking over time.`,
+  () => `Good to know. We'll watch how this changes at your next check-in.`,
+];
+const severeAcks = [
+  () => `We hear you. That sounds uncomfortable. We'll make sure this gets the attention it deserves.`,
+  () => `Thank you for being honest about that. We're going to make sure you get the right support.`,
+  () => `That sounds really tough. We'll flag this as a priority for you.`,
+];
+const getAck = (severity: string, label: string, index: number): string | null => {
+  if (severity === 'None') return null;
+  if (severity === 'Mild') return mildAcks[index % mildAcks.length](label);
+  if (severity === 'Moderate') return moderateAcks[index % moderateAcks.length]();
+  if (severity === 'Severe') return severeAcks[index % severeAcks.length]();
+  return null;
+};
 // ─────────────────────────────────────────────────────────────────────────────
 
 const PhotoGallery = ({ photos }: { photos: { src: string; label: string }[] }) => {
@@ -145,13 +170,14 @@ const CurlIcon = ({ type }: { type: string }) => {
   return null;
 };
 
-const MAIN_SCREENS = 5; // Steps 0-4: gender, hair type, styles, routine, concerns
+const MAIN_SCREENS = 7; // Steps 0-6: gender, hair type, styles, routine, concerns, photo guidelines, scalp photos
 
 const Onboarding = () => {
   const navigate = useNavigate();
-  const { onboardingData, setOnboardingData, setOnboardingComplete, addToCheckInHistory, setCurrentCheckIn, setBaselineRisk, setBaselineDate } = useApp();
+  const { onboardingData, setOnboardingData, setOnboardingComplete, addToCheckInHistory, setCurrentCheckIn, setBaselineRisk, setBaselineDate, setBaselinePhotos } = useApp();
 
   const [step, setStep] = useState(0);
+  const [symptomAck, setSymptomAck] = useState<string | null>(null);
   const gender = onboardingData.gender;
   const isMale = gender === 'man';
   const isNeutral = gender === 'prefer-not-to-say';
@@ -194,17 +220,19 @@ const Onboarding = () => {
   };
   const toggleConcern = (c: string) => setConcerns(prev => prev.includes(c) ? prev.filter(x => x !== c) : [...prev, c]);
 
-  // Total steps: 0-4 (main) + 5 (symptom flow)
-  const totalProgressDots = 6;
+  // Total steps: 0-6 (main) + 7 (symptom flow)
+  const totalProgressDots = 8;
 
   const canProceed = () => {
     switch (step) {
-      case 0: return !!gender; // auto-advance handles this
+      case 0: return !!gender;
       case 1: return !!hairType;
       case 2: return styles.length > 0 && (!styles.includes('Other') || otherStyle.trim().length > 0) && !!protectiveFreq;
       case 3: return !!cycleLength && betweenWash.length > 0 && (!betweenWash.includes('Other') || otherBetweenWash.trim().length > 0);
       case 4: return concerns.length > 0;
-      case 5: {
+      case 5: return true; // photo guidelines — just a "Next" button
+      case 6: return false; // photo capture — handled by component
+      case 7: {
         if (symptomPhase === 'ask') return true;
         if (symptomPhase === 'symptoms') {
           const currentSymptom = onboardingSymptoms[symptomIndex];
@@ -255,7 +283,6 @@ const Onboarding = () => {
   };
 
   const handleSkipSymptoms = () => {
-    // Clean baseline — no symptoms
     const cleanCheckIn: CheckInData = {
       itch: 'None', tenderness: 'None', hairline: 'None',
       flaking: 'None', shedding: 'None', bumps: 'None', dryness: 'None',
@@ -269,11 +296,33 @@ const Onboarding = () => {
     if (step < MAIN_SCREENS - 1) {
       setStep(step + 1);
     } else if (step === MAIN_SCREENS - 1) {
-      // Moving from concerns to symptom flow
-      setStep(5);
-      setSymptomPhase('ask');
-    } else if (step === 5) {
+      // Step 6 is photo capture — skip to symptom flow after photos complete
+      // This shouldn't be reached for step 6 since it's handled by the component
+      setStep(step + 1);
+    } else if (step === 7) {
       if (symptomPhase === 'symptoms') {
+        // If showing an ack, clear it and advance
+        if (symptomAck) {
+          setSymptomAck(null);
+          if (symptomIndex < onboardingSymptoms.length - 1) {
+            setSymptomIndex(symptomIndex + 1);
+          } else {
+            const checkIn = buildCheckInFromSymptoms(symptomResponses);
+            const risk = computeHistoricalRisk(checkIn, []);
+            setTriageResult(risk);
+            setSymptomPhase('result');
+          }
+          return;
+        }
+        // Show ack if severity is not None
+        const currentSymptom = onboardingSymptoms[symptomIndex];
+        const severity = symptomResponses[currentSymptom.key];
+        const ack = getAck(severity, currentSymptom.label, symptomIndex);
+        if (ack) {
+          setSymptomAck(ack);
+          return;
+        }
+        // None — advance directly
         if (symptomIndex < onboardingSymptoms.length - 1) {
           setSymptomIndex(symptomIndex + 1);
         } else {
@@ -290,16 +339,21 @@ const Onboarding = () => {
   };
 
   const handleBack = () => {
-    if (step === 5) {
+    if (step === 7) {
       if (symptomPhase === 'result') {
         setSymptomPhase('symptoms');
         setSymptomIndex(onboardingSymptoms.length - 1);
+        setSymptomAck(null);
+      } else if (symptomPhase === 'symptoms' && symptomAck) {
+        setSymptomAck(null);
       } else if (symptomPhase === 'symptoms' && symptomIndex > 0) {
         setSymptomIndex(symptomIndex - 1);
+        setSymptomAck(null);
       } else if (symptomPhase === 'symptoms' && symptomIndex === 0) {
         setSymptomPhase('ask');
+        setSymptomAck(null);
       } else {
-        setStep(4);
+        setStep(6);
       }
     } else if (step > 0) {
       setStep(step - 1);
@@ -308,14 +362,22 @@ const Onboarding = () => {
     }
   };
 
+  const handlePhotosComplete = (photos: { area: string; dataUrl: string }[]) => {
+    setBaselinePhotos(photos.map(p => ({ area: p.area, captured: true, date: new Date().toISOString() })));
+    setStep(7);
+    setSymptomPhase('ask');
+  };
+
   // Determine which progress dot is active
-  const activeProgressDot = step <= 4 ? step : 5;
+  const activeProgressDot = step <= 6 ? step : 7;
 
   // Button text
   const getButtonText = () => {
-    if (step === 5) {
+    if (step === 5) return 'Next';
+    if (step === 7) {
       if (symptomPhase === 'ask') return '';
       if (symptomPhase === 'symptoms') {
+        if (symptomAck) return 'Continue';
         return symptomIndex < onboardingSymptoms.length - 1 ? 'Next' : 'See results';
       }
       if (symptomPhase === 'result') return 'Continue to dashboard';
@@ -324,8 +386,8 @@ const Onboarding = () => {
     return 'Next';
   };
 
-  // Hide bottom button on: gender (auto-advance), hair type (auto-advance), symptom ask phase
-  const showBottomButton = step !== 0 && step !== 1 && !(step === 5 && symptomPhase === 'ask');
+  // Hide bottom button on: gender (auto-advance), hair type (auto-advance), photo capture (step 6), symptom ask phase
+  const showBottomButton = step !== 0 && step !== 1 && step !== 6 && !(step === 7 && symptomPhase === 'ask');
 
   return (
    <div style={{
@@ -375,7 +437,7 @@ const Onboarding = () => {
           <div>
             <AnimatePresence mode="wait">
               <motion.div
-                key={step === 5 ? `${step}-${symptomPhase}-${symptomIndex}` : step}
+                key={step === 7 ? `${step}-${symptomPhase}-${symptomIndex}-${symptomAck ? 'ack' : ''}` : step}
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -20 }}
@@ -583,8 +645,49 @@ const Onboarding = () => {
                   </div>
                 )}
 
-                {/* ── Screen 5: Scalp Symptom Flow ── */}
-                {step === 5 && symptomPhase === 'ask' && (
+                {/* ── Screen 5: Photo Guidelines ── */}
+                {step === 5 && (
+                  <div>
+                    <div className="flex justify-center mb-5">
+                      <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+                        <Camera size={28} className="text-primary" strokeWidth={1.5} />
+                      </div>
+                    </div>
+                    <h2 className="text-lg font-semibold text-foreground text-center mb-2">Let's capture your baseline</h2>
+                    <p className="text-sm text-muted-foreground text-center mb-6 leading-relaxed">
+                      We'll take four quick photos of your scalp from different angles. These stay on your device and help us track changes over time.
+                    </p>
+                    <div className="card-elevated p-4 mb-4">
+                      <div className="flex items-start gap-3 mb-3">
+                        <ShieldCheck size={18} className="text-primary mt-0.5 flex-shrink-0" strokeWidth={1.8} />
+                        <div>
+                          <p className="text-sm font-medium text-foreground">Your photos stay private</p>
+                          <p className="text-xs text-muted-foreground mt-1">Images are stored locally on your device. They're never uploaded or shared without your permission.</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="card-elevated p-4">
+                      <p className="text-sm font-medium text-foreground mb-2">Tips for best results</p>
+                      <ul className="space-y-1.5 text-xs text-muted-foreground">
+                        <li>• Use natural or bright light</li>
+                        <li>• Pull hair back where possible</li>
+                        <li>• Hold your phone about 15-20cm away</li>
+                        <li>• Keep the area in focus before snapping</li>
+                      </ul>
+                    </div>
+                  </div>
+                )}
+
+                {/* ── Screen 6: Scalp Baseline Photo Capture ── */}
+                {step === 6 && (
+                  <ScalpBaselineCapture
+                    onComplete={handlePhotosComplete}
+                    onBack={() => setStep(5)}
+                  />
+                )}
+
+                {/* ── Screen 7: Scalp Symptom Flow ── */}
+                {step === 7 && symptomPhase === 'ask' && (
                   <div>
                     <h2 className="text-lg font-semibold text-foreground mb-2">While we're here…</h2>
                     <p className="text-muted-foreground mb-8 text-sm leading-relaxed">
@@ -592,7 +695,7 @@ const Onboarding = () => {
                     </p>
                     <div className="space-y-3">
                       <button
-                        onClick={() => { setSymptomPhase('symptoms'); setSymptomIndex(0); }}
+                        onClick={() => { setSymptomPhase('symptoms'); setSymptomIndex(0); setSymptomAck(null); }}
                         className="selection-card w-full text-left !p-4"
                       >
                         <p className="font-semibold text-foreground text-sm">Yes, I'd like to note something</p>
@@ -609,7 +712,7 @@ const Onboarding = () => {
                   </div>
                 )}
 
-                {step === 5 && symptomPhase === 'symptoms' && (
+                {step === 7 && symptomPhase === 'symptoms' && !symptomAck && (
                   <div>
                     <p className="text-xs text-muted-foreground mb-1">{symptomIndex + 1} of {onboardingSymptoms.length}</p>
                     <h2 className="text-lg font-semibold text-foreground mb-6">{onboardingSymptoms[symptomIndex].question}</h2>
@@ -627,33 +730,45 @@ const Onboarding = () => {
                   </div>
                 )}
 
-                {step === 5 && symptomPhase === 'result' && triageResult === 'green' && (
+                {step === 7 && symptomPhase === 'symptoms' && symptomAck && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <p className="text-sm text-muted-foreground mb-1">{symptomIndex + 1} of {onboardingSymptoms.length}</p>
+                    <h2 className="text-lg font-semibold text-foreground mb-3">{onboardingSymptoms[symptomIndex].label}: {symptomResponses[onboardingSymptoms[symptomIndex].key]}</h2>
+                    <p className="text-sm text-muted-foreground leading-relaxed">{symptomAck}</p>
+                  </motion.div>
+                )}
+
+                {step === 7 && symptomPhase === 'result' && triageResult === 'green' && (
                   <div>
                     <div className="flex justify-center mb-6">
                       <motion.div initial={{ scale: 0.8 }} animate={{ scale: 1 }} transition={{ duration: 0.5, ease: 'easeOut' }} className="w-20 h-20 rounded-full bg-primary/15 flex items-center justify-center">
                         <Check size={32} className="text-primary" strokeWidth={1.8} />
                       </motion.div>
                     </div>
-                    <h2 className="text-lg font-semibold text-foreground text-center mb-3">Your scalp looks good</h2>
+                    <h2 className="text-lg font-semibold text-foreground text-center mb-3">Your scalp is looking good</h2>
                     <p className="text-muted-foreground text-center text-sm leading-relaxed mb-2">
-                      We'll keep tracking from here. Your first check-in will be ready on your dashboard.
+                      We'll check in again at your next cycle. You're doing great.
                     </p>
                   </div>
                 )}
 
-                {step === 5 && symptomPhase === 'result' && triageResult === 'amber' && (
+                {step === 7 && symptomPhase === 'result' && triageResult === 'amber' && (
                   <div>
                     <div className="flex justify-center mb-6">
                       <motion.div initial={{ scale: 0.8 }} animate={{ scale: 1 }} transition={{ duration: 0.5, ease: 'easeOut' }} className="w-20 h-20 rounded-full bg-warning/15 flex items-center justify-center">
                         <Eye size={32} className="text-warning" strokeWidth={1.8} />
                       </motion.div>
                     </div>
-                    <h2 className="text-lg font-semibold text-foreground text-center mb-3">We've noted some concerns</h2>
+                    <h2 className="text-lg font-semibold text-foreground text-center mb-3">We've noted a few things worth watching</h2>
                     <p className="text-muted-foreground text-center text-sm leading-relaxed mb-6">
-                      Here are some things to keep an eye on. We'll track these over time and let you know if anything changes.
+                      Here are some steps that might help, and if they don't improve, a professional can take a closer look.
                     </p>
                     <div className="card-elevated p-4 mb-4">
-                      <h3 className="font-semibold text-foreground text-sm mb-2">What you reported</h3>
+                      <h3 className="font-semibold text-foreground text-sm mb-2">What you shared</h3>
                       <div className="space-y-1.5">
                         {onboardingSymptoms.filter(s => symptomResponses[s.key] && symptomResponses[s.key] !== 'None').map(s => (
                           <p key={s.key} className="text-sm text-muted-foreground">
@@ -664,7 +779,7 @@ const Onboarding = () => {
                     </div>
                     <div className="card-elevated p-4 mb-4">
                       <p className="text-sm text-muted-foreground leading-relaxed">
-                        Consider seeing a trichologist or dermatologist if this persists. Early attention gives you the most options.
+                        We'll track these over time and let you know if anything changes. If things don't settle, seeing a trichologist or dermatologist early gives you the most options.
                       </p>
                     </div>
                     <button onClick={() => navigate('/find-specialist')} className="w-full text-center text-sm text-primary font-medium mb-2">
@@ -673,19 +788,19 @@ const Onboarding = () => {
                   </div>
                 )}
 
-                {step === 5 && symptomPhase === 'result' && triageResult === 'red' && (
+                {step === 7 && symptomPhase === 'result' && triageResult === 'red' && (
                   <div>
                     <div className="flex justify-center mb-6">
                       <motion.div initial={{ scale: 0.8 }} animate={{ scale: 1 }} transition={{ duration: 0.5, ease: 'easeOut' }} className="w-20 h-20 rounded-full bg-destructive/15 flex items-center justify-center">
                         <Stethoscope size={32} className="text-destructive" strokeWidth={1.8} />
                       </motion.div>
                     </div>
-                    <h2 className="text-lg font-semibold text-foreground text-center mb-3">We'd recommend seeing a professional</h2>
+                    <h2 className="text-lg font-semibold text-foreground text-center mb-3">We'd really recommend seeing a specialist</h2>
                     <p className="text-muted-foreground text-center text-sm leading-relaxed mb-6">
-                      Based on what you've described, we'd recommend seeing a professional sooner rather than later. Here's a summary you can take with you.
+                      Based on what you've shared, we'd really recommend seeing a trichologist or dermatologist. It's nothing to worry about on its own, but getting a professional opinion early makes a real difference. Here's a summary you can take with you.
                     </p>
                     <div className="card-elevated p-4 mb-4">
-                      <h3 className="font-semibold text-foreground text-sm mb-2">What you reported</h3>
+                      <h3 className="font-semibold text-foreground text-sm mb-2">What you shared</h3>
                       <div className="space-y-1.5">
                         {onboardingSymptoms.filter(s => symptomResponses[s.key] && symptomResponses[s.key] !== 'None').map(s => (
                           <p key={s.key} className="text-sm text-muted-foreground">
