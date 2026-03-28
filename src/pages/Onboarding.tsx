@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, HelpCircle, ChevronDown, Check, Eye, Stethoscope, Search, Camera, ShieldCheck, ImageIcon } from 'lucide-react';
