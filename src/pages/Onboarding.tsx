@@ -220,17 +220,19 @@ const Onboarding = () => {
   };
   const toggleConcern = (c: string) => setConcerns(prev => prev.includes(c) ? prev.filter(x => x !== c) : [...prev, c]);
 
-  // Total steps: 0-4 (main) + 5 (symptom flow)
-  const totalProgressDots = 6;
+  // Total steps: 0-6 (main) + 7 (symptom flow)
+  const totalProgressDots = 8;
 
   const canProceed = () => {
     switch (step) {
-      case 0: return !!gender; // auto-advance handles this
+      case 0: return !!gender;
       case 1: return !!hairType;
       case 2: return styles.length > 0 && (!styles.includes('Other') || otherStyle.trim().length > 0) && !!protectiveFreq;
       case 3: return !!cycleLength && betweenWash.length > 0 && (!betweenWash.includes('Other') || otherBetweenWash.trim().length > 0);
       case 4: return concerns.length > 0;
-      case 5: {
+      case 5: return true; // photo guidelines — just a "Next" button
+      case 6: return false; // photo capture — handled by component
+      case 7: {
         if (symptomPhase === 'ask') return true;
         if (symptomPhase === 'symptoms') {
           const currentSymptom = onboardingSymptoms[symptomIndex];
@@ -281,7 +283,6 @@ const Onboarding = () => {
   };
 
   const handleSkipSymptoms = () => {
-    // Clean baseline — no symptoms
     const cleanCheckIn: CheckInData = {
       itch: 'None', tenderness: 'None', hairline: 'None',
       flaking: 'None', shedding: 'None', bumps: 'None', dryness: 'None',
@@ -295,11 +296,33 @@ const Onboarding = () => {
     if (step < MAIN_SCREENS - 1) {
       setStep(step + 1);
     } else if (step === MAIN_SCREENS - 1) {
-      // Moving from concerns to symptom flow
-      setStep(5);
-      setSymptomPhase('ask');
-    } else if (step === 5) {
+      // Step 6 is photo capture — skip to symptom flow after photos complete
+      // This shouldn't be reached for step 6 since it's handled by the component
+      setStep(step + 1);
+    } else if (step === 7) {
       if (symptomPhase === 'symptoms') {
+        // If showing an ack, clear it and advance
+        if (symptomAck) {
+          setSymptomAck(null);
+          if (symptomIndex < onboardingSymptoms.length - 1) {
+            setSymptomIndex(symptomIndex + 1);
+          } else {
+            const checkIn = buildCheckInFromSymptoms(symptomResponses);
+            const risk = computeHistoricalRisk(checkIn, []);
+            setTriageResult(risk);
+            setSymptomPhase('result');
+          }
+          return;
+        }
+        // Show ack if severity is not None
+        const currentSymptom = onboardingSymptoms[symptomIndex];
+        const severity = symptomResponses[currentSymptom.key];
+        const ack = getAck(severity, currentSymptom.label, symptomIndex);
+        if (ack) {
+          setSymptomAck(ack);
+          return;
+        }
+        // None — advance directly
         if (symptomIndex < onboardingSymptoms.length - 1) {
           setSymptomIndex(symptomIndex + 1);
         } else {
@@ -316,16 +339,21 @@ const Onboarding = () => {
   };
 
   const handleBack = () => {
-    if (step === 5) {
+    if (step === 7) {
       if (symptomPhase === 'result') {
         setSymptomPhase('symptoms');
         setSymptomIndex(onboardingSymptoms.length - 1);
+        setSymptomAck(null);
+      } else if (symptomPhase === 'symptoms' && symptomAck) {
+        setSymptomAck(null);
       } else if (symptomPhase === 'symptoms' && symptomIndex > 0) {
         setSymptomIndex(symptomIndex - 1);
+        setSymptomAck(null);
       } else if (symptomPhase === 'symptoms' && symptomIndex === 0) {
         setSymptomPhase('ask');
+        setSymptomAck(null);
       } else {
-        setStep(4);
+        setStep(6);
       }
     } else if (step > 0) {
       setStep(step - 1);
@@ -334,14 +362,22 @@ const Onboarding = () => {
     }
   };
 
+  const handlePhotosComplete = (photos: { area: string; dataUrl: string }[]) => {
+    setBaselinePhotos(photos.map(p => ({ area: p.area, captured: true })));
+    setStep(7);
+    setSymptomPhase('ask');
+  };
+
   // Determine which progress dot is active
-  const activeProgressDot = step <= 4 ? step : 5;
+  const activeProgressDot = step <= 6 ? step : 7;
 
   // Button text
   const getButtonText = () => {
-    if (step === 5) {
+    if (step === 5) return 'Next';
+    if (step === 7) {
       if (symptomPhase === 'ask') return '';
       if (symptomPhase === 'symptoms') {
+        if (symptomAck) return 'Continue';
         return symptomIndex < onboardingSymptoms.length - 1 ? 'Next' : 'See results';
       }
       if (symptomPhase === 'result') return 'Continue to dashboard';
@@ -350,8 +386,8 @@ const Onboarding = () => {
     return 'Next';
   };
 
-  // Hide bottom button on: gender (auto-advance), hair type (auto-advance), symptom ask phase
-  const showBottomButton = step !== 0 && step !== 1 && !(step === 5 && symptomPhase === 'ask');
+  // Hide bottom button on: gender (auto-advance), hair type (auto-advance), photo capture (step 6), symptom ask phase
+  const showBottomButton = step !== 0 && step !== 1 && step !== 6 && !(step === 7 && symptomPhase === 'ask');
 
   return (
    <div style={{
