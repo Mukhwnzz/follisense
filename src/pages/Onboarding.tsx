@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, HelpCircle, ChevronDown, ChevronLeft, ChevronRight, Check, Eye, Stethoscope, Search, User } from 'lucide-react';
+import { ArrowLeft, HelpCircle, ChevronDown, ChevronLeft, ChevronRight, Check, Eye, Stethoscope, Search } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 import { computeHistoricalRisk } from '@/utils/triageLogic';
 import type { CheckInData } from '@/contexts/AppContext';
