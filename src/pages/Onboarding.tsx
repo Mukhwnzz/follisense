@@ -645,8 +645,49 @@ const Onboarding = () => {
                   </div>
                 )}
 
-                {/* ── Screen 5: Scalp Symptom Flow ── */}
-                {step === 5 && symptomPhase === 'ask' && (
+                {/* ── Screen 5: Photo Guidelines ── */}
+                {step === 5 && (
+                  <div>
+                    <div className="flex justify-center mb-5">
+                      <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+                        <Camera size={28} className="text-primary" strokeWidth={1.5} />
+                      </div>
+                    </div>
+                    <h2 className="text-lg font-semibold text-foreground text-center mb-2">Let's capture your baseline</h2>
+                    <p className="text-sm text-muted-foreground text-center mb-6 leading-relaxed">
+                      We'll take four quick photos of your scalp from different angles. These stay on your device and help us track changes over time.
+                    </p>
+                    <div className="card-elevated p-4 mb-4">
+                      <div className="flex items-start gap-3 mb-3">
+                        <ShieldCheck size={18} className="text-primary mt-0.5 flex-shrink-0" strokeWidth={1.8} />
+                        <div>
+                          <p className="text-sm font-medium text-foreground">Your photos stay private</p>
+                          <p className="text-xs text-muted-foreground mt-1">Images are stored locally on your device. They're never uploaded or shared without your permission.</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="card-elevated p-4">
+                      <p className="text-sm font-medium text-foreground mb-2">Tips for best results</p>
+                      <ul className="space-y-1.5 text-xs text-muted-foreground">
+                        <li>• Use natural or bright light</li>
+                        <li>• Pull hair back where possible</li>
+                        <li>• Hold your phone about 15-20cm away</li>
+                        <li>• Keep the area in focus before snapping</li>
+                      </ul>
+                    </div>
+                  </div>
+                )}
+
+                {/* ── Screen 6: Scalp Baseline Photo Capture ── */}
+                {step === 6 && (
+                  <ScalpBaselineCapture
+                    onComplete={handlePhotosComplete}
+                    onBack={() => setStep(5)}
+                  />
+                )}
+
+                {/* ── Screen 7: Scalp Symptom Flow ── */}
+                {step === 7 && symptomPhase === 'ask' && (
                   <div>
                     <h2 className="text-lg font-semibold text-foreground mb-2">While we're here…</h2>
                     <p className="text-muted-foreground mb-8 text-sm leading-relaxed">
@@ -654,7 +695,7 @@ const Onboarding = () => {
                     </p>
                     <div className="space-y-3">
                       <button
-                        onClick={() => { setSymptomPhase('symptoms'); setSymptomIndex(0); }}
+                        onClick={() => { setSymptomPhase('symptoms'); setSymptomIndex(0); setSymptomAck(null); }}
                         className="selection-card w-full text-left !p-4"
                       >
                         <p className="font-semibold text-foreground text-sm">Yes, I'd like to note something</p>
@@ -671,7 +712,7 @@ const Onboarding = () => {
                   </div>
                 )}
 
-                {step === 5 && symptomPhase === 'symptoms' && (
+                {step === 7 && symptomPhase === 'symptoms' && !symptomAck && (
                   <div>
                     <p className="text-xs text-muted-foreground mb-1">{symptomIndex + 1} of {onboardingSymptoms.length}</p>
                     <h2 className="text-lg font-semibold text-foreground mb-6">{onboardingSymptoms[symptomIndex].question}</h2>
@@ -689,33 +730,45 @@ const Onboarding = () => {
                   </div>
                 )}
 
-                {step === 5 && symptomPhase === 'result' && triageResult === 'green' && (
+                {step === 7 && symptomPhase === 'symptoms' && symptomAck && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <p className="text-sm text-muted-foreground mb-1">{symptomIndex + 1} of {onboardingSymptoms.length}</p>
+                    <h2 className="text-lg font-semibold text-foreground mb-3">{onboardingSymptoms[symptomIndex].label}: {symptomResponses[onboardingSymptoms[symptomIndex].key]}</h2>
+                    <p className="text-sm text-muted-foreground leading-relaxed">{symptomAck}</p>
+                  </motion.div>
+                )}
+
+                {step === 7 && symptomPhase === 'result' && triageResult === 'green' && (
                   <div>
                     <div className="flex justify-center mb-6">
                       <motion.div initial={{ scale: 0.8 }} animate={{ scale: 1 }} transition={{ duration: 0.5, ease: 'easeOut' }} className="w-20 h-20 rounded-full bg-primary/15 flex items-center justify-center">
                         <Check size={32} className="text-primary" strokeWidth={1.8} />
                       </motion.div>
                     </div>
-                    <h2 className="text-lg font-semibold text-foreground text-center mb-3">Your scalp looks good</h2>
+                    <h2 className="text-lg font-semibold text-foreground text-center mb-3">Your scalp is looking good</h2>
                     <p className="text-muted-foreground text-center text-sm leading-relaxed mb-2">
-                      We'll keep tracking from here. Your first check-in will be ready on your dashboard.
+                      We'll check in again at your next cycle. You're doing great.
                     </p>
                   </div>
                 )}
 
-                {step === 5 && symptomPhase === 'result' && triageResult === 'amber' && (
+                {step === 7 && symptomPhase === 'result' && triageResult === 'amber' && (
                   <div>
                     <div className="flex justify-center mb-6">
                       <motion.div initial={{ scale: 0.8 }} animate={{ scale: 1 }} transition={{ duration: 0.5, ease: 'easeOut' }} className="w-20 h-20 rounded-full bg-warning/15 flex items-center justify-center">
                         <Eye size={32} className="text-warning" strokeWidth={1.8} />
                       </motion.div>
                     </div>
-                    <h2 className="text-lg font-semibold text-foreground text-center mb-3">We've noted some concerns</h2>
+                    <h2 className="text-lg font-semibold text-foreground text-center mb-3">We've noted a few things worth watching</h2>
                     <p className="text-muted-foreground text-center text-sm leading-relaxed mb-6">
-                      Here are some things to keep an eye on. We'll track these over time and let you know if anything changes.
+                      Here are some steps that might help, and if they don't improve, a professional can take a closer look.
                     </p>
                     <div className="card-elevated p-4 mb-4">
-                      <h3 className="font-semibold text-foreground text-sm mb-2">What you reported</h3>
+                      <h3 className="font-semibold text-foreground text-sm mb-2">What you shared</h3>
                       <div className="space-y-1.5">
                         {onboardingSymptoms.filter(s => symptomResponses[s.key] && symptomResponses[s.key] !== 'None').map(s => (
                           <p key={s.key} className="text-sm text-muted-foreground">
@@ -726,7 +779,7 @@ const Onboarding = () => {
                     </div>
                     <div className="card-elevated p-4 mb-4">
                       <p className="text-sm text-muted-foreground leading-relaxed">
-                        Consider seeing a trichologist or dermatologist if this persists. Early attention gives you the most options.
+                        We'll track these over time and let you know if anything changes. If things don't settle, seeing a trichologist or dermatologist early gives you the most options.
                       </p>
                     </div>
                     <button onClick={() => navigate('/find-specialist')} className="w-full text-center text-sm text-primary font-medium mb-2">
@@ -735,19 +788,19 @@ const Onboarding = () => {
                   </div>
                 )}
 
-                {step === 5 && symptomPhase === 'result' && triageResult === 'red' && (
+                {step === 7 && symptomPhase === 'result' && triageResult === 'red' && (
                   <div>
                     <div className="flex justify-center mb-6">
                       <motion.div initial={{ scale: 0.8 }} animate={{ scale: 1 }} transition={{ duration: 0.5, ease: 'easeOut' }} className="w-20 h-20 rounded-full bg-destructive/15 flex items-center justify-center">
                         <Stethoscope size={32} className="text-destructive" strokeWidth={1.8} />
                       </motion.div>
                     </div>
-                    <h2 className="text-lg font-semibold text-foreground text-center mb-3">We'd recommend seeing a professional</h2>
+                    <h2 className="text-lg font-semibold text-foreground text-center mb-3">We'd really recommend seeing a specialist</h2>
                     <p className="text-muted-foreground text-center text-sm leading-relaxed mb-6">
-                      Based on what you've described, we'd recommend seeing a professional sooner rather than later. Here's a summary you can take with you.
+                      Based on what you've shared, we'd really recommend seeing a trichologist or dermatologist. It's nothing to worry about on its own, but getting a professional opinion early makes a real difference. Here's a summary you can take with you.
                     </p>
                     <div className="card-elevated p-4 mb-4">
-                      <h3 className="font-semibold text-foreground text-sm mb-2">What you reported</h3>
+                      <h3 className="font-semibold text-foreground text-sm mb-2">What you shared</h3>
                       <div className="space-y-1.5">
                         {onboardingSymptoms.filter(s => symptomResponses[s.key] && symptomResponses[s.key] !== 'None').map(s => (
                           <p key={s.key} className="text-sm text-muted-foreground">
