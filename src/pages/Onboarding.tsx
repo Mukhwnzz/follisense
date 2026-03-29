@@ -3,8 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, HelpCircle, ChevronDown, Check, Eye, Stethoscope, Search, Camera, ShieldCheck, ImageIcon } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
-import { computeHistoricalRisk } from '@/utils/triageLogic';
-import type { CheckInData } from '@/contexts/AppContext';
+import { computeHistoricalRisk, getTriageGuidance } from '@/utils/triageLogic';
+import type { CheckInData, HealthProfileData } from '@/contexts/AppContext';
+import { Leaf } from 'lucide-react';
 import ScalpBaselineCapture from '@/components/ScalpBaselineCapture';
 
 // ─── Image imports ───────────────────────────────────────────────────────────
@@ -191,6 +192,7 @@ const Onboarding = () => {
   const {
     onboardingData, setOnboardingData, setOnboardingComplete,
     addToCheckInHistory, setCurrentCheckIn, setBaselineRisk, setBaselineDate, setBaselinePhotos,
+    healthProfile,
   } = useApp();
 
   const [step, setStep] = useState(0);
@@ -463,20 +465,17 @@ const Onboarding = () => {
     if (step === 6) return "Let's go";
     if (step === 8) {
       if (symptomPhase === 'ask') return '';
-      if (symptomPhase === 'symptoms') {
-        if (symptomAck) return 'Continue';
-        return symptomIndex < onboardingSymptoms.length - 1 ? 'Next' : 'See results';
-      }
-      if (symptomPhase === 'result') return 'Continue';
+      if (symptomPhase === 'symptoms') return ''; // auto-advance handles this
+      if (symptomPhase === 'result') return '';
     }
     if (step === 9) return '';
     if (step === 11) return 'Take me to my dashboard';
     return 'Next';
   };
 
-  // Hide bottom button on auto-advance screens and photo capture
+  // Hide bottom button on auto-advance screens, photo capture, and symptom flow
   const showBottomButton = step !== 0 && step !== 1 && step !== 7 && step !== 9
-    && !(step === 8 && symptomPhase === 'ask')
+    && !(step === 8 && (symptomPhase === 'ask' || symptomPhase === 'symptoms' || symptomPhase === 'result'))
     && !(step === 2 && chemicalStep !== 1); // only show Next on chemical step 1 (type multi-select)
 
   const activeSegment = getProgressSegment();
@@ -983,7 +982,38 @@ const Onboarding = () => {
                       {severityOptions.map(sev => (
                         <button
                           key={sev}
-                          onClick={() => setSymptomResponses(prev => ({ ...prev, [onboardingSymptoms[symptomIndex].key]: sev }))}
+                          onClick={() => {
+                            const currentSymptom = onboardingSymptoms[symptomIndex];
+                            setSymptomResponses(prev => ({ ...prev, [currentSymptom.key]: sev }));
+                            if (sev === 'None') {
+                              // Advance immediately, no ack
+                              if (symptomIndex < onboardingSymptoms.length - 1) {
+                                setTimeout(() => setSymptomIndex(symptomIndex + 1), 150);
+                              } else {
+                                setTimeout(() => {
+                                  const checkIn = buildCheckInFromSymptoms({ ...symptomResponses, [currentSymptom.key]: sev });
+                                  const risk = computeHistoricalRisk(checkIn, []);
+                                  setTriageResult(risk);
+                                  setSymptomPhase('result');
+                                }, 150);
+                              }
+                            } else {
+                              // Show ack, then auto-advance after 1.5s
+                              const ack = getAck(sev, currentSymptom.label, symptomIndex, currentSymptom.key);
+                              setSymptomAck(ack);
+                              setTimeout(() => {
+                                setSymptomAck(null);
+                                if (symptomIndex < onboardingSymptoms.length - 1) {
+                                  setSymptomIndex(symptomIndex + 1);
+                                } else {
+                                  const checkIn = buildCheckInFromSymptoms({ ...symptomResponses, [currentSymptom.key]: sev });
+                                  const risk = computeHistoricalRisk(checkIn, []);
+                                  setTriageResult(risk);
+                                  setSymptomPhase('result');
+                                }
+                              }, 1500);
+                            }
+                          }}
                           className={`selection-card w-full text-left ${symptomResponses[onboardingSymptoms[symptomIndex].key] === sev ? 'selected' : ''}`}
                         >
                           <p className="font-medium text-foreground text-sm">{sev}</p>
@@ -1001,75 +1031,17 @@ const Onboarding = () => {
                   </motion.div>
                 )}
 
-                {step === 8 && symptomPhase === 'result' && triageResult === 'green' && (
-                  <div>
-                    <div className="flex justify-center mb-6">
-                      <motion.div initial={{ scale: 0.8 }} animate={{ scale: 1 }} transition={{ duration: 0.5, ease: 'easeOut' }} className="w-20 h-20 rounded-full bg-primary/15 flex items-center justify-center">
-                        <Check size={32} className="text-primary" strokeWidth={1.8} />
-                      </motion.div>
-                    </div>
-                    <h2 className="text-lg font-semibold text-foreground text-center mb-3">Your scalp is looking good</h2>
-                    <p className="text-muted-foreground text-center text-sm leading-relaxed">
-                      We'll check in again at your next cycle. You're doing great.
-                    </p>
-                  </div>
-                )}
-
-                {step === 8 && symptomPhase === 'result' && triageResult === 'amber' && (
-                  <div>
-                    <div className="flex justify-center mb-6">
-                      <motion.div initial={{ scale: 0.8 }} animate={{ scale: 1 }} transition={{ duration: 0.5, ease: 'easeOut' }} className="w-20 h-20 rounded-full flex items-center justify-center" style={{ backgroundColor: 'rgba(245, 166, 35, 0.15)' }}>
-                        <Eye size={32} style={{ color: '#F5A623' }} strokeWidth={1.8} />
-                      </motion.div>
-                    </div>
-                    <h2 className="text-lg font-semibold text-foreground text-center mb-3">We've noted a few things worth watching</h2>
-                    <p className="text-muted-foreground text-center text-sm leading-relaxed mb-5">
-                      Here are some steps that might help, and if they don't improve, a professional can take a closer look.
-                    </p>
-                    <div className="rounded-xl border border-border p-4 mb-4">
-                      <h3 className="font-semibold text-foreground text-sm mb-2">What you shared</h3>
-                      <div className="space-y-1.5">
-                        {onboardingSymptoms.filter(s => symptomResponses[s.key] && symptomResponses[s.key] !== 'None').map(s => (
-                          <p key={s.key} className="text-sm text-muted-foreground">
-                            <span className="text-foreground font-medium">{s.label}:</span> {symptomResponses[s.key]}
-                          </p>
-                        ))}
-                      </div>
-                    </div>
-                    <button onClick={() => navigate('/find-specialist')} className="w-full text-center text-sm text-primary font-medium">
-                      Find a specialist
-                    </button>
-                  </div>
-                )}
-
-                {step === 8 && symptomPhase === 'result' && triageResult === 'red' && (
-                  <div>
-                    <div className="flex justify-center mb-6">
-                      <motion.div initial={{ scale: 0.8 }} animate={{ scale: 1 }} transition={{ duration: 0.5, ease: 'easeOut' }} className="w-20 h-20 rounded-full bg-destructive/15 flex items-center justify-center">
-                        <Stethoscope size={32} className="text-destructive" strokeWidth={1.8} />
-                      </motion.div>
-                    </div>
-                    <h2 className="text-lg font-semibold text-foreground text-center mb-3">We'd really recommend seeing a specialist</h2>
-                    <p className="text-muted-foreground text-center text-sm leading-relaxed mb-5">
-                      Based on what you've shared, we'd really recommend seeing a trichologist or dermatologist. Getting a professional opinion early makes a real difference. Here's a summary you can take with you.
-                    </p>
-                    <div className="rounded-xl border border-border p-4 mb-4">
-                      <h3 className="font-semibold text-foreground text-sm mb-2">What you shared</h3>
-                      <div className="space-y-1.5">
-                        {onboardingSymptoms.filter(s => symptomResponses[s.key] && symptomResponses[s.key] !== 'None').map(s => (
-                          <p key={s.key} className="text-sm text-muted-foreground">
-                            <span className="text-foreground font-medium">{s.label}:</span> {symptomResponses[s.key]}
-                          </p>
-                        ))}
-                      </div>
-                    </div>
-                    <button onClick={() => navigate('/clinician-summary')} className="w-full h-12 rounded-xl border-2 border-border font-semibold text-sm flex items-center justify-center gap-2 mb-3">
-                      <Stethoscope size={16} strokeWidth={1.8} /> View clinical summary
-                    </button>
-                    <button onClick={() => navigate('/find-specialist')} className="w-full h-12 rounded-xl border-2 border-border font-medium text-sm flex items-center justify-center gap-2">
-                      <Search size={16} strokeWidth={1.8} /> Find a specialist
-                    </button>
-                  </div>
+                {step === 8 && symptomPhase === 'result' && triageResult && (
+                  <OnboardingTriageResult
+                    risk={triageResult}
+                    symptomResponses={symptomResponses}
+                    onboardingSymptoms={onboardingSymptoms}
+                    isMale={isMale}
+                    onContinue={() => setStep(9)}
+                    navigate={navigate}
+                    healthProfile={healthProfile}
+                    goals={concerns}
+                  />
                 )}
 
                 {/* ── Screen 9: Length Check Transition ── */}
@@ -1149,6 +1121,170 @@ const Onboarding = () => {
 
         </div>
       </motion.div>
+    </div>
+  );
+};
+
+// ─── Onboarding Triage Result (mirrors RiskOutput.tsx) ───────────────────────
+const hasTelogenTriggers = (hp: HealthProfileData): string[] => {
+  const triggers: string[] = [];
+  if (hp.pregnancyStatus === 'Postpartum (within 12 months)') triggers.push('postpartum status');
+  const validStressors = (hp.recentStressors || []).filter(s => s !== 'None of these' && s !== 'Prefer not to say');
+  triggers.push(...validStressors);
+  return triggers;
+};
+
+const getGoalMessage = (goals: string[], risk: 'green' | 'amber' | 'red'): string | null => {
+  if (goals.length === 0) return null;
+  const goal = goals[0];
+  if (risk === 'green') return `Your goal: ${goal}. Based on this check-in, you're on track.`;
+  if (risk === 'amber') return `Your goal: ${goal}. We'll watch how this develops.`;
+  return `Your goal: ${goal}. Seeking advice now is the best way to protect your progress.`;
+};
+
+interface OnboardingTriageResultProps {
+  risk: 'green' | 'amber' | 'red';
+  symptomResponses: Record<string, string>;
+  onboardingSymptoms: { key: string; label: string; question: string }[];
+  isMale: boolean;
+  onContinue: () => void;
+  navigate: (path: string) => void;
+  healthProfile: HealthProfileData;
+  goals: string[];
+}
+
+const OnboardingTriageResult = ({ risk, symptomResponses, onboardingSymptoms: symptoms, isMale, onContinue, navigate, healthProfile: hp, goals }: OnboardingTriageResultProps) => {
+  const checkIn: CheckInData = {
+    itch: symptomResponses.itch || 'None', tenderness: symptomResponses.tenderness || 'None',
+    hairline: symptomResponses.hairline || 'None', flaking: symptomResponses.flaking || 'None',
+    shedding: symptomResponses.shedding || 'None', bumps: symptomResponses.bumps || 'None',
+    dryness: symptomResponses.dryness || 'None', type: 'baseline',
+    date: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }),
+  };
+  const telogenTriggers = hasTelogenTriggers(hp);
+  const triageGuidance = getTriageGuidance(risk, checkIn, []);
+  const goalMessage = getGoalMessage(goals, risk);
+
+  const circleColors: Record<string, string> = { green: 'bg-primary', amber: 'bg-warning', red: 'bg-destructive' };
+
+  return (
+    <div>
+      <div className="flex justify-center mb-6">
+        <motion.div
+          initial={{ scale: 0.8 }} animate={{ scale: 1 }} transition={{ duration: 0.5, ease: 'easeOut' }}
+          className={`w-28 h-28 rounded-full ${circleColors[risk]} flex items-center justify-center`}
+        >
+          {risk === 'green' && <Check size={40} className="text-primary-foreground" strokeWidth={2} />}
+          {risk === 'amber' && <Eye size={40} className="text-warning-foreground" strokeWidth={1.8} />}
+          {risk === 'red' && <Stethoscope size={40} className="text-destructive-foreground" strokeWidth={1.8} />}
+        </motion.div>
+      </div>
+
+      {risk === 'green' && (
+        <>
+          <h2 className="text-2xl font-semibold text-center mb-2">Your scalp looks healthy</h2>
+          <p className="text-muted-foreground text-center mb-6">No concerning patterns detected</p>
+          <div className="card-elevated p-5 mb-4">
+            <h3 className="font-semibold mb-2">Keep it up</h3>
+            <p className="text-sm text-muted-foreground">Your current routine is working well. We'll check in again at your next scheduled time.</p>
+          </div>
+          {goalMessage && <div className="rounded-2xl bg-sage-light p-4 mb-4"><p className="text-sm text-foreground">{goalMessage}</p></div>}
+          <div className="rounded-2xl bg-sage-light p-5 mb-8">
+            <p className="text-sm text-foreground"><strong>Tip:</strong> A gentle scalp massage with your fingertips can help with circulation. You don't need to add product for this to work.</p>
+          </div>
+          <button onClick={onContinue} className="w-full h-14 bg-primary text-primary-foreground rounded-xl font-semibold btn-press">Continue</button>
+        </>
+      )}
+
+      {risk === 'amber' && (
+        <>
+          <h2 className="text-2xl font-semibold text-center mb-2">Some patterns worth watching</h2>
+          <p className="text-muted-foreground text-center mb-6">Nothing urgent, but let's keep an eye on a few things</p>
+          {triageGuidance.length > 0 && (
+            <div className="card-elevated p-5 mb-4">
+              <h3 className="font-semibold mb-3">What we're seeing</h3>
+              <div className="space-y-3">
+                {triageGuidance.map((g, i) => (
+                  <p key={i} className="text-sm text-muted-foreground"><strong className="text-foreground">{g.heading}:</strong> {g.message}</p>
+                ))}
+              </div>
+            </div>
+          )}
+          <div className="card-elevated p-5 mb-4">
+            <h3 className="font-semibold mb-3">Recommended next steps</h3>
+            <ol className="space-y-3">
+              {['Gently cleanse your scalp mid-cycle with a sulphate-free rinse', "Avoid re-tightening your edges. If they're loose, leave them", 'If your scalp feels dry or tight, a fragrance-free scalp moisturiser or hydrating mist may help. Avoid heavy oils or butters directly on the scalp as these can clog follicles and worsen buildup.'].map((tip, i) => (
+                <li key={i} className="flex gap-3 text-sm">
+                  <span className="w-6 h-6 rounded-full bg-sage-light flex items-center justify-center flex-shrink-0 text-xs font-semibold text-primary">{i + 1}</span>
+                  <span className="text-muted-foreground">{tip}</span>
+                </li>
+              ))}
+            </ol>
+          </div>
+          {telogenTriggers.length > 0 && (
+            <div className="rounded-2xl bg-accent p-5 mb-4">
+              <h3 className="font-semibold mb-2">Worth knowing</h3>
+              <p className="text-sm text-muted-foreground">You've mentioned {telogenTriggers.join(', ')}. Increased shedding can be a normal temporary response, sometimes called telogen effluvium. It usually resolves within 6-12 months, but monitoring helps.</p>
+            </div>
+          )}
+          {goalMessage && <div className="rounded-2xl bg-sage-light p-4 mb-4"><p className="text-sm text-foreground">{goalMessage}</p></div>}
+          <div className="card-elevated p-5 mb-4">
+            <h3 className="font-semibold mb-2">We'll reassess</h3>
+            <p className="text-sm text-muted-foreground">At your next check-in, we'll compare. If things get worse, check in anytime.</p>
+          </div>
+          <div className="card-elevated p-4 mb-4 border border-border">
+            <h3 className="font-medium text-foreground text-sm mb-1">Want to get ahead of this?</h3>
+            <p className="text-xs text-muted-foreground mb-2">Even though this isn't urgent, speaking to a specialist is never a bad idea.</p>
+            <button onClick={() => navigate('/find-specialist')} className="text-xs font-medium text-primary">Find a specialist</button>
+          </div>
+          <button onClick={onContinue} className="w-full h-14 bg-primary text-primary-foreground rounded-xl font-semibold btn-press">Continue</button>
+        </>
+      )}
+
+      {risk === 'red' && (
+        <>
+          <h2 className="text-2xl font-semibold text-center mb-2">We recommend professional advice</h2>
+          <p className="text-muted-foreground text-center mb-6">Your symptoms suggest a pattern that would benefit from expert review</p>
+          {triageGuidance.length > 0 && (
+            <div className="card-elevated p-5 mb-4">
+              <h3 className="font-semibold mb-3">Pattern analysis</h3>
+              <div className="space-y-3">
+                {triageGuidance.map((g, i) => (
+                  <p key={i} className="text-sm text-muted-foreground"><strong className="text-foreground">{g.heading}:</strong> {g.message}</p>
+                ))}
+              </div>
+            </div>
+          )}
+          <div className="card-elevated p-5 mb-4">
+            <h3 className="font-semibold mb-2">What this means</h3>
+            <p className="text-sm text-muted-foreground">Persistent or worsening symptoms can sometimes indicate conditions like traction alopecia or scalp inflammation that respond best to early treatment. Seeing a professional now gives you the best options.</p>
+          </div>
+          {telogenTriggers.length > 0 && (
+            <div className="rounded-2xl bg-accent p-5 mb-4">
+              <h3 className="font-semibold mb-2">Worth knowing</h3>
+              <p className="text-sm text-muted-foreground">You've mentioned {telogenTriggers.join(', ')}. Increased shedding can be a normal temporary response, sometimes called telogen effluvium. It usually resolves within 6-12 months, but monitoring helps.</p>
+            </div>
+          )}
+          <div className="card-elevated p-5 mb-4">
+            <h3 className="font-semibold mb-2">Your clinical summary is ready</h3>
+            <p className="text-sm text-muted-foreground mb-4">A structured summary you can share with a GP, trichologist, or dermatologist. This was generated automatically based on your symptom patterns.</p>
+            <button onClick={() => navigate('/clinician-summary')} className="w-full h-12 rounded-xl border-2 border-primary text-primary font-semibold btn-press">View clinical summary</button>
+          </div>
+          <div className="card-elevated p-5 mb-4">
+            <h3 className="font-semibold mb-2">Who to see</h3>
+            <p className="text-sm text-muted-foreground">A trichologist specialises in hair and scalp. A dermatologist can investigate further. Your GP can refer you.{isMale && ' Your barber may also notice changes. Ask them to flag anything they see.'}</p>
+          </div>
+          <div className="card-elevated p-5 mb-4">
+            <h3 className="font-semibold mb-2">Find a specialist</h3>
+            <p className="text-sm text-muted-foreground mb-3">We're building a directory of professionals who understand textured hair.</p>
+            <button onClick={() => navigate('/find-specialist')} className="w-full h-12 rounded-xl border-2 border-border font-medium text-sm btn-press flex items-center justify-center gap-2">
+              <Search size={16} strokeWidth={1.8} /> Find someone near me
+            </button>
+          </div>
+          {goalMessage && <div className="rounded-2xl bg-sage-light p-4 mb-4"><p className="text-sm text-foreground">{goalMessage}</p></div>}
+          <button onClick={onContinue} className="w-full h-14 bg-primary text-primary-foreground rounded-xl font-semibold btn-press">Continue</button>
+        </>
+      )}
     </div>
   );
 };
