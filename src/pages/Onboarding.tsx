@@ -463,20 +463,17 @@ const Onboarding = () => {
     if (step === 6) return "Let's go";
     if (step === 8) {
       if (symptomPhase === 'ask') return '';
-      if (symptomPhase === 'symptoms') {
-        if (symptomAck) return 'Continue';
-        return symptomIndex < onboardingSymptoms.length - 1 ? 'Next' : 'See results';
-      }
-      if (symptomPhase === 'result') return 'Continue';
+      if (symptomPhase === 'symptoms') return ''; // auto-advance handles this
+      if (symptomPhase === 'result') return '';
     }
     if (step === 9) return '';
     if (step === 11) return 'Take me to my dashboard';
     return 'Next';
   };
 
-  // Hide bottom button on auto-advance screens and photo capture
+  // Hide bottom button on auto-advance screens, photo capture, and symptom flow
   const showBottomButton = step !== 0 && step !== 1 && step !== 7 && step !== 9
-    && !(step === 8 && symptomPhase === 'ask')
+    && !(step === 8 && (symptomPhase === 'ask' || symptomPhase === 'symptoms' || symptomPhase === 'result'))
     && !(step === 2 && chemicalStep !== 1); // only show Next on chemical step 1 (type multi-select)
 
   const activeSegment = getProgressSegment();
@@ -983,7 +980,38 @@ const Onboarding = () => {
                       {severityOptions.map(sev => (
                         <button
                           key={sev}
-                          onClick={() => setSymptomResponses(prev => ({ ...prev, [onboardingSymptoms[symptomIndex].key]: sev }))}
+                          onClick={() => {
+                            const currentSymptom = onboardingSymptoms[symptomIndex];
+                            setSymptomResponses(prev => ({ ...prev, [currentSymptom.key]: sev }));
+                            if (sev === 'None') {
+                              // Advance immediately, no ack
+                              if (symptomIndex < onboardingSymptoms.length - 1) {
+                                setTimeout(() => setSymptomIndex(symptomIndex + 1), 150);
+                              } else {
+                                setTimeout(() => {
+                                  const checkIn = buildCheckInFromSymptoms({ ...symptomResponses, [currentSymptom.key]: sev });
+                                  const risk = computeHistoricalRisk(checkIn, []);
+                                  setTriageResult(risk);
+                                  setSymptomPhase('result');
+                                }, 150);
+                              }
+                            } else {
+                              // Show ack, then auto-advance after 1.5s
+                              const ack = getAck(sev, currentSymptom.label, symptomIndex, currentSymptom.key);
+                              setSymptomAck(ack);
+                              setTimeout(() => {
+                                setSymptomAck(null);
+                                if (symptomIndex < onboardingSymptoms.length - 1) {
+                                  setSymptomIndex(symptomIndex + 1);
+                                } else {
+                                  const checkIn = buildCheckInFromSymptoms({ ...symptomResponses, [currentSymptom.key]: sev });
+                                  const risk = computeHistoricalRisk(checkIn, []);
+                                  setTriageResult(risk);
+                                  setSymptomPhase('result');
+                                }
+                              }, 1500);
+                            }
+                          }}
                           className={`selection-card w-full text-left ${symptomResponses[onboardingSymptoms[symptomIndex].key] === sev ? 'selected' : ''}`}
                         >
                           <p className="font-medium text-foreground text-sm">{sev}</p>
@@ -1001,75 +1029,17 @@ const Onboarding = () => {
                   </motion.div>
                 )}
 
-                {step === 8 && symptomPhase === 'result' && triageResult === 'green' && (
-                  <div>
-                    <div className="flex justify-center mb-6">
-                      <motion.div initial={{ scale: 0.8 }} animate={{ scale: 1 }} transition={{ duration: 0.5, ease: 'easeOut' }} className="w-20 h-20 rounded-full bg-primary/15 flex items-center justify-center">
-                        <Check size={32} className="text-primary" strokeWidth={1.8} />
-                      </motion.div>
-                    </div>
-                    <h2 className="text-lg font-semibold text-foreground text-center mb-3">Your scalp is looking good</h2>
-                    <p className="text-muted-foreground text-center text-sm leading-relaxed">
-                      We'll check in again at your next cycle. You're doing great.
-                    </p>
-                  </div>
-                )}
-
-                {step === 8 && symptomPhase === 'result' && triageResult === 'amber' && (
-                  <div>
-                    <div className="flex justify-center mb-6">
-                      <motion.div initial={{ scale: 0.8 }} animate={{ scale: 1 }} transition={{ duration: 0.5, ease: 'easeOut' }} className="w-20 h-20 rounded-full flex items-center justify-center" style={{ backgroundColor: 'rgba(245, 166, 35, 0.15)' }}>
-                        <Eye size={32} style={{ color: '#F5A623' }} strokeWidth={1.8} />
-                      </motion.div>
-                    </div>
-                    <h2 className="text-lg font-semibold text-foreground text-center mb-3">We've noted a few things worth watching</h2>
-                    <p className="text-muted-foreground text-center text-sm leading-relaxed mb-5">
-                      Here are some steps that might help, and if they don't improve, a professional can take a closer look.
-                    </p>
-                    <div className="rounded-xl border border-border p-4 mb-4">
-                      <h3 className="font-semibold text-foreground text-sm mb-2">What you shared</h3>
-                      <div className="space-y-1.5">
-                        {onboardingSymptoms.filter(s => symptomResponses[s.key] && symptomResponses[s.key] !== 'None').map(s => (
-                          <p key={s.key} className="text-sm text-muted-foreground">
-                            <span className="text-foreground font-medium">{s.label}:</span> {symptomResponses[s.key]}
-                          </p>
-                        ))}
-                      </div>
-                    </div>
-                    <button onClick={() => navigate('/find-specialist')} className="w-full text-center text-sm text-primary font-medium">
-                      Find a specialist
-                    </button>
-                  </div>
-                )}
-
-                {step === 8 && symptomPhase === 'result' && triageResult === 'red' && (
-                  <div>
-                    <div className="flex justify-center mb-6">
-                      <motion.div initial={{ scale: 0.8 }} animate={{ scale: 1 }} transition={{ duration: 0.5, ease: 'easeOut' }} className="w-20 h-20 rounded-full bg-destructive/15 flex items-center justify-center">
-                        <Stethoscope size={32} className="text-destructive" strokeWidth={1.8} />
-                      </motion.div>
-                    </div>
-                    <h2 className="text-lg font-semibold text-foreground text-center mb-3">We'd really recommend seeing a specialist</h2>
-                    <p className="text-muted-foreground text-center text-sm leading-relaxed mb-5">
-                      Based on what you've shared, we'd really recommend seeing a trichologist or dermatologist. Getting a professional opinion early makes a real difference. Here's a summary you can take with you.
-                    </p>
-                    <div className="rounded-xl border border-border p-4 mb-4">
-                      <h3 className="font-semibold text-foreground text-sm mb-2">What you shared</h3>
-                      <div className="space-y-1.5">
-                        {onboardingSymptoms.filter(s => symptomResponses[s.key] && symptomResponses[s.key] !== 'None').map(s => (
-                          <p key={s.key} className="text-sm text-muted-foreground">
-                            <span className="text-foreground font-medium">{s.label}:</span> {symptomResponses[s.key]}
-                          </p>
-                        ))}
-                      </div>
-                    </div>
-                    <button onClick={() => navigate('/clinician-summary')} className="w-full h-12 rounded-xl border-2 border-border font-semibold text-sm flex items-center justify-center gap-2 mb-3">
-                      <Stethoscope size={16} strokeWidth={1.8} /> View clinical summary
-                    </button>
-                    <button onClick={() => navigate('/find-specialist')} className="w-full h-12 rounded-xl border-2 border-border font-medium text-sm flex items-center justify-center gap-2">
-                      <Search size={16} strokeWidth={1.8} /> Find a specialist
-                    </button>
-                  </div>
+                {step === 8 && symptomPhase === 'result' && triageResult && (
+                  <OnboardingTriageResult
+                    risk={triageResult}
+                    symptomResponses={symptomResponses}
+                    onboardingSymptoms={onboardingSymptoms}
+                    isMale={isMale}
+                    onContinue={() => setStep(9)}
+                    navigate={navigate}
+                    healthProfile={healthProfile}
+                    goals={concerns}
+                  />
                 )}
 
                 {/* ── Screen 9: Length Check Transition ── */}
