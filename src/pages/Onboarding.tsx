@@ -3,8 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, HelpCircle, ChevronDown, Check, Eye, Stethoscope, Search, Camera, ShieldCheck, ImageIcon } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
-import { computeHistoricalRisk } from '@/utils/triageLogic';
-import type { CheckInData } from '@/contexts/AppContext';
+import { computeHistoricalRisk, getTriageGuidance } from '@/utils/triageLogic';
+import type { CheckInData, HealthProfileData } from '@/contexts/AppContext';
+import { Leaf } from 'lucide-react';
 import ScalpBaselineCapture from '@/components/ScalpBaselineCapture';
 
 // ─── Image imports ───────────────────────────────────────────────────────────
@@ -191,6 +192,7 @@ const Onboarding = () => {
   const {
     onboardingData, setOnboardingData, setOnboardingComplete,
     addToCheckInHistory, setCurrentCheckIn, setBaselineRisk, setBaselineDate, setBaselinePhotos,
+    healthProfile,
   } = useApp();
 
   const [step, setStep] = useState(0);
