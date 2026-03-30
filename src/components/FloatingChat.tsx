@@ -52,8 +52,8 @@ const FloatingChat = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const idleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Hide on auth/onboarding/checkin/stylist screens
-  const hiddenPaths = ['/', '/signup', '/login', '/forgot-password', '/onboarding', '/mid-cycle', '/wash-day', '/stylist'];
+  // Hide on auth/onboarding/checkin/stylist/triage screens
+  const hiddenPaths = ['/', '/signup', '/login', '/forgot-password', '/onboarding', '/mid-cycle', '/wash-day', '/stylist', '/results', '/baseline-response'];
   const shouldHide = hiddenPaths.some(p => location.pathname === p || location.pathname.startsWith('/stylist'));
 
   // One-time greeting tooltip on first dashboard visit after onboarding

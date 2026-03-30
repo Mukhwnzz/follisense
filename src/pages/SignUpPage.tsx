@@ -4,28 +4,20 @@ import { motion } from 'framer-motion';
 import { Eye, EyeOff, Shield } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 
-const genderOptions = [
-  { id: 'woman', label: 'Female' },
-  { id: 'man', label: 'Male' },
-  { id: 'prefer-not-to-say', label: 'Prefer not to say' },
-];
-
 const SignUpPage = () => {
   const navigate = useNavigate();
-  const { setUserName, setOnboardingData, onboardingData } = useApp();
+  const { setUserName } = useApp();
   const [firstName, setFirstName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [gender, setGender] = useState('');
 
-  const canSubmit = firstName.trim().length > 0 && email.trim().length > 0 && password.length >= 6 && !!gender;
+  const canSubmit = firstName.trim().length > 0 && email.trim().length > 0 && password.length >= 6;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!canSubmit) return;
     setUserName(firstName.trim());
-    setOnboardingData({ ...onboardingData, gender });
     navigate('/onboarding');
   };
 
@@ -99,36 +91,6 @@ const SignUpPage = () => {
               </div>
             </div>
 
-            {/* Gender selection */}
-            <div style={{ marginBottom: '16px' }}>
-              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: '#1a1a1a', marginBottom: '6px' }}>How do you identify?</label>
-              <p style={{ fontSize: '0.75rem', color: '#8a8a8a', marginBottom: '8px', marginTop: 0 }}>This helps us personalise your experience</p>
-              <div style={{ display: 'flex', gap: '8px' }}>
-                {genderOptions.map(opt => (
-                  <button
-                    key={opt.id}
-                    type="button"
-                    onClick={() => setGender(opt.id)}
-                    style={{
-                      flex: 1,
-                      height: '44px',
-                      borderRadius: '12px',
-                      border: `1.5px solid ${gender === opt.id ? '#7fa896' : 'rgba(0,0,0,0.15)'}`,
-                      backgroundColor: gender === opt.id ? 'rgba(127,168,150,0.08)' : 'rgba(255,255,255,0.9)',
-                      fontSize: '0.875rem',
-                      fontWeight: 500,
-                      color: gender === opt.id ? '#2d2d2d' : '#9e9e9e',
-                      cursor: 'pointer',
-                      fontFamily: "'Montserrat', sans-serif",
-                      transition: 'all 0.15s ease',
-                    }}
-                  >
-                    {opt.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
             <button
               type="submit"
               disabled={!canSubmit}
@@ -151,7 +113,7 @@ const SignUpPage = () => {
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '24px' }}>
             <button
-              onClick={() => { setUserName('Ama'); setOnboardingData({ ...onboardingData, gender: 'woman' }); navigate('/onboarding'); }}
+              onClick={() => { setUserName('Ama'); navigate('/onboarding'); }}
               style={{ width: '100%', height: '48px', borderRadius: '12px', border: '1.5px solid rgba(0,0,0,0.12)', backgroundColor: 'rgba(255,255,255,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', cursor: 'pointer', fontSize: '0.875rem', fontWeight: 500, fontFamily: "'Montserrat', sans-serif", color: '#1a1a1a' }}
             >
               <svg width="18" height="18" viewBox="0 0 24 24">
@@ -163,7 +125,7 @@ const SignUpPage = () => {
               Continue with Google
             </button>
             <button
-              onClick={() => { setUserName('Ama'); setOnboardingData({ ...onboardingData, gender: 'woman' }); navigate('/onboarding'); }}
+              onClick={() => { setUserName('Ama'); navigate('/onboarding'); }}
               style={{ width: '100%', height: '48px', borderRadius: '12px', border: '1.5px solid rgba(0,0,0,0.12)', backgroundColor: 'rgba(255,255,255,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', cursor: 'pointer', fontSize: '0.875rem', fontWeight: 500, fontFamily: "'Montserrat', sans-serif", color: '#1a1a1a' }}
             >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">

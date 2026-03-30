@@ -29,6 +29,12 @@ const C = {
   white:      '#FFFFFF',
 };
 
+const chemicalBrandOptions = [
+  'Dark and Lovely', 'ORS Olive Oil', 'TCB', 'Just for Me', 'Affirm',
+  'Mizani', 'SoftSheen-Carson', 'Motions', 'Hawaiian Silky', 'Other',
+];
+const chemicalFreqOptions = ['Every 4-6 weeks', 'Every 8-12 weeks', 'Every 3-6 months', 'Less often'];
+
 const goalOptions = [
   'Protect my edges / grow my hairline back',
   'Reduce scalp irritation or itching',
@@ -166,6 +172,12 @@ const ProfilePage = () => {
   const [preferredSalon, setPreferredSalon]     = useState('');
   const [bookingMethod, setBookingMethod]       = useState('');
   const [salonContact, setSalonContact]         = useState('');
+  const [showChemicalEditor, setShowChemicalEditor] = useState(false);
+  const [editChemStatus, setEditChemStatus]     = useState(onboardingData.chemicalProcessing || '');
+  const [editChemTypes, setEditChemTypes]       = useState<string[]>(onboardingData.chemicalProcessingMultiple || []);
+  const [editChemBrand, setEditChemBrand]       = useState(onboardingData.chemicalBrand || '');
+  const [editChemBrandOther, setEditChemBrandOther] = useState(onboardingData.chemicalBrandOther || '');
+  const [editChemFreq, setEditChemFreq]         = useState(onboardingData.chemicalFrequency || '');
 
   const isMale = onboardingData.gender === 'man';
 
@@ -202,6 +214,17 @@ const ProfilePage = () => {
   const toggleEditGoal      = (g: string) =>
     setEditGoals(prev => prev.includes(g) ? prev.filter(x => x !== g) : prev.length >= 3 ? prev : [...prev, g]);
   const saveGoals           = () => { setOnboardingData({ ...onboardingData, goals: editGoals }); setShowGoalEditor(false); };
+  const saveChemical        = () => {
+    setOnboardingData({
+      ...onboardingData,
+      chemicalProcessing: editChemStatus,
+      chemicalProcessingMultiple: editChemTypes,
+      chemicalBrand: editChemBrand,
+      chemicalBrandOther: editChemBrandOther,
+      chemicalFrequency: editChemFreq,
+    });
+    setShowChemicalEditor(false);
+  };
   const toggleMenstrual     = () => {
     const newVal = onboardingData.menstrualTracking === "Yes, I'd like to track" ? 'No thanks' : "Yes, I'd like to track";
     setOnboardingData({ ...onboardingData, menstrualTracking: newVal });
@@ -404,9 +427,82 @@ const ProfilePage = () => {
           </ProfileSection>
 
           {/* ═══ Hair History ═══ */}
-          <ProfileSection title="Hair History" icon={FlaskConical}>
-            <InfoRow label="Chemical processing" value={chemDisplay} />
-            {onboardingData.lastChemicalTreatment && <InfoRow label="Last treatment" value={onboardingData.lastChemicalTreatment} />}
+          <ProfileSection title="Hair History" icon={FlaskConical} editLabel={showChemicalEditor ? 'Done' : 'Edit'} onEdit={() => setShowChemicalEditor(true)} editing={showChemicalEditor} onSave={saveChemical} onCancel={() => setShowChemicalEditor(false)}>
+            {!showChemicalEditor ? (
+              <>
+                <InfoRow label="Chemical processing" value={chemDisplay} />
+                {onboardingData.lastChemicalTreatment && <InfoRow label="Last treatment" value={onboardingData.lastChemicalTreatment} />}
+                {onboardingData.chemicalBrand && <InfoRow label="Brand" value={onboardingData.chemicalBrand === 'Other' ? (onboardingData.chemicalBrandOther || 'Other') : onboardingData.chemicalBrand} />}
+                {onboardingData.chemicalFrequency && <InfoRow label="How often" value={onboardingData.chemicalFrequency} />}
+              </>
+            ) : (
+              <div style={{ paddingTop: 8, display: 'flex', flexDirection: 'column', gap: 16 }}>
+                {/* Processing status */}
+                <div>
+                  <p style={{ fontFamily: dm, fontSize: 13, fontWeight: 500, color: C.ink, marginBottom: 8 }}>Chemical processing</p>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                    {['No, fully natural', 'Yes currently', 'Previously but growing out', 'Not sure'].map(opt => (
+                      <button key={opt} onClick={() => setEditChemStatus(opt)} style={{
+                        padding: '8px 14px', borderRadius: 20, fontSize: 12, fontFamily: dm, fontWeight: 500, cursor: 'pointer',
+                        border: `1.5px solid ${editChemStatus === opt ? '#7fa896' : C.mid}`,
+                        background: editChemStatus === opt ? 'rgba(127,168,150,0.08)' : C.white, color: C.ink,
+                      }}>{opt}</button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Treatment type — only if yes/previously */}
+                {(editChemStatus === 'Yes currently' || editChemStatus === 'Previously but growing out') && (
+                  <div>
+                    <p style={{ fontFamily: dm, fontSize: 13, fontWeight: 500, color: C.ink, marginBottom: 8 }}>Type of treatment</p>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                      {['Relaxed', 'Texturised', 'Colour', 'Bleach', 'Keratin treatment'].map(t => (
+                        <button key={t} onClick={() => setEditChemTypes(prev => prev.includes(t) ? prev.filter(x => x !== t) : [...prev, t])} style={{
+                          padding: '8px 14px', borderRadius: 20, fontSize: 12, fontFamily: dm, fontWeight: 500, cursor: 'pointer',
+                          border: `1.5px solid ${editChemTypes.includes(t) ? '#7fa896' : C.mid}`,
+                          background: editChemTypes.includes(t) ? 'rgba(127,168,150,0.08)' : C.white, color: C.ink,
+                        }}>{t}</button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Brand — only if actively processed */}
+                {(editChemStatus === 'Yes currently' || editChemStatus === 'Previously but growing out') && editChemTypes.length > 0 && (
+                  <div>
+                    <p style={{ fontFamily: dm, fontSize: 13, fontWeight: 500, color: C.ink, marginBottom: 8 }}>Which brand do you use?</p>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 8 }}>
+                      {chemicalBrandOptions.map(b => (
+                        <button key={b} onClick={() => { setEditChemBrand(b); if (b !== 'Other') setEditChemBrandOther(''); }} style={{
+                          padding: '8px 14px', borderRadius: 20, fontSize: 12, fontFamily: dm, fontWeight: 500, cursor: 'pointer',
+                          border: `1.5px solid ${editChemBrand === b ? '#7fa896' : C.mid}`,
+                          background: editChemBrand === b ? 'rgba(127,168,150,0.08)' : C.white, color: C.ink,
+                        }}>{b}</button>
+                      ))}
+                    </div>
+                    {editChemBrand === 'Other' && (
+                      <input type="text" value={editChemBrandOther} onChange={e => setEditChemBrandOther(e.target.value)} placeholder="Enter brand name" style={inputStyle} />
+                    )}
+                  </div>
+                )}
+
+                {/* Frequency — only if actively processed */}
+                {(editChemStatus === 'Yes currently') && editChemTypes.length > 0 && (
+                  <div>
+                    <p style={{ fontFamily: dm, fontSize: 13, fontWeight: 500, color: C.ink, marginBottom: 8 }}>How often?</p>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                      {chemicalFreqOptions.map(f => (
+                        <button key={f} onClick={() => setEditChemFreq(f)} style={{
+                          padding: '8px 14px', borderRadius: 20, fontSize: 12, fontFamily: dm, fontWeight: 500, cursor: 'pointer',
+                          border: `1.5px solid ${editChemFreq === f ? '#7fa896' : C.mid}`,
+                          background: editChemFreq === f ? 'rgba(127,168,150,0.08)' : C.white, color: C.ink,
+                        }}>{f}</button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </ProfileSection>
 
           {/* ═══ Your Routine ═══ */}

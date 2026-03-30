@@ -397,31 +397,7 @@ const HomePage = () => {
             </div>
           </motion.div>
 
-          {/* ── Progressive profiling ─────────────────────────────────────────── */}
-          <AnimatePresence>
-            {progressiveCard() && (
-              <motion.div
-                key="progressive"
-                initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0 }} transition={{ delay: 0.35 }}
-              >
-                {progressiveCard()}
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* ── Profile section ───────────────────────────────────────────────── */}
-          <SectionLabel>Your profile</SectionLabel>
-
-          {!isMale && !onboardingData.isWornOutOnly && currentDay >= totalDays - 4 && (
-            <FullCard
-              iconBg={C.gold10}
-              icon={<Calendar size={17} color={C.goldDeep} strokeWidth={1.6} />}
-              title="Time to book your next appointment?"
-              desc={`${currentStyle} has been in for ${currentDay} days`}
-              onClick={() => navigate('/salon-booking')}
-            />
-          )}
+          {/* Progressive profiling cards removed per spec — dashboard stays clean */}
         </div>
 
       </motion.div>
