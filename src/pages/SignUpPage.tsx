@@ -22,69 +22,85 @@ const SignUpPage = () => {
   };
 
   return (
-    <div style={{ position: 'fixed', inset: 0, backgroundImage: 'url(https://i.pinimg.com/736x/85/b5/21/85b5213cc3ef90542dc510c9953790d4.jpg)', backgroundSize: '100%', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', overflowY: 'auto', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '40px 16px' }}>
+    <div style={{
+      position: 'fixed', inset: 0,
+      backgroundImage: 'url(https://i.pinimg.com/1200x/33/db/0b/33db0b45d854152416ab14b23bb5619d.jpg)',
+      backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat',
+      overflowY: 'auto', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '40px 16px',
+    }}>
+      {/* Dark overlay */}
+      <div style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(0,0,0,0.45)', zIndex: 0 }} />
+
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
-        style={{ width: '100%', maxWidth: '620px', border: 'none', outline: 'none' }}
+        style={{ width: '100%', maxWidth: '480px', border: 'none', outline: 'none', position: 'relative', zIndex: 10 }}
       >
-        <div style={{ background: 'rgba(255, 255, 255, 0.75)', backdropFilter: 'blur(18px)', WebkitBackdropFilter: 'blur(18px)', borderRadius: '24px', padding: '28px 52px', border: '1px solid rgba(255, 255, 255, 0.6)', outline: 'none', boxShadow: '0 8px 40px rgba(0,0,0,0.12)' }}>
+        {/* Logo + FolliSense */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', marginBottom: '6px' }}>
+          <img
+            src="https://cdn-icons-png.flaticon.com/512/11847/11847144.png"
+            alt="FolliSense logo"
+            style={{ width: '36px', height: '36px', filter: 'brightness(0) invert(1)', flexShrink: 0 }}
+          />
+          <span style={{ fontFamily: "'Montserrat', sans-serif", fontSize: '2rem', fontWeight: 700, color: '#FFFFFF', letterSpacing: '0.01em', lineHeight: '1' }}>
+            FolliSense
+          </span>
+        </div>
 
-          {/* Logo + FolliSense */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', marginBottom: '4px' }}>
-            <img
-              src="https://cdn-icons-png.flaticon.com/512/11847/11847144.png"
-              alt="FolliSense logo"
-              style={{ width: '34px', height: '34px', filter: 'invert(60%) sepia(0%) saturate(0%) brightness(40%) contrast(85%)', flexShrink: 0 }}
-            />
-            <span style={{ fontFamily: "'Montserrat', sans-serif", fontSize: '1.75rem', fontWeight: 700, color: '#1a1a1a', letterSpacing: '0.01em', lineHeight: '1' }}>
-              FolliSense
-            </span>
-          </div>
+        <p style={{ textAlign: 'center', fontSize: '0.85rem', fontWeight: 400, color: 'rgba(255,255,255,0.7)', letterSpacing: '0.02em', marginBottom: '28px', fontFamily: "'Montserrat', sans-serif" }}>
+          Smart scalp care, built around you
+        </p>
 
-          <p style={{ textAlign: 'center', fontSize: '0.75rem', fontWeight: 400, color: '#6b6b6b', letterSpacing: '0.04em', marginBottom: '32px' }}>
+        <div style={{
+          background: 'rgba(255, 255, 255, 0.12)', backdropFilter: 'blur(18px)', WebkitBackdropFilter: 'blur(18px)',
+          borderRadius: '24px', padding: '28px 28px', border: '1px solid rgba(255, 255, 255, 0.2)',
+          outline: 'none', boxShadow: '0 8px 40px rgba(0,0,0,0.15)',
+        }}>
+
+          <p style={{ textAlign: 'center', fontSize: '1rem', fontWeight: 600, color: '#FFFFFF', marginBottom: '24px', fontFamily: "'Montserrat', sans-serif" }}>
             Create your account
           </p>
 
-          <form onSubmit={handleSubmit} style={{ marginBottom: '20px' }}>
-            <div style={{ marginBottom: '16px' }}>
-              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: '#1a1a1a', marginBottom: '6px' }}>First name</label>
+          <form onSubmit={handleSubmit} style={{ marginBottom: '16px' }}>
+            <div style={{ marginBottom: '14px' }}>
+              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: '#FFFFFF', marginBottom: '6px', fontFamily: "'Montserrat', sans-serif" }}>First name</label>
               <input
                 type="text"
                 value={firstName}
                 onChange={e => setFirstName(e.target.value)}
                 placeholder="Your first name"
-                style={{ width: '100%', height: '48px', padding: '0 16px', borderRadius: '12px', border: '1.5px solid rgba(0,0,0,0.15)', backgroundColor: 'rgba(255,255,255,0.9)', fontSize: '0.875rem', outline: 'none', boxSizing: 'border-box', fontFamily: "'Montserrat', sans-serif", color: '#1a1a1a' }}
+                style={{ width: '100%', height: '48px', padding: '0 16px', borderRadius: '12px', border: '1.5px solid rgba(255,255,255,0.5)', backgroundColor: 'rgba(255,255,255,0.65)', fontSize: '0.875rem', outline: 'none', boxSizing: 'border-box', fontFamily: "'Montserrat', sans-serif", color: '#1a1a1a' }}
                 autoFocus
               />
             </div>
 
-            <div style={{ marginBottom: '16px' }}>
-              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: '#1a1a1a', marginBottom: '6px' }}>Email address</label>
+            <div style={{ marginBottom: '14px' }}>
+              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: '#FFFFFF', marginBottom: '6px', fontFamily: "'Montserrat', sans-serif" }}>Email address</label>
               <input
                 type="email"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 placeholder="you@example.com"
-                style={{ width: '100%', height: '48px', padding: '0 16px', borderRadius: '12px', border: '1.5px solid rgba(0,0,0,0.15)', backgroundColor: 'rgba(255,255,255,0.9)', fontSize: '0.875rem', outline: 'none', boxSizing: 'border-box', fontFamily: "'Montserrat', sans-serif", color: '#1a1a1a' }}
+                style={{ width: '100%', height: '48px', padding: '0 16px', borderRadius: '12px', border: '1.5px solid rgba(255,255,255,0.5)', backgroundColor: 'rgba(255,255,255,0.65)', fontSize: '0.875rem', outline: 'none', boxSizing: 'border-box', fontFamily: "'Montserrat', sans-serif", color: '#1a1a1a' }}
               />
             </div>
 
-            <div style={{ marginBottom: '16px' }}>
-              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: '#1a1a1a', marginBottom: '6px' }}>Password</label>
+            <div style={{ marginBottom: '14px' }}>
+              <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, color: '#FFFFFF', marginBottom: '6px', fontFamily: "'Montserrat', sans-serif" }}>Password</label>
               <div style={{ position: 'relative' }}>
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={e => setPassword(e.target.value)}
                   placeholder="At least 6 characters"
-                  style={{ width: '100%', height: '48px', padding: '0 48px 0 16px', borderRadius: '12px', border: '1.5px solid rgba(0,0,0,0.15)', backgroundColor: 'rgba(255,255,255,0.9)', fontSize: '0.875rem', outline: 'none', boxSizing: 'border-box', fontFamily: "'Montserrat', sans-serif", color: '#1a1a1a' }}
+                  style={{ width: '100%', height: '48px', padding: '0 48px 0 16px', borderRadius: '12px', border: '1.5px solid rgba(255,255,255,0.5)', backgroundColor: 'rgba(255,255,255,0.65)', fontSize: '0.875rem', outline: 'none', boxSizing: 'border-box', fontFamily: "'Montserrat', sans-serif", color: '#1a1a1a' }}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#9e9e9e' }}
+                  style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#4a4a4a' }}
                 >
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
@@ -100,21 +116,21 @@ const SignUpPage = () => {
             </button>
           </form>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: '#8a8a8a', fontSize: '0.75rem', marginBottom: '16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'rgba(255,255,255,0.6)', fontSize: '0.75rem', marginBottom: '14px' }}>
             <Shield size={14} style={{ flexShrink: 0 }} />
-            <p style={{ margin: 0 }}>Your health data is private and encrypted. We never share your information without your consent.</p>
+            <p style={{ margin: 0, fontFamily: "'Montserrat', sans-serif" }}>Your health data is private and encrypted. We never share your information without your consent.</p>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-            <div style={{ flex: 1, height: '1px', backgroundColor: 'rgba(0,0,0,0.12)' }} />
-            <span style={{ fontSize: '0.75rem', color: '#9e9e9e' }}>or</span>
-            <div style={{ flex: 1, height: '1px', backgroundColor: 'rgba(0,0,0,0.12)' }} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '14px' }}>
+            <div style={{ flex: 1, height: '1px', backgroundColor: 'rgba(255,255,255,0.25)' }} />
+            <span style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.55)' }}>or</span>
+            <div style={{ flex: 1, height: '1px', backgroundColor: 'rgba(255,255,255,0.25)' }} />
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '24px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px' }}>
             <button
               onClick={() => { setUserName('Ama'); navigate('/onboarding'); }}
-              style={{ width: '100%', height: '48px', borderRadius: '12px', border: '1.5px solid rgba(0,0,0,0.12)', backgroundColor: 'rgba(255,255,255,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', cursor: 'pointer', fontSize: '0.875rem', fontWeight: 500, fontFamily: "'Montserrat', sans-serif", color: '#1a1a1a' }}
+              style={{ width: '100%', height: '48px', borderRadius: '12px', border: '1.5px solid rgba(255,255,255,0.4)', backgroundColor: 'rgba(255,255,255,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', cursor: 'pointer', fontSize: '0.875rem', fontWeight: 500, fontFamily: "'Montserrat', sans-serif", color: '#1a1a1a' }}
             >
               <svg width="18" height="18" viewBox="0 0 24 24">
                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/>
@@ -126,7 +142,7 @@ const SignUpPage = () => {
             </button>
             <button
               onClick={() => { setUserName('Ama'); navigate('/onboarding'); }}
-              style={{ width: '100%', height: '48px', borderRadius: '12px', border: '1.5px solid rgba(0,0,0,0.12)', backgroundColor: 'rgba(255,255,255,0.9)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', cursor: 'pointer', fontSize: '0.875rem', fontWeight: 500, fontFamily: "'Montserrat', sans-serif", color: '#1a1a1a' }}
+              style={{ width: '100%', height: '48px', borderRadius: '12px', border: '1.5px solid rgba(255,255,255,0.4)', backgroundColor: 'rgba(255,255,255,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', cursor: 'pointer', fontSize: '0.875rem', fontWeight: 500, fontFamily: "'Montserrat', sans-serif", color: '#1a1a1a' }}
             >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M17.05 20.28c-.98.95-2.05.88-3.08.4-1.09-.5-2.08-.48-3.24 0-1.44.62-2.2.44-3.06-.4C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/>
@@ -135,14 +151,14 @@ const SignUpPage = () => {
             </button>
           </div>
 
-          <p style={{ textAlign: 'center', fontSize: '0.875rem', color: '#6b6b6b' }}>
+          <p style={{ textAlign: 'center', fontSize: '0.875rem', color: 'rgba(255,255,255,0.75)', fontFamily: "'Montserrat', sans-serif" }}>
             Already have an account?{' '}
-            <button onClick={() => navigate('/login')} style={{ color: '#7fa896', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer' }}>Log in</button>
+            <button onClick={() => navigate('/login')} style={{ color: '#ffffff', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer' }}>Log in</button>
           </p>
 
-          <p style={{ textAlign: 'center', fontSize: '0.75rem', color: '#9e9e9e', marginTop: '12px' }}>
+          <p style={{ textAlign: 'center', fontSize: '0.75rem', color: 'rgba(255,255,255,0.55)', marginTop: '12px', fontFamily: "'Montserrat', sans-serif" }}>
             Are you a stylist?{' '}
-            <button onClick={() => navigate('/stylist/signup')} style={{ color: '#7fa896', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer' }}>Sign up here</button>
+            <button onClick={() => navigate('/stylist/signup')} style={{ color: '#ffffff', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer' }}>Sign up here</button>
           </p>
 
         </div>
