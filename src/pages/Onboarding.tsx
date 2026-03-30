@@ -245,8 +245,8 @@ const Onboarding = () => {
   const [lengthStep, setLengthStep] = useState(0);
   const [lengthPhotos, setLengthPhotos] = useState<{ area: string; dataUrl: string }[]>([]);
   const [lengthPreview, setLengthPreview] = useState<string | null>(null);
-  const lengthCameraRef = useState<HTMLInputElement | null>(null);
-  const lengthGalleryRef = useState<HTMLInputElement | null>(null);
+  const lengthCameraRef = useRef<HTMLInputElement | null>(null);
+  const lengthGalleryRef = useRef<HTMLInputElement | null>(null);
 
   // Compute style options with chemical filtering
   const rawStyleOptions = isMale ? maleStyleOptions : isNeutral ? [...new Set([...femaleStyleOptions, ...maleStyleOptions])] : femaleStyleOptions;
