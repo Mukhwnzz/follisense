@@ -31,7 +31,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
   const isWelcomePage = location.pathname === '/';
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: isWelcomePage ? undefined : '#FFFFFF' }}>
+    <div className="min-h-screen" style={{ backgroundColor: isWelcomePage ? undefined : '#FAF8F5' }}>
       <div className={`mx-auto min-h-screen relative ${isWelcomePage ? 'w-full max-w-none' : isAuthPage ? 'max-w-[620px]' : 'max-w-[430px]'}`}>
         {children}
         {showNav && (

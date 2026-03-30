@@ -527,8 +527,8 @@ const Onboarding = () => {
         style={{ width: '100%', maxWidth: '560px' }}
       >
         <div style={{
-          backgroundColor: '#FFFFFF', borderRadius: '24px',
-          boxShadow: '0 8px 40px rgba(0,0,0,0.10), 0 2px 8px rgba(0,0,0,0.06)',
+          backgroundColor: '#FAF8F5', borderRadius: '24px',
+          boxShadow: '0 8px 40px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06)',
           padding: '24px 28px 28px', display: 'flex', flexDirection: 'column',
           maxHeight: 'calc(100vh - 48px)', overflow: 'hidden',
         }}>

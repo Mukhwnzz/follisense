@@ -49,7 +49,7 @@
 
     --radius: 1rem;
 
-    --card-shadow: 0 2px 8px rgba(45, 45, 45, 0.06);
+    --card-shadow: 0 4px 16px rgba(45, 45, 45, 0.08), 0 1px 4px rgba(45, 45, 45, 0.04);
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;

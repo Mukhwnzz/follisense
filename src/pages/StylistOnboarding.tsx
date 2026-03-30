@@ -75,7 +75,7 @@ const StylistOnboarding = () => {
         transition={{ duration: 0.4 }}
         style={{ width: '100%', maxWidth: '560px' }}
       >
-        <div style={{ backgroundColor: '#FFFFFF', borderRadius: '24px', boxShadow: '0 8px 40px rgba(0,0,0,0.10), 0 2px 8px rgba(0,0,0,0.06)', padding: '24px 36px 28px', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ backgroundColor: '#FAF8F5', borderRadius: '24px', boxShadow: '0 8px 40px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06)', padding: '24px 36px 28px', display: 'flex', flexDirection: 'column' }}>
 
           {/* Header with progress dots */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
