@@ -12,6 +12,26 @@ import { toast } from '@/hooks/use-toast';
 import { Switch } from '@/components/ui/switch';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
+const saveConsumerProfile = async (profileData: any) => {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    const userId = user?.id;
+    
+    if (!userId) throw new Error('User not authenticated');
+
+    const { error } = await supabase
+      .from('consumer_profiles')
+      .upsert([{ user_id: userId, ...profileData }]);
+
+    if (error) throw error;
+
+    toast({ title: 'Profile saved', description: 'Your data has been saved successfully.' });
+  } catch (err) {
+    console.error(err);
+    toast({ title: 'Error saving profile', description: 'Try again later.', variant: 'destructive' });
+  }
+};
+
 const goalOptions = [
   'Protect my edges / grow my hairline back',
   'Reduce scalp irritation or itching',
@@ -34,7 +54,7 @@ const hairTypeLabels: Record<string, string> = {
   'unsure': 'Not sure yet',
 };
 
-// ── Section wrapper ──
+
 const ProfileSection = ({
   title, icon: Icon, children, defaultOpen = false, editLabel, onEdit, editing, onSave, onCancel
 }: {
@@ -130,16 +150,41 @@ const ProfilePage = () => {
   ];
 
   const handleDelete = () => { resetAll(); navigate('/'); };
-  const handleRetakePhoto = (area: string) => {
+  const handleRetakePhoto = async (area: string) => {
     const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
-    setBaselinePhotos(baselinePhotos.map(p => p.area === area ? { ...p, date: today } : p));
+    const updatedPhotos = baselinePhotos.map(p => p.area === area ? { ...p, date: today } : p);
+      setBaselinePhotos(updatedPhotos);
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    const userId = user?.id;
+
+    const { error } = await supabase
+    .from('consumer_profiles')
+    .upsert({ user_id: userId, baseline_photos: updatedPhotos })
+    .eq('user_id', userId);
+
+  if (error) console.error('Failed to save updated baseline photo:', error);
   };
-  const handleAddBaseline = () => {
+  const handleAddBaseline = async() => {
     const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
-    setBaselinePhotos([
+    const newPhotos = [
       { area: 'Hairline, temples and edges', captured: true, date: today },
       { area: 'Crown and vertex', captured: true, date: today },
-    ]);
+    ];
+    setBaselinePhotos(newPhotos);
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    const userId = user?.id;
+
+    await supabase.from('consumer_profiles')
+      .upsert({ user_id: userId, baseline_photos: newPhotos })
+      .eq('user_id', userId);
   };
 
   const toggleEditGoal = (g: string) => {
@@ -149,9 +194,10 @@ const ProfilePage = () => {
       return [...prev, g];
     });
   };
-  const saveGoals = () => {
+  const saveGoals =async () => {
     setOnboardingData({ ...onboardingData, goals: editGoals });
     setShowGoalEditor(false);
+    await saveConsumerProfile({ goals: editGoals }); 
   };
 
   const toggleMenstrualTracking = () => {
@@ -298,10 +344,29 @@ const ProfilePage = () => {
                   <button type="button" onClick={() => setShowConfirmPw(!showConfirmPw)} className="absolute right-3 top-7 text-muted-foreground">{showConfirmPw ? <EyeOff size={16} /> : <Eye size={16} />}</button>
                 </div>
                 <button
-                  onClick={() => { toast({ title: 'Password updated' }); setCurrentPassword(''); setNewPassword(''); setConfirmPassword(''); setShowChangePassword(false); }}
+                  onClick={async () => {   
+                    if (!currentPassword || !newPassword || !confirmPassword || newPassword !== confirmPassword) return;
+
+                    try {
+                 // Update password with Supabase
+                      const { error } = await supabase.auth.updateUser({ password: newPassword });
+                      if (error) throw error;
+
+                    toast({ title: 'Password updated successfully' }); 
+
+                    // Clear form and close editor
+                    setCurrentPassword('');
+                    setNewPassword('');
+                    setConfirmPassword('');
+                    setShowChangePassword(false);
+                  } catch (err) {
+                    console.error('Failed to update password:', err);
+                    toast({ title: 'Error updating password', description: 'Try again later.', variant: 'destructive' });
+                  }
+                 }}
                   disabled={!currentPassword || !newPassword || !confirmPassword || newPassword !== confirmPassword}
                   className={`w-full h-10 rounded-xl font-medium text-sm transition-colors ${currentPassword && newPassword && confirmPassword && newPassword === confirmPassword ? 'bg-primary text-primary-foreground' : 'bg-border text-muted-foreground cursor-not-allowed'}`}
-                >
+              >
                   Update password
                 </button>
               </div>
@@ -310,7 +375,7 @@ const ProfilePage = () => {
           </div>
         </ProfileSection>
 
-        {/* ═══════ Section 2: Your Hair ═══════ */}
+        {/* Section 2: Your Hair  */}
         <ProfileSection title="Your Hair" icon={Scissors}>
           <div className="divide-y divide-border">
             <InfoRow label="Hair type" value={hairTypeLabels[onboardingData.hairType] || onboardingData.hairType || 'Not set'} />
@@ -397,7 +462,10 @@ const ProfilePage = () => {
                   <ProductSearch
                     category="scalp"
                     selectedProducts={onboardingData.scalpProducts.filter(p => p !== 'None')}
-                    onProductsChange={(prods) => setOnboardingData({ ...onboardingData, scalpProducts: prods })}
+                    onProductsChange={(prods) =>{
+                       setOnboardingData({ ...onboardingData, scalpProducts: prods });
+                       saveConsumerProfile({ scalpProducts: prods }); 
+                  }}
                   />
                 </div>
                 <div>
@@ -405,7 +473,22 @@ const ProfilePage = () => {
                   <ProductSearch
                     category="hair"
                     selectedProducts={onboardingData.hairProducts.filter(p => p !== 'None')}
-                    onProductsChange={(prods) => setOnboardingData({ ...onboardingData, hairProducts: prods })}
+                    onProductsChange={ async (prods) => {
+                       const updatedData= { ...onboardingData, hairProducts: prods };
+                        setOnboardingData(updatedData);
+                       const {
+                           data: { user },
+                        } = await supabase.auth.getUser();
+
+                        const userId = user?.id;
+
+                        const { error } = await supabase
+                          .from('consumer_profiles')
+                          .upsert({ user_id: userId, hair_products: prods })
+                          .eq('user_id', userId)
+
+                          if (error) console.error('Failed to save hair products:', error);
+                      }}
                   />
                 </div>
               </div>
@@ -416,7 +499,7 @@ const ProfilePage = () => {
           </div>
         </ProfileSection>
 
-        {/* ═══════ Your Stylist ═══════ */}
+        {/* Your Stylist  */}
         <ProfileSection title="Your Stylist" icon={Scissors}>
           <div className="divide-y divide-border">
             <div className="px-4 py-3">
@@ -588,7 +671,7 @@ const ProfilePage = () => {
           </div>
         </div>
 
-        {/* ── Log out ── */}
+        {/*  Log out */}
         <div className="mb-20 flex justify-center">
           {!showLogoutConfirm ? (
             <button onClick={() => setShowLogoutConfirm(true)} className="text-sm text-muted-foreground hover:text-foreground transition-colors">Log out</button>
