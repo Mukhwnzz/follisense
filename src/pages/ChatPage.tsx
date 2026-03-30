@@ -1,15 +1,31 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Send, Mic, ArrowRight, Leaf } from 'lucide-react';
+import { Send, Mic, ArrowRight, Leaf, AlertCircle } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 import ReactMarkdown from 'react-markdown';
+
+const dm       = "'DM Sans', sans-serif";
+const playfair = "'Playfair Display', serif";
+
+const C = {
+  bg:         '#FFFFFF',
+  surface:    '#F8F8F8',
+  ink:        '#1C1C1C',
+  gold:       '#D4A866',
+  goldDeep:   '#B8893E',
+  gold10:     'rgba(212,168,102,0.10)',
+  goldBorder: 'rgba(212,168,102,0.22)',
+  mid:        '#EBEBEB',
+  muted:      '#999999',
+  warm:       '#666666',
+  white:      '#FFFFFF',
+};
 
 interface Message {
   id: string;
   role: 'user' | 'assistant';
   content: string;
-  suggestions?: string[];
 }
 
 const starterQuestions = [
@@ -19,191 +35,137 @@ const starterQuestions = [
   "What should I eat for healthier hair?",
 ];
 
-const shouldSuggestCheckIn = (content: string): boolean => {
+const shouldSuggestCheckIn = (content: string) => {
   const lower = content.toLowerCase();
-  return lower.includes('concerned') || lower.includes('worried') || lower.includes('getting worse') || lower.includes('significant') || lower.includes('professional') || lower.includes('trichologist') || lower.includes('dermatologist');
+  return lower.includes('concerned') || lower.includes('worried') ||
+    lower.includes('getting worse') || lower.includes('significant') ||
+    lower.includes('professional') || lower.includes('trichologist') ||
+    lower.includes('dermatologist');
 };
 
 const shouldLinkLearn = (content: string): { show: boolean; topic: string } => {
   const lower = content.toLowerCase();
   if (lower.includes('traction alopecia')) return { show: true, topic: 'Traction alopecia: the basics' };
-  if (lower.includes('telogen effluvium')) return { show: true, topic: 'Telogen effluvium' };
+  if (lower.includes('telogen effluvium'))  return { show: true, topic: 'Telogen effluvium' };
   if (lower.includes('wash cycle') || lower.includes('wash day')) return { show: true, topic: 'Understanding your wash cycle' };
-  if (lower.includes('professional') || lower.includes('specialist') || lower.includes('trichologist')) return { show: true, topic: 'When to see a professional' };
-  if (lower.includes('porosity')) return { show: true, topic: 'Understanding hair porosity' };
+  if (lower.includes('professional') || lower.includes('trichologist')) return { show: true, topic: 'When to see a professional' };
+  if (lower.includes('porosity'))           return { show: true, topic: 'Understanding hair porosity' };
   if (lower.includes('protein') || lower.includes('moisture balance')) return { show: true, topic: 'Protein-moisture balance' };
   return { show: false, topic: '' };
 };
 
-interface MatchedResponse {
-  text: string;
-  suggestions: string[];
-}
-
-const matchResponse = (userMessage: string): MatchedResponse => {
-  const lower = userMessage.toLowerCase();
-
-  if (lower.includes('itch') || lower.includes('itchy') || lower.includes('itching')) {
-    return {
-      text: "Itching under a protective style is really common, especially from week 2 onwards. Sweat, product buildup, and reduced washing all contribute. The key question is whether it's mild and manageable or getting worse over time.\n\nTry a scalp refresh spray or diluted apple cider vinegar rinse between washes. If the itching is constant or comes with soreness, that's worth flagging at your next check-in.",
-      suggestions: ["Could this be seborrheic dermatitis?", "Best way to cleanse under braids?", "When is itching a red flag?"],
-    };
-  }
-
-  if (lower.includes('edge') || lower.includes('hairline') || lower.includes('thinning')) {
-    return {
-      text: "Hairline thinning is one of the earliest signs of traction alopecia, which happens when styles pull too tightly on the follicles around your temples and edges. The good news is it's reversible if caught early.\n\nThe most important thing right now: reduce tension on those areas. If your current style is pulling, loosen the front or remove it. Give your edges a break between installations. If you've noticed progressive thinning over several months, a trichologist can assess whether the follicles are still active.",
-      suggestions: ["Can my edges grow back?", "How do I know if it's traction?", "Should I stop wearing braids?"],
-    };
-  }
-
-  if (lower.includes('breakage') || lower.includes('breaking')) {
-    return {
-      text: "Breakage happens for a few different reasons and the fix depends on the cause. If your hair is snapping and feels dry and brittle, it's probably a moisture issue. Deep condition and seal with a butter or cream. If it feels mushy or stretchy when wet, you might need protein. If the breakage is concentrated where your style grips, that's mechanical damage from tension.\n\nCheck where it's breaking: at the ends (normal wear), along the length (moisture or protein issue), or at the root (tension problem).",
-      suggestions: ["Moisture vs protein: how to tell?", "Best deep conditioner for breakage?", "Is root breakage serious?"],
-    };
-  }
-
-  if (lower.includes('wash') || lower.includes('cleanse') || lower.includes('shampoo')) {
-    return {
-      text: "How often to wash depends on your style and your scalp. If you're in braids or twists for 4+ weeks, aim to cleanse your scalp at least every 2 weeks. You don't need to do a full wash.\n\nDilute a gentle shampoo, apply it directly to the scalp between braids, massage gently, and rinse. Some people use a scalp applicator bottle to get product directly to the scalp without disturbing the style. The goal is removing buildup without unravelling your installation.",
-      suggestions: ["Can I just use water?", "Best way to dry after washing?", "What about co-washing?"],
-    };
-  }
-
-  if (lower.includes('shedding') || lower.includes('hair loss') || lower.includes('losing hair') || lower.includes('falling out')) {
-    return {
-      text: "First, let's separate shedding from breakage. Shedding is full strands falling from the root, with a small white bulb at the end. That's your hair's natural cycle and 50 to 100 strands a day is normal.\n\nAfter a protective style, several weeks of shedding comes out at once during wash day, which looks alarming but is usually just accumulated normal shed. If you're seeing significantly more than usual, or if it's happening outside of wash day, it could be telogen effluvium from stress, hormonal changes, or nutritional deficiency. Track it over your next 2 to 3 wash cycles to see if there's a pattern.",
-      suggestions: ["Is this normal after braids?", "Could it be telogen effluvium?", "Should I get blood work done?"],
-    };
-  }
-
-  if (lower.includes('dandruff') || lower.includes('flaking') || lower.includes('flakes')) {
-    return {
-      text: "Flaking has two main causes and they need different treatments. Dandruff (seborrheic dermatitis) produces oily, yellowish flakes and is caused by yeast overgrowth. It responds to antifungal shampoos like ketoconazole or zinc pyrithione.\n\nDry scalp produces smaller, white, dry flakes and needs gentle moisturising and less frequent washing. Under protective styles, buildup from products can also look like flaking but is actually residue. If you're not sure which you have, try a medicated shampoo for 2 to 3 washes. If it helps, it was dandruff. If not, focus on hydration.",
-      suggestions: ["How to treat under braids?", "Is dandruff worse in winter?", "Could it be psoriasis?"],
-    };
-  }
-
-  if (lower.includes('oil') || lower.includes('oils') || lower.includes('castor')) {
-    return {
-      text: "This might be an unpopular opinion, but most scalp oils have very limited clinical evidence behind them. Heavy oils like castor oil can actually clog follicles and worsen buildup, especially under protective styles where the scalp isn't being regularly cleansed.\n\nThe two with some research support are rosemary oil and peppermint oil, both diluted, and the evidence is still modest. If you're using oil on your scalp and it feels good, keep it light and infrequent. But if you're dealing with a scalp issue, adding oil is often not the answer and can make things worse.",
-      suggestions: ["What about rosemary oil specifically?", "What should I use instead?", "Can oil clog hair follicles?"],
-    };
-  }
-
-  if (lower.includes('diet') || lower.includes('nutrition') || lower.includes('eat') || lower.includes('food') || lower.includes('vitamin')) {
-    return {
-      text: "Your hair is built from protein and fuelled by nutrients delivered through your blood supply to the follicle. The big ones for hair health: iron (carries oxygen to follicles, low iron is a top cause of shedding in women), vitamin D (low levels linked to hair loss, common in people with darker skin), zinc (supports growth and repair), B12 (essential for the red blood cells that feed follicles), and protein itself.\n\nBefore buying supplements, get a blood test. Supplements fix deficiencies but they don't override genetics, hormones, or mechanical damage.",
-      suggestions: ["Should I take biotin?", "Best foods for hair growth?", "How do I get tested?"],
-    };
-  }
-
-  if (lower.includes('exercise') || lower.includes('sweat') || lower.includes('gym') || lower.includes('workout')) {
-    return {
-      text: "Sweat itself isn't harmful to your scalp. The problem is when sweat mixes with product and buildup and sits under a style for days or weeks. You don't need to wash after every workout.\n\nQuick options: a scalp refresh spray, blotting with a microfibre cloth, or a water-only rinse focusing on the scalp. If you exercise daily and wear protective styles, consider a mid-cycle scalp cleanse to prevent irritation from accumulated sweat.",
-      suggestions: ["Best scalp spray after gym?", "Should I avoid working out in braids?", "Sweat causing bumps on scalp?"],
-    };
-  }
-
-  if (lower.includes('locs') || lower.includes('dreadlocks') || lower.includes('retwist')) {
-    return {
-      text: "The most common scalp issue with locs is traction from retwists that are too tight. Your retwist should never hurt. If it does, your loctician is going too tight and that's damaging your follicles, especially along the hairline and part lines.\n\nYou can and should wash your scalp with locs. Diluted shampoo or a scalp-specific cleanser applied between locs works well. Avoid heavy waxes or products that create buildup at the root. And give your loc line some breathing room, consistently tight retwists in the same spots will cause thinning over time.",
-      suggestions: ["How often should I retwist?", "Best way to wash with locs?", "Thinning at my part line"],
-    };
-  }
-
-  if (lower.includes('durag') || lower.includes('waves') || lower.includes('wave cap')) {
-    return {
-      text: "Durags and wave caps work by compressing your hair to train the curl pattern. That compression, especially if it's tight and worn for long hours every day, applies constant low-level tension to your hairline.\n\nIf you're noticing your temples looking thinner, the durag might be contributing. Try loosening the tie so there's less pressure on the hairline. Give your scalp a break from compression for a few hours each day. And if you're seeing consistent recession, it's worth getting assessed, because catching it early makes the difference between reversible and permanent.",
-      suggestions: ["How tight is too tight?", "Am I losing hair from my durag?", "Waves vs hairline health"],
-    };
-  }
-
-  // Off-topic check
-  if (!lower.match(/hair|scalp|itch|style|braid|wash|shed|break|product|grow|thin|edge|dandruff|flak|curl|loc|wig|wave|barber|routine|moisture|protein|dry|brittle|bump|follicle/)) {
-    return {
-      text: "I'm best with scalp and hair questions, is there something about your hair I can help with?",
-      suggestions: ["My scalp has been itchy", "I'm worried about thinning", "Help me build a routine"],
-    };
-  }
-
-  // Default
-  return {
-    text: "I'm not sure I have a specific answer for that, but I'd love to help. Could you tell me a bit more about what you're experiencing? For example: are you dealing with a scalp issue like itching or tenderness, a hair concern like breakage or thinning, or looking for advice on your routine?",
-    suggestions: ["My scalp has been itchy", "I'm worried about thinning", "Help me build a routine"],
-  };
-};
-
 const ChatPage = () => {
   const navigate = useNavigate();
-  const { onboardingData, currentCheckIn, healthProfile, baselineRisk, history } = useApp();
+  const { onboardingData, currentCheckIn, healthProfile, baselineRisk, checkInHistory, userName } = useApp();
   const [messages, setMessages] = useState<Message[]>([]);
-  const [inputValue, setInputValue] = useState('');
-  const [isTyping, setIsTyping] = useState(false);
+  const [inputValue, setInputValue]   = useState('');
+  const [isTyping, setIsTyping]       = useState(false);
+  const [error, setError]             = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
+  const inputRef       = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    scrollToBottom();
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isTyping]);
 
+  // ── Build system prompt from user profile ──────────────────────────────────
+  const buildSystemPrompt = () => {
+    const isMale     = onboardingData.gender === 'man';
+    const latestCheckIn = checkInHistory?.[0];
+    const recentHistory = checkInHistory?.slice(0, 3) ?? [];
+
+    return `You are FolliSense AI — a warm, knowledgeable scalp and hair health guide embedded in the FolliSense app. You are NOT a doctor and you never diagnose conditions. You help users understand their scalp health, interpret their symptoms, and know when to seek professional care.
+
+You are speaking with ${userName || 'a user'} who has the following profile:
+
+HAIR PROFILE:
+- Gender: ${onboardingData.gender || 'not specified'}
+- Hair type: ${onboardingData.hairType || 'not set'}
+- Current/usual styles: ${onboardingData.protectiveStyles?.join(', ') || 'not set'}
+- Chemical processing: ${onboardingData.chemicalProcessing || 'not set'}
+- Wash frequency: ${onboardingData.washFrequency || onboardingData.washFrequencyPerCycle || 'not set'}
+- Between-wash care: ${onboardingData.betweenWashCare?.join(', ') || 'not set'}
+- Scalp products: ${onboardingData.scalpProducts?.filter(p => p !== 'None').join(', ') || 'none logged'}
+- Hair products: ${onboardingData.hairProducts?.filter(p => p !== 'None').join(', ') || 'none logged'}
+- Goals: ${onboardingData.goals?.join(', ') || 'not set'}
+${isMale ? `- Barber frequency: ${onboardingData.barberFrequency || 'not set'}` : `- Menstrual tracking: ${onboardingData.menstrualTracking || 'off'}`}
+
+RECENT CHECK-IN DATA:
+${latestCheckIn ? `- Latest check-in: ${latestCheckIn.date}
+  • Itch: ${latestCheckIn.itch || 'not recorded'}
+  • Tenderness: ${latestCheckIn.tenderness || 'not recorded'}
+  • Hairline: ${latestCheckIn.hairline || 'not recorded'}
+  • Hair concern: ${latestCheckIn.hairConcern || 'not recorded'}
+  • Overall risk: ${baselineRisk || 'not assessed'}` : '- No check-in data recorded yet'}
+${recentHistory.length > 1 ? `- Previous check-ins: ${recentHistory.slice(1).map(c => `${c.date} (risk: ${baselineRisk || 'unknown'})`).join(', ')}` : ''}
+
+HEALTH CONTEXT:
+${healthProfile?.medicalConditions?.length > 0 ? `- Medical conditions: ${healthProfile.medicalConditions.join(', ')}` : ''}
+${healthProfile?.medications ? `- Medications: ${healthProfile.medications}` : ''}
+${healthProfile?.previousHairLoss ? `- Previous hair loss: ${healthProfile.previousHairLoss}` : ''}
+${healthProfile?.familyHistory ? `- Family history: ${healthProfile.familyHistory}` : ''}
+
+COMMUNICATION STYLE:
+- Warm, direct, and honest — like a knowledgeable friend who happens to know a lot about scalp health
+- Short paragraphs, no walls of text. Get to the point quickly.
+- Use plain language. Explain medical terms when you use them.
+- Reference the user's actual data when relevant (e.g. "Given that you're in braids..." or "Since your last check-in showed mild itching...")
+- Be evidence-based. Call out myths (e.g. castor oil myths, excessive oiling)
+- Always recommend professional assessment for anything serious, progressive, or unclear
+- Never diagnose. Use language like "this could be consistent with..." or "this is worth getting assessed"
+- If a question is completely unrelated to scalp/hair health, gently redirect
+- Keep responses concise — ideally under 150 words unless the question genuinely needs more
+- Do not use excessive bullet points or headers for simple questions — conversational prose is better
+- End responses with a relevant follow-up question or a brief action the user can take`;
+  };
+
+  // ── Call Claude API ────────────────────────────────────────────────────────
   const sendMessage = async (text: string) => {
-    if (!text.trim()) return;
+    if (!text.trim() || isTyping) return;
 
-    const userMsg: Message = {
-      id: `user-${Date.now()}`,
-      role: 'user',
-      content: text.trim(),
-    };
-
+    const userMsg: Message = { id: `user-${Date.now()}`, role: 'user', content: text.trim() };
     setMessages(prev => [...prev, userMsg]);
     setInputValue('');
     setIsTyping(true);
+    setError(null);
 
-    setTimeout(() => {
-      // Build context from previous messages for follow-up awareness
-      const prevMessages = [...messages, userMsg];
-      const lastAssistant = [...prevMessages].reverse().find(m => m.role === 'assistant');
-      const lastUserBefore = prevMessages.filter(m => m.role === 'user').slice(-2, -1)[0];
-      
-      let { text: responseText, suggestions } = matchResponse(text);
-      
-      // If this is a follow-up, reference previous context
-      if (lastAssistant && lastUserBefore) {
-        const prevTopic = lastUserBefore.content.toLowerCase();
-        const currentTopic = text.toLowerCase();
-        const isFollowUp = prevMessages.length >= 3;
-        
-        if (isFollowUp) {
-          // Add contextual prefix referencing what they previously said
-          if (prevTopic.includes('itch') && (currentTopic.includes('worse') || currentTopic.includes('still'))) {
-            responseText = `Since you mentioned itching earlier, if it's persisting or getting worse, that's a signal worth paying attention to.\n\n${responseText}`;
-          } else if (prevTopic.includes('edge') && currentTopic.includes('grow')) {
-            responseText = `Building on what we discussed about your edges, ${responseText}`;
-          } else if (prevTopic.includes('shed') && currentTopic.includes('normal')) {
-            responseText = `Given what you told me about your shedding, ${responseText}`;
-          } else if (isFollowUp && !currentTopic.match(/^(my scalp|i'm worried|how often)/)) {
-            // Generic follow-up awareness
-            responseText = `Good follow-up question. ${responseText}`;
-          }
-        }
+    try {
+      const conversationHistory = [...messages, userMsg].map(m => ({
+        role: m.role,
+        content: m.content,
+      }));
+
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 1000,
+          system: buildSystemPrompt(),
+          messages: conversationHistory,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`API error ${response.status}`);
       }
+
+      const data = await response.json();
+      const assistantText = data.content?.find((b: any) => b.type === 'text')?.text ?? "Sorry, I didn't get a response. Please try again.";
 
       const assistantMsg: Message = {
         id: `assistant-${Date.now()}`,
         role: 'assistant',
-        content: responseText,
-        suggestions,
+        content: assistantText,
       };
 
       setMessages(prev => [...prev, assistantMsg]);
+    } catch (err) {
+      console.error('Chat error:', err);
+      setError('Something went wrong. Check your connection and try again.');
+    } finally {
       setIsTyping(false);
-    }, 800 + Math.random() * 400);
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -212,135 +174,169 @@ const ChatPage = () => {
   };
 
   const lastAssistantMessage = [...messages].reverse().find(m => m.role === 'assistant');
-  const checkInSuggestion = lastAssistantMessage ? shouldSuggestCheckIn(lastAssistantMessage.content) : false;
-  const learnLink = lastAssistantMessage ? shouldLinkLearn(lastAssistantMessage.content) : { show: false, topic: '' };
+  const checkInSuggestion    = lastAssistantMessage ? shouldSuggestCheckIn(lastAssistantMessage.content) : false;
+  const learnLink            = lastAssistantMessage ? shouldLinkLearn(lastAssistantMessage.content) : { show: false, topic: '' };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <div className="max-w-[430px] mx-auto w-full flex flex-col h-screen">
+    <div style={{ minHeight: '100vh', background: C.bg, fontFamily: dm, display: 'flex', flexDirection: 'column' }}>
+
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Playfair+Display:wght@500;600&display=swap');`}</style>
+
+      <div style={{ maxWidth: 480, margin: '0 auto', width: '100%', display: 'flex', flexDirection: 'column', height: '100vh' }}>
+
         {/* Header */}
-        <div className="px-6 pt-6 pb-4">
-          <h1 className="text-xl font-semibold text-foreground">Ask FolliSense</h1>
-          <p className="text-sm text-muted-foreground">Your personal scalp and hair health guide</p>
+        <div style={{ padding: '52px 20px 16px', borderBottom: `1px solid ${C.mid}` }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 6 }}>
+            <div style={{ width: 7, height: 7, borderRadius: '50%', background: C.gold }} />
+            <span style={{ fontFamily: dm, fontSize: 10, fontWeight: 700, color: C.muted, letterSpacing: '0.12em', textTransform: 'uppercase' }}>FolliSense</span>
+          </div>
+          <h1 style={{ fontFamily: playfair, fontSize: 22, fontWeight: 500, color: C.ink, margin: '0 0 2px' }}>Ask FolliSense</h1>
+          <p style={{ fontFamily: dm, fontSize: 12, color: C.muted, margin: 0 }}>Your personal scalp and hair health guide</p>
         </div>
 
-        {/* Messages area */}
-        <div className="flex-1 overflow-y-auto px-6 pb-4">
+        {/* Messages */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: '16px 20px 8px' }}>
           {messages.length === 0 ? (
-            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="pt-4">
-              <div className="card-elevated p-4 mb-6">
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-full bg-sage-light flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <Leaf size={16} className="text-primary" strokeWidth={1.8} />
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+              {/* Intro card */}
+              <div style={{
+                background: C.white, border: `1.5px solid ${C.mid}`,
+                borderRadius: 20, padding: '16px 18px', marginBottom: 20,
+                boxShadow: '0 2px 10px rgba(0,0,0,0.05)',
+              }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+                  <div style={{ width: 36, height: 36, borderRadius: '50%', background: C.gold10, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <Leaf size={16} color={C.goldDeep} strokeWidth={1.8} />
                   </div>
                   <div>
-                    <p className="text-sm text-foreground leading-relaxed">
-                      Hi! I'm here to help with your scalp and hair health questions. I'm not a doctor, but I'm grounded in clinical evidence and I know your profile.
+                    <p style={{ fontFamily: dm, fontSize: 13, color: C.ink, lineHeight: 1.6, margin: '0 0 6px' }}>
+                      Hi{userName ? ` ${userName}` : ''}! I'm here to help with your scalp and hair health questions. I'm not a doctor, but I'm grounded in clinical evidence and I know your profile.
                     </p>
                     {onboardingData.hairType && (
-                      <p className="text-xs text-muted-foreground mt-2">
-                        {onboardingData.hairType} hair · {onboardingData.protectiveStyles.slice(0, 2).join(', ') || 'No styles set'}{onboardingData.goals.length > 0 ? ` · Goal: ${onboardingData.goals[0].toLowerCase()}` : ''}
+                      <p style={{ fontFamily: dm, fontSize: 11, color: C.muted, margin: 0 }}>
+                        {onboardingData.hairType} hair
+                        {onboardingData.protectiveStyles?.length > 0 ? ` · ${onboardingData.protectiveStyles.slice(0, 2).join(', ')}` : ''}
+                        {onboardingData.goals?.length > 0 ? ` · Goal: ${onboardingData.goals[0].toLowerCase()}` : ''}
                       </p>
                     )}
                   </div>
                 </div>
               </div>
 
-              <p className="text-xs text-muted-foreground mb-3 font-medium">Try asking...</p>
-              <div className="space-y-2">
+              <p style={{ fontFamily: dm, fontSize: 11, fontWeight: 700, color: C.muted, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 10 }}>Try asking…</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {starterQuestions.map(q => (
-                  <button
-                    key={q}
-                    onClick={() => sendMessage(q)}
-                    className="w-full text-left card-elevated p-3.5 flex items-center gap-3 btn-press"
+                  <button key={q} onClick={() => sendMessage(q)} style={{
+                    width: '100%', textAlign: 'left',
+                    background: C.white, border: `1.5px solid ${C.mid}`,
+                    borderRadius: 16, padding: '13px 16px',
+                    display: 'flex', alignItems: 'center', gap: 12,
+                    cursor: 'pointer', fontFamily: dm,
+                    boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
+                    transition: 'border 0.15s',
+                  }}
+                    onMouseEnter={e => (e.currentTarget.style.border = `1.5px solid ${C.goldBorder}`)}
+                    onMouseLeave={e => (e.currentTarget.style.border = `1.5px solid ${C.mid}`)}
                   >
-                    <span className="text-sm text-foreground">{q}</span>
-                    <ArrowRight size={14} className="text-muted-foreground ml-auto flex-shrink-0" />
+                    <span style={{ fontFamily: dm, fontSize: 13, color: C.ink, flex: 1 }}>{q}</span>
+                    <ArrowRight size={14} color={C.muted} style={{ flexShrink: 0 }} />
                   </button>
                 ))}
               </div>
             </motion.div>
           ) : (
-            <div className="space-y-4 pt-2">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {messages.map((msg, idx) => (
-                <motion.div
-                  key={msg.id}
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.2 }}
-                >
+                <motion.div key={msg.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}>
                   {msg.role === 'user' ? (
-                    <div className="flex justify-end">
-                      <div className="bg-primary text-primary-foreground rounded-2xl rounded-br-md px-4 py-3 max-w-[85%]">
-                        <p className="text-sm">{msg.content}</p>
+                    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                      <div style={{
+                        background: C.ink, color: '#f5f5f5',
+                        borderRadius: '18px 18px 4px 18px',
+                        padding: '12px 16px', maxWidth: '85%',
+                        fontFamily: dm, fontSize: 13, lineHeight: 1.55,
+                      }}>
+                        {msg.content}
                       </div>
                     </div>
                   ) : (
-                    <div className="flex justify-start">
-                      <div className="card-elevated rounded-2xl rounded-bl-md px-4 py-3 max-w-[90%]">
-                        <div className="prose prose-sm text-foreground [&_p]:text-sm [&_p]:leading-relaxed [&_p]:mb-2 [&_li]:text-sm [&_strong]:text-foreground [&_h2]:text-base [&_h2]:font-semibold [&_h3]:text-sm [&_h3]:font-semibold [&_ul]:my-1 [&_ol]:my-1">
-                          <ReactMarkdown>{msg.content}</ReactMarkdown>
+                    <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
+                      <div style={{
+                        background: C.white, border: `1.5px solid ${C.mid}`,
+                        borderRadius: '18px 18px 18px 4px',
+                        padding: '12px 16px', maxWidth: '90%',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+                      }}>
+                        <div style={{ fontFamily: dm, fontSize: 13, color: C.ink, lineHeight: 1.65 }}>
+                          <ReactMarkdown
+                            components={{
+                              p: ({ children }) => <p style={{ margin: '0 0 8px', fontFamily: dm, fontSize: 13, color: C.ink, lineHeight: 1.65 }}>{children}</p>,
+                              strong: ({ children }) => <strong style={{ fontWeight: 600, color: C.ink }}>{children}</strong>,
+                              ul: ({ children }) => <ul style={{ margin: '4px 0 8px', paddingLeft: 18 }}>{children}</ul>,
+                              li: ({ children }) => <li style={{ fontFamily: dm, fontSize: 13, color: C.ink, marginBottom: 3 }}>{children}</li>,
+                            }}
+                          >
+                            {msg.content}
+                          </ReactMarkdown>
                         </div>
                       </div>
                     </div>
                   )}
 
+                  {/* Smart CTAs after last assistant message */}
                   {msg.role === 'assistant' && idx === messages.length - 1 && (
-                    <div className="mt-3 space-y-2">
+                    <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 8 }}>
                       {checkInSuggestion && (
-                        <div className="card-elevated p-3 border-l-4 border-l-primary">
-                          <p className="text-xs text-muted-foreground mb-2">Based on what you're describing, it might be worth doing a check-in.</p>
-                          <button
-                            onClick={() => navigate('/wash-day')}
-                            className="text-xs font-medium text-primary flex items-center gap-1"
-                          >
+                        <div style={{
+                          background: C.gold10, border: `1.5px solid ${C.goldBorder}`,
+                          borderLeft: `3px solid ${C.gold}`,
+                          borderRadius: 14, padding: '12px 14px',
+                        }}>
+                          <p style={{ fontFamily: dm, fontSize: 12, color: C.warm, margin: '0 0 6px', lineHeight: 1.5 }}>
+                            Based on what you're describing, it might be worth doing a check-in.
+                          </p>
+                          <button onClick={() => navigate('/wash-day')} style={{ fontFamily: dm, fontSize: 12, fontWeight: 700, color: C.goldDeep, background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', gap: 4 }}>
                             Start a check-in <ArrowRight size={12} />
                           </button>
                         </div>
                       )}
-
                       {learnLink.show && (
-                        <button
-                          onClick={() => navigate('/learn')}
-                          className="text-xs text-primary font-medium flex items-center gap-1"
-                        >
-                          Read more in Learn → {learnLink.topic}
+                        <button onClick={() => navigate('/learn')} style={{ fontFamily: dm, fontSize: 12, fontWeight: 700, color: C.goldDeep, background: 'none', border: 'none', cursor: 'pointer', padding: '4px 0', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 4 }}>
+                          Read more → {learnLink.topic}
                         </button>
-                      )}
-
-                      {/* Dynamic follow-up suggestion chips */}
-                      {msg.suggestions && msg.suggestions.length > 0 && (
-                        <div className="flex flex-wrap gap-2 pt-1">
-                          {msg.suggestions.slice(0, 3).map(q => (
-                            <button
-                              key={q}
-                              onClick={() => sendMessage(q)}
-                              className="px-3 py-2 rounded-xl border-2 border-primary/30 text-xs font-medium text-primary bg-card btn-press"
-                            >
-                              {q}
-                            </button>
-                          ))}
-                        </div>
                       )}
                     </div>
                   )}
                 </motion.div>
               ))}
 
+              {/* Typing indicator */}
               {isTyping && (
-                <motion.div
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="flex justify-start"
-                >
-                  <div className="card-elevated rounded-2xl rounded-bl-md px-4 py-3">
-                    <div className="flex gap-1.5">
-                      <motion.div animate={{ opacity: [0.3, 1, 0.3] }} transition={{ repeat: Infinity, duration: 1.2, delay: 0 }} className="w-2 h-2 rounded-full bg-muted-foreground" />
-                      <motion.div animate={{ opacity: [0.3, 1, 0.3] }} transition={{ repeat: Infinity, duration: 1.2, delay: 0.2 }} className="w-2 h-2 rounded-full bg-muted-foreground" />
-                      <motion.div animate={{ opacity: [0.3, 1, 0.3] }} transition={{ repeat: Infinity, duration: 1.2, delay: 0.4 }} className="w-2 h-2 rounded-full bg-muted-foreground" />
+                <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} style={{ display: 'flex', justifyContent: 'flex-start' }}>
+                  <div style={{
+                    background: C.white, border: `1.5px solid ${C.mid}`,
+                    borderRadius: '18px 18px 18px 4px', padding: '14px 18px',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+                  }}>
+                    <div style={{ display: 'flex', gap: 5, alignItems: 'center' }}>
+                      {[0, 0.2, 0.4].map((delay, i) => (
+                        <motion.div key={i}
+                          animate={{ opacity: [0.3, 1, 0.3] }}
+                          transition={{ repeat: Infinity, duration: 1.2, delay }}
+                          style={{ width: 7, height: 7, borderRadius: '50%', background: C.gold }}
+                        />
+                      ))}
                     </div>
                   </div>
                 </motion.div>
+              )}
+
+              {/* Error */}
+              {error && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '12px 14px', borderRadius: 14, background: 'rgba(176,80,64,0.08)', border: '1px solid rgba(176,80,64,0.2)' }}>
+                  <AlertCircle size={14} color="#B05040" style={{ flexShrink: 0 }} />
+                  <p style={{ fontFamily: dm, fontSize: 12, color: '#B05040', margin: 0 }}>{error}</p>
+                </div>
               )}
 
               <div ref={messagesEndRef} />
@@ -349,34 +345,41 @@ const ChatPage = () => {
         </div>
 
         {/* Input bar */}
-        <div className="px-6 pb-24 pt-2 bg-background">
-          <form onSubmit={handleSubmit} className="flex items-center gap-2">
-            <div className="flex-1 relative">
+        <div style={{ padding: '12px 20px 90px', background: C.bg, borderTop: `1px solid ${C.mid}` }}>
+          <form onSubmit={handleSubmit} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ flex: 1, position: 'relative' }}>
               <input
                 ref={inputRef}
                 type="text"
                 value={inputValue}
                 onChange={e => setInputValue(e.target.value)}
-                placeholder="Ask about your scalp or hair..."
-                className="w-full h-12 pl-4 pr-12 rounded-2xl border-2 border-border bg-card text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors"
+                placeholder="Ask about your scalp or hair…"
                 disabled={isTyping}
+                style={{
+                  width: '100%', height: 48, paddingLeft: 16, paddingRight: 48,
+                  borderRadius: 16, border: `1.5px solid ${C.mid}`,
+                  background: C.surface, fontFamily: dm, fontSize: 13, color: C.ink,
+                  outline: 'none', boxSizing: 'border-box',
+                  transition: 'border 0.15s',
+                }}
+                onFocus={e => (e.target.style.border = `1.5px solid ${C.goldBorder}`)}
+                onBlur={e => (e.target.style.border = `1.5px solid ${C.mid}`)}
               />
-              <button
-                type="button"
-                className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-muted-foreground"
-                aria-label="Voice input (coming soon)"
-              >
+              <button type="button" style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: C.muted, display: 'flex' }}>
                 <Mic size={18} strokeWidth={1.8} />
               </button>
             </div>
             <button
               type="submit"
               disabled={!inputValue.trim() || isTyping}
-              className={`w-12 h-12 rounded-2xl flex items-center justify-center btn-press transition-colors ${
-                inputValue.trim() && !isTyping
-                  ? 'bg-primary text-primary-foreground'
-                  : 'bg-border text-muted-foreground'
-              }`}
+              style={{
+                width: 48, height: 48, borderRadius: 16, border: 'none',
+                background: inputValue.trim() && !isTyping ? C.ink : C.mid,
+                color: inputValue.trim() && !isTyping ? '#f5f5f5' : C.muted,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                cursor: inputValue.trim() && !isTyping ? 'pointer' : 'not-allowed',
+                transition: 'background 0.2s', flexShrink: 0,
+              }}
             >
               <Send size={18} strokeWidth={1.8} />
             </button>

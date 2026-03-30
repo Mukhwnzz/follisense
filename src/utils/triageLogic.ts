@@ -7,7 +7,7 @@ const MILD_VALUES = ['Mild', 'A little', 'Some flaking', 'Slight concern', 'A bi
 const MODERATE_VALUES = ['Moderate', 'Yes, noticeably', 'Noticeable change', 'More than usual', 'Looks a bit thinner', 'Noticeably dry, brittle, or breaking more than usual'];
 const SEVERE_VALUES = ['Severe', 'Yes, painful', 'Very concerned', 'Alarming amount', 'Heavy flaking', "Concerned about my hair's condition", 'Significant'];
 
-const SYMPTOM_KEYS: (keyof CheckInData)[] = ['itch', 'tenderness', 'hairline', 'flaking', 'shedding'];
+const SYMPTOM_KEYS: (keyof CheckInData)[] = ['itch', 'tenderness', 'hairline', 'flaking', 'shedding', 'bumps', 'dryness'];
 
 const getSeverityLevel = (value: string | undefined): number => {
   if (!value || NONE_VALUES.includes(value)) return 0;

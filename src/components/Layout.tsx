@@ -27,7 +27,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
 
   const tabs = stylistMode ? stylistTabs : consumerTabs;
 
-  const isAuthPage = ['/', '/login', '/signup', '/forgot-password', '/stylist/login', '/stylist/signup'].includes(location.pathname);
+  const isAuthPage = ['/', '/login', '/signup', '/forgot-password', '/stylist/login', '/stylist/signup', '/onboarding'].includes(location.pathname);
   const isWelcomePage = location.pathname === '/';
 
   return (

@@ -12,6 +12,9 @@ export interface OnboardingData {
   chemicalProcessing: string;
   lastChemicalTreatment: string;
   chemicalProcessingMultiple: string[];
+  chemicalBrand: string;
+  chemicalBrandOther: string;
+  chemicalFrequency: string;
   protectiveStyles: string[];
   barberFrequency: string;
   locRetwistFrequency: string;
@@ -52,13 +55,15 @@ export interface CheckInData {
   hairline: string;
   flaking?: string;
   shedding?: string;
+  bumps?: string;
+  dryness?: string;
   hairFeel?: string;
   hairBreakage?: string;
   hairAppearance?: string;
   hairConcern?: string;
   newProducts?: string;
   newProductDetails?: string;
-  type: 'mid-cycle' | 'wash-day';
+  type: 'mid-cycle' | 'wash-day' | 'baseline';
   date: string;
 }
 
@@ -204,7 +209,8 @@ interface AppContextType {
 
 const defaultOnboarding: OnboardingData = {
   gender: '', hairType: '', chemicalProcessing: '', lastChemicalTreatment: '',
-  chemicalProcessingMultiple: [], protectiveStyles: [], barberFrequency: '',
+  chemicalProcessingMultiple: [], chemicalBrand: '', chemicalBrandOther: '', chemicalFrequency: '',
+  protectiveStyles: [], barberFrequency: '',
   locRetwistFrequency: '', maleStyleFrequency: '', otherStyle: '',
   protectiveStyleFrequency: '', isWornOutOnly: false, cycleLength: '',
   cycleLengthMin: '', cycleLengthMax: '', washFrequency: '',
