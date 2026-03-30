@@ -12,10 +12,10 @@ const C = {
   goldDeep:   '#B8893E',
   gold10:     'rgba(212,168,102,0.10)',
   goldBorder: 'rgba(212,168,102,0.22)',
-  mid:        '#EBEBEB',
+  mid:        '#E8DED1',
   muted:      '#999999',
-  surface:    '#F8F8F8',
-  white:      '#FFFFFF',
+  surface:    '#F5F0EB',
+  white:      '#FAF8F5',
 };
 
 const ScalpCheckIn = () => {

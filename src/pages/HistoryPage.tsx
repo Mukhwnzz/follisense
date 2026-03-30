@@ -8,8 +8,8 @@ const playfair = "'Playfair Display', serif";
 
 // ─── Pure white + gold palette ────────────────────────────────────────────────
 const C = {
-  bg:         '#FFFFFF',
-  surface:    '#F8F8F8',
+  bg:         '#FAF8F5',
+  surface:    '#F5F0EB',
   ink:        '#1C1C1C',
   gold:       '#D4A866',
   goldDeep:   '#B8893E',

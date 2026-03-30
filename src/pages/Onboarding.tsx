@@ -513,12 +513,12 @@ const Onboarding = () => {
       alignItems: 'center', justifyContent: 'center', padding: '24px 16px',
     }}>
       <style>{`
-        .selection-card { border: 1.5px solid #E8DDD2 !important; border-radius: 14px; padding: 14px; background: white; cursor: pointer; transition: all 0.15s ease; }
+        .selection-card { border: 1.5px solid #E8DED1 !important; border-radius: 14px; padding: 14px; background: #F5F0EB; cursor: pointer; transition: all 0.15s ease; box-shadow: 0 2px 8px rgba(45,45,45,0.04); }
         .selection-card:hover { border-color: #d4c5b5 !important; }
-        .selection-card.selected { border: 1.5px solid #7fa896 !important; background: rgba(127,168,150,0.06); }
-        .pill-option { border: 1.5px solid #E8DDD2 !important; border-radius: 100px; padding: 10px 18px; background: white; cursor: pointer; font-size: 13px; font-weight: 500; transition: all 0.15s ease; }
+        .selection-card.selected { border: 1.5px solid #7C9A8E !important; background: rgba(124,154,142,0.08); }
+        .pill-option { border: 1.5px solid #E8DED1 !important; border-radius: 100px; padding: 10px 18px; background: #F5F0EB; cursor: pointer; font-size: 13px; font-weight: 500; transition: all 0.15s ease; }
         .pill-option:hover { border-color: #d4c5b5 !important; }
-        .pill-option.selected { border: 1.5px solid #7fa896 !important; background: rgba(127,168,150,0.06); color: #5a8f74; }
+        .pill-option.selected { border: 1.5px solid #7C9A8E !important; background: rgba(124,154,142,0.08); color: #5a8f74; }
       `}</style>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -527,8 +527,8 @@ const Onboarding = () => {
         style={{ width: '100%', maxWidth: '560px' }}
       >
         <div style={{
-          backgroundColor: '#FFFFFF', borderRadius: '24px',
-          boxShadow: '0 8px 40px rgba(0,0,0,0.10), 0 2px 8px rgba(0,0,0,0.06)',
+          backgroundColor: '#FAF8F5', borderRadius: '24px',
+          boxShadow: '0 8px 40px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06)',
           padding: '24px 28px 28px', display: 'flex', flexDirection: 'column',
           maxHeight: 'calc(100vh - 48px)', overflow: 'hidden',
         }}>

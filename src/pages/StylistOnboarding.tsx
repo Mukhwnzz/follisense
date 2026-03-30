@@ -61,12 +61,12 @@ const StylistOnboarding = () => {
   };
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#FFFFFF', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px 16px' }}>
+    <div style={{ minHeight: '100vh', backgroundColor: '#FAF8F5', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px 16px' }}>
       <style>{`
-        .sel-card { border: 1.5px solid #E8DDD2 !important; border-radius: 12px; padding: 12px; width: 100%; text-align: left; background: #fff; cursor: pointer; transition: border-color 0.15s; }
-        .sel-card.selected { border: 1.5px solid #7fa896 !important; background: rgba(127,168,150,0.04); }
-        .pill-opt { border: 1.5px solid #E8DDD2 !important; border-radius: 100px; padding: 8px 16px; background: #fff; cursor: pointer; font-size: 0.875rem; transition: border-color 0.15s; }
-        .pill-opt.selected { border: 1.5px solid #7fa896 !important; background: rgba(127,168,150,0.04); }
+        .sel-card { border: 1.5px solid #E8DED1 !important; border-radius: 12px; padding: 12px; width: 100%; text-align: left; background: #F5F0EB; cursor: pointer; transition: border-color 0.15s; box-shadow: 0 2px 8px rgba(45,45,45,0.04); }
+        .sel-card.selected { border: 1.5px solid #7C9A8E !important; background: rgba(124,154,142,0.08); }
+        .pill-opt { border: 1.5px solid #E8DED1 !important; border-radius: 100px; padding: 8px 16px; background: #F5F0EB; cursor: pointer; font-size: 0.875rem; transition: border-color 0.15s; }
+        .pill-opt.selected { border: 1.5px solid #7C9A8E !important; background: rgba(124,154,142,0.08); }
       `}</style>
 
       <motion.div
@@ -75,7 +75,7 @@ const StylistOnboarding = () => {
         transition={{ duration: 0.4 }}
         style={{ width: '100%', maxWidth: '560px' }}
       >
-        <div style={{ backgroundColor: '#FFFFFF', borderRadius: '24px', boxShadow: '0 8px 40px rgba(0,0,0,0.10), 0 2px 8px rgba(0,0,0,0.06)', padding: '24px 36px 28px', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ backgroundColor: '#FAF8F5', borderRadius: '24px', boxShadow: '0 8px 40px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06)', padding: '24px 36px 28px', display: 'flex', flexDirection: 'column' }}>
 
           {/* Header with progress dots */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>

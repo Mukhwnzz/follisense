@@ -14,9 +14,9 @@ const C = {
   goldDeep:   '#B8893E',
   gold10:     'rgba(212,168,102,0.10)',
   goldBorder: 'rgba(212,168,102,0.22)',
-  mid:        '#EBEBEB',
+  mid:        '#E8DED1',
   muted:      '#999999',
-  white:      '#FFFFFF',
+  white:      '#FAF8F5',
 };
 
 interface QuestionDef {
