@@ -14,8 +14,8 @@ const C = {
   goldBorder: 'rgba(212,168,102,0.22)',
   mid:        '#EBEBEB',
   muted:      '#999999',
-  surface:    '#F8F8F8',
-  white:      '#FFFFFF',
+  surface:    '#F5F0EB',
+  white:      '#FAF8F5',
 };
 
 const ScalpCheckIn = () => {
