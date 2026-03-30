@@ -17,10 +17,10 @@ const hasTelogenTriggers = (hp: HealthProfileData): string[] => {
 
 const getGoalMessage = (goals: string[], risk: RiskLevel): string | null => {
   if (goals.length === 0) return null;
-  const goal = goals[0];
-  if (risk === 'green') return `Your goal: ${goal}. Based on this check-in, you're on track.`;
-  if (risk === 'amber') return `Your goal: ${goal}. We'll watch how this develops.`;
-  return `Your goal: ${goal}. Seeking advice now is the best way to protect your progress.`;
+  const primaryConcern = goals[0];
+  if (risk === 'green') return `You told us ${primaryConcern.toLowerCase()} is on your mind. Based on what you've shared, there are no red flags right now. We'll keep tracking this for you.`;
+  if (risk === 'amber') return `You flagged ${primaryConcern.toLowerCase()} as a priority. We've noticed some patterns developing. Here's what to do next.`;
+  return `You flagged ${primaryConcern.toLowerCase()} as a priority. Your symptoms suggest this needs attention. Here's what to do next.`;
 };
 
 const RiskOutput = () => {
@@ -29,7 +29,6 @@ const RiskOutput = () => {
   const { currentCheckIn, riskOverride, setRiskOverride, healthProfile, onboardingData, checkInHistory } = useApp();
   const isMale = onboardingData.gender === 'man';
 
-  // Use historical triage logic
   const paramRisk = searchParams.get('risk') as RiskLevel | null;
   const historicalRisk = currentCheckIn ? computeHistoricalRisk(currentCheckIn, checkInHistory) : 'amber';
   const risk: RiskLevel = paramRisk || riskOverride || historicalRisk;
@@ -81,8 +80,8 @@ const RiskOutput = () => {
           {/* GREEN */}
           {risk === 'green' && (
             <div>
-              <h2 className="text-2xl font-semibold text-center mb-2">Your scalp looks healthy</h2>
-              <p className="text-muted-foreground text-center mb-6">No concerning patterns detected</p>
+              <h2 className="text-2xl font-semibold text-center mb-2">Looking good</h2>
+              <p className="text-muted-foreground text-center mb-6">Based on what you've shared, there are no red flags right now. Your scalp is looking good.</p>
               <div className="card-elevated p-5 mb-4">
                 <h3 className="font-semibold mb-2">Keep it up</h3>
                 <p className="text-sm text-muted-foreground">Your current routine is working well. We'll check in again at your next scheduled time.</p>
