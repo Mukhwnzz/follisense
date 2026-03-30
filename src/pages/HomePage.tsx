@@ -25,8 +25,8 @@ const playfair = "'Playfair Display', serif";
 // ─── Pure white + gold palette ────────────────────────────────────────────────
 const C = {
   // backgrounds
-  bg:       '#FFFFFF',
-  surface:  '#F8F8F8',
+  bg:       '#FAF8F5',
+  surface:  '#F5F0EB',
   // primary dark — near black, warm undertone
   ink:      '#1C1C1C',
   // gold accent
