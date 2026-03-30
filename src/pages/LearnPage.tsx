@@ -35,25 +35,20 @@ const categoryColor: Record<string, string> = {
   'All':            '#B8893E',
 };
 
-const HERO_IMG = 'https://i.pinimg.com/1200x/21/df/fe/21dffea6ca5d2c69edb5c8b926e41b50.jpg';
+const HERO_IMG = 'https://i.pinimg.com/736x/57/f7/eb/57f7ebc4573d50ea478355d750619da1.jpg';
 
 // ─── Article image sets — replace placeholders with real URLs ─────────────────
 const articleImageSets: Record<string, string[]> = {
   'scalp-buildup': [
-    'scalp-health-image-url-1',
-    'scalp-health-image-url-2',
-    'scalp-health-image-url-3',
+    'https://i.pinimg.com/1200x/4c/20/d8/4c20d89b72a9e6157317a6bad6b80ee5.jpg',
+    'https://i.pinimg.com/1200x/c8/41/7f/c8417fe3ab9de09201ca39f0f02fac99.jpg',
   ],
   'hair-porosity': [
-    'second-article-image-url-1',
-    'second-article-image-url-2',
+    'https://i.pinimg.com/1200x/a5/3a/1a/a53a1adc9f8e23b9eb53964178b39cb2.jpg',
   ],
   'scalp-massage': [
-    'third-article-image-url-1',
-    'third-article-image-url-2',
-    'third-article-image-url-3',
+    'https://i.pinimg.com/1200x/eb/54/8b/eb548b3f5bc8893aacf4774b6f57c6d1.jpg',
   ],
-  // 'your-article-id': ['url-a', 'url-b'],
 };
 
 const sessionSeed = Math.random();
@@ -61,9 +56,7 @@ const getArticleImage = (id: string): string | null => {
   const set = articleImageSets[id];
   if (!set || set.length === 0) return null;
   const idx = Math.floor(sessionSeed * set.length) % set.length;
-  const url = set[idx];
-  const isPlaceholder = url.includes('-url-') || url.startsWith('scalp-') || url.startsWith('second-') || url.startsWith('third-');
-  return isPlaceholder ? null : url;
+  return set[idx]; // just return it directly, no filtering
 };
 
 const allCategories = ['All', ...categories, 'Know the signs'];
