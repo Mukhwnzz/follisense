@@ -43,10 +43,10 @@ const C = {
 
 // ─── Shared card style ────────────────────────────────────────────────────────
 const cardBase: React.CSSProperties = {
-  background: C.white,
-  border: `1.5px solid ${C.mid}`,
+  background: '#F5F0EB',
+  border: `1.5px solid #E8DED1`,
   borderRadius: 18,
-  boxShadow: '0 2px 12px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04)',
+  boxShadow: '0 4px 16px rgba(0,0,0,0.06), 0 1px 4px rgba(0,0,0,0.03)',
   fontFamily: dm,
 };
 
