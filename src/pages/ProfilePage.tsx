@@ -12,23 +12,76 @@ import { toast } from '@/hooks/use-toast';
 import { Switch } from '@/components/ui/switch';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
-const saveConsumerProfile = async (profileData: any) => {
+const mapStyles = (styles: string[] = []) => {
+  const map: Record<string, string> = {
+    'Braids': 'braids',
+    'Locs': 'locs',
+    'Twists': 'twists',
+    'Twist out': 'twist_out',
+    'Wig': 'wig',
+    'Weave': 'weave',
+    'Silk press': 'silk_press',
+    'Blow out': 'blow_out',
+  };
+
+  return styles.map(s => map[s] || s.toLowerCase());
+};
+
+const saveConsumerProfile = async (data: any) => {
   try {
     const { data: { user } } = await supabase.auth.getUser();
-    const userId = user?.id;
-    
-    if (!userId) throw new Error('User not authenticated');
+
+    if (!user) throw new Error('User not authenticated');
+
+    const payload = {
+      user_id: user.id,
+
+      gender:
+        data.gender === 'woman' ? 'female' :
+        data.gender === 'man' ? 'male' :
+        'prefer_not_to_say',
+
+      hair_texture:
+        data.hairType?.startsWith('4')
+          ? 'coily'
+          : data.hairType?.startsWith('3')
+          ? 'curly'
+          : 'not_sure',
+
+      current_styles: mapStyles(data.current_styles || []), 
+
+      protective_style_frequency: data.protectiveStyleFrequency || null,
+      style_duration: data.styleDuration || null,
+
+      between_wash_care: data.betweenWashCare || [],
+      between_wash_other: data.otherBetweenWashCare || null,
+
+      top_concerns: data.goals || [],
+
+      chemical_processing:
+        data.chemicalProcessing === 'No, fully natural'
+          ? 'no_fully_natural'
+          : data.chemicalProcessing === 'Yes'
+          ? 'yes_currently'
+          : data.chemicalProcessing === 'Previously'
+          ? 'previously_growing_out'
+          : 'not_sure',
+    };
 
     const { error } = await supabase
       .from('consumer_profiles')
-      .upsert([{ user_id: userId, ...profileData }]);
+      .upsert(payload, { onConflict: 'user_id' });
 
     if (error) throw error;
 
-    toast({ title: 'Profile saved', description: 'Your data has been saved successfully.' });
+    toast({ title: 'Profile saved' });
+
   } catch (err) {
     console.error(err);
-    toast({ title: 'Error saving profile', description: 'Try again later.', variant: 'destructive' });
+    toast({
+      title: 'Error saving profile',
+      variant: 'destructive',
+    });
   }
 };
 
@@ -163,11 +216,15 @@ const ProfilePage = () => {
 
     const { error } = await supabase
     .from('consumer_profiles')
-    .upsert({ user_id: userId, baseline_photos: updatedPhotos })
-    .eq('user_id', userId);
+    .upsert(
+    [{ user_id: userId, baseline_photos: updatedPhotos }],
+    { onConflict: 'user_id' }
+    );
 
-  if (error) console.error('Failed to save updated baseline photo:', error);
-  };
+    if (error) {
+      console.error('Failed to save updated baseline photo:', error);
+  }
+   }
   const handleAddBaseline = async() => {
     const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
     const newPhotos = [
@@ -182,9 +239,16 @@ const ProfilePage = () => {
 
     const userId = user?.id;
 
-    await supabase.from('consumer_profiles')
-      .upsert({ user_id: userId, baseline_photos: newPhotos })
-      .eq('user_id', userId);
+   const { error } = await supabase
+  .from('consumer_profiles')
+  .upsert(
+    [{ user_id: userId, baseline_photos: newPhotos }],
+    { onConflict: 'user_id' }
+  );
+
+if (error) {
+  console.error('Save failed:', error);
+}
   };
 
   const toggleEditGoal = (g: string) => {
@@ -194,11 +258,14 @@ const ProfilePage = () => {
       return [...prev, g];
     });
   };
-  const saveGoals =async () => {
-    setOnboardingData({ ...onboardingData, goals: editGoals });
-    setShowGoalEditor(false);
-    await saveConsumerProfile({ goals: editGoals }); 
-  };
+  const saveGoals = async () => {
+  const updated = { ...onboardingData, goals: editGoals };
+
+  setOnboardingData(updated);
+  setShowGoalEditor(false);
+
+  await saveConsumerProfile(updated);
+};
 
   const toggleMenstrualTracking = () => {
     const newVal = onboardingData.menstrualTracking === "Yes, I'd like to track" ? 'No thanks' : "Yes, I'd like to track";
@@ -351,17 +418,15 @@ const ProfilePage = () => {
                  
                       // Update password with Supabase
 
-                      const { error } = await supabase.auth.updateUser({ password: newPassword });
-                      if (error) throw error;
-
-                    toast({ title: 'Password updated successfully' }); 
+          const { error } = await supabase.auth.updateUser({ password: newPassword });
+            if (error) throw error;
+              toast({ title: 'Password updated successfully' }); 
 
                     // Clear form and close editor
-
-                    setCurrentPassword('');
-                    setNewPassword('');
-                    setConfirmPassword('');
-                    setShowChangePassword(false);
+                  setCurrentPassword('');
+                  setNewPassword('');
+                  setConfirmPassword('');
+                  setShowChangePassword(false);
                   } catch (err) {
                     console.error('Failed to update password:', err);
                     toast({ title: 'Error updating password', description: 'Try again later.', variant: 'destructive' });
@@ -382,7 +447,7 @@ const ProfilePage = () => {
         <ProfileSection title="Your Hair" icon={Scissors}>
           <div className="divide-y divide-border">
             <InfoRow label="Hair type" value={hairTypeLabels[onboardingData.hairType] || onboardingData.hairType || 'Not set'} />
-            <InfoRow label="How you wear your hair" value={onboardingData.protectiveStyles?.length > 0 ? onboardingData.protectiveStyles.join(', ') : 'Not set'} />
+            <InfoRow label="How you wear your hair" value={onboardingData.current_styles?.length > 0 ? onboardingData.current_styles.join(', ') : 'Not set'} />
             {!isMale && onboardingData.protectiveStyleFrequency && (
               <InfoRow label="How often in protective styles" value={onboardingData.protectiveStyleFrequency} />
             )}
@@ -467,7 +532,6 @@ const ProfilePage = () => {
                     selectedProducts={onboardingData.scalpProducts.filter(p => p !== 'None')}
                     onProductsChange={(prods) =>{
                        setOnboardingData({ ...onboardingData, scalpProducts: prods });
-                       saveConsumerProfile({ scalpProducts: prods }); 
                   }}
                   />
                 </div>
@@ -479,19 +543,8 @@ const ProfilePage = () => {
                     onProductsChange={ async (prods) => {
                        const updatedData= { ...onboardingData, hairProducts: prods };
                         setOnboardingData(updatedData);
-                       const {
-                           data: { user },
-                        } = await supabase.auth.getUser();
-
-                        const userId = user?.id;
-
-                        const { error } = await supabase
-                          .from('consumer_profiles')
-                          .upsert({ user_id: userId, hair_products: prods })
-                          .eq('user_id', userId)
-
-                          if (error) console.error('Failed to save hair products:', error);
-                      }}
+                      
+                    }}
                   />
                 </div>
               </div>
