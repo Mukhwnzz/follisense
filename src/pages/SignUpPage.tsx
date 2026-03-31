@@ -44,7 +44,7 @@ const SignUpPage = () => {
     setLoading(true);
 
     try {
-      //  Create Supabase Auth account
+      // 1️⃣ Create Supabase Auth account
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,

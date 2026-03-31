@@ -24,23 +24,8 @@ const mapStyles = (styles: string[] = []) => {
     'Blow out': 'blow_out',
   };
 
-<<<<<<< HEAD
   return styles.map(s => map[s] || s.toLowerCase());
-=======
-const C = {
-  bg:         '#FAF8F5',
-  surface:    '#F5F0EB',
-  ink:        '#1C1C1C',
-  gold:       '#D4A866',
-  goldDeep:   '#B8893E',
-  gold10:     'rgba(212,168,102,0.10)',
-  goldBorder: 'rgba(212,168,102,0.22)',
-  mid:        '#EBEBEB',
-  muted:      '#999999',
-  warm:       '#666666',
-  white:      '#FFFFFF',
->>>>>>> 6f1bdebc841db6c4b06f2c23ddd895e01731d94f
-};
+  styles.map(s => map[s] || s.toLowerCase());
 
 const saveConsumerProfile = async (data: any) => {
   try {
@@ -63,7 +48,11 @@ const saveConsumerProfile = async (data: any) => {
           ? 'curly'
           : 'not_sure',
 
+<<<<<<< HEAD
       current_styles: mapStyles(data.current_styles ||  []), 
+=======
+      current_styles: mapStyles(data.current_styles || []), 
+>>>>>>> new-feature
 
       protective_style_frequency: data.protectiveStyleFrequency || null,
       style_duration: data.styleDuration || null,
