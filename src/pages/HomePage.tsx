@@ -25,8 +25,8 @@ const playfair = "'Playfair Display', serif";
 // ─── Pure white + gold palette ────────────────────────────────────────────────
 const C = {
   // backgrounds
-  bg:       '#FFFFFF',
-  surface:  '#F8F8F8',
+  bg:       '#FAF8F5',
+  surface:  '#F5F0EB',
   // primary dark — near black, warm undertone
   ink:      '#1C1C1C',
   // gold accent
@@ -43,10 +43,10 @@ const C = {
 
 // ─── Shared card style ────────────────────────────────────────────────────────
 const cardBase: React.CSSProperties = {
-  background: C.white,
-  border: `1.5px solid ${C.mid}`,
+  background: '#F5F0EB',
+  border: `1.5px solid #E8DED1`,
   borderRadius: 18,
-  boxShadow: '0 2px 12px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04)',
+  boxShadow: '0 4px 16px rgba(0,0,0,0.06), 0 1px 4px rgba(0,0,0,0.03)',
   fontFamily: dm,
 };
 
