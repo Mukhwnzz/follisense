@@ -461,7 +461,7 @@ if (error) {
         <ProfileSection title="Your Hair" icon={Scissors}>
           <div className="divide-y divide-border">
             <InfoRow label="Hair type" value={hairTypeLabels[onboardingData.hairType] || onboardingData.hairType || 'Not set'} />
-            <InfoRow label="How you wear your hair" value={onboardingData.current_styles?.length > 0 ? onboardingData.current_styles.join(', ') : 'Not set'} />
+            <InfoRow label="How you wear your hair" value={onboardingData.protectiveStyles?.length > 0 ? onboardingData.protectiveStyles.join(', ') : 'Not set'} />
             {!isMale && onboardingData.protectiveStyleFrequency && (
               <InfoRow label="How often in protective styles" value={onboardingData.protectiveStyleFrequency} />
             )}
