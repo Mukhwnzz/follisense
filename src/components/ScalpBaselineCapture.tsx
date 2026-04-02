@@ -126,7 +126,7 @@ const ScalpBaselineCapture = ({ onComplete, onBack, gender = 'woman' }: ScalpBas
       </p>
       <h2 className="text-lg font-semibold text-foreground mb-1">{step.title}</h2>
       <p className="text-sm text-muted-foreground mb-5 leading-relaxed">
-        {currentStep === 2
+        {currentStep === 3
           ? "Show the back of your head and your nape. This one's tricky on your own."
           : step.instruction}
       </p>
