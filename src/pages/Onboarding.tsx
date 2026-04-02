@@ -331,7 +331,7 @@ const Onboarding = () => {
       case 6: return consentChecked;
       case 7: return false;
       case 8: {
-        if (symptomPhase === 'ask') return true;
+        if (symptomPhase === 'transition' || symptomPhase === 'thanks') return false;
         if (symptomPhase === 'symptoms') return !!symptomResponses[onboardingSymptoms[symptomIndex].key];
         if (symptomPhase === 'result') return true;
         return false;
