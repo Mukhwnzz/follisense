@@ -33,14 +33,14 @@ const getScalpSteps = (gender: string): ScalpStep[] => {
         referenceImage: scalpSideMaleB,
       },
       {
-        title: 'Back and nape',
-        instruction: 'Show the back of your head and your nape. Use a mirror or ask someone to help.',
-        referenceImage: scalpBackMale,
-      },
-      {
         title: 'Top of head',
         instruction: 'Tilt your head forward. Hold your phone above and point down at your crown.',
         referenceImage: scalpTopMale,
+      },
+      {
+        title: 'Back and nape',
+        instruction: 'Show the back of your head and your nape. Use a mirror or ask someone to help.',
+        referenceImage: scalpBackMale,
       },
     ];
   }
@@ -57,14 +57,14 @@ const getScalpSteps = (gender: string): ScalpStep[] => {
       referenceImage: scalpSideFemale,
     },
     {
-      title: 'Back and nape',
-      instruction: 'Show the back of your head and your nape. Use a mirror or ask someone to help.',
-      referenceImage: scalpBackFemale,
-    },
-    {
       title: 'Top of head',
       instruction: 'Tilt your head forward. Hold your phone above and point down at your crown.',
       referenceImage: scalpTopFemale,
+    },
+    {
+      title: 'Back and nape',
+      instruction: 'Show the back of your head and your nape. Use a mirror or ask someone to help.',
+      referenceImage: scalpBackFemale,
     },
   ];
 };
@@ -126,7 +126,7 @@ const ScalpBaselineCapture = ({ onComplete, onBack, gender = 'woman' }: ScalpBas
       </p>
       <h2 className="text-lg font-semibold text-foreground mb-1">{step.title}</h2>
       <p className="text-sm text-muted-foreground mb-5 leading-relaxed">
-        {currentStep === 2
+        {currentStep === 3
           ? "Show the back of your head and your nape. This one's tricky on your own."
           : step.instruction}
       </p>
@@ -156,7 +156,7 @@ const ScalpBaselineCapture = ({ onComplete, onBack, gender = 'woman' }: ScalpBas
             </button>
           </div>
 
-          {currentStep === 2 && (
+          {currentStep === 3 && (
             <div className="mt-4 text-center">
               <button
                 onClick={handleSkipStep}
@@ -165,7 +165,7 @@ const ScalpBaselineCapture = ({ onComplete, onBack, gender = 'woman' }: ScalpBas
                 Skip this one for now
               </button>
               <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">
-                You can add this later, or ask someone to help next time you're at the salon.
+                This one's tricky on your own. You can add it later, or ask someone to help next time you're at the salon.
               </p>
             </div>
           )}

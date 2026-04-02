@@ -14,9 +14,9 @@ const C = {
   goldDeep:   '#B8893E',
   gold10:     'rgba(212,168,102,0.10)',
   goldBorder: 'rgba(212,168,102,0.22)',
-  mid:        '#EBEBEB',
+  mid:        '#E8DED1',
   muted:      '#999999',
-  white:      '#FFFFFF',
+  white:      '#FAF8F5',
 };
 
 interface QuestionDef {
@@ -26,10 +26,10 @@ interface QuestionDef {
 
 const baseQuestions: QuestionDef[] = [
   { key: 'itch', q: "How's the itching been since your last check-in?", qMale: 'Any scalp itching since your last check-in?', options: ['None', 'Mild', 'Moderate', 'Severe'] },
-  { key: 'tenderness', q: 'Any scalp soreness or tenderness?', options: ['None', 'A little', 'Yes, noticeably', 'Yes, painful'] },
-  { key: 'irritation', q: 'Any bumps or irritation?', qMale: 'Any razor bumps, ingrown hairs, or irritation?', options: ['None', 'A few bumps', 'Moderate — several areas', 'Significant — widespread'], maleOptions: ['None', 'Minor razor bumps', 'Ingrown hairs', 'Folliculitis — clusters of bumps'] },
-  { key: 'hairline', q: 'How are your edges looking?', qMale: 'How does your hairline look?', options: ['No change', 'Looks a bit different', 'Noticeable change', "I'm concerned"], maleOptions: ['No change', 'Slight recession at temples', 'Noticeable thinning', "I'm concerned"] },
-  { key: 'hairConcern', q: 'Any unusual breakage or dryness since last time?', qMale: 'Any unusual shedding, thinning, or dryness?', options: ['No, hair feels normal', 'A little more than usual', 'Yes, noticeably more', "Yes, I'm concerned"] },
+  { key: 'tenderness', q: 'Any scalp soreness or tenderness since your last check-in?', options: ['None', 'A little', 'Yes, noticeably', 'Yes, painful'] },
+  { key: 'irritation', q: 'Any bumps or irritation since your last check-in?', qMale: 'Any razor bumps, ingrown hairs, or irritation since your last check-in?', options: ['None', 'A few bumps', 'Moderate — several areas', 'Significant — widespread'], maleOptions: ['None', 'Minor razor bumps', 'Ingrown hairs', 'Folliculitis — clusters of bumps'] },
+  { key: 'hairline', q: 'How are your edges looking since your last check-in?', qMale: 'How does your hairline look since your last check-in?', options: ['No change', 'Looks a bit different', 'Noticeable change', "I'm concerned"], maleOptions: ['No change', 'Slight recession at temples', 'Noticeable thinning', "I'm concerned"] },
+  { key: 'hairConcern', q: 'Any unusual breakage or dryness since your last check-in?', qMale: 'Any unusual shedding, thinning, or dryness since your last check-in?', options: ['No, hair feels normal', 'A little more than usual', 'Yes, noticeably more', "Yes, I'm concerned"] },
 ];
 
 const getAcknowledgment = (i: number) => {
@@ -43,7 +43,7 @@ const MidCycleCheckIn = () => {
   const navigate = useNavigate();
   const { onboardingData, setCurrentCheckIn } = useApp();
   const [answers, setAnswers]               = useState<Record<string, string>>({});
-  const [currentStep, setCurrentStep]       = useState(0);
+  const [currentStep, setCurrentStep]       = useState(-1); // -1 = intro/skip screen
   const [showConfirm, setShowConfirm]       = useState(false);
   const [acknowledgment, setAcknowledgment] = useState<string | null>(null);
 
@@ -65,9 +65,10 @@ const MidCycleCheckIn = () => {
   const getOptions  = (q: QuestionDef) => (isMale && q.maleOptions) ? q.maleOptions : q.options;
   const isLastStep  = currentStep === questions.length - 1;
   const allAnswered = questions.every(q => answers[q.key]);
-  const currentQ    = questions[currentStep];
+  const currentQ    = currentStep >= 0 ? questions[currentStep] : null;
 
   const selectAnswer = (opt: string, optIndex: number) => {
+    if (!currentQ) return;
     setAnswers(prev => ({ ...prev, [currentQ.key]: opt }));
     setAcknowledgment(getAcknowledgment(optIndex));
   };
@@ -83,6 +84,11 @@ const MidCycleCheckIn = () => {
     navigate('/results');
   };
 
+  const handleSkip = () => {
+    // Note the skip and go back to dashboard
+    navigate('/home');
+  };
+
   return (
     <>
       <style>{`
@@ -90,11 +96,9 @@ const MidCycleCheckIn = () => {
         html, body, #root { background: ${C.bg} !important; margin: 0; padding: 0; }
       `}</style>
 
-      {/* Outer bg — just 16px so rounded top is visible, then white fills the rest */}
       <div style={{ background: C.bg, minHeight: '100vh' }}>
         <div style={{ height: 16 }} />
 
-        {/* Card — no maxWidth, no margin auto, genuinely full width */}
         <div style={{
           background: C.white,
           borderRadius: '28px 28px 0 0',
@@ -107,15 +111,17 @@ const MidCycleCheckIn = () => {
 
           {/* Top bar */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28 }}>
-            <button onClick={() => { if (currentStep > 0) setCurrentStep(p => p - 1); else setShowConfirm(true); }}
+            <button onClick={() => { if (currentStep > 0) setCurrentStep(p => p - 1); else if (currentStep === 0) setCurrentStep(-1); else setShowConfirm(true); }}
               style={{ width: 36, height: 36, borderRadius: '50%', background: C.bg, border: `1.5px solid ${C.mid}`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
               <ArrowLeft size={16} color={C.ink} strokeWidth={1.8} />
             </button>
-            <div style={{ display: 'flex', gap: 6 }}>
-              {questions.map((_, i) => (
-                <div key={i} style={{ width: 28, height: 4, borderRadius: 4, background: i <= currentStep ? C.gold : C.mid, transition: 'background 0.25s' }} />
-              ))}
-            </div>
+            {currentStep >= 0 && (
+              <div style={{ display: 'flex', gap: 6 }}>
+                {questions.map((_, i) => (
+                  <div key={i} style={{ width: 28, height: 4, borderRadius: 4, background: i <= currentStep ? C.gold : C.mid, transition: 'background 0.25s' }} />
+                ))}
+              </div>
+            )}
             <button onClick={() => setShowConfirm(true)}
               style={{ width: 36, height: 36, borderRadius: '50%', background: C.bg, border: `1.5px solid ${C.mid}`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
               <X size={16} color={C.muted} strokeWidth={1.8} />
@@ -129,12 +135,42 @@ const MidCycleCheckIn = () => {
           </div>
 
           <AnimatePresence mode="wait">
+            {/* Intro / Skip screen */}
+            {currentStep === -1 && !acknowledgment && (
+              <motion.div key="intro" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
+                <p style={{ fontFamily: dm, fontSize: 11, fontWeight: 700, color: C.goldDeep, letterSpacing: '0.08em', textTransform: 'uppercase', margin: '0 0 10px' }}>
+                  {getContextLabel()}
+                </p>
+                <h2 style={{ fontFamily: playfair, fontSize: 22, fontWeight: 500, color: C.ink, margin: '0 0 12px', lineHeight: 1.25 }}>
+                  Time for a quick scalp check
+                </h2>
+                <p style={{ fontFamily: dm, fontSize: 13, color: C.muted, margin: '0 0 28px', lineHeight: 1.5 }}>
+                  Just a few quick questions about how your scalp's been feeling. Takes about a minute.
+                </p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  <button onClick={() => setCurrentStep(0)} style={{
+                    width: '100%', textAlign: 'left', padding: '15px 18px', borderRadius: 16,
+                    border: `2px solid ${C.gold}`, background: C.gold10, cursor: 'pointer',
+                    boxShadow: `0 4px 16px rgba(212,168,102,0.16)`,
+                  }}>
+                    <p style={{ fontFamily: dm, fontSize: 14, fontWeight: 600, color: C.goldDeep, margin: 0 }}>Let's do it</p>
+                  </button>
+                  <button onClick={handleSkip} style={{
+                    width: '100%', textAlign: 'center', padding: '12px 18px', borderRadius: 16,
+                    border: `1.5px solid ${C.mid}`, background: C.white, cursor: 'pointer',
+                  }}>
+                    <p style={{ fontFamily: dm, fontSize: 13, fontWeight: 500, color: C.muted, margin: 0 }}>Not right now</p>
+                  </button>
+                </div>
+              </motion.div>
+            )}
+
             {acknowledgment ? (
               <motion.div key="ack" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
                 style={{ paddingTop: 48, paddingBottom: 48, textAlign: 'center' }}>
                 <p style={{ fontFamily: playfair, fontSize: 22, fontWeight: 500, color: C.ink, lineHeight: 1.3 }}>{acknowledgment}</p>
               </motion.div>
-            ) : (
+            ) : currentStep >= 0 && currentQ && (
               <motion.div key={currentStep} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.2 }}>
                 <p style={{ fontFamily: dm, fontSize: 11, fontWeight: 700, color: C.goldDeep, letterSpacing: '0.08em', textTransform: 'uppercase', margin: '0 0 10px' }}>
                   {getContextLabel()}
