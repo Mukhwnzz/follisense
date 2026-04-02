@@ -251,6 +251,8 @@ const Onboarding = () => {
   const lengthCameraRef = useRef<HTMLInputElement | null>(null);
   const lengthGalleryRef = useRef<HTMLInputElement | null>(null);
 
+  const [showProtectiveInfo, setShowProtectiveInfo] = useState(false);
+
   // Auto-scroll to Let's go button after consent checked
   useEffect(() => {
     if (consentChecked && consentButtonRef.current) {
@@ -259,6 +261,24 @@ const Onboarding = () => {
       }, 150);
     }
   }, [consentChecked]);
+
+  // Auto-advance transition screens
+  useEffect(() => {
+    if (step === 8 && symptomPhase === 'transition') {
+      const timer = setTimeout(() => {
+        setSymptomPhase('symptoms');
+        setSymptomIndex(0);
+        setSymptomAck(null);
+      }, 2500);
+      return () => clearTimeout(timer);
+    }
+    if (step === 8 && symptomPhase === 'thanks') {
+      const timer = setTimeout(() => {
+        setSymptomPhase('result');
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [step, symptomPhase]);
 
   // Compute style options with chemical filtering
   const rawStyleOptions = isMale ? maleStyleOptions : isNeutral ? [...new Set([...femaleStyleOptions, ...maleStyleOptions])] : femaleStyleOptions;
