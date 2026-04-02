@@ -1098,7 +1098,7 @@ const Onboarding = () => {
                                   const checkIn = buildCheckInFromSymptoms({ ...symptomResponses, [currentSymptom.key]: sev });
                                   const risk = computeHistoricalRisk(checkIn, []);
                                   setTriageResult(risk);
-                                  setSymptomPhase('result');
+                                  setSymptomPhase('thanks');
                                 }, 150);
                               }
                             } else {
