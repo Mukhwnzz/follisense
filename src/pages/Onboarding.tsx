@@ -911,7 +911,29 @@ const Onboarding = () => {
                     )}
                     {styles.length > 0 && (
                       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mt-6">
-                        <p className="font-semibold text-foreground mb-3">How often are you in protective styles?</p>
+                        <div className="flex items-center gap-2 mb-3">
+                          <p className="font-semibold text-foreground">How often are you in protective styles?</p>
+                          <button
+                            onClick={() => setShowProtectiveInfo(!showProtectiveInfo)}
+                            className="text-xs font-medium shrink-0"
+                            style={{ color: '#7C9A8E' }}
+                          >
+                            What's this?
+                          </button>
+                        </div>
+                        {showProtectiveInfo && (
+                          <motion.div
+                            initial={{ opacity: 0, y: -4 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="rounded-xl border border-border p-3 mb-3"
+                            style={{ background: 'hsl(var(--accent) / 0.3)' }}
+                            onClick={() => setShowProtectiveInfo(false)}
+                          >
+                            <p className="text-xs text-muted-foreground leading-relaxed">
+                              Styles like braids, twists, wigs, weaves, and cornrows that tuck your ends away and are usually kept in for days or weeks.
+                            </p>
+                          </motion.div>
+                        )}
                         <div className="flex flex-wrap gap-2">
                           {protectiveFreqOptions.map(o => (
                             <button key={o} onClick={() => setProtectiveFreq(o)} className={`pill-option ${protectiveFreq === o ? 'selected' : ''}`}>{o}</button>
