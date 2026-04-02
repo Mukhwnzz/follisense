@@ -1064,33 +1064,16 @@ const Onboarding = () => {
                 )}
 
                 {/* ── Screen 8: Symptom Flow ── */}
-                {step === 8 && symptomPhase === 'ask' && (
-                  <div>
-                    <h2 className="text-lg font-semibold text-foreground mb-2">While we're here...</h2>
-                    <p className="text-muted-foreground mb-6 text-sm leading-relaxed">
-                      Is there anything about your scalp you'd like to flag?
-                    </p>
-                    <div className="space-y-3">
-                      <button
-                        onClick={() => { setSymptomPhase('symptoms'); setSymptomIndex(0); setSymptomAck(null); }}
-                        className="selection-card w-full text-left"
-                      >
-                        <p className="font-semibold text-foreground text-sm">Yes, I'd like to note something</p>
-                        <p className="text-xs text-muted-foreground mt-1">Quick checklist - takes about 30 seconds</p>
-                      </button>
-                      <button
-                        onClick={() => {
-                          const cleanCheckIn = buildCheckInFromSymptoms({});
-                          setSymptomResponses({});
-                          setTriageResult('green');
-                          setSymptomPhase('result');
-                        }}
-                        className="selection-card w-full text-left"
-                      >
-                        <p className="font-semibold text-foreground text-sm">No, everything looks fine</p>
-                        <p className="text-xs text-muted-foreground mt-1">We'll record a clean baseline</p>
-                      </button>
-                    </div>
+                {step === 8 && symptomPhase === 'transition' && (
+                  <div className="flex items-center justify-center" style={{ minHeight: '200px' }}>
+                    <motion.p
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.6 }}
+                      style={{ color: '#2D2D2D', fontSize: '18px', textAlign: 'center' }}
+                    >
+                      Nearly there. A few quick questions about your scalp.
+                    </motion.p>
                   </div>
                 )}
 
