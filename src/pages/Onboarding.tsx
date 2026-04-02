@@ -239,7 +239,7 @@ const Onboarding = () => {
   const [concerns, setConcerns] = useState<string[]>(onboardingData.goals || []);
 
   // Symptom flow
-  const [symptomPhase, setSymptomPhase] = useState<'ask' | 'symptoms' | 'result'>('ask');
+  const [symptomPhase, setSymptomPhase] = useState<'transition' | 'symptoms' | 'thanks' | 'result'>('transition');
   const [symptomIndex, setSymptomIndex] = useState(0);
   const [symptomResponses, setSymptomResponses] = useState<Record<string, string>>({});
   const [triageResult, setTriageResult] = useState<'green' | 'amber' | 'red' | null>(null);
