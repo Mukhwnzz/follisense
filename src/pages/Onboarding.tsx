@@ -1134,6 +1134,19 @@ const Onboarding = () => {
                   </motion.div>
                 )}
 
+                {step === 8 && symptomPhase === 'thanks' && (
+                  <div className="flex items-center justify-center" style={{ minHeight: '200px' }}>
+                    <motion.p
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.6 }}
+                      style={{ color: '#7C9A8E', fontSize: '20px', textAlign: 'center', fontWeight: 500 }}
+                    >
+                      Thanks for sharing that
+                    </motion.p>
+                  </div>
+                )}
+
                 {step === 8 && symptomPhase === 'result' && triageResult && (
                   <OnboardingTriageResult
                     risk={triageResult}

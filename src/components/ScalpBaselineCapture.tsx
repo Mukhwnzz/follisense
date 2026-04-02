@@ -156,7 +156,7 @@ const ScalpBaselineCapture = ({ onComplete, onBack, gender = 'woman' }: ScalpBas
             </button>
           </div>
 
-          {currentStep === 2 && (
+          {currentStep === 3 && (
             <div className="mt-4 text-center">
               <button
                 onClick={handleSkipStep}
@@ -165,7 +165,7 @@ const ScalpBaselineCapture = ({ onComplete, onBack, gender = 'woman' }: ScalpBas
                 Skip this one for now
               </button>
               <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">
-                You can add this later, or ask someone to help next time you're at the salon.
+                This one's tricky on your own. You can add it later, or ask someone to help next time you're at the salon.
               </p>
             </div>
           )}

@@ -185,9 +185,9 @@ export const consumerConditions: ConsumerCondition[] = [
   },
   {
     id: 'folliculitis',
-    name: 'Folliculitis',
-    summary: 'Inflamed bumps at hair follicles, often after a new style installation.',
-    whatIsIt: "Folliculitis is inflammation of the hair follicles that looks like small red bumps or pimple-like spots. It often appears after getting a new style installed, especially if the style is tight or tools weren't sanitised. Most cases clear up on their own.",
+    name: 'Bumps and irritation',
+    summary: 'Bumps on the scalp can have multiple causes, from folliculitis to product reactions.',
+    whatIsIt: "Bumps on the scalp can have multiple causes including folliculitis (inflamed hair follicles), contact dermatitis (reaction to products or chemicals), ingrown hairs, and product buildup. They often appear after getting a new style installed, especially if the style is tight or tools weren't sanitised. Folliculitis is one of the most common causes, but it's not the only one. Most cases clear up on their own with gentle care.",
     selfCheck: [
       { question: 'Are there small bumps or pimple-like spots on your scalp?' },
       { question: 'Did they appear after getting a new style installed or a haircut?' },
