@@ -24,9 +24,9 @@ const mapStyles = (styles: string[] = []) => {
     'Blow out': 'blow_out',
   };
 
-<<<<<<< HEAD
   return styles.map(s => map[s] || s.toLowerCase());
-=======
+};
+
 const C = {
   bg:         '#FAF8F5',
   surface:    '#F5F0EB',
@@ -39,7 +39,6 @@ const C = {
   muted:      '#999999',
   warm:       '#666666',
   white:      '#FFFFFF',
->>>>>>> 6f1bdebc841db6c4b06f2c23ddd895e01731d94f
 };
 
 const saveConsumerProfile = async (data: any) => {
