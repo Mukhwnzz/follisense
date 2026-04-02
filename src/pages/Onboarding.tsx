@@ -993,7 +993,7 @@ const Onboarding = () => {
                     </div>
                     <h2 className="text-lg font-semibold text-foreground text-center mb-1">Let's capture your starting point</h2>
                     <p className="text-sm text-muted-foreground text-center mb-5 leading-relaxed">
-                      These photos stay private to you. They help you spot changes that happen too slowly to notice day to day.
+                      These photos help you spot changes that happen too slowly to notice day to day. We'll compare them to future check-ins so you can see your progress over time. Only you can see these.
                     </p>
 
                     <div className="space-y-2 mb-4">
