@@ -761,8 +761,8 @@ const Onboarding = () => {
                         style={{ border: '1.5px solid hsl(var(--border))', background: 'hsl(var(--accent) / 0.3)' }}
                       >
                         <p className="font-semibold text-foreground text-sm">Not sure</p>
-                        <p className="text-xs text-muted-foreground mt-0.5">That's okay. We'll use the most inclusive settings.</p>
                       </button>
+                      <p className="text-xs px-1 -mt-1" style={{ color: '#7A7570' }}>That's okay. We'll still personalise your experience.</p>
                     </div>
 
                     {/* Continue button appears after selection */}
