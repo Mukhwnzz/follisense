@@ -473,7 +473,11 @@ const Onboarding = () => {
       return;
     }
     if (step === 8) {
-      if (symptomPhase === 'result') {
+      if (symptomPhase === 'thanks') {
+        setSymptomPhase('symptoms');
+        setSymptomIndex(onboardingSymptoms.length - 1);
+        setSymptomAck(null);
+      } else if (symptomPhase === 'result') {
         setSymptomPhase('symptoms');
         setSymptomIndex(onboardingSymptoms.length - 1);
         setSymptomAck(null);
@@ -483,8 +487,10 @@ const Onboarding = () => {
         setSymptomIndex(symptomIndex - 1);
         setSymptomAck(null);
       } else if (symptomPhase === 'symptoms' && symptomIndex === 0) {
-        setSymptomPhase('ask');
+        setStep(7);
         setSymptomAck(null);
+      } else if (symptomPhase === 'transition') {
+        setStep(7);
       } else {
         setStep(7);
       }
