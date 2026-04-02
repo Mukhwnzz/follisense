@@ -514,8 +514,9 @@ const Onboarding = () => {
     if (step === 2 && chemicalStep === 1) return 'Next';
     if (step === 6) return ''; // handled by sticky button
     if (step === 8) {
-      if (symptomPhase === 'ask') return '';
+      if (symptomPhase === 'transition') return '';
       if (symptomPhase === 'symptoms') return '';
+      if (symptomPhase === 'thanks') return '';
       if (symptomPhase === 'result') return '';
     }
     if (step === 9) return '';
