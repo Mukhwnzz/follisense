@@ -33,14 +33,14 @@ const getScalpSteps = (gender: string): ScalpStep[] => {
         referenceImage: scalpSideMaleB,
       },
       {
-        title: 'Back and nape',
-        instruction: 'Show the back of your head and your nape. Use a mirror or ask someone to help.',
-        referenceImage: scalpBackMale,
-      },
-      {
         title: 'Top of head',
         instruction: 'Tilt your head forward. Hold your phone above and point down at your crown.',
         referenceImage: scalpTopMale,
+      },
+      {
+        title: 'Back and nape',
+        instruction: 'Show the back of your head and your nape. Use a mirror or ask someone to help.',
+        referenceImage: scalpBackMale,
       },
     ];
   }
@@ -57,14 +57,14 @@ const getScalpSteps = (gender: string): ScalpStep[] => {
       referenceImage: scalpSideFemale,
     },
     {
-      title: 'Back and nape',
-      instruction: 'Show the back of your head and your nape. Use a mirror or ask someone to help.',
-      referenceImage: scalpBackFemale,
-    },
-    {
       title: 'Top of head',
       instruction: 'Tilt your head forward. Hold your phone above and point down at your crown.',
       referenceImage: scalpTopFemale,
+    },
+    {
+      title: 'Back and nape',
+      instruction: 'Show the back of your head and your nape. Use a mirror or ask someone to help.',
+      referenceImage: scalpBackFemale,
     },
   ];
 };
