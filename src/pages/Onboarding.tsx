@@ -738,16 +738,16 @@ const Onboarding = () => {
                                 key={st.id}
                                 onClick={() => { setHairSubType(st.id); }}
                                 className="flex-shrink-0 rounded-xl overflow-hidden text-center"
-                                style={{ width: '80px', border: hairSubType === st.id ? '2px solid hsl(var(--primary))' : '1.5px solid hsl(var(--border))' }}
+                                style={{ width: '100px', border: hairSubType === st.id ? '2px solid hsl(var(--primary))' : '1.5px solid hsl(var(--border))', borderRadius: '8px' }}
                               >
                                 {st.image ? (
-                                  <img src={st.image} alt={st.label} style={{ width: '100%', height: '72px', objectFit: 'contain', display: 'block', background: '#f5f3f0' }} />
+                                  <img src={st.image} alt={st.label} className="bg-muted" style={{ width: '100%', height: '130px', objectFit: 'cover', objectPosition: 'center', display: 'block', borderRadius: '8px 8px 0 0' }} />
                                 ) : (
-                                  <div style={{ width: '100%', height: '72px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'hsl(var(--accent) / 0.3)' }}>
+                                  <div className="bg-muted" style={{ width: '100%', height: '130px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                     <span className="text-xs text-muted-foreground">{st.label}</span>
                                   </div>
                                 )}
-                                <p className="text-xs font-medium text-foreground py-1">{st.label}</p>
+                                <p className="text-xs font-medium text-foreground py-1.5">{st.label}</p>
                               </button>
                             ))}
                           </div>
