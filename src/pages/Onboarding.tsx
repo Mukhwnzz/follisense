@@ -142,9 +142,9 @@ const symptomAcks: Record<string, { mild: string; moderate: string; severe: stri
     severe: "Significant thinning deserves professional input. We'll help you take the right next step.",
   },
   edgeLoss: {
-    mild: "Slight edge thinning after a style is common but worth watching.",
-    moderate: "Edge loss like that can progress if the tension continues. We'll monitor this.",
-    severe: "Significant edge loss needs attention sooner rather than later. We're flagging this for you.",
+    mild: "Some thinning around the edges is common with certain styles. We'll track this.",
+    moderate: "Edge thinning at this level is worth watching closely. Good that you flagged it.",
+    severe: "Significant edge loss needs attention soon. A professional can help before it progresses.",
   },
   shedding: {
     mild: "Some breakage is normal with textured hair. Noted for your records.",
