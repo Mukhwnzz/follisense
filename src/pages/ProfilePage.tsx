@@ -24,9 +24,9 @@ const mapStyles = (styles: string[] = []) => {
     'Blow out': 'blow_out',
   };
 
-<<<<<<< HEAD
   return styles.map(s => map[s] || s.toLowerCase());
-=======
+};
+
 const C = {
   bg:         '#FAF8F5',
   surface:    '#F5F0EB',
@@ -39,7 +39,6 @@ const C = {
   muted:      '#999999',
   warm:       '#666666',
   white:      '#FFFFFF',
->>>>>>> 6f1bdebc841db6c4b06f2c23ddd895e01731d94f
 };
 
 const saveConsumerProfile = async (data: any) => {
@@ -462,7 +461,7 @@ if (error) {
         <ProfileSection title="Your Hair" icon={Scissors}>
           <div className="divide-y divide-border">
             <InfoRow label="Hair type" value={hairTypeLabels[onboardingData.hairType] || onboardingData.hairType || 'Not set'} />
-            <InfoRow label="How you wear your hair" value={onboardingData.current_styles?.length > 0 ? onboardingData.current_styles.join(', ') : 'Not set'} />
+            <InfoRow label="How you wear your hair" value={onboardingData.protectiveStyles?.length > 0 ? onboardingData.protectiveStyles.join(', ') : 'Not set'} />
             {!isMale && onboardingData.protectiveStyleFrequency && (
               <InfoRow label="How often in protective styles" value={onboardingData.protectiveStyleFrequency} />
             )}

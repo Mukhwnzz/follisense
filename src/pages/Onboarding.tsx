@@ -142,9 +142,9 @@ const symptomAcks: Record<string, { mild: string; moderate: string; severe: stri
     severe: "Significant thinning deserves professional input. We'll help you take the right next step.",
   },
   edgeLoss: {
-    mild: "Slight edge thinning after a style is common but worth watching.",
-    moderate: "Edge loss like that can progress if the tension continues. We'll monitor this.",
-    severe: "Significant edge loss needs attention sooner rather than later. We're flagging this for you.",
+    mild: "Some thinning around the edges is common with certain styles. We'll track this.",
+    moderate: "Edge thinning at this level is worth watching closely. Good that you flagged it.",
+    severe: "Significant edge loss needs attention soon. A professional can help before it progresses.",
   },
   shedding: {
     mild: "Some breakage is normal with textured hair. Noted for your records.",
@@ -239,7 +239,7 @@ const Onboarding = () => {
   const [concerns, setConcerns] = useState<string[]>(onboardingData.goals || []);
 
   // Symptom flow
-  const [symptomPhase, setSymptomPhase] = useState<'ask' | 'symptoms' | 'result'>('ask');
+  const [symptomPhase, setSymptomPhase] = useState<'transition' | 'symptoms' | 'thanks' | 'result'>('transition');
   const [symptomIndex, setSymptomIndex] = useState(0);
   const [symptomResponses, setSymptomResponses] = useState<Record<string, string>>({});
   const [triageResult, setTriageResult] = useState<'green' | 'amber' | 'red' | null>(null);
@@ -251,6 +251,8 @@ const Onboarding = () => {
   const lengthCameraRef = useRef<HTMLInputElement | null>(null);
   const lengthGalleryRef = useRef<HTMLInputElement | null>(null);
 
+  const [showProtectiveInfo, setShowProtectiveInfo] = useState(false);
+
   // Auto-scroll to Let's go button after consent checked
   useEffect(() => {
     if (consentChecked && consentButtonRef.current) {
@@ -259,6 +261,24 @@ const Onboarding = () => {
       }, 150);
     }
   }, [consentChecked]);
+
+  // Auto-advance transition screens
+  useEffect(() => {
+    if (step === 8 && symptomPhase === 'transition') {
+      const timer = setTimeout(() => {
+        setSymptomPhase('symptoms');
+        setSymptomIndex(0);
+        setSymptomAck(null);
+      }, 2500);
+      return () => clearTimeout(timer);
+    }
+    if (step === 8 && symptomPhase === 'thanks') {
+      const timer = setTimeout(() => {
+        setSymptomPhase('result');
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [step, symptomPhase]);
 
   // Compute style options with chemical filtering
   const rawStyleOptions = isMale ? maleStyleOptions : isNeutral ? [...new Set([...femaleStyleOptions, ...maleStyleOptions])] : femaleStyleOptions;
@@ -311,7 +331,7 @@ const Onboarding = () => {
       case 6: return consentChecked;
       case 7: return false;
       case 8: {
-        if (symptomPhase === 'ask') return true;
+        if (symptomPhase === 'transition' || symptomPhase === 'thanks') return false;
         if (symptomPhase === 'symptoms') return !!symptomResponses[onboardingSymptoms[symptomIndex].key];
         if (symptomPhase === 'result') return true;
         return false;
@@ -388,7 +408,7 @@ const Onboarding = () => {
   const handlePhotosComplete = (photos: { area: string; dataUrl: string }[]) => {
     setBaselinePhotos(photos.map(p => ({ area: p.area, captured: true, date: new Date().toISOString() })));
     setStep(8);
-    setSymptomPhase('ask');
+    setSymptomPhase('transition');
   };
 
   const handleNext = () => {
@@ -453,7 +473,11 @@ const Onboarding = () => {
       return;
     }
     if (step === 8) {
-      if (symptomPhase === 'result') {
+      if (symptomPhase === 'thanks') {
+        setSymptomPhase('symptoms');
+        setSymptomIndex(onboardingSymptoms.length - 1);
+        setSymptomAck(null);
+      } else if (symptomPhase === 'result') {
         setSymptomPhase('symptoms');
         setSymptomIndex(onboardingSymptoms.length - 1);
         setSymptomAck(null);
@@ -463,8 +487,10 @@ const Onboarding = () => {
         setSymptomIndex(symptomIndex - 1);
         setSymptomAck(null);
       } else if (symptomPhase === 'symptoms' && symptomIndex === 0) {
-        setSymptomPhase('ask');
+        setStep(7);
         setSymptomAck(null);
+      } else if (symptomPhase === 'transition') {
+        setStep(7);
       } else {
         setStep(7);
       }
@@ -488,8 +514,9 @@ const Onboarding = () => {
     if (step === 2 && chemicalStep === 1) return 'Next';
     if (step === 6) return ''; // handled by sticky button
     if (step === 8) {
-      if (symptomPhase === 'ask') return '';
+      if (symptomPhase === 'transition') return '';
       if (symptomPhase === 'symptoms') return '';
+      if (symptomPhase === 'thanks') return '';
       if (symptomPhase === 'result') return '';
     }
     if (step === 9) return '';
@@ -499,7 +526,7 @@ const Onboarding = () => {
 
   // Hide bottom button on welcome, auto-advance screens, photo capture, consent, and symptom flow
   const showBottomButton = step !== -1 && step !== 0 && step !== 1 && step !== 6 && step !== 7 && step !== 9
-    && !(step === 8 && (symptomPhase === 'ask' || symptomPhase === 'symptoms' || symptomPhase === 'result'))
+    && !(step === 8 && (symptomPhase === 'transition' || symptomPhase === 'symptoms' || symptomPhase === 'thanks' || symptomPhase === 'result'))
     && !(step === 2 && chemicalStep !== 1);
 
   const activeSegment = getProgressSegment();
@@ -634,14 +661,14 @@ const Onboarding = () => {
                         className="w-full text-left rounded-2xl overflow-hidden relative cursor-pointer"
                         style={{ border: hairType === 'type4' ? '2px solid hsl(var(--primary))' : '2px solid transparent' }}
                       >
-                        <div className="relative" style={{ height: '140px' }}>
+                        <div className="relative bg-muted" style={{ height: '180px' }}>
                           <img src={hairType4Hero} alt="Type 4: Coily" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top', display: 'block' }} />
                           <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '24px 16px 12px', background: 'linear-gradient(to top, rgba(0,0,0,0.65), transparent)' }}>
                             <p className="font-semibold text-sm" style={{ color: 'white' }}>Type 4: Coily</p>
-                            <p className="text-xs" style={{ color: 'rgba(255,255,255,0.85)' }}>Tight coils, Z-shaped or no visible curl pattern.</p>
                           </div>
                         </div>
                       </button>
+                      <p className="text-xs px-1 -mt-1" style={{ color: '#7A7570' }}>Tight coils and kinks. Shrinks significantly when wet.</p>
 
                       {/* Sub-type expansion for Type 4 */}
                       {hairType === 'type4' && !showSubType && (
@@ -659,16 +686,16 @@ const Onboarding = () => {
                                 key={st.id}
                                 onClick={() => { setHairSubType(st.id); }}
                                 className="flex-shrink-0 rounded-xl overflow-hidden text-center"
-                                style={{ width: '80px', border: hairSubType === st.id ? '2px solid hsl(var(--primary))' : '1.5px solid hsl(var(--border))' }}
+                                style={{ width: '100px', border: hairSubType === st.id ? '2px solid hsl(var(--primary))' : '1.5px solid hsl(var(--border))', borderRadius: '8px' }}
                               >
                                 {st.image ? (
-                                  <img src={st.image} alt={st.label} style={{ width: '100%', height: '72px', objectFit: 'contain', display: 'block', background: '#f5f3f0' }} />
+                                  <img src={st.image} alt={st.label} className="bg-muted" style={{ width: '100%', height: '130px', objectFit: 'cover', objectPosition: 'center', display: 'block', borderRadius: '8px 8px 0 0' }} />
                                 ) : (
-                                  <div style={{ width: '100%', height: '72px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'hsl(var(--accent) / 0.3)' }}>
+                                  <div className="bg-muted" style={{ width: '100%', height: '130px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                     <span className="text-xs text-muted-foreground">{st.label}</span>
                                   </div>
                                 )}
-                                <p className="text-xs font-medium text-foreground py-1">{st.label}</p>
+                                <p className="text-xs font-medium text-foreground py-1.5">{st.label}</p>
                               </button>
                             ))}
                           </div>
@@ -686,14 +713,14 @@ const Onboarding = () => {
                         className="w-full text-left rounded-2xl overflow-hidden relative cursor-pointer"
                         style={{ border: hairType === 'type3' ? '2px solid hsl(var(--primary))' : '2px solid transparent' }}
                       >
-                        <div className="relative" style={{ height: '140px' }}>
+                        <div className="relative bg-muted" style={{ height: '180px' }}>
                           <img src={hairType3Hero} alt="Type 3: Curly" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top', display: 'block' }} />
                           <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '24px 16px 12px', background: 'linear-gradient(to top, rgba(0,0,0,0.65), transparent)' }}>
                             <p className="font-semibold text-sm" style={{ color: 'white' }}>Type 3: Curly</p>
-                            <p className="text-xs" style={{ color: 'rgba(255,255,255,0.85)' }}>Visible curl pattern, S-shaped curls, looser texture.</p>
                           </div>
                         </div>
                       </button>
+                      <p className="text-xs px-1 -mt-1" style={{ color: '#7A7570' }}>Defined curls and waves. Visible curl pattern.</p>
 
                       {/* Sub-type expansion for Type 3 */}
                       {hairType === 'type3' && !showSubType && (
@@ -711,16 +738,16 @@ const Onboarding = () => {
                                 key={st.id}
                                 onClick={() => { setHairSubType(st.id); }}
                                 className="flex-shrink-0 rounded-xl overflow-hidden text-center"
-                                style={{ width: '80px', border: hairSubType === st.id ? '2px solid hsl(var(--primary))' : '1.5px solid hsl(var(--border))' }}
+                                style={{ width: '100px', border: hairSubType === st.id ? '2px solid hsl(var(--primary))' : '1.5px solid hsl(var(--border))', borderRadius: '8px' }}
                               >
                                 {st.image ? (
-                                  <img src={st.image} alt={st.label} style={{ width: '100%', height: '72px', objectFit: 'contain', display: 'block', background: '#f5f3f0' }} />
+                                  <img src={st.image} alt={st.label} className="bg-muted" style={{ width: '100%', height: '130px', objectFit: 'cover', objectPosition: 'center', display: 'block', borderRadius: '8px 8px 0 0' }} />
                                 ) : (
-                                  <div style={{ width: '100%', height: '72px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'hsl(var(--accent) / 0.3)' }}>
+                                  <div className="bg-muted" style={{ width: '100%', height: '130px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                     <span className="text-xs text-muted-foreground">{st.label}</span>
                                   </div>
                                 )}
-                                <p className="text-xs font-medium text-foreground py-1">{st.label}</p>
+                                <p className="text-xs font-medium text-foreground py-1.5">{st.label}</p>
                               </button>
                             ))}
                           </div>
@@ -734,8 +761,8 @@ const Onboarding = () => {
                         style={{ border: '1.5px solid hsl(var(--border))', background: 'hsl(var(--accent) / 0.3)' }}
                       >
                         <p className="font-semibold text-foreground text-sm">Not sure</p>
-                        <p className="text-xs text-muted-foreground mt-0.5">That's okay. We'll use the most inclusive settings.</p>
                       </button>
+                      <p className="text-xs px-1 -mt-1" style={{ color: '#7A7570' }}>That's okay. We'll still personalise your experience.</p>
                     </div>
 
                     {/* Continue button appears after selection */}
@@ -884,7 +911,29 @@ const Onboarding = () => {
                     )}
                     {styles.length > 0 && (
                       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mt-6">
-                        <p className="font-semibold text-foreground mb-3">How often are you in protective styles?</p>
+                        <div className="flex items-center gap-2 mb-3">
+                          <p className="font-semibold text-foreground">How often are you in protective styles?</p>
+                          <button
+                            onClick={() => setShowProtectiveInfo(!showProtectiveInfo)}
+                            className="text-xs font-medium shrink-0"
+                            style={{ color: '#7C9A8E' }}
+                          >
+                            What's this?
+                          </button>
+                        </div>
+                        {showProtectiveInfo && (
+                          <motion.div
+                            initial={{ opacity: 0, y: -4 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="rounded-xl border border-border p-3 mb-3"
+                            style={{ background: 'hsl(var(--accent) / 0.3)' }}
+                            onClick={() => setShowProtectiveInfo(false)}
+                          >
+                            <p className="text-xs text-muted-foreground leading-relaxed">
+                              Styles like braids, twists, wigs, weaves, and cornrows that tuck your ends away and are usually kept in for days or weeks.
+                            </p>
+                          </motion.div>
+                        )}
                         <div className="flex flex-wrap gap-2">
                           {protectiveFreqOptions.map(o => (
                             <button key={o} onClick={() => setProtectiveFreq(o)} className={`pill-option ${protectiveFreq === o ? 'selected' : ''}`}>{o}</button>
@@ -944,7 +993,7 @@ const Onboarding = () => {
                     </div>
                     <h2 className="text-lg font-semibold text-foreground text-center mb-1">Let's capture your starting point</h2>
                     <p className="text-sm text-muted-foreground text-center mb-5 leading-relaxed">
-                      These photos stay private to you. They help you spot changes that happen too slowly to notice day to day.
+                      These photos help you spot changes that happen too slowly to notice day to day. We'll compare them to future check-ins so you can see your progress over time. Only you can see these.
                     </p>
 
                     <div className="space-y-2 mb-4">
@@ -1015,38 +1064,23 @@ const Onboarding = () => {
                 )}
 
                 {/* ── Screen 8: Symptom Flow ── */}
-                {step === 8 && symptomPhase === 'ask' && (
-                  <div>
-                    <h2 className="text-lg font-semibold text-foreground mb-2">While we're here...</h2>
-                    <p className="text-muted-foreground mb-6 text-sm leading-relaxed">
-                      Is there anything about your scalp you'd like to flag?
-                    </p>
-                    <div className="space-y-3">
-                      <button
-                        onClick={() => { setSymptomPhase('symptoms'); setSymptomIndex(0); setSymptomAck(null); }}
-                        className="selection-card w-full text-left"
-                      >
-                        <p className="font-semibold text-foreground text-sm">Yes, I'd like to note something</p>
-                        <p className="text-xs text-muted-foreground mt-1">Quick checklist - takes about 30 seconds</p>
-                      </button>
-                      <button
-                        onClick={() => {
-                          const cleanCheckIn = buildCheckInFromSymptoms({});
-                          setSymptomResponses({});
-                          setTriageResult('green');
-                          setSymptomPhase('result');
-                        }}
-                        className="selection-card w-full text-left"
-                      >
-                        <p className="font-semibold text-foreground text-sm">No, everything looks fine</p>
-                        <p className="text-xs text-muted-foreground mt-1">We'll record a clean baseline</p>
-                      </button>
-                    </div>
+                {step === 8 && symptomPhase === 'transition' && (
+                  <div className="flex items-center justify-center" style={{ minHeight: '200px' }}>
+                    <motion.p
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.6 }}
+                      style={{ color: '#2D2D2D', fontSize: '18px', textAlign: 'center' }}
+                    >
+                      Nearly there. A few quick questions about your scalp.
+                    </motion.p>
                   </div>
                 )}
 
                 {step === 8 && symptomPhase === 'symptoms' && !symptomAck && (
                   <div>
+                    <h3 className="text-sm font-semibold text-foreground mb-0.5">Let's set your baseline</h3>
+                    <p className="text-xs text-muted-foreground mb-4">This is your starting point, so we can track any changes over time.</p>
                     <p className="text-xs text-muted-foreground mb-1">{symptomIndex + 1} of {onboardingSymptoms.length}</p>
                     <h2 className="text-lg font-semibold text-foreground mb-6">{onboardingSymptoms[symptomIndex].question}</h2>
                     <div className="space-y-3">
@@ -1064,7 +1098,7 @@ const Onboarding = () => {
                                   const checkIn = buildCheckInFromSymptoms({ ...symptomResponses, [currentSymptom.key]: sev });
                                   const risk = computeHistoricalRisk(checkIn, []);
                                   setTriageResult(risk);
-                                  setSymptomPhase('result');
+                                  setSymptomPhase('thanks');
                                 }, 150);
                               }
                             } else {
@@ -1078,7 +1112,7 @@ const Onboarding = () => {
                                   const checkIn = buildCheckInFromSymptoms({ ...symptomResponses, [currentSymptom.key]: sev });
                                   const risk = computeHistoricalRisk(checkIn, []);
                                   setTriageResult(risk);
-                                  setSymptomPhase('result');
+                                  setSymptomPhase('thanks');
                                 }
                               }, 1500);
                             }
@@ -1098,6 +1132,19 @@ const Onboarding = () => {
                     <h2 className="text-lg font-semibold text-foreground mb-3">{onboardingSymptoms[symptomIndex].label}: {symptomResponses[onboardingSymptoms[symptomIndex].key]}</h2>
                     <p className="text-sm text-muted-foreground leading-relaxed">{symptomAck}</p>
                   </motion.div>
+                )}
+
+                {step === 8 && symptomPhase === 'thanks' && (
+                  <div className="flex items-center justify-center" style={{ minHeight: '200px' }}>
+                    <motion.p
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.6 }}
+                      style={{ color: '#7C9A8E', fontSize: '20px', textAlign: 'center', fontWeight: 500 }}
+                    >
+                      Thanks for sharing that
+                    </motion.p>
+                  </div>
                 )}
 
                 {step === 8 && symptomPhase === 'result' && triageResult && (
