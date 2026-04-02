@@ -713,14 +713,14 @@ const Onboarding = () => {
                         className="w-full text-left rounded-2xl overflow-hidden relative cursor-pointer"
                         style={{ border: hairType === 'type3' ? '2px solid hsl(var(--primary))' : '2px solid transparent' }}
                       >
-                        <div className="relative" style={{ height: '140px' }}>
+                        <div className="relative bg-muted" style={{ height: '180px' }}>
                           <img src={hairType3Hero} alt="Type 3: Curly" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top', display: 'block' }} />
                           <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '24px 16px 12px', background: 'linear-gradient(to top, rgba(0,0,0,0.65), transparent)' }}>
                             <p className="font-semibold text-sm" style={{ color: 'white' }}>Type 3: Curly</p>
-                            <p className="text-xs" style={{ color: 'rgba(255,255,255,0.85)' }}>Visible curl pattern, S-shaped curls, looser texture.</p>
                           </div>
                         </div>
                       </button>
+                      <p className="text-xs px-1 -mt-1" style={{ color: '#7A7570' }}>Defined curls and waves. Visible curl pattern.</p>
 
                       {/* Sub-type expansion for Type 3 */}
                       {hairType === 'type3' && !showSubType && (
