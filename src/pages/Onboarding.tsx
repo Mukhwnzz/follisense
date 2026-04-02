@@ -1079,6 +1079,8 @@ const Onboarding = () => {
 
                 {step === 8 && symptomPhase === 'symptoms' && !symptomAck && (
                   <div>
+                    <h3 className="text-sm font-semibold text-foreground mb-0.5">Let's set your baseline</h3>
+                    <p className="text-xs text-muted-foreground mb-4">This is your starting point, so we can track any changes over time.</p>
                     <p className="text-xs text-muted-foreground mb-1">{symptomIndex + 1} of {onboardingSymptoms.length}</p>
                     <h2 className="text-lg font-semibold text-foreground mb-6">{onboardingSymptoms[symptomIndex].question}</h2>
                     <div className="space-y-3">
