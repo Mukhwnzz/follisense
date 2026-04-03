@@ -1132,6 +1132,9 @@ const Onboarding = () => {
                           className={`selection-card w-full text-left ${symptomResponses[onboardingSymptoms[symptomIndex].key] === sev ? 'selected' : ''}`}
                         >
                           <p className="font-medium text-foreground text-sm">{sev}</p>
+                          {severityDescriptors[onboardingSymptoms[symptomIndex].key]?.[sev] && (
+                            <p className="text-xs mt-0.5" style={{ color: '#7A7570', fontSize: '12px' }}>{severityDescriptors[onboardingSymptoms[symptomIndex].key][sev]}</p>
+                          )}
                         </button>
                       ))}
                     </div>
