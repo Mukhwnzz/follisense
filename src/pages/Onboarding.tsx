@@ -190,6 +190,16 @@ const symptomAcks: Record<string, { mild: string; moderate: string; severe: stri
     moderate: "Persistent dryness can affect your scalp barrier. We'll track this.",
     severe: "Severe dryness can lead to other problems if left unchecked. We're noting this carefully.",
   },
+  razorBumps: {
+    mild: "Noted. We'll track whether these are recurring.",
+    moderate: "Regular bumps after cuts are worth investigating. We're on it.",
+    severe: "Persistent razor bumps can lead to scarring. A professional can help.",
+  },
+  barberIrritation: {
+    mild: "Noted. We'll see if there's a pattern.",
+    moderate: "Reactions like that aren't something you should just live with. We'll track this.",
+    severe: "That kind of reaction every time needs professional attention.",
+  },
 };
 
 // ─── SEVERITY DESCRIPTORS ────────────────────────────────────────────────────
