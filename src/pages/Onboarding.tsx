@@ -243,7 +243,8 @@ const CurlIcon = ({ type }: { type: string }) => {
 
 // Total main screens: -1=welcome, 0=gender, 1=hair type, 2=chemical, 3=styles, 4=routine, 5=concerns,
 // 6=photo guidelines, 7=scalp photos, 8=symptoms, 9=length check transition, 10=length photos, 11=completion
-const TOTAL_PROGRESS_SEGMENTS = 8; // gender, hair, chemical, styles, routine, concerns, guidelines+photos, symptoms
+const TOTAL_PROGRESS_SEGMENTS_FEMALE = 8; // gender, hair, chemical, styles, routine, concerns, guidelines+photos, symptoms
+const TOTAL_PROGRESS_SEGMENTS_MALE = 7; // gender, styles, routine, concerns, guidelines+photos, symptoms, length
 
 const Onboarding = () => {
   const navigate = useNavigate();
