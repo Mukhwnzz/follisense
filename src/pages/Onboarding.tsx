@@ -1524,7 +1524,7 @@ const OnboardingTriageResult = ({ risk, symptomResponses, onboardingSymptoms: sy
           )}
           <div className="card-elevated p-5 mb-4">
             <h3 className="font-semibold mb-2">What this means</h3>
-            <p className="text-sm text-muted-foreground">Persistent or worsening symptoms can sometimes indicate conditions like traction alopecia or scalp inflammation that respond best to early treatment. Seeing a professional now gives you the best options.</p>
+            <p className="text-sm text-muted-foreground">{maleIsShortHairOnly ? 'Persistent or worsening symptoms can sometimes indicate conditions like male pattern hair loss or scalp inflammation that respond best to early treatment. Seeing a professional now gives you the best options.' : 'Persistent or worsening symptoms can sometimes indicate conditions like traction alopecia or scalp inflammation that respond best to early treatment. Seeing a professional now gives you the best options.'}</p>
           </div>
           {telogenTriggers.length > 0 && (
             <div className="rounded-2xl bg-accent p-5 mb-4">
