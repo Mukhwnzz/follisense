@@ -122,17 +122,17 @@ const severityOptions = ['None', 'Mild', 'Moderate', 'Severe'];
 // ─── WARM ACKNOWLEDGMENTS ────────────────────────────────────────────────────
 const symptomAcks: Record<string, { mild: string; moderate: string; severe: string }> = {
   itch: {
-    mild: "That's really common, especially mid-cycle. We'll keep an eye on it.",
+    mild: "Noted. We'll keep an eye on this one.",
     moderate: "That level of itching is worth tracking. We'll watch how it changes.",
     severe: "Constant itching can really affect your day. Let's make this a priority.",
   },
   flaking: {
-    mild: "A little flaking between washes is normal. Noted.",
+    mild: "Noted. We'll factor this in.",
     moderate: "More flaking than usual. Worth monitoring over your next few check-ins.",
     severe: "Heavy flaking like that needs attention. We'll stay on top of this with you.",
   },
   tenderness: {
-    mild: "Some sensitivity is worth noting. We'll check on this next time.",
+    mild: "Good that you flagged it. We'll check on this next time.",
     moderate: "Tenderness like that can signal something underneath. We'll keep tracking.",
     severe: "Pain on your scalp shouldn't be ignored. That's important information.",
   },
@@ -142,25 +142,37 @@ const symptomAcks: Record<string, { mild: string; moderate: string; severe: stri
     severe: "Significant thinning deserves professional input. We'll help you take the right next step.",
   },
   edgeLoss: {
-    mild: "Some thinning around the edges is common with certain styles. We'll track this.",
+    mild: "Noted. We'll track this one closely.",
     moderate: "Edge thinning at this level is worth watching closely. Good that you flagged it.",
     severe: "Significant edge loss needs attention soon. A professional can help before it progresses.",
   },
   shedding: {
-    mild: "Some breakage is normal with textured hair. Noted for your records.",
+    mild: "Noted. We'll see how this tracks over time.",
     moderate: "More breakage than expected. Could be worth looking at your routine.",
     severe: "That level of breakage can signal something deeper going on. Good that you're telling us.",
   },
   bumps: {
-    mild: "A few bumps can come and go. We'll see if they persist.",
+    mild: "Noted. We'll see if they persist.",
     moderate: "Multiple bumps are worth keeping an eye on. Noted.",
     severe: "That sounds really uncomfortable. A professional should take a look at this soon.",
   },
   dryness: {
-    mild: "Mild dryness is common between washes. Noted.",
+    mild: "Noted. We'll factor this into your profile.",
     moderate: "Persistent dryness can affect your scalp barrier. We'll track this.",
     severe: "Severe dryness can lead to other problems if left unchecked. We're noting this carefully.",
   },
+};
+
+// ─── SEVERITY DESCRIPTORS ────────────────────────────────────────────────────
+const severityDescriptors: Record<string, Record<string, string>> = {
+  itch: { None: 'No itching', Mild: 'Occasional itch, easy to ignore', Moderate: 'Frequent itching, hard to leave alone', Severe: 'Constant itching, disrupts your day' },
+  flaking: { None: 'No flaking', Mild: 'A few flakes when you scratch or part', Moderate: 'Visible flakes on your scalp or clothes', Severe: 'Heavy, persistent flaking that won\'t clear' },
+  tenderness: { None: 'No tenderness', Mild: 'Slight sensitivity when you touch or press', Moderate: 'Sore to touch, especially around edges or parting', Severe: 'Painful without touching, or sharp pain when pressed' },
+  hairline: { None: 'No thinning', Mild: 'Slightly less volume than usual', Moderate: 'Noticeably thinner areas, wider parting', Severe: 'Scalp clearly visible through hair, patches appearing' },
+  edgeLoss: { None: 'No edge loss', Mild: 'Edges slightly thinner than before', Moderate: 'Visible thinning at temples or hairline', Severe: 'Significant recession, hairline has pulled back' },
+  shedding: { None: 'No breakage', Mild: 'A few short pieces when styling or detangling', Moderate: 'Noticeable snapping, uneven lengths appearing', Severe: 'Significant breakage daily, hair visibly thinning from it' },
+  bumps: { None: 'No bumps', Mild: 'A few small bumps, not painful', Moderate: 'Multiple bumps, some tenderness or redness', Severe: 'Widespread, painful, or spreading bumps' },
+  dryness: { None: 'No dryness', Mild: 'Slightly dry or tight between washes', Moderate: 'Dry and flaky despite moisturising', Severe: 'Extremely dry, cracking, or painful tightness' },
 };
 const getAck = (severity: string, _label: string, _index: number, key?: string): string | null => {
   if (severity === 'None') return null;
@@ -1120,6 +1132,9 @@ const Onboarding = () => {
                           className={`selection-card w-full text-left ${symptomResponses[onboardingSymptoms[symptomIndex].key] === sev ? 'selected' : ''}`}
                         >
                           <p className="font-medium text-foreground text-sm">{sev}</p>
+                          {severityDescriptors[onboardingSymptoms[symptomIndex].key]?.[sev] && (
+                            <p className="text-xs mt-0.5" style={{ color: '#7A7570', fontSize: '12px' }}>{severityDescriptors[onboardingSymptoms[symptomIndex].key][sev]}</p>
+                          )}
                         </button>
                       ))}
                     </div>
@@ -1269,6 +1284,42 @@ interface OnboardingTriageResultProps {
   goals: string[];
 }
 
+const getTriageReasoning = (risk: 'green' | 'amber' | 'red', responses: Record<string, string>, symptoms: { key: string; label: string }[]): string | null => {
+  const NONE_VALUES = ['None', 'No', 'No change', 'Normal', 'No concerns'];
+  const MILD_VALUES = ['Mild', 'A little', 'Some flaking', 'Slight concern', 'A bit dry', 'A little more breakage or dryness than usual'];
+  const SEVERE_VALUES = ['Severe', 'Yes, painful', 'Very concerned', 'Alarming amount', 'Heavy flaking', "Concerned about my hair's condition", 'Significant'];
+
+  const activeSymptoms = symptoms.filter(s => responses[s.key] && !NONE_VALUES.includes(responses[s.key]));
+  const mildSymptoms = activeSymptoms.filter(s => MILD_VALUES.includes(responses[s.key]));
+  const severeSymptoms = activeSymptoms.filter(s => SEVERE_VALUES.includes(responses[s.key]));
+
+  if (risk === 'green') {
+    if (activeSymptoms.length === 0) return null;
+    if (activeSymptoms.length === 1 && mildSymptoms.length === 1) {
+      return "You flagged one area as mild. On its own, that's not a concern, but we'll track it going forward.";
+    }
+    return null;
+  }
+
+  if (risk === 'amber') {
+    const names = activeSymptoms.map(s => s.label.toLowerCase()).join(', ');
+    return `You've flagged ${names} at a level worth watching. Let's see if these steps help.`;
+  }
+
+  if (risk === 'red') {
+    if (severeSymptoms.length > 0) {
+      return `${severeSymptoms[0].label} at this level needs professional attention.`;
+    }
+    if (activeSymptoms.length >= 3) {
+      return `You've flagged ${activeSymptoms.length} areas of concern. While each one on its own may feel mild, experiencing several at once can sometimes point to something worth checking with a professional.`;
+    }
+    const names = activeSymptoms.map(s => s.label.toLowerCase()).join(', ');
+    return `You've flagged ${names} at a level that needs attention.`;
+  }
+
+  return null;
+};
+
 const OnboardingTriageResult = ({ risk, symptomResponses, onboardingSymptoms: symptoms, isMale, onContinue, navigate, healthProfile: hp, goals }: OnboardingTriageResultProps) => {
   const checkIn: CheckInData = {
     itch: symptomResponses.itch || 'None', tenderness: symptomResponses.tenderness || 'None',
@@ -1280,6 +1331,7 @@ const OnboardingTriageResult = ({ risk, symptomResponses, onboardingSymptoms: sy
   const telogenTriggers = hasTelogenTriggers(hp);
   const triageGuidance = getTriageGuidance(risk, checkIn, []);
   const goalMessage = getGoalMessage(goals, risk);
+  const triageReasoning = getTriageReasoning(risk, symptomResponses, symptoms);
 
   const circleColors: Record<string, string> = { green: 'bg-primary', amber: 'bg-warning', red: 'bg-destructive' };
 
@@ -1300,6 +1352,7 @@ const OnboardingTriageResult = ({ risk, symptomResponses, onboardingSymptoms: sy
         <>
           <h2 className="text-2xl font-semibold text-center mb-2">Looking good</h2>
           <p className="text-muted-foreground text-center mb-6">Based on what you've shared, there are no red flags right now. Your scalp is looking good.</p>
+          {triageReasoning && <p className="text-center mb-6" style={{ color: '#7A7570', fontSize: '13px' }}>{triageReasoning}</p>}
           <div className="card-elevated p-5 mb-4">
             <h3 className="font-semibold mb-2">Keep it up</h3>
             <p className="text-sm text-muted-foreground">Your current routine is working well. We'll check in again at your next scheduled time.</p>
@@ -1316,6 +1369,7 @@ const OnboardingTriageResult = ({ risk, symptomResponses, onboardingSymptoms: sy
         <>
           <h2 className="text-2xl font-semibold text-center mb-2">Some patterns worth watching</h2>
           <p className="text-muted-foreground text-center mb-6">Nothing urgent, but let's keep an eye on a few things</p>
+          {triageReasoning && <p className="text-center mb-6" style={{ color: '#7A7570', fontSize: '13px' }}>{triageReasoning}</p>}
           {triageGuidance.length > 0 && (
             <div className="card-elevated p-5 mb-4">
               <h3 className="font-semibold mb-3">What we're seeing</h3>
@@ -1361,6 +1415,7 @@ const OnboardingTriageResult = ({ risk, symptomResponses, onboardingSymptoms: sy
         <>
           <h2 className="text-2xl font-semibold text-center mb-2">We recommend professional advice</h2>
           <p className="text-muted-foreground text-center mb-6">Your symptoms suggest a pattern that would benefit from expert review</p>
+          {triageReasoning && <p className="text-center mb-6" style={{ color: '#7A7570', fontSize: '13px' }}>{triageReasoning}</p>}
           {triageGuidance.length > 0 && (
             <div className="card-elevated p-5 mb-4">
               <h3 className="font-semibold mb-3">Pattern analysis</h3>
