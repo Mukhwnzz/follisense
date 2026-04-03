@@ -1369,6 +1369,7 @@ const OnboardingTriageResult = ({ risk, symptomResponses, onboardingSymptoms: sy
         <>
           <h2 className="text-2xl font-semibold text-center mb-2">Some patterns worth watching</h2>
           <p className="text-muted-foreground text-center mb-6">Nothing urgent, but let's keep an eye on a few things</p>
+          {triageReasoning && <p className="text-center mb-6" style={{ color: '#7A7570', fontSize: '13px' }}>{triageReasoning}</p>}
           {triageGuidance.length > 0 && (
             <div className="card-elevated p-5 mb-4">
               <h3 className="font-semibold mb-3">What we're seeing</h3>
