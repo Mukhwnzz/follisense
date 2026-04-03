@@ -1067,7 +1067,7 @@ const Onboarding = () => {
                     <p className="text-xs text-muted-foreground mb-4">{sectionExplainers[5]}</p>
                     <p className="text-muted-foreground mb-4 text-sm">Select all that apply</p>
                     <div className="space-y-3">
-                      {concernOptions.map(c => (
+                      {activeConcernOptions.map(c => (
                         <button key={c} onClick={() => toggleConcern(c)} className={`selection-card w-full text-left ${concerns.includes(c) ? 'selected' : ''}`}>
                           <p className="font-medium text-foreground text-sm">{c}</p>
                         </button>
