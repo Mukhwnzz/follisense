@@ -552,11 +552,11 @@ const Onboarding = () => {
     if (step === 8) {
       if (symptomPhase === 'thanks') {
         setSymptomPhase('symptoms');
-        setSymptomIndex(onboardingSymptoms.length - 1);
+        setSymptomIndex(activeSymptoms.length - 1);
         setSymptomAck(null);
       } else if (symptomPhase === 'result') {
         setSymptomPhase('symptoms');
-        setSymptomIndex(onboardingSymptoms.length - 1);
+        setSymptomIndex(activeSymptoms.length - 1);
         setSymptomAck(null);
       } else if (symptomPhase === 'symptoms' && symptomAck) {
         setSymptomAck(null);
