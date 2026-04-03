@@ -426,6 +426,8 @@ const Onboarding = () => {
     shedding: responses.shedding || 'None',
     bumps: responses.bumps || 'None',
     dryness: responses.dryness || 'None',
+    razorBumps: responses.razorBumps || 'None',
+    barberIrritation: responses.barberIrritation || 'None',
     type: 'baseline',
     date: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }),
   });
