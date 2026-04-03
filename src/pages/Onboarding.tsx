@@ -1284,6 +1284,42 @@ interface OnboardingTriageResultProps {
   goals: string[];
 }
 
+const getTriageReasoning = (risk: 'green' | 'amber' | 'red', responses: Record<string, string>, symptoms: { key: string; label: string }[]): string | null => {
+  const NONE_VALUES = ['None', 'No', 'No change', 'Normal', 'No concerns'];
+  const MILD_VALUES = ['Mild', 'A little', 'Some flaking', 'Slight concern', 'A bit dry', 'A little more breakage or dryness than usual'];
+  const SEVERE_VALUES = ['Severe', 'Yes, painful', 'Very concerned', 'Alarming amount', 'Heavy flaking', "Concerned about my hair's condition", 'Significant'];
+
+  const activeSymptoms = symptoms.filter(s => responses[s.key] && !NONE_VALUES.includes(responses[s.key]));
+  const mildSymptoms = activeSymptoms.filter(s => MILD_VALUES.includes(responses[s.key]));
+  const severeSymptoms = activeSymptoms.filter(s => SEVERE_VALUES.includes(responses[s.key]));
+
+  if (risk === 'green') {
+    if (activeSymptoms.length === 0) return null;
+    if (activeSymptoms.length === 1 && mildSymptoms.length === 1) {
+      return "You flagged one area as mild. On its own, that's not a concern, but we'll track it going forward.";
+    }
+    return null;
+  }
+
+  if (risk === 'amber') {
+    const names = activeSymptoms.map(s => s.label.toLowerCase()).join(', ');
+    return `You've flagged ${names} at a level worth watching. Let's see if these steps help.`;
+  }
+
+  if (risk === 'red') {
+    if (severeSymptoms.length > 0) {
+      return `${severeSymptoms[0].label} at this level needs professional attention.`;
+    }
+    if (activeSymptoms.length >= 3) {
+      return `You've flagged ${activeSymptoms.length} areas of concern. While each one on its own may feel mild, experiencing several at once can sometimes point to something worth checking with a professional.`;
+    }
+    const names = activeSymptoms.map(s => s.label.toLowerCase()).join(', ');
+    return `You've flagged ${names} at a level that needs attention.`;
+  }
+
+  return null;
+};
+
 const OnboardingTriageResult = ({ risk, symptomResponses, onboardingSymptoms: symptoms, isMale, onContinue, navigate, healthProfile: hp, goals }: OnboardingTriageResultProps) => {
   const checkIn: CheckInData = {
     itch: symptomResponses.itch || 'None', tenderness: symptomResponses.tenderness || 'None',
@@ -1295,6 +1331,7 @@ const OnboardingTriageResult = ({ risk, symptomResponses, onboardingSymptoms: sy
   const telogenTriggers = hasTelogenTriggers(hp);
   const triageGuidance = getTriageGuidance(risk, checkIn, []);
   const goalMessage = getGoalMessage(goals, risk);
+  const triageReasoning = getTriageReasoning(risk, symptomResponses, symptoms);
 
   const circleColors: Record<string, string> = { green: 'bg-primary', amber: 'bg-warning', red: 'bg-destructive' };
 
