@@ -1352,6 +1352,7 @@ const OnboardingTriageResult = ({ risk, symptomResponses, onboardingSymptoms: sy
         <>
           <h2 className="text-2xl font-semibold text-center mb-2">Looking good</h2>
           <p className="text-muted-foreground text-center mb-6">Based on what you've shared, there are no red flags right now. Your scalp is looking good.</p>
+          {triageReasoning && <p className="text-center mb-6" style={{ color: '#7A7570', fontSize: '13px' }}>{triageReasoning}</p>}
           <div className="card-elevated p-5 mb-4">
             <h3 className="font-semibold mb-2">Keep it up</h3>
             <p className="text-sm text-muted-foreground">Your current routine is working well. We'll check in again at your next scheduled time.</p>
