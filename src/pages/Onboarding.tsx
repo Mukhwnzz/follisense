@@ -69,10 +69,14 @@ const femaleStyleOptions = [
 
 const maleStyleOptions = [
   'Low cut / fade', 'Waves', 'Locs', 'Twists', 'Cornrows', 'Afro',
-  'Bald / shaved', 'Other',
+  'High top', 'Bald / shaved', 'Other',
 ];
 
+const maleShortStyleNames = ['Low cut / fade', 'Waves', 'Bald / shaved', 'High top'];
+const maleLongStyleNames = ['Locs', 'Twists', 'Cornrows'];
+
 const protectiveFreqOptions = ['Most of the time', 'Sometimes', 'Rarely', 'Never'];
+const barberFreqOptions = ['Every 1-2 weeks', 'Every 3-4 weeks', 'Monthly', 'Less often', 'I cut my own hair'];
 const cycleLengthOptions = ['1-2 weeks', '3-4 weeks', '5-6 weeks', '7-8 weeks', 'Longer than 8 weeks', 'It varies'];
 const betweenWashOptions = ['Nothing', 'Oil my scalp', 'Scalp spray or tonic', 'Rinse with water only', 'Other'];
 const concernOptions = [
@@ -80,6 +84,31 @@ const concernOptions = [
   'Going grey or premature greying',
   'I just want to stay on top of things', 'Not sure',
 ];
+const maleShortHairConcerns = [
+  'Itching', 'Flaking', 'Thinning', 'Razor bumps or ingrowns', 'Irritation after cuts',
+  'Dryness', 'Going grey or premature greying',
+  'I just want to stay on top of things', 'Not sure',
+];
+
+const maleShortHairSymptoms = [
+  { key: 'itch', label: 'Itching', question: 'Have you noticed any scalp itching in the last few weeks?' },
+  { key: 'flaking', label: 'Flaking', question: 'Have you noticed any flaking or dandruff in the last few weeks?' },
+  { key: 'tenderness', label: 'Tenderness', question: 'Have you noticed any scalp tenderness or pain in the last few weeks?' },
+  { key: 'hairline', label: 'Thinning', question: 'Have you noticed any thinning or hair loss in the last few weeks?' },
+  { key: 'razorBumps', label: 'Razor bumps or ingrowns', question: 'Have you noticed any razor bumps or ingrown hairs in the last few weeks?' },
+  { key: 'barberIrritation', label: 'Irritation after barber visits', question: 'Have you noticed any irritation after barber visits in the last few weeks?' },
+  { key: 'bumps', label: 'Bumps or irritation', question: 'Have you noticed any bumps or raised areas on your scalp in the last few weeks?' },
+  { key: 'dryness', label: 'Dryness', question: 'Have you noticed any scalp dryness in the last few weeks?' },
+];
+
+const maleShortHairDescriptorOverrides: Record<string, Record<string, string>> = {
+  flaking: { None: 'No flaking', Mild: 'A few flakes when you scratch or rub', Moderate: 'Visible flakes on your scalp or collar', Severe: "Heavy, persistent flaking that won't clear" },
+  tenderness: { None: 'No tenderness', Mild: 'Slight sensitivity when you touch or press', Moderate: 'Sore to touch, especially after a cut', Severe: 'Painful without touching, or sharp pain when pressed' },
+  hairline: { None: 'No thinning', Mild: 'Slightly thinner at the crown or temples', Moderate: 'Noticeably thinner areas, scalp more visible', Severe: 'Scalp clearly visible, hairline receding' },
+  razorBumps: { None: 'No razor bumps', Mild: 'A few bumps after a cut, go away on their own', Moderate: 'Regular bumps after cuts, some painful or inflamed', Severe: 'Persistent bumps, painful, some with pus or scarring' },
+  barberIrritation: { None: 'No irritation after cuts', Mild: 'Slight redness or sensitivity for a day or two', Moderate: 'Burning, stinging, or rash lasting several days', Severe: 'Intense reaction every time, open sores or lasting marks' },
+  dryness: { None: 'No dryness', Mild: 'Slightly dry or tight between washes', Moderate: 'Dry and ashy despite moisturising', Severe: 'Extremely dry, flaking, or painful tightness' },
+};
 
 // ─── CHEMICAL PROCESSING ─────────────────────────────────────────────────────
 const chemicalOptions = [
