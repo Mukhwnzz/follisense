@@ -1373,6 +1373,7 @@ interface OnboardingTriageResultProps {
   symptomResponses: Record<string, string>;
   onboardingSymptoms: { key: string; label: string; question: string }[];
   isMale: boolean;
+  maleIsShortHairOnly: boolean;
   onContinue: () => void;
   navigate: (path: string) => void;
   healthProfile: HealthProfileData;
