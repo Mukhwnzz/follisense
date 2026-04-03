@@ -57,6 +57,8 @@ export interface CheckInData {
   shedding?: string;
   bumps?: string;
   dryness?: string;
+  razorBumps?: string;
+  barberIrritation?: string;
   hairFeel?: string;
   hairBreakage?: string;
   hairAppearance?: string;

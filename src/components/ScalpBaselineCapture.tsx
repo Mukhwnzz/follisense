@@ -39,7 +39,7 @@ const getScalpSteps = (gender: string): ScalpStep[] => {
       },
       {
         title: 'Back and nape',
-        instruction: 'Show the back of your head and your nape. Use a mirror or ask someone to help.',
+        instruction: 'Show the back of your neck and nape. This is where clipper irritation often shows up.',
         referenceImage: scalpBackMale,
       },
     ];

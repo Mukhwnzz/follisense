@@ -69,10 +69,14 @@ const femaleStyleOptions = [
 
 const maleStyleOptions = [
   'Low cut / fade', 'Waves', 'Locs', 'Twists', 'Cornrows', 'Afro',
-  'Bald / shaved', 'Other',
+  'High top', 'Bald / shaved', 'Other',
 ];
 
+const maleShortStyleNames = ['Low cut / fade', 'Waves', 'Bald / shaved', 'High top'];
+const maleLongStyleNames = ['Locs', 'Twists', 'Cornrows'];
+
 const protectiveFreqOptions = ['Most of the time', 'Sometimes', 'Rarely', 'Never'];
+const barberFreqOptions = ['Every 1-2 weeks', 'Every 3-4 weeks', 'Monthly', 'Less often', 'I cut my own hair'];
 const cycleLengthOptions = ['1-2 weeks', '3-4 weeks', '5-6 weeks', '7-8 weeks', 'Longer than 8 weeks', 'It varies'];
 const betweenWashOptions = ['Nothing', 'Oil my scalp', 'Scalp spray or tonic', 'Rinse with water only', 'Other'];
 const concernOptions = [
@@ -80,6 +84,31 @@ const concernOptions = [
   'Going grey or premature greying',
   'I just want to stay on top of things', 'Not sure',
 ];
+const maleShortHairConcerns = [
+  'Itching', 'Flaking', 'Thinning', 'Razor bumps or ingrowns', 'Irritation after cuts',
+  'Dryness', 'Going grey or premature greying',
+  'I just want to stay on top of things', 'Not sure',
+];
+
+const maleShortHairSymptoms = [
+  { key: 'itch', label: 'Itching', question: 'Have you noticed any scalp itching in the last few weeks?' },
+  { key: 'flaking', label: 'Flaking', question: 'Have you noticed any flaking or dandruff in the last few weeks?' },
+  { key: 'tenderness', label: 'Tenderness', question: 'Have you noticed any scalp tenderness or pain in the last few weeks?' },
+  { key: 'hairline', label: 'Thinning', question: 'Have you noticed any thinning or hair loss in the last few weeks?' },
+  { key: 'razorBumps', label: 'Razor bumps or ingrowns', question: 'Have you noticed any razor bumps or ingrown hairs in the last few weeks?' },
+  { key: 'barberIrritation', label: 'Irritation after barber visits', question: 'Have you noticed any irritation after barber visits in the last few weeks?' },
+  { key: 'bumps', label: 'Bumps or irritation', question: 'Have you noticed any bumps or raised areas on your scalp in the last few weeks?' },
+  { key: 'dryness', label: 'Dryness', question: 'Have you noticed any scalp dryness in the last few weeks?' },
+];
+
+const maleShortHairDescriptorOverrides: Record<string, Record<string, string>> = {
+  flaking: { None: 'No flaking', Mild: 'A few flakes when you scratch or rub', Moderate: 'Visible flakes on your scalp or collar', Severe: "Heavy, persistent flaking that won't clear" },
+  tenderness: { None: 'No tenderness', Mild: 'Slight sensitivity when you touch or press', Moderate: 'Sore to touch, especially after a cut', Severe: 'Painful without touching, or sharp pain when pressed' },
+  hairline: { None: 'No thinning', Mild: 'Slightly thinner at the crown or temples', Moderate: 'Noticeably thinner areas, scalp more visible', Severe: 'Scalp clearly visible, hairline receding' },
+  razorBumps: { None: 'No razor bumps', Mild: 'A few bumps after a cut, go away on their own', Moderate: 'Regular bumps after cuts, some painful or inflamed', Severe: 'Persistent bumps, painful, some with pus or scarring' },
+  barberIrritation: { None: 'No irritation after cuts', Mild: 'Slight redness or sensitivity for a day or two', Moderate: 'Burning, stinging, or rash lasting several days', Severe: 'Intense reaction every time, open sores or lasting marks' },
+  dryness: { None: 'No dryness', Mild: 'Slightly dry or tight between washes', Moderate: 'Dry and ashy despite moisturising', Severe: 'Extremely dry, flaking, or painful tightness' },
+};
 
 // ─── CHEMICAL PROCESSING ─────────────────────────────────────────────────────
 const chemicalOptions = [
@@ -160,6 +189,16 @@ const symptomAcks: Record<string, { mild: string; moderate: string; severe: stri
     mild: "Noted. We'll factor this into your profile.",
     moderate: "Persistent dryness can affect your scalp barrier. We'll track this.",
     severe: "Severe dryness can lead to other problems if left unchecked. We're noting this carefully.",
+  },
+  razorBumps: {
+    mild: "Noted. We'll track whether these are recurring.",
+    moderate: "Regular bumps after cuts are worth investigating. We're on it.",
+    severe: "Persistent razor bumps can lead to scarring. A professional can help.",
+  },
+  barberIrritation: {
+    mild: "Noted. We'll see if there's a pattern.",
+    moderate: "Reactions like that aren't something you should just live with. We'll track this.",
+    severe: "That kind of reaction every time needs professional attention.",
   },
 };
 
@@ -264,6 +303,22 @@ const Onboarding = () => {
   const lengthGalleryRef = useRef<HTMLInputElement | null>(null);
 
   const [showProtectiveInfo, setShowProtectiveInfo] = useState(false);
+  const [barberFreq, setBarberFreq] = useState('');
+
+  // Male style classification
+  const maleHasLongStyles = isMale && styles.some(s => maleLongStyleNames.includes(s));
+  const maleIsShortHairOnly = isMale && !maleHasLongStyles;
+  const maleNeedsProtectiveQ = isMale && styles.some(s => [...maleLongStyleNames, 'Afro'].includes(s));
+
+  // Active symptoms and descriptors based on gender/style
+  const activeSymptoms = maleIsShortHairOnly ? maleShortHairSymptoms : onboardingSymptoms;
+  const activeDescriptors = maleIsShortHairOnly
+    ? { ...severityDescriptors, ...maleShortHairDescriptorOverrides }
+    : severityDescriptors;
+  const activeBetweenWashOptions = isMale
+    ? [...betweenWashOptions.filter(o => o !== 'Other'), 'Use a durag or wave cap', 'Other']
+    : betweenWashOptions;
+  const activeConcernOptions = maleIsShortHairOnly ? maleShortHairConcerns : concernOptions;
 
   // Auto-scroll to Let's go button after consent checked
   useEffect(() => {
@@ -337,14 +392,22 @@ const Onboarding = () => {
         if (chemicalStep === 3) return false;
         return false;
       }
-      case 3: return styles.length > 0 && (!styles.includes('Other') || otherStyle.trim().length > 0) && !!protectiveFreq;
-      case 4: return !!cycleLength && betweenWash.length > 0 && (!betweenWash.includes('Other') || otherBetweenWash.trim().length > 0);
+      case 3: {
+        const styleOk = styles.length > 0 && (!styles.includes('Other') || otherStyle.trim().length > 0);
+        if (isMale && !maleNeedsProtectiveQ) return styleOk;
+        return styleOk && !!protectiveFreq;
+      }
+      case 4: {
+        const washOk = betweenWash.length > 0 && (!betweenWash.includes('Other') || otherBetweenWash.trim().length > 0);
+        if (maleIsShortHairOnly) return !!barberFreq && washOk;
+        return !!cycleLength && washOk;
+      }
       case 5: return concerns.length > 0;
       case 6: return consentChecked;
       case 7: return false;
       case 8: {
         if (symptomPhase === 'transition' || symptomPhase === 'thanks') return false;
-        if (symptomPhase === 'symptoms') return !!symptomResponses[onboardingSymptoms[symptomIndex].key];
+        if (symptomPhase === 'symptoms') return !!symptomResponses[activeSymptoms[symptomIndex].key];
         if (symptomPhase === 'result') return true;
         return false;
       }
@@ -363,6 +426,8 @@ const Onboarding = () => {
     shedding: responses.shedding || 'None',
     bumps: responses.bumps || 'None',
     dryness: responses.dryness || 'None',
+    razorBumps: responses.razorBumps || 'None',
+    barberIrritation: responses.barberIrritation || 'None',
     type: 'baseline',
     date: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }),
   });
@@ -379,6 +444,7 @@ const Onboarding = () => {
       protectiveStyles: styles,
       otherStyle,
       protectiveStyleFrequency: protectiveFreq,
+      barberFrequency: barberFreq,
       isWornOutOnly: false,
       cycleLength,
       betweenWashCare: betweenWash,
@@ -440,7 +506,7 @@ const Onboarding = () => {
       if (symptomPhase === 'symptoms') {
         if (symptomAck) {
           setSymptomAck(null);
-          if (symptomIndex < onboardingSymptoms.length - 1) {
+          if (symptomIndex < activeSymptoms.length - 1) {
             setSymptomIndex(symptomIndex + 1);
           } else {
             const checkIn = buildCheckInFromSymptoms(symptomResponses);
@@ -450,14 +516,14 @@ const Onboarding = () => {
           }
           return;
         }
-        const currentSymptom = onboardingSymptoms[symptomIndex];
+        const currentSymptom = activeSymptoms[symptomIndex];
         const severity = symptomResponses[currentSymptom.key];
         const ack = getAck(severity, currentSymptom.label, symptomIndex, currentSymptom.key);
         if (ack) {
           setSymptomAck(ack);
           return;
         }
-        if (symptomIndex < onboardingSymptoms.length - 1) {
+        if (symptomIndex < activeSymptoms.length - 1) {
           setSymptomIndex(symptomIndex + 1);
         } else {
           const checkIn = buildCheckInFromSymptoms(symptomResponses);
@@ -487,11 +553,11 @@ const Onboarding = () => {
     if (step === 8) {
       if (symptomPhase === 'thanks') {
         setSymptomPhase('symptoms');
-        setSymptomIndex(onboardingSymptoms.length - 1);
+        setSymptomIndex(activeSymptoms.length - 1);
         setSymptomAck(null);
       } else if (symptomPhase === 'result') {
         setSymptomPhase('symptoms');
-        setSymptomIndex(onboardingSymptoms.length - 1);
+        setSymptomIndex(activeSymptoms.length - 1);
         setSymptomAck(null);
       } else if (symptomPhase === 'symptoms' && symptomAck) {
         setSymptomAck(null);
@@ -517,7 +583,7 @@ const Onboarding = () => {
   };
 
   const isShortHairStyle = styles.some(s =>
-    ['Low cut / fade', 'Bald / shaved', 'Afro'].includes(s) ||
+    ['Low cut / fade', 'Bald / shaved', 'Afro', 'High top'].includes(s) ||
     s.toLowerCase().includes('twa')
   );
 
@@ -921,10 +987,10 @@ const Onboarding = () => {
                     {styles.includes('Other') && (
                       <input type="text" value={otherStyle} onChange={e => setOtherStyle(e.target.value)} placeholder="Describe your style" className="w-full h-12 px-4 rounded-xl border border-border bg-card text-foreground text-sm mt-3" />
                     )}
-                    {styles.length > 0 && (
+                    {styles.length > 0 && (!isMale || maleNeedsProtectiveQ) && (
                       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mt-6">
                         <div className="flex items-center gap-2 mb-3">
-                          <p className="font-semibold text-foreground">How often are you in protective styles?</p>
+                          <p className="font-semibold text-foreground">{isMale ? 'How often do you wear longer or covered styles?' : 'How often are you in protective styles?'}</p>
                           <button
                             onClick={() => setShowProtectiveInfo(!showProtectiveInfo)}
                             className="text-xs font-medium shrink-0"
@@ -961,15 +1027,30 @@ const Onboarding = () => {
                   <div>
                     <h2 className="text-lg font-semibold text-foreground mb-1">Your routine</h2>
                     <p className="text-xs text-muted-foreground mb-5">{sectionExplainers[4]}</p>
-                    <p className="font-semibold text-foreground mb-3">How long do you usually keep a style in?</p>
-                    <div className="flex flex-wrap gap-2 mb-6">
-                      {cycleLengthOptions.map(o => (
-                        <button key={o} onClick={() => setCycleLength(o)} className={`pill-option ${cycleLength === o ? 'selected' : ''}`}>{o}</button>
-                      ))}
-                    </div>
+
+                    {maleIsShortHairOnly ? (
+                      <>
+                        <p className="font-semibold text-foreground mb-3">How often do you visit the barber?</p>
+                        <div className="flex flex-wrap gap-2 mb-6">
+                          {barberFreqOptions.map(o => (
+                            <button key={o} onClick={() => setBarberFreq(o)} className={`pill-option ${barberFreq === o ? 'selected' : ''}`}>{o}</button>
+                          ))}
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <p className="font-semibold text-foreground mb-3">How long do you usually keep a style in?</p>
+                        <div className="flex flex-wrap gap-2 mb-6">
+                          {cycleLengthOptions.map(o => (
+                            <button key={o} onClick={() => setCycleLength(o)} className={`pill-option ${cycleLength === o ? 'selected' : ''}`}>{o}</button>
+                          ))}
+                        </div>
+                      </>
+                    )}
+
                     <p className="font-semibold text-foreground mb-3">What do you do for your scalp between washes?</p>
                     <div className="flex flex-wrap gap-2">
-                      {betweenWashOptions.map(o => (
+                      {activeBetweenWashOptions.map(o => (
                         <button key={o} onClick={() => toggleBetweenWash(o)} className={`pill-option ${betweenWash.includes(o) ? 'selected' : ''}`}>{o}</button>
                       ))}
                     </div>
@@ -986,7 +1067,7 @@ const Onboarding = () => {
                     <p className="text-xs text-muted-foreground mb-4">{sectionExplainers[5]}</p>
                     <p className="text-muted-foreground mb-4 text-sm">Select all that apply</p>
                     <div className="space-y-3">
-                      {concernOptions.map(c => (
+                      {activeConcernOptions.map(c => (
                         <button key={c} onClick={() => toggleConcern(c)} className={`selection-card w-full text-left ${concerns.includes(c) ? 'selected' : ''}`}>
                           <p className="font-medium text-foreground text-sm">{c}</p>
                         </button>
@@ -1005,7 +1086,9 @@ const Onboarding = () => {
                     </div>
                     <h2 className="text-lg font-semibold text-foreground text-center mb-1">Let's capture your starting point</h2>
                     <p className="text-sm text-muted-foreground text-center mb-5 leading-relaxed">
-                      These photos help you spot changes that happen too slowly to notice day to day. We'll compare them to future check-ins so you can see your progress over time. Only you can see these.
+                      {maleIsShortHairOnly
+                        ? "No need to move anything, just show your hairline clearly. We'll compare these to future check-ins so you can see changes over time. Only you can see these."
+                        : "These photos help you spot changes that happen too slowly to notice day to day. We'll compare them to future check-ins so you can see your progress over time. Only you can see these."}
                     </p>
 
                     <div className="space-y-2 mb-4">
@@ -1093,17 +1176,17 @@ const Onboarding = () => {
                   <div>
                     <h3 className="text-sm font-semibold text-foreground mb-0.5">Let's set your baseline</h3>
                     <p className="text-xs text-muted-foreground mb-4">This is your starting point, so we can track any changes over time.</p>
-                    <p className="text-xs text-muted-foreground mb-1">{symptomIndex + 1} of {onboardingSymptoms.length}</p>
-                    <h2 className="text-lg font-semibold text-foreground mb-6">{onboardingSymptoms[symptomIndex].question}</h2>
+                    <p className="text-xs text-muted-foreground mb-1">{symptomIndex + 1} of {activeSymptoms.length}</p>
+                    <h2 className="text-lg font-semibold text-foreground mb-6">{activeSymptoms[symptomIndex].question}</h2>
                     <div className="space-y-3">
                       {severityOptions.map(sev => (
                         <button
                           key={sev}
                           onClick={() => {
-                            const currentSymptom = onboardingSymptoms[symptomIndex];
+                            const currentSymptom = activeSymptoms[symptomIndex];
                             setSymptomResponses(prev => ({ ...prev, [currentSymptom.key]: sev }));
                             if (sev === 'None') {
-                              if (symptomIndex < onboardingSymptoms.length - 1) {
+                              if (symptomIndex < activeSymptoms.length - 1) {
                                 setTimeout(() => setSymptomIndex(symptomIndex + 1), 150);
                               } else {
                                 setTimeout(() => {
@@ -1118,7 +1201,7 @@ const Onboarding = () => {
                               setSymptomAck(ack);
                               setTimeout(() => {
                                 setSymptomAck(null);
-                                if (symptomIndex < onboardingSymptoms.length - 1) {
+                                if (symptomIndex < activeSymptoms.length - 1) {
                                   setSymptomIndex(symptomIndex + 1);
                                 } else {
                                   const checkIn = buildCheckInFromSymptoms({ ...symptomResponses, [currentSymptom.key]: sev });
@@ -1129,11 +1212,11 @@ const Onboarding = () => {
                               }, 1500);
                             }
                           }}
-                          className={`selection-card w-full text-left ${symptomResponses[onboardingSymptoms[symptomIndex].key] === sev ? 'selected' : ''}`}
+                          className={`selection-card w-full text-left ${symptomResponses[activeSymptoms[symptomIndex].key] === sev ? 'selected' : ''}`}
                         >
                           <p className="font-medium text-foreground text-sm">{sev}</p>
-                          {severityDescriptors[onboardingSymptoms[symptomIndex].key]?.[sev] && (
-                            <p className="text-xs mt-0.5" style={{ color: '#7A7570', fontSize: '12px' }}>{severityDescriptors[onboardingSymptoms[symptomIndex].key][sev]}</p>
+                          {activeDescriptors[activeSymptoms[symptomIndex].key]?.[sev] && (
+                            <p className="text-xs mt-0.5" style={{ color: '#7A7570', fontSize: '12px' }}>{activeDescriptors[activeSymptoms[symptomIndex].key][sev]}</p>
                           )}
                         </button>
                       ))}
@@ -1143,8 +1226,8 @@ const Onboarding = () => {
 
                 {step === 8 && symptomPhase === 'symptoms' && symptomAck && (
                   <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
-                    <p className="text-sm text-muted-foreground mb-1">{symptomIndex + 1} of {onboardingSymptoms.length}</p>
-                    <h2 className="text-lg font-semibold text-foreground mb-3">{onboardingSymptoms[symptomIndex].label}: {symptomResponses[onboardingSymptoms[symptomIndex].key]}</h2>
+                    <p className="text-sm text-muted-foreground mb-1">{symptomIndex + 1} of {activeSymptoms.length}</p>
+                    <h2 className="text-lg font-semibold text-foreground mb-3">{activeSymptoms[symptomIndex].label}: {symptomResponses[activeSymptoms[symptomIndex].key]}</h2>
                     <p className="text-sm text-muted-foreground leading-relaxed">{symptomAck}</p>
                   </motion.div>
                 )}
@@ -1166,7 +1249,7 @@ const Onboarding = () => {
                   <OnboardingTriageResult
                     risk={triageResult}
                     symptomResponses={symptomResponses}
-                    onboardingSymptoms={onboardingSymptoms}
+                    onboardingSymptoms={activeSymptoms}
                     isMale={isMale}
                     onContinue={() => setStep(9)}
                     navigate={navigate}
