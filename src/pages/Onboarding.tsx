@@ -1416,7 +1416,7 @@ const getTriageReasoning = (risk: 'green' | 'amber' | 'red', responses: Record<s
   return null;
 };
 
-const OnboardingTriageResult = ({ risk, symptomResponses, onboardingSymptoms: symptoms, isMale, onContinue, navigate, healthProfile: hp, goals }: OnboardingTriageResultProps) => {
+const OnboardingTriageResult = ({ risk, symptomResponses, onboardingSymptoms: symptoms, isMale, maleIsShortHairOnly, onContinue, navigate, healthProfile: hp, goals }: OnboardingTriageResultProps) => {
   const checkIn: CheckInData = {
     itch: symptomResponses.itch || 'None', tenderness: symptomResponses.tenderness || 'None',
     hairline: symptomResponses.hairline || 'None', flaking: symptomResponses.flaking || 'None',
