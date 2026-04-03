@@ -1249,7 +1249,7 @@ const Onboarding = () => {
                   <OnboardingTriageResult
                     risk={triageResult}
                     symptomResponses={symptomResponses}
-                    onboardingSymptoms={onboardingSymptoms}
+                    onboardingSymptoms={activeSymptoms}
                     isMale={isMale}
                     onContinue={() => setStep(9)}
                     navigate={navigate}
