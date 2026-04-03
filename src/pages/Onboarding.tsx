@@ -505,7 +505,7 @@ const Onboarding = () => {
       if (symptomPhase === 'symptoms') {
         if (symptomAck) {
           setSymptomAck(null);
-          if (symptomIndex < onboardingSymptoms.length - 1) {
+          if (symptomIndex < activeSymptoms.length - 1) {
             setSymptomIndex(symptomIndex + 1);
           } else {
             const checkIn = buildCheckInFromSymptoms(symptomResponses);
@@ -515,14 +515,14 @@ const Onboarding = () => {
           }
           return;
         }
-        const currentSymptom = onboardingSymptoms[symptomIndex];
+        const currentSymptom = activeSymptoms[symptomIndex];
         const severity = symptomResponses[currentSymptom.key];
         const ack = getAck(severity, currentSymptom.label, symptomIndex, currentSymptom.key);
         if (ack) {
           setSymptomAck(ack);
           return;
         }
-        if (symptomIndex < onboardingSymptoms.length - 1) {
+        if (symptomIndex < activeSymptoms.length - 1) {
           setSymptomIndex(symptomIndex + 1);
         } else {
           const checkIn = buildCheckInFromSymptoms(symptomResponses);
