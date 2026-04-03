@@ -303,6 +303,22 @@ const Onboarding = () => {
   const lengthGalleryRef = useRef<HTMLInputElement | null>(null);
 
   const [showProtectiveInfo, setShowProtectiveInfo] = useState(false);
+  const [barberFreq, setBarberFreq] = useState('');
+
+  // Male style classification
+  const maleHasLongStyles = isMale && styles.some(s => maleLongStyleNames.includes(s));
+  const maleIsShortHairOnly = isMale && !maleHasLongStyles;
+  const maleNeedsProtectiveQ = isMale && styles.some(s => [...maleLongStyleNames, 'Afro'].includes(s));
+
+  // Active symptoms and descriptors based on gender/style
+  const activeSymptoms = maleIsShortHairOnly ? maleShortHairSymptoms : onboardingSymptoms;
+  const activeDescriptors = maleIsShortHairOnly
+    ? { ...severityDescriptors, ...maleShortHairDescriptorOverrides }
+    : severityDescriptors;
+  const activeBetweenWashOptions = isMale
+    ? [...betweenWashOptions.filter(o => o !== 'Other'), 'Use a durag or wave cap', 'Other']
+    : betweenWashOptions;
+  const activeConcernOptions = maleIsShortHairOnly ? maleShortHairConcerns : concernOptions;
 
   // Auto-scroll to Let's go button after consent checked
   useEffect(() => {
