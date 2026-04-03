@@ -392,8 +392,16 @@ const Onboarding = () => {
         if (chemicalStep === 3) return false;
         return false;
       }
-      case 3: return styles.length > 0 && (!styles.includes('Other') || otherStyle.trim().length > 0) && !!protectiveFreq;
-      case 4: return !!cycleLength && betweenWash.length > 0 && (!betweenWash.includes('Other') || otherBetweenWash.trim().length > 0);
+      case 3: {
+        const styleOk = styles.length > 0 && (!styles.includes('Other') || otherStyle.trim().length > 0);
+        if (isMale && !maleNeedsProtectiveQ) return styleOk;
+        return styleOk && !!protectiveFreq;
+      }
+      case 4: {
+        const washOk = betweenWash.length > 0 && (!betweenWash.includes('Other') || otherBetweenWash.trim().length > 0);
+        if (maleIsShortHairOnly) return !!barberFreq && washOk;
+        return !!cycleLength && washOk;
+      }
       case 5: return concerns.length > 0;
       case 6: return consentChecked;
       case 7: return false;
