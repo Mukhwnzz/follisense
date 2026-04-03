@@ -1027,15 +1027,30 @@ const Onboarding = () => {
                   <div>
                     <h2 className="text-lg font-semibold text-foreground mb-1">Your routine</h2>
                     <p className="text-xs text-muted-foreground mb-5">{sectionExplainers[4]}</p>
-                    <p className="font-semibold text-foreground mb-3">How long do you usually keep a style in?</p>
-                    <div className="flex flex-wrap gap-2 mb-6">
-                      {cycleLengthOptions.map(o => (
-                        <button key={o} onClick={() => setCycleLength(o)} className={`pill-option ${cycleLength === o ? 'selected' : ''}`}>{o}</button>
-                      ))}
-                    </div>
+
+                    {maleIsShortHairOnly ? (
+                      <>
+                        <p className="font-semibold text-foreground mb-3">How often do you visit the barber?</p>
+                        <div className="flex flex-wrap gap-2 mb-6">
+                          {barberFreqOptions.map(o => (
+                            <button key={o} onClick={() => setBarberFreq(o)} className={`pill-option ${barberFreq === o ? 'selected' : ''}`}>{o}</button>
+                          ))}
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <p className="font-semibold text-foreground mb-3">How long do you usually keep a style in?</p>
+                        <div className="flex flex-wrap gap-2 mb-6">
+                          {cycleLengthOptions.map(o => (
+                            <button key={o} onClick={() => setCycleLength(o)} className={`pill-option ${cycleLength === o ? 'selected' : ''}`}>{o}</button>
+                          ))}
+                        </div>
+                      </>
+                    )}
+
                     <p className="font-semibold text-foreground mb-3">What do you do for your scalp between washes?</p>
                     <div className="flex flex-wrap gap-2">
-                      {betweenWashOptions.map(o => (
+                      {activeBetweenWashOptions.map(o => (
                         <button key={o} onClick={() => toggleBetweenWash(o)} className={`pill-option ${betweenWash.includes(o) ? 'selected' : ''}`}>{o}</button>
                       ))}
                     </div>
