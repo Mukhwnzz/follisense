@@ -122,17 +122,17 @@ const severityOptions = ['None', 'Mild', 'Moderate', 'Severe'];
 // ─── WARM ACKNOWLEDGMENTS ────────────────────────────────────────────────────
 const symptomAcks: Record<string, { mild: string; moderate: string; severe: string }> = {
   itch: {
-    mild: "That's really common, especially mid-cycle. We'll keep an eye on it.",
+    mild: "Noted. We'll keep an eye on this one.",
     moderate: "That level of itching is worth tracking. We'll watch how it changes.",
     severe: "Constant itching can really affect your day. Let's make this a priority.",
   },
   flaking: {
-    mild: "A little flaking between washes is normal. Noted.",
+    mild: "Noted. We'll factor this in.",
     moderate: "More flaking than usual. Worth monitoring over your next few check-ins.",
     severe: "Heavy flaking like that needs attention. We'll stay on top of this with you.",
   },
   tenderness: {
-    mild: "Some sensitivity is worth noting. We'll check on this next time.",
+    mild: "Good that you flagged it. We'll check on this next time.",
     moderate: "Tenderness like that can signal something underneath. We'll keep tracking.",
     severe: "Pain on your scalp shouldn't be ignored. That's important information.",
   },
@@ -142,25 +142,37 @@ const symptomAcks: Record<string, { mild: string; moderate: string; severe: stri
     severe: "Significant thinning deserves professional input. We'll help you take the right next step.",
   },
   edgeLoss: {
-    mild: "Some thinning around the edges is common with certain styles. We'll track this.",
+    mild: "Noted. We'll track this one closely.",
     moderate: "Edge thinning at this level is worth watching closely. Good that you flagged it.",
     severe: "Significant edge loss needs attention soon. A professional can help before it progresses.",
   },
   shedding: {
-    mild: "Some breakage is normal with textured hair. Noted for your records.",
+    mild: "Noted. We'll see how this tracks over time.",
     moderate: "More breakage than expected. Could be worth looking at your routine.",
     severe: "That level of breakage can signal something deeper going on. Good that you're telling us.",
   },
   bumps: {
-    mild: "A few bumps can come and go. We'll see if they persist.",
+    mild: "Noted. We'll see if they persist.",
     moderate: "Multiple bumps are worth keeping an eye on. Noted.",
     severe: "That sounds really uncomfortable. A professional should take a look at this soon.",
   },
   dryness: {
-    mild: "Mild dryness is common between washes. Noted.",
+    mild: "Noted. We'll factor this into your profile.",
     moderate: "Persistent dryness can affect your scalp barrier. We'll track this.",
     severe: "Severe dryness can lead to other problems if left unchecked. We're noting this carefully.",
   },
+};
+
+// ─── SEVERITY DESCRIPTORS ────────────────────────────────────────────────────
+const severityDescriptors: Record<string, Record<string, string>> = {
+  itch: { None: 'No itching', Mild: 'Occasional itch, easy to ignore', Moderate: 'Frequent itching, hard to leave alone', Severe: 'Constant itching, disrupts your day' },
+  flaking: { None: 'No flaking', Mild: 'A few flakes when you scratch or part', Moderate: 'Visible flakes on your scalp or clothes', Severe: 'Heavy, persistent flaking that won\'t clear' },
+  tenderness: { None: 'No tenderness', Mild: 'Slight sensitivity when you touch or press', Moderate: 'Sore to touch, especially around edges or parting', Severe: 'Painful without touching, or sharp pain when pressed' },
+  hairline: { None: 'No thinning', Mild: 'Slightly less volume than usual', Moderate: 'Noticeably thinner areas, wider parting', Severe: 'Scalp clearly visible through hair, patches appearing' },
+  edgeLoss: { None: 'No edge loss', Mild: 'Edges slightly thinner than before', Moderate: 'Visible thinning at temples or hairline', Severe: 'Significant recession, hairline has pulled back' },
+  shedding: { None: 'No breakage', Mild: 'A few short pieces when styling or detangling', Moderate: 'Noticeable snapping, uneven lengths appearing', Severe: 'Significant breakage daily, hair visibly thinning from it' },
+  bumps: { None: 'No bumps', Mild: 'A few small bumps, not painful', Moderate: 'Multiple bumps, some tenderness or redness', Severe: 'Widespread, painful, or spreading bumps' },
+  dryness: { None: 'No dryness', Mild: 'Slightly dry or tight between washes', Moderate: 'Dry and flaky despite moisturising', Severe: 'Extremely dry, cracking, or painful tightness' },
 };
 const getAck = (severity: string, _label: string, _index: number, key?: string): string | null => {
   if (severity === 'None') return null;
