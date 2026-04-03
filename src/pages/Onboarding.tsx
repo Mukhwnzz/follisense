@@ -1579,8 +1579,8 @@ const lengthStepsShort = [
 
 const getLengthReferenceImage = (gender: string, index: number) => {
   const isMale = gender === 'man';
-  const femaleRefs = [scalpFrontFemale, scalpSideFemale, scalpBackFemale];
-  const maleRefs = [scalpSideMaleA, scalpSideMaleB, scalpBackMale];
+  const femaleRefs = [refFemaleFront, scalpSideFemale, scalpBackFemale];
+  const maleRefs = [refMaleFront, scalpSideMaleB, scalpBackMale];
   return (isMale ? maleRefs : femaleRefs)[index] || femaleRefs[index] || '';
 };
 
