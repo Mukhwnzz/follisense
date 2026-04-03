@@ -316,9 +316,7 @@ const Onboarding = () => {
   const activeDescriptors = maleIsShortHairOnly
     ? { ...severityDescriptors, ...maleShortHairDescriptorOverrides }
     : severityDescriptors;
-  const activeBetweenWashOptions = isMale
-    ? [...betweenWashOptions.filter(o => o !== 'Other'), 'Use a durag or wave cap', 'Other']
-    : betweenWashOptions;
+  const activeBetweenWashOptions = betweenWashOptions;
   const activeConcernOptions = maleIsShortHairOnly ? maleShortHairConcerns : concernOptions;
 
   // Auto-scroll to Let's go button after consent checked
