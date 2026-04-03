@@ -987,10 +987,10 @@ const Onboarding = () => {
                     {styles.includes('Other') && (
                       <input type="text" value={otherStyle} onChange={e => setOtherStyle(e.target.value)} placeholder="Describe your style" className="w-full h-12 px-4 rounded-xl border border-border bg-card text-foreground text-sm mt-3" />
                     )}
-                    {styles.length > 0 && (
+                    {styles.length > 0 && (!isMale || maleNeedsProtectiveQ) && (
                       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mt-6">
                         <div className="flex items-center gap-2 mb-3">
-                          <p className="font-semibold text-foreground">How often are you in protective styles?</p>
+                          <p className="font-semibold text-foreground">{isMale ? 'How often do you wear longer or covered styles?' : 'How often are you in protective styles?'}</p>
                           <button
                             onClick={() => setShowProtectiveInfo(!showProtectiveInfo)}
                             className="text-xs font-medium shrink-0"
