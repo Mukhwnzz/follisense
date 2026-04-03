@@ -1263,6 +1263,7 @@ const Onboarding = () => {
                     symptomResponses={symptomResponses}
                     onboardingSymptoms={activeSymptoms}
                     isMale={isMale}
+                    maleIsShortHairOnly={maleIsShortHairOnly}
                     onContinue={() => setStep(9)}
                     navigate={navigate}
                     healthProfile={healthProfile}
