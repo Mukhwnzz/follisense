@@ -444,6 +444,7 @@ const Onboarding = () => {
       protectiveStyles: styles,
       otherStyle,
       protectiveStyleFrequency: protectiveFreq,
+      barberFrequency: barberFreq,
       isWornOutOnly: false,
       cycleLength,
       betweenWashCare: betweenWash,
