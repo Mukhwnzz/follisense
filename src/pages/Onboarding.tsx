@@ -657,7 +657,7 @@ const Onboarding = () => {
                 <ArrowLeft size={22} strokeWidth={1.8} />
               </button>
               <div className="flex gap-1.5">
-                {Array.from({ length: TOTAL_PROGRESS_SEGMENTS }).map((_, i) => (
+                {Array.from({ length: totalProgressSegments }).map((_, i) => (
                   <div
                     key={i}
                     className={`h-1 rounded-full transition-colors duration-300 ${i <= activeSegment ? 'bg-primary' : 'bg-border'}`}
