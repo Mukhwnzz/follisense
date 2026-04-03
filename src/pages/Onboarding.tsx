@@ -1176,17 +1176,17 @@ const Onboarding = () => {
                   <div>
                     <h3 className="text-sm font-semibold text-foreground mb-0.5">Let's set your baseline</h3>
                     <p className="text-xs text-muted-foreground mb-4">This is your starting point, so we can track any changes over time.</p>
-                    <p className="text-xs text-muted-foreground mb-1">{symptomIndex + 1} of {onboardingSymptoms.length}</p>
-                    <h2 className="text-lg font-semibold text-foreground mb-6">{onboardingSymptoms[symptomIndex].question}</h2>
+                    <p className="text-xs text-muted-foreground mb-1">{symptomIndex + 1} of {activeSymptoms.length}</p>
+                    <h2 className="text-lg font-semibold text-foreground mb-6">{activeSymptoms[symptomIndex].question}</h2>
                     <div className="space-y-3">
                       {severityOptions.map(sev => (
                         <button
                           key={sev}
                           onClick={() => {
-                            const currentSymptom = onboardingSymptoms[symptomIndex];
+                            const currentSymptom = activeSymptoms[symptomIndex];
                             setSymptomResponses(prev => ({ ...prev, [currentSymptom.key]: sev }));
                             if (sev === 'None') {
-                              if (symptomIndex < onboardingSymptoms.length - 1) {
+                              if (symptomIndex < activeSymptoms.length - 1) {
                                 setTimeout(() => setSymptomIndex(symptomIndex + 1), 150);
                               } else {
                                 setTimeout(() => {
@@ -1201,7 +1201,7 @@ const Onboarding = () => {
                               setSymptomAck(ack);
                               setTimeout(() => {
                                 setSymptomAck(null);
-                                if (symptomIndex < onboardingSymptoms.length - 1) {
+                                if (symptomIndex < activeSymptoms.length - 1) {
                                   setSymptomIndex(symptomIndex + 1);
                                 } else {
                                   const checkIn = buildCheckInFromSymptoms({ ...symptomResponses, [currentSymptom.key]: sev });
@@ -1212,11 +1212,11 @@ const Onboarding = () => {
                               }, 1500);
                             }
                           }}
-                          className={`selection-card w-full text-left ${symptomResponses[onboardingSymptoms[symptomIndex].key] === sev ? 'selected' : ''}`}
+                          className={`selection-card w-full text-left ${symptomResponses[activeSymptoms[symptomIndex].key] === sev ? 'selected' : ''}`}
                         >
                           <p className="font-medium text-foreground text-sm">{sev}</p>
-                          {severityDescriptors[onboardingSymptoms[symptomIndex].key]?.[sev] && (
-                            <p className="text-xs mt-0.5" style={{ color: '#7A7570', fontSize: '12px' }}>{severityDescriptors[onboardingSymptoms[symptomIndex].key][sev]}</p>
+                          {activeDescriptors[activeSymptoms[symptomIndex].key]?.[sev] && (
+                            <p className="text-xs mt-0.5" style={{ color: '#7A7570', fontSize: '12px' }}>{activeDescriptors[activeSymptoms[symptomIndex].key][sev]}</p>
                           )}
                         </button>
                       ))}
@@ -1226,8 +1226,8 @@ const Onboarding = () => {
 
                 {step === 8 && symptomPhase === 'symptoms' && symptomAck && (
                   <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
-                    <p className="text-sm text-muted-foreground mb-1">{symptomIndex + 1} of {onboardingSymptoms.length}</p>
-                    <h2 className="text-lg font-semibold text-foreground mb-3">{onboardingSymptoms[symptomIndex].label}: {symptomResponses[onboardingSymptoms[symptomIndex].key]}</h2>
+                    <p className="text-sm text-muted-foreground mb-1">{symptomIndex + 1} of {activeSymptoms.length}</p>
+                    <h2 className="text-lg font-semibold text-foreground mb-3">{activeSymptoms[symptomIndex].label}: {symptomResponses[activeSymptoms[symptomIndex].key]}</h2>
                     <p className="text-sm text-muted-foreground leading-relaxed">{symptomAck}</p>
                   </motion.div>
                 )}
