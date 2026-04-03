@@ -582,7 +582,7 @@ const Onboarding = () => {
   };
 
   const isShortHairStyle = styles.some(s =>
-    ['Low cut / fade', 'Bald / shaved', 'Afro'].includes(s) ||
+    ['Low cut / fade', 'Bald / shaved', 'Afro', 'High top'].includes(s) ||
     s.toLowerCase().includes('twa')
   );
 
