@@ -17,14 +17,14 @@ import hair4cBack from '@/assets/hair-4c-back.png';
 import hair3bBack from '@/assets/hair-3b-back.png';
 import hair3cBack from '@/assets/hair-3c-back.png';
 
-import scalpFrontFemale from '@/assets/scalp-front-female.jpeg';
+import refFemaleFront from '@/assets/ref-female-front.jpg';
 import scalpSideFemale from '@/assets/scalp-side-female.jpeg';
 import scalpBackFemale from '@/assets/scalp-back-female.jpeg';
-import scalpTopFemale from '@/assets/scalp-top-female.jpeg';
-import scalpSideMaleA from '@/assets/scalp-side-male-a.jpeg';
+import refFemaleTop from '@/assets/ref-female-top.jpg';
+import refMaleFront from '@/assets/ref-male-front.jpg';
 import scalpSideMaleB from '@/assets/scalp-side-male-b.jpeg';
 import scalpBackMale from '@/assets/scalp-back-male.png';
-import scalpTopMale from '@/assets/scalp-top-male.png';
+import refMaleTop from '@/assets/ref-male-top.png';
 
 // ─── HAIR TYPE DATA ──────────────────────────────────────────────────────────
 const hairTypes = [
