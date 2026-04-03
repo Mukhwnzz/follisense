@@ -714,8 +714,8 @@ const Onboarding = () => {
                         <button
                           key={opt.id}
                           onClick={() => {
-                            setOnboardingData({ ...onboardingData, gender: opt.id });
-                            setStep(1);
+                          setOnboardingData({ ...onboardingData, gender: opt.id });
+                            setStep(opt.id === 'man' ? 3 : 1);
                           }}
                           className="selection-card w-full text-left flex items-center gap-4"
                         >
