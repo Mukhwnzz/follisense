@@ -587,6 +587,7 @@ const Onboarding = () => {
       setChemicalStep(chemicalStep - 1);
     } else if (step > 0) {
       if (step === 2) setChemicalStep(0);
+      if (isMale && step === 3) { setStep(0); return; }
       setStep(step - 1);
     } else {
       navigate(-1);
