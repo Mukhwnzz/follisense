@@ -17,14 +17,14 @@ import hair4cBack from '@/assets/hair-4c-back.png';
 import hair3bBack from '@/assets/hair-3b-back.png';
 import hair3cBack from '@/assets/hair-3c-back.png';
 
-import scalpFrontFemale from '@/assets/scalp-front-female.jpeg';
+import refFemaleFront from '@/assets/ref-female-front.jpg';
 import scalpSideFemale from '@/assets/scalp-side-female.jpeg';
 import scalpBackFemale from '@/assets/scalp-back-female.jpeg';
-import scalpTopFemale from '@/assets/scalp-top-female.jpeg';
-import scalpSideMaleA from '@/assets/scalp-side-male-a.jpeg';
+import refFemaleTop from '@/assets/ref-female-top.jpg';
+import refMaleFront from '@/assets/ref-male-front.jpg';
 import scalpSideMaleB from '@/assets/scalp-side-male-b.jpeg';
 import scalpBackMale from '@/assets/scalp-back-male.png';
-import scalpTopMale from '@/assets/scalp-top-male.png';
+import refMaleTop from '@/assets/ref-male-top.png';
 
 // ─── HAIR TYPE DATA ──────────────────────────────────────────────────────────
 const hairTypes = [
@@ -243,7 +243,8 @@ const CurlIcon = ({ type }: { type: string }) => {
 
 // Total main screens: -1=welcome, 0=gender, 1=hair type, 2=chemical, 3=styles, 4=routine, 5=concerns,
 // 6=photo guidelines, 7=scalp photos, 8=symptoms, 9=length check transition, 10=length photos, 11=completion
-const TOTAL_PROGRESS_SEGMENTS = 8; // gender, hair, chemical, styles, routine, concerns, guidelines+photos, symptoms
+const TOTAL_PROGRESS_SEGMENTS_FEMALE = 8; // gender, hair, chemical, styles, routine, concerns, guidelines+photos, symptoms
+const TOTAL_PROGRESS_SEGMENTS_MALE = 7; // gender, styles, routine, concerns, guidelines+photos, symptoms, length
 
 const Onboarding = () => {
   const navigate = useNavigate();
@@ -315,9 +316,7 @@ const Onboarding = () => {
   const activeDescriptors = maleIsShortHairOnly
     ? { ...severityDescriptors, ...maleShortHairDescriptorOverrides }
     : severityDescriptors;
-  const activeBetweenWashOptions = isMale
-    ? [...betweenWashOptions.filter(o => o !== 'Other'), 'Use a durag or wave cap', 'Other']
-    : betweenWashOptions;
+  const activeBetweenWashOptions = betweenWashOptions;
   const activeConcernOptions = maleIsShortHairOnly ? maleShortHairConcerns : concernOptions;
 
   // Auto-scroll to Let's go button after consent checked
@@ -368,8 +367,20 @@ const Onboarding = () => {
   const toggleConcern = (c: string) => setConcerns(prev => prev.includes(c) ? prev.filter(x => x !== c) : [...prev, c]);
   const toggleChemicalType = (t: string) => setChemicalTypes(prev => prev.includes(t) ? prev.filter(x => x !== t) : [...prev, t]);
 
+  const totalProgressSegments = isMale ? TOTAL_PROGRESS_SEGMENTS_MALE : TOTAL_PROGRESS_SEGMENTS_FEMALE;
+
   const getProgressSegment = () => {
-    if (step <= 0) return 0; // welcome + gender = 0
+    if (isMale) {
+      if (step <= 0) return 0;
+      if (step === 3) return 1;
+      if (step === 4) return 2;
+      if (step === 5) return 3;
+      if (step === 6 || step === 7) return 4;
+      if (step === 8) return 5;
+      if (step >= 9) return 6;
+      return 0;
+    }
+    if (step <= 0) return 0;
     if (step === 1) return 1;
     if (step === 2) return 2;
     if (step === 3) return 3;
@@ -576,6 +587,7 @@ const Onboarding = () => {
       setChemicalStep(chemicalStep - 1);
     } else if (step > 0) {
       if (step === 2) setChemicalStep(0);
+      if (isMale && step === 3) { setStep(0); return; }
       setStep(step - 1);
     } else {
       navigate(-1);
@@ -645,7 +657,7 @@ const Onboarding = () => {
                 <ArrowLeft size={22} strokeWidth={1.8} />
               </button>
               <div className="flex gap-1.5">
-                {Array.from({ length: TOTAL_PROGRESS_SEGMENTS }).map((_, i) => (
+                {Array.from({ length: totalProgressSegments }).map((_, i) => (
                   <div
                     key={i}
                     className={`h-1 rounded-full transition-colors duration-300 ${i <= activeSegment ? 'bg-primary' : 'bg-border'}`}
@@ -703,8 +715,8 @@ const Onboarding = () => {
                         <button
                           key={opt.id}
                           onClick={() => {
-                            setOnboardingData({ ...onboardingData, gender: opt.id });
-                            setStep(1);
+                          setOnboardingData({ ...onboardingData, gender: opt.id });
+                            setStep(opt.id === 'man' ? 3 : 1);
                           }}
                           className="selection-card w-full text-left flex items-center gap-4"
                         >
@@ -1251,6 +1263,7 @@ const Onboarding = () => {
                     symptomResponses={symptomResponses}
                     onboardingSymptoms={activeSymptoms}
                     isMale={isMale}
+                    maleIsShortHairOnly={maleIsShortHairOnly}
                     onContinue={() => setStep(9)}
                     navigate={navigate}
                     healthProfile={healthProfile}
@@ -1361,6 +1374,7 @@ interface OnboardingTriageResultProps {
   symptomResponses: Record<string, string>;
   onboardingSymptoms: { key: string; label: string; question: string }[];
   isMale: boolean;
+  maleIsShortHairOnly: boolean;
   onContinue: () => void;
   navigate: (path: string) => void;
   healthProfile: HealthProfileData;
@@ -1403,7 +1417,7 @@ const getTriageReasoning = (risk: 'green' | 'amber' | 'red', responses: Record<s
   return null;
 };
 
-const OnboardingTriageResult = ({ risk, symptomResponses, onboardingSymptoms: symptoms, isMale, onContinue, navigate, healthProfile: hp, goals }: OnboardingTriageResultProps) => {
+const OnboardingTriageResult = ({ risk, symptomResponses, onboardingSymptoms: symptoms, isMale, maleIsShortHairOnly, onContinue, navigate, healthProfile: hp, goals }: OnboardingTriageResultProps) => {
   const checkIn: CheckInData = {
     itch: symptomResponses.itch || 'None', tenderness: symptomResponses.tenderness || 'None',
     hairline: symptomResponses.hairline || 'None', flaking: symptomResponses.flaking || 'None',
@@ -1511,7 +1525,7 @@ const OnboardingTriageResult = ({ risk, symptomResponses, onboardingSymptoms: sy
           )}
           <div className="card-elevated p-5 mb-4">
             <h3 className="font-semibold mb-2">What this means</h3>
-            <p className="text-sm text-muted-foreground">Persistent or worsening symptoms can sometimes indicate conditions like traction alopecia or scalp inflammation that respond best to early treatment. Seeing a professional now gives you the best options.</p>
+            <p className="text-sm text-muted-foreground">{maleIsShortHairOnly ? 'Persistent or worsening symptoms can sometimes indicate conditions like male pattern hair loss or scalp inflammation that respond best to early treatment. Seeing a professional now gives you the best options.' : 'Persistent or worsening symptoms can sometimes indicate conditions like traction alopecia or scalp inflammation that respond best to early treatment. Seeing a professional now gives you the best options.'}</p>
           </div>
           {telogenTriggers.length > 0 && (
             <div className="rounded-2xl bg-accent p-5 mb-4">
@@ -1565,8 +1579,8 @@ const lengthStepsShort = [
 
 const getLengthReferenceImage = (gender: string, index: number) => {
   const isMale = gender === 'man';
-  const femaleRefs = [scalpFrontFemale, scalpSideFemale, scalpBackFemale];
-  const maleRefs = [scalpSideMaleA, scalpSideMaleB, scalpBackMale];
+  const femaleRefs = [refFemaleFront, scalpSideFemale, scalpBackFemale];
+  const maleRefs = [refMaleFront, scalpSideMaleB, scalpBackMale];
   return (isMale ? maleRefs : femaleRefs)[index] || femaleRefs[index] || '';
 };
 

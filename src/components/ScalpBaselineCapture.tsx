@@ -2,14 +2,14 @@ import { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Camera, ImageIcon } from 'lucide-react';
 
-import scalpFrontFemale from '@/assets/scalp-front-female.jpeg';
+import refFemaleFront from '@/assets/ref-female-front.jpg';
 import scalpSideFemale from '@/assets/scalp-side-female.jpeg';
 import scalpBackFemale from '@/assets/scalp-back-female.jpeg';
-import scalpTopFemale from '@/assets/scalp-top-female.jpeg';
-import scalpSideMaleA from '@/assets/scalp-side-male-a.jpeg';
+import refFemaleTop from '@/assets/ref-female-top.jpg';
+import refMaleFront from '@/assets/ref-male-front.jpg';
 import scalpSideMaleB from '@/assets/scalp-side-male-b.jpeg';
 import scalpBackMale from '@/assets/scalp-back-male.png';
-import scalpTopMale from '@/assets/scalp-top-male.png';
+import refMaleTop from '@/assets/ref-male-top.png';
 
 interface ScalpStep {
   title: string;
@@ -24,8 +24,8 @@ const getScalpSteps = (gender: string): ScalpStep[] => {
     return [
       {
         title: 'Front hairline',
-        instruction: 'Keep your forehead visible. Pull hair back to show your hairline and temples.',
-        referenceImage: scalpSideMaleA,
+        instruction: 'Keep your forehead visible. Show your hairline and temples clearly.',
+        referenceImage: refMaleFront,
       },
       {
         title: 'Side view',
@@ -35,7 +35,7 @@ const getScalpSteps = (gender: string): ScalpStep[] => {
       {
         title: 'Top of head',
         instruction: 'Tilt your head forward. Hold your phone above and point down at your crown.',
-        referenceImage: scalpTopMale,
+        referenceImage: refMaleTop,
       },
       {
         title: 'Back and nape',
@@ -49,7 +49,7 @@ const getScalpSteps = (gender: string): ScalpStep[] => {
     {
       title: 'Front hairline',
       instruction: 'Keep your forehead visible. Pull hair back to show your hairline and temples.',
-      referenceImage: scalpFrontFemale,
+      referenceImage: refFemaleFront,
     },
     {
       title: 'Side view',
@@ -59,7 +59,7 @@ const getScalpSteps = (gender: string): ScalpStep[] => {
     {
       title: 'Top of head',
       instruction: 'Tilt your head forward. Hold your phone above and point down at your crown.',
-      referenceImage: scalpTopFemale,
+      referenceImage: refFemaleTop,
     },
     {
       title: 'Back and nape',
