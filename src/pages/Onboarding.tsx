@@ -407,7 +407,7 @@ const Onboarding = () => {
       case 7: return false;
       case 8: {
         if (symptomPhase === 'transition' || symptomPhase === 'thanks') return false;
-        if (symptomPhase === 'symptoms') return !!symptomResponses[onboardingSymptoms[symptomIndex].key];
+        if (symptomPhase === 'symptoms') return !!symptomResponses[activeSymptoms[symptomIndex].key];
         if (symptomPhase === 'result') return true;
         return false;
       }
