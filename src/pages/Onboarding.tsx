@@ -367,8 +367,20 @@ const Onboarding = () => {
   const toggleConcern = (c: string) => setConcerns(prev => prev.includes(c) ? prev.filter(x => x !== c) : [...prev, c]);
   const toggleChemicalType = (t: string) => setChemicalTypes(prev => prev.includes(t) ? prev.filter(x => x !== t) : [...prev, t]);
 
+  const totalProgressSegments = isMale ? TOTAL_PROGRESS_SEGMENTS_MALE : TOTAL_PROGRESS_SEGMENTS_FEMALE;
+
   const getProgressSegment = () => {
-    if (step <= 0) return 0; // welcome + gender = 0
+    if (isMale) {
+      if (step <= 0) return 0;
+      if (step === 3) return 1;
+      if (step === 4) return 2;
+      if (step === 5) return 3;
+      if (step === 6 || step === 7) return 4;
+      if (step === 8) return 5;
+      if (step >= 9) return 6;
+      return 0;
+    }
+    if (step <= 0) return 0;
     if (step === 1) return 1;
     if (step === 2) return 2;
     if (step === 3) return 3;
