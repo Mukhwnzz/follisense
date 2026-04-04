@@ -77,7 +77,7 @@ const maleLongStyleNames = ['Locs', 'Twists', 'Cornrows'];
 
 const protectiveFreqOptions = ['Most of the time', 'Sometimes', 'Rarely', 'Never'];
 const barberFreqOptions = ['Every 1-2 weeks', 'Every 3-4 weeks', 'Monthly', 'Less often', 'I cut my own hair'];
-const cycleLengthOptions = ['1-2 weeks', '3-4 weeks', '5-6 weeks', '7-8 weeks', 'Longer than 8 weeks', 'It varies'];
+const cycleLengthOptions = ['1-2 weeks', '3-4 weeks', '5-6 weeks', '7-8 weeks', 'Longer than 8 weeks', 'Not sure yet'];
 const betweenWashOptions = ['Nothing', 'Oil my scalp', 'Scalp spray or tonic', 'Rinse with water only', 'Other'];
 const concernOptions = [
   'Itching', 'Flaking', 'Thinning', 'Tenderness', 'Breakage', 'Dryness',
@@ -660,9 +660,17 @@ const Onboarding = () => {
                 {Array.from({ length: totalProgressSegments }).map((_, i) => (
                   <div
                     key={i}
-                    className={`h-1 rounded-full transition-colors duration-300 ${i <= activeSegment ? 'bg-primary' : 'bg-border'}`}
+                    className="h-1 rounded-full bg-border overflow-hidden"
                     style={{ width: '28px' }}
-                  />
+                  >
+                    <div
+                      className="h-full bg-primary rounded-full"
+                      style={{
+                        width: i <= activeSegment ? '100%' : '0%',
+                        transition: 'width 300ms ease-out',
+                      }}
+                    />
+                  </div>
                 ))}
               </div>
               <div className="w-10" />
@@ -1051,7 +1059,7 @@ const Onboarding = () => {
                       </>
                     ) : (
                       <>
-                        <p className="font-semibold text-foreground mb-3">How long do you usually keep a style in?</p>
+                        <p className="font-semibold text-foreground mb-3">How long are you planning to keep your current style?</p>
                         <div className="flex flex-wrap gap-2 mb-6">
                           {cycleLengthOptions.map(o => (
                             <button key={o} onClick={() => setCycleLength(o)} className={`pill-option ${cycleLength === o ? 'selected' : ''}`}>{o}</button>
@@ -1191,47 +1199,68 @@ const Onboarding = () => {
                     <p className="text-xs text-muted-foreground mb-1">{symptomIndex + 1} of {activeSymptoms.length}</p>
                     <h2 className="text-lg font-semibold text-foreground mb-6">{activeSymptoms[symptomIndex].question}</h2>
                     <div className="space-y-3">
-                      {severityOptions.map(sev => (
-                        <button
-                          key={sev}
-                          onClick={() => {
-                            const currentSymptom = activeSymptoms[symptomIndex];
-                            setSymptomResponses(prev => ({ ...prev, [currentSymptom.key]: sev }));
-                            if (sev === 'None') {
-                              if (symptomIndex < activeSymptoms.length - 1) {
-                                setTimeout(() => setSymptomIndex(symptomIndex + 1), 150);
-                              } else {
-                                setTimeout(() => {
-                                  const checkIn = buildCheckInFromSymptoms({ ...symptomResponses, [currentSymptom.key]: sev });
-                                  const risk = computeHistoricalRisk(checkIn, []);
-                                  setTriageResult(risk);
-                                  setSymptomPhase('thanks');
-                                }, 150);
-                              }
-                            } else {
-                              const ack = getAck(sev, currentSymptom.label, symptomIndex, currentSymptom.key);
-                              setSymptomAck(ack);
-                              setTimeout(() => {
-                                setSymptomAck(null);
+                      {severityOptions.map(sev => {
+                        const isSelected = symptomResponses[activeSymptoms[symptomIndex].key] === sev;
+                        const hasSelection = !!symptomResponses[activeSymptoms[symptomIndex].key];
+                        return (
+                          <motion.button
+                            key={sev}
+                            whileTap={{ scale: 1.02 }}
+                            transition={{ duration: 0.15 }}
+                            onClick={() => {
+                              const currentSymptom = activeSymptoms[symptomIndex];
+                              setSymptomResponses(prev => ({ ...prev, [currentSymptom.key]: sev }));
+                              if (sev === 'None') {
                                 if (symptomIndex < activeSymptoms.length - 1) {
-                                  setSymptomIndex(symptomIndex + 1);
+                                  setTimeout(() => setSymptomIndex(symptomIndex + 1), 150);
                                 } else {
-                                  const checkIn = buildCheckInFromSymptoms({ ...symptomResponses, [currentSymptom.key]: sev });
-                                  const risk = computeHistoricalRisk(checkIn, []);
-                                  setTriageResult(risk);
-                                  setSymptomPhase('thanks');
+                                  setTimeout(() => {
+                                    const checkIn = buildCheckInFromSymptoms({ ...symptomResponses, [currentSymptom.key]: sev });
+                                    const risk = computeHistoricalRisk(checkIn, []);
+                                    setTriageResult(risk);
+                                    setSymptomPhase('thanks');
+                                  }, 150);
                                 }
-                              }, 1500);
-                            }
-                          }}
-                          className={`selection-card w-full text-left ${symptomResponses[activeSymptoms[symptomIndex].key] === sev ? 'selected' : ''}`}
-                        >
-                          <p className="font-medium text-foreground text-sm">{sev}</p>
-                          {activeDescriptors[activeSymptoms[symptomIndex].key]?.[sev] && (
-                            <p className="text-xs mt-0.5" style={{ color: '#7A7570', fontSize: '12px' }}>{activeDescriptors[activeSymptoms[symptomIndex].key][sev]}</p>
-                          )}
-                        </button>
-                      ))}
+                              } else {
+                                const ack = getAck(sev, currentSymptom.label, symptomIndex, currentSymptom.key);
+                                setSymptomAck(ack);
+                                setTimeout(() => {
+                                  setSymptomAck(null);
+                                  if (symptomIndex < activeSymptoms.length - 1) {
+                                    setSymptomIndex(symptomIndex + 1);
+                                  } else {
+                                    const checkIn = buildCheckInFromSymptoms({ ...symptomResponses, [currentSymptom.key]: sev });
+                                    const risk = computeHistoricalRisk(checkIn, []);
+                                    setTriageResult(risk);
+                                    setSymptomPhase('thanks');
+                                  }
+                                }, 1500);
+                              }
+                            }}
+                            className={`selection-card w-full text-left relative ${isSelected ? 'selected' : ''}`}
+                            style={{
+                              opacity: hasSelection && !isSelected ? 0.6 : 1,
+                              transition: 'opacity 200ms ease, border-color 150ms ease',
+                            }}
+                          >
+                            {isSelected && (
+                              <motion.div
+                                initial={{ opacity: 0, scale: 0.5 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0 }}
+                                transition={{ duration: 0.2 }}
+                                className="absolute top-3 right-3"
+                              >
+                                <Check size={16} className="text-primary" strokeWidth={2.5} />
+                              </motion.div>
+                            )}
+                            <p className="font-medium text-foreground text-sm">{sev}</p>
+                            {activeDescriptors[activeSymptoms[symptomIndex].key]?.[sev] && (
+                              <p className="text-xs mt-0.5" style={{ color: '#7A7570', fontSize: '12px' }}>{activeDescriptors[activeSymptoms[symptomIndex].key][sev]}</p>
+                            )}
+                          </motion.button>
+                        );
+                      })}
                     </div>
                   </div>
                 )}
@@ -1434,123 +1463,129 @@ const OnboardingTriageResult = ({ risk, symptomResponses, onboardingSymptoms: sy
 
   return (
     <div>
-      <div className="flex justify-center mb-6">
-        <motion.div
-          initial={{ scale: 0.8 }} animate={{ scale: 1 }} transition={{ duration: 0.5, ease: 'easeOut' }}
-          className={`w-28 h-28 rounded-full ${circleColors[risk]} flex items-center justify-center`}
-        >
+      <motion.div className="flex justify-center mb-6"
+        initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.4, ease: 'easeOut' }}
+      >
+        <div className={`w-28 h-28 rounded-full ${circleColors[risk]} flex items-center justify-center`}>
           {risk === 'green' && <Check size={40} className="text-primary-foreground" strokeWidth={2} />}
           {risk === 'amber' && <Eye size={40} className="text-warning-foreground" strokeWidth={1.8} />}
           {risk === 'red' && <Stethoscope size={40} className="text-destructive-foreground" strokeWidth={1.8} />}
-        </motion.div>
-      </div>
+        </div>
+      </motion.div>
 
       {risk === 'green' && (
         <>
-          <h2 className="text-2xl font-semibold text-center mb-2">Looking good</h2>
-          <p className="text-muted-foreground text-center mb-6">Based on what you've shared, there are no red flags right now. Your scalp is looking good.</p>
-          {triageReasoning && <p className="text-center mb-6" style={{ color: '#7A7570', fontSize: '13px' }}>{triageReasoning}</p>}
-          <div className="card-elevated p-5 mb-4">
-            <h3 className="font-semibold mb-2">Keep it up</h3>
-            <p className="text-sm text-muted-foreground">Your current routine is working well. We'll check in again at your next scheduled time.</p>
-          </div>
-          {goalMessage && <div className="rounded-2xl bg-sage-light p-4 mb-4"><p className="text-sm text-foreground">{goalMessage}</p></div>}
-          <div className="rounded-2xl bg-sage-light p-5 mb-8">
-            <p className="text-sm text-foreground"><strong>Tip:</strong> A gentle scalp massage with your fingertips can help with circulation. You don't need to add product for this to work.</p>
-          </div>
-          <button onClick={onContinue} className="w-full h-14 bg-primary text-primary-foreground rounded-xl font-semibold btn-press">Continue</button>
+          <motion.h2 initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2, duration: 0.3 }} className="text-2xl font-semibold text-center mb-2">Looking good</motion.h2>
+          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2, duration: 0.3 }} className="text-muted-foreground text-center mb-6">Based on what you've shared, there are no red flags right now. Your scalp is looking good.</motion.p>
+          {triageReasoning && <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4, duration: 0.3 }} className="text-center mb-6" style={{ color: '#7A7570', fontSize: '13px' }}>{triageReasoning}</motion.p>}
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6, duration: 0.3 }}>
+            <div className="card-elevated p-5 mb-4">
+              <h3 className="font-semibold mb-2">Keep it up</h3>
+              <p className="text-sm text-muted-foreground">Your current routine is working well. We'll check in again at your next scheduled time.</p>
+            </div>
+            {goalMessage && <div className="rounded-2xl bg-sage-light p-4 mb-4"><p className="text-sm text-foreground">{goalMessage}</p></div>}
+            <div className="rounded-2xl bg-sage-light p-5 mb-8">
+              <p className="text-sm text-foreground"><strong>Tip:</strong> A gentle scalp massage with your fingertips can help with circulation. You don't need to add product for this to work.</p>
+            </div>
+            <button onClick={onContinue} className="w-full h-14 bg-primary text-primary-foreground rounded-xl font-semibold btn-press">Continue</button>
+          </motion.div>
         </>
       )}
 
       {risk === 'amber' && (
         <>
-          <h2 className="text-2xl font-semibold text-center mb-2">Some patterns worth watching</h2>
-          <p className="text-muted-foreground text-center mb-6">Nothing urgent, but let's keep an eye on a few things</p>
-          {triageReasoning && <p className="text-center mb-6" style={{ color: '#7A7570', fontSize: '13px' }}>{triageReasoning}</p>}
-          {triageGuidance.length > 0 && (
-            <div className="card-elevated p-5 mb-4">
-              <h3 className="font-semibold mb-3">What we're seeing</h3>
-              <div className="space-y-3">
-                {triageGuidance.map((g, i) => (
-                  <p key={i} className="text-sm text-muted-foreground"><strong className="text-foreground">{g.heading}:</strong> {g.message}</p>
-                ))}
+          <motion.h2 initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2, duration: 0.3 }} className="text-2xl font-semibold text-center mb-2">Some patterns worth watching</motion.h2>
+          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2, duration: 0.3 }} className="text-muted-foreground text-center mb-6">Nothing urgent, but let's keep an eye on a few things</motion.p>
+          {triageReasoning && <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4, duration: 0.3 }} className="text-center mb-6" style={{ color: '#7A7570', fontSize: '13px' }}>{triageReasoning}</motion.p>}
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6, duration: 0.3 }}>
+            {triageGuidance.length > 0 && (
+              <div className="card-elevated p-5 mb-4">
+                <h3 className="font-semibold mb-3">What we're seeing</h3>
+                <div className="space-y-3">
+                  {triageGuidance.map((g, i) => (
+                    <p key={i} className="text-sm text-muted-foreground"><strong className="text-foreground">{g.heading}:</strong> {g.message}</p>
+                  ))}
+                </div>
               </div>
+            )}
+            <div className="card-elevated p-5 mb-4">
+              <h3 className="font-semibold mb-3">Recommended next steps</h3>
+              <ol className="space-y-3">
+                {['Gently cleanse your scalp mid-cycle with a sulphate-free rinse', "Avoid re-tightening your edges. If they're loose, leave them", 'If your scalp feels dry or tight, a fragrance-free scalp moisturiser or hydrating mist may help. Avoid heavy oils or butters directly on the scalp as these can clog follicles and worsen buildup.'].map((tip, i) => (
+                  <li key={i} className="flex gap-3 text-sm">
+                    <span className="w-6 h-6 rounded-full bg-sage-light flex items-center justify-center flex-shrink-0 text-xs font-semibold text-primary">{i + 1}</span>
+                    <span className="text-muted-foreground">{tip}</span>
+                  </li>
+                ))}
+              </ol>
             </div>
-          )}
-          <div className="card-elevated p-5 mb-4">
-            <h3 className="font-semibold mb-3">Recommended next steps</h3>
-            <ol className="space-y-3">
-              {['Gently cleanse your scalp mid-cycle with a sulphate-free rinse', "Avoid re-tightening your edges. If they're loose, leave them", 'If your scalp feels dry or tight, a fragrance-free scalp moisturiser or hydrating mist may help. Avoid heavy oils or butters directly on the scalp as these can clog follicles and worsen buildup.'].map((tip, i) => (
-                <li key={i} className="flex gap-3 text-sm">
-                  <span className="w-6 h-6 rounded-full bg-sage-light flex items-center justify-center flex-shrink-0 text-xs font-semibold text-primary">{i + 1}</span>
-                  <span className="text-muted-foreground">{tip}</span>
-                </li>
-              ))}
-            </ol>
-          </div>
-          {telogenTriggers.length > 0 && (
-            <div className="rounded-2xl bg-accent p-5 mb-4">
-              <h3 className="font-semibold mb-2">Worth knowing</h3>
-              <p className="text-sm text-muted-foreground">You've mentioned {telogenTriggers.join(', ')}. Increased shedding can be a normal temporary response, sometimes called telogen effluvium. It usually resolves within 6-12 months, but monitoring helps.</p>
+            {telogenTriggers.length > 0 && (
+              <div className="rounded-2xl bg-accent p-5 mb-4">
+                <h3 className="font-semibold mb-2">Worth knowing</h3>
+                <p className="text-sm text-muted-foreground">You've mentioned {telogenTriggers.join(', ')}. Increased shedding can be a normal temporary response, sometimes called telogen effluvium. It usually resolves within 6-12 months, but monitoring helps.</p>
+              </div>
+            )}
+            {goalMessage && <div className="rounded-2xl bg-sage-light p-4 mb-4"><p className="text-sm text-foreground">{goalMessage}</p></div>}
+            <div className="card-elevated p-5 mb-4">
+              <h3 className="font-semibold mb-2">We'll reassess</h3>
+              <p className="text-sm text-muted-foreground">At your next check-in, we'll compare. If things get worse, check in anytime.</p>
             </div>
-          )}
-          {goalMessage && <div className="rounded-2xl bg-sage-light p-4 mb-4"><p className="text-sm text-foreground">{goalMessage}</p></div>}
-          <div className="card-elevated p-5 mb-4">
-            <h3 className="font-semibold mb-2">We'll reassess</h3>
-            <p className="text-sm text-muted-foreground">At your next check-in, we'll compare. If things get worse, check in anytime.</p>
-          </div>
-          <div className="card-elevated p-4 mb-4 border border-border">
-            <h3 className="font-medium text-foreground text-sm mb-1">Want to get ahead of this?</h3>
-            <p className="text-xs text-muted-foreground mb-2">Even though this isn't urgent, speaking to a specialist is never a bad idea.</p>
-            <button onClick={() => navigate('/find-specialist')} className="text-xs font-medium text-primary">Find a specialist</button>
-          </div>
-          <button onClick={onContinue} className="w-full h-14 bg-primary text-primary-foreground rounded-xl font-semibold btn-press">Continue</button>
+            <div className="card-elevated p-4 mb-4 border border-border">
+              <h3 className="font-medium text-foreground text-sm mb-1">Want to get ahead of this?</h3>
+              <p className="text-xs text-muted-foreground mb-2">Even though this isn't urgent, speaking to a specialist is never a bad idea.</p>
+              <button onClick={() => navigate('/find-specialist')} className="text-xs font-medium text-primary">Find a specialist</button>
+            </div>
+            <button onClick={onContinue} className="w-full h-14 bg-primary text-primary-foreground rounded-xl font-semibold btn-press">Continue</button>
+          </motion.div>
         </>
       )}
 
       {risk === 'red' && (
         <>
-          <h2 className="text-2xl font-semibold text-center mb-2">We recommend professional advice</h2>
-          <p className="text-muted-foreground text-center mb-6">Your symptoms suggest a pattern that would benefit from expert review</p>
-          {triageReasoning && <p className="text-center mb-6" style={{ color: '#7A7570', fontSize: '13px' }}>{triageReasoning}</p>}
-          {triageGuidance.length > 0 && (
-            <div className="card-elevated p-5 mb-4">
-              <h3 className="font-semibold mb-3">Pattern analysis</h3>
-              <div className="space-y-3">
-                {triageGuidance.map((g, i) => (
-                  <p key={i} className="text-sm text-muted-foreground"><strong className="text-foreground">{g.heading}:</strong> {g.message}</p>
-                ))}
+          <motion.h2 initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2, duration: 0.3 }} className="text-2xl font-semibold text-center mb-2">We recommend professional advice</motion.h2>
+          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2, duration: 0.3 }} className="text-muted-foreground text-center mb-6">Your symptoms suggest a pattern that would benefit from expert review</motion.p>
+          {triageReasoning && <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4, duration: 0.3 }} className="text-center mb-6" style={{ color: '#7A7570', fontSize: '13px' }}>{triageReasoning}</motion.p>}
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6, duration: 0.3 }}>
+            {triageGuidance.length > 0 && (
+              <div className="card-elevated p-5 mb-4">
+                <h3 className="font-semibold mb-3">Pattern analysis</h3>
+                <div className="space-y-3">
+                  {triageGuidance.map((g, i) => (
+                    <p key={i} className="text-sm text-muted-foreground"><strong className="text-foreground">{g.heading}:</strong> {g.message}</p>
+                  ))}
+                </div>
               </div>
+            )}
+            <div className="card-elevated p-5 mb-4">
+              <h3 className="font-semibold mb-2">What this means</h3>
+              <p className="text-sm text-muted-foreground">{maleIsShortHairOnly ? 'Persistent or worsening symptoms can sometimes indicate conditions like male pattern hair loss or scalp inflammation that respond best to early treatment. Seeing a professional now gives you the best options.' : 'Persistent or worsening symptoms can sometimes indicate conditions like traction alopecia or scalp inflammation that respond best to early treatment. Seeing a professional now gives you the best options.'}</p>
             </div>
-          )}
-          <div className="card-elevated p-5 mb-4">
-            <h3 className="font-semibold mb-2">What this means</h3>
-            <p className="text-sm text-muted-foreground">{maleIsShortHairOnly ? 'Persistent or worsening symptoms can sometimes indicate conditions like male pattern hair loss or scalp inflammation that respond best to early treatment. Seeing a professional now gives you the best options.' : 'Persistent or worsening symptoms can sometimes indicate conditions like traction alopecia or scalp inflammation that respond best to early treatment. Seeing a professional now gives you the best options.'}</p>
-          </div>
-          {telogenTriggers.length > 0 && (
-            <div className="rounded-2xl bg-accent p-5 mb-4">
-              <h3 className="font-semibold mb-2">Worth knowing</h3>
-              <p className="text-sm text-muted-foreground">You've mentioned {telogenTriggers.join(', ')}. Increased shedding can be a normal temporary response, sometimes called telogen effluvium. It usually resolves within 6-12 months, but monitoring helps.</p>
+            {telogenTriggers.length > 0 && (
+              <div className="rounded-2xl bg-accent p-5 mb-4">
+                <h3 className="font-semibold mb-2">Worth knowing</h3>
+                <p className="text-sm text-muted-foreground">You've mentioned {telogenTriggers.join(', ')}. Increased shedding can be a normal temporary response, sometimes called telogen effluvium. It usually resolves within 6-12 months, but monitoring helps.</p>
+              </div>
+            )}
+            <div className="card-elevated p-5 mb-4">
+              <h3 className="font-semibold mb-2">Your clinical summary is ready</h3>
+              <p className="text-sm text-muted-foreground mb-4">A structured summary you can share with a GP, trichologist, or dermatologist. This was generated automatically based on your symptom patterns.</p>
+              <button onClick={() => navigate('/clinician-summary')} className="w-full h-12 rounded-xl border-2 border-primary text-primary font-semibold btn-press">View clinical summary</button>
             </div>
-          )}
-          <div className="card-elevated p-5 mb-4">
-            <h3 className="font-semibold mb-2">Your clinical summary is ready</h3>
-            <p className="text-sm text-muted-foreground mb-4">A structured summary you can share with a GP, trichologist, or dermatologist. This was generated automatically based on your symptom patterns.</p>
-            <button onClick={() => navigate('/clinician-summary')} className="w-full h-12 rounded-xl border-2 border-primary text-primary font-semibold btn-press">View clinical summary</button>
-          </div>
-          <div className="card-elevated p-5 mb-4">
-            <h3 className="font-semibold mb-2">Who to see</h3>
-            <p className="text-sm text-muted-foreground">A trichologist specialises in hair and scalp. A dermatologist can investigate further. Your GP can refer you.{isMale && ' Your barber may also notice changes. Ask them to flag anything they see.'}</p>
-          </div>
-          <div className="card-elevated p-5 mb-4">
-            <h3 className="font-semibold mb-2">Find a specialist</h3>
-            <p className="text-sm text-muted-foreground mb-3">We're building a directory of professionals who understand textured hair.</p>
-            <button onClick={() => navigate('/find-specialist')} className="w-full h-12 rounded-xl border-2 border-border font-medium text-sm btn-press flex items-center justify-center gap-2">
-              <Search size={16} strokeWidth={1.8} /> Find someone near me
-            </button>
-          </div>
-          {goalMessage && <div className="rounded-2xl bg-sage-light p-4 mb-4"><p className="text-sm text-foreground">{goalMessage}</p></div>}
-          <button onClick={onContinue} className="w-full h-14 bg-primary text-primary-foreground rounded-xl font-semibold btn-press">Continue</button>
+            <div className="card-elevated p-5 mb-4">
+              <h3 className="font-semibold mb-2">Who to see</h3>
+              <p className="text-sm text-muted-foreground">A trichologist specialises in hair and scalp. A dermatologist can investigate further. Your GP can refer you.{isMale && ' Your barber may also notice changes. Ask them to flag anything they see.'}</p>
+            </div>
+            <div className="card-elevated p-5 mb-4">
+              <h3 className="font-semibold mb-2">Find a specialist</h3>
+              <p className="text-sm text-muted-foreground mb-3">We're building a directory of professionals who understand textured hair.</p>
+              <button onClick={() => navigate('/find-specialist')} className="w-full h-12 rounded-xl border-2 border-border font-medium text-sm btn-press flex items-center justify-center gap-2">
+                <Search size={16} strokeWidth={1.8} /> Find someone near me
+              </button>
+            </div>
+            {goalMessage && <div className="rounded-2xl bg-sage-light p-4 mb-4"><p className="text-sm text-foreground">{goalMessage}</p></div>}
+            <button onClick={onContinue} className="w-full h-14 bg-primary text-primary-foreground rounded-xl font-semibold btn-press">Continue</button>
+          </motion.div>
         </>
       )}
     </div>

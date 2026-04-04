@@ -73,9 +73,11 @@ interface ScalpBaselineCaptureProps {
   onComplete: (photos: { area: string; dataUrl: string }[]) => void;
   onBack: () => void;
   gender?: string;
+  isCheckIn?: boolean;
+  baselinePhotos?: { area: string; dataUrl?: string }[];
 }
 
-const ScalpBaselineCapture = ({ onComplete, onBack, gender = 'woman' }: ScalpBaselineCaptureProps) => {
+const ScalpBaselineCapture = ({ onComplete, onBack, gender = 'woman', isCheckIn = false, baselinePhotos = [] }: ScalpBaselineCaptureProps) => {
   const scalpSteps = getScalpSteps(gender);
   const [currentStep, setCurrentStep] = useState(0);
   const [capturedPhotos, setCapturedPhotos] = useState<{ area: string; dataUrl: string }[]>([]);
@@ -119,8 +121,28 @@ const ScalpBaselineCapture = ({ onComplete, onBack, gender = 'woman' }: ScalpBas
     }
   };
 
+  const baselineForStep = isCheckIn
+    ? baselinePhotos.find(p => p.area === step.title && p.dataUrl)
+    : null;
+
   return (
-    <div>
+    <div style={{ position: 'relative' }}>
+      {/* Baseline comparison thumbnail */}
+      {baselineForStep?.dataUrl && (
+        <div style={{
+          position: 'absolute', top: 0, right: 0, zIndex: 2,
+          display: 'flex', flexDirection: 'column', alignItems: 'center',
+        }}>
+          <div style={{
+            width: 60, height: 60, borderRadius: 10, overflow: 'hidden',
+            border: '2px solid #E8DED1',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+          }}>
+            <img src={baselineForStep.dataUrl} alt="Your baseline" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          </div>
+          <span style={{ fontSize: 9, color: '#7A7570', marginTop: 2 }}>Your baseline</span>
+        </div>
+      )}
       <p className="text-xs text-muted-foreground mb-1">
         Step {currentStep + 1} of {scalpSteps.length}
       </p>
