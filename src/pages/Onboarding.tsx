@@ -1059,7 +1059,7 @@ const Onboarding = () => {
                       </>
                     ) : (
                       <>
-                        <p className="font-semibold text-foreground mb-3">How long do you usually keep a style in?</p>
+                        <p className="font-semibold text-foreground mb-3">How long are you planning to keep your current style?</p>
                         <div className="flex flex-wrap gap-2 mb-6">
                           {cycleLengthOptions.map(o => (
                             <button key={o} onClick={() => setCycleLength(o)} className={`pill-option ${cycleLength === o ? 'selected' : ''}`}>{o}</button>
