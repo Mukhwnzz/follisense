@@ -1495,47 +1495,49 @@ const OnboardingTriageResult = ({ risk, symptomResponses, onboardingSymptoms: sy
 
       {risk === 'amber' && (
         <>
-          <h2 className="text-2xl font-semibold text-center mb-2">Some patterns worth watching</h2>
-          <p className="text-muted-foreground text-center mb-6">Nothing urgent, but let's keep an eye on a few things</p>
-          {triageReasoning && <p className="text-center mb-6" style={{ color: '#7A7570', fontSize: '13px' }}>{triageReasoning}</p>}
-          {triageGuidance.length > 0 && (
-            <div className="card-elevated p-5 mb-4">
-              <h3 className="font-semibold mb-3">What we're seeing</h3>
-              <div className="space-y-3">
-                {triageGuidance.map((g, i) => (
-                  <p key={i} className="text-sm text-muted-foreground"><strong className="text-foreground">{g.heading}:</strong> {g.message}</p>
-                ))}
+          <motion.h2 initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2, duration: 0.3 }} className="text-2xl font-semibold text-center mb-2">Some patterns worth watching</motion.h2>
+          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2, duration: 0.3 }} className="text-muted-foreground text-center mb-6">Nothing urgent, but let's keep an eye on a few things</motion.p>
+          {triageReasoning && <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4, duration: 0.3 }} className="text-center mb-6" style={{ color: '#7A7570', fontSize: '13px' }}>{triageReasoning}</motion.p>}
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6, duration: 0.3 }}>
+            {triageGuidance.length > 0 && (
+              <div className="card-elevated p-5 mb-4">
+                <h3 className="font-semibold mb-3">What we're seeing</h3>
+                <div className="space-y-3">
+                  {triageGuidance.map((g, i) => (
+                    <p key={i} className="text-sm text-muted-foreground"><strong className="text-foreground">{g.heading}:</strong> {g.message}</p>
+                  ))}
+                </div>
               </div>
+            )}
+            <div className="card-elevated p-5 mb-4">
+              <h3 className="font-semibold mb-3">Recommended next steps</h3>
+              <ol className="space-y-3">
+                {['Gently cleanse your scalp mid-cycle with a sulphate-free rinse', "Avoid re-tightening your edges. If they're loose, leave them", 'If your scalp feels dry or tight, a fragrance-free scalp moisturiser or hydrating mist may help. Avoid heavy oils or butters directly on the scalp as these can clog follicles and worsen buildup.'].map((tip, i) => (
+                  <li key={i} className="flex gap-3 text-sm">
+                    <span className="w-6 h-6 rounded-full bg-sage-light flex items-center justify-center flex-shrink-0 text-xs font-semibold text-primary">{i + 1}</span>
+                    <span className="text-muted-foreground">{tip}</span>
+                  </li>
+                ))}
+              </ol>
             </div>
-          )}
-          <div className="card-elevated p-5 mb-4">
-            <h3 className="font-semibold mb-3">Recommended next steps</h3>
-            <ol className="space-y-3">
-              {['Gently cleanse your scalp mid-cycle with a sulphate-free rinse', "Avoid re-tightening your edges. If they're loose, leave them", 'If your scalp feels dry or tight, a fragrance-free scalp moisturiser or hydrating mist may help. Avoid heavy oils or butters directly on the scalp as these can clog follicles and worsen buildup.'].map((tip, i) => (
-                <li key={i} className="flex gap-3 text-sm">
-                  <span className="w-6 h-6 rounded-full bg-sage-light flex items-center justify-center flex-shrink-0 text-xs font-semibold text-primary">{i + 1}</span>
-                  <span className="text-muted-foreground">{tip}</span>
-                </li>
-              ))}
-            </ol>
-          </div>
-          {telogenTriggers.length > 0 && (
-            <div className="rounded-2xl bg-accent p-5 mb-4">
-              <h3 className="font-semibold mb-2">Worth knowing</h3>
-              <p className="text-sm text-muted-foreground">You've mentioned {telogenTriggers.join(', ')}. Increased shedding can be a normal temporary response, sometimes called telogen effluvium. It usually resolves within 6-12 months, but monitoring helps.</p>
+            {telogenTriggers.length > 0 && (
+              <div className="rounded-2xl bg-accent p-5 mb-4">
+                <h3 className="font-semibold mb-2">Worth knowing</h3>
+                <p className="text-sm text-muted-foreground">You've mentioned {telogenTriggers.join(', ')}. Increased shedding can be a normal temporary response, sometimes called telogen effluvium. It usually resolves within 6-12 months, but monitoring helps.</p>
+              </div>
+            )}
+            {goalMessage && <div className="rounded-2xl bg-sage-light p-4 mb-4"><p className="text-sm text-foreground">{goalMessage}</p></div>}
+            <div className="card-elevated p-5 mb-4">
+              <h3 className="font-semibold mb-2">We'll reassess</h3>
+              <p className="text-sm text-muted-foreground">At your next check-in, we'll compare. If things get worse, check in anytime.</p>
             </div>
-          )}
-          {goalMessage && <div className="rounded-2xl bg-sage-light p-4 mb-4"><p className="text-sm text-foreground">{goalMessage}</p></div>}
-          <div className="card-elevated p-5 mb-4">
-            <h3 className="font-semibold mb-2">We'll reassess</h3>
-            <p className="text-sm text-muted-foreground">At your next check-in, we'll compare. If things get worse, check in anytime.</p>
-          </div>
-          <div className="card-elevated p-4 mb-4 border border-border">
-            <h3 className="font-medium text-foreground text-sm mb-1">Want to get ahead of this?</h3>
-            <p className="text-xs text-muted-foreground mb-2">Even though this isn't urgent, speaking to a specialist is never a bad idea.</p>
-            <button onClick={() => navigate('/find-specialist')} className="text-xs font-medium text-primary">Find a specialist</button>
-          </div>
-          <button onClick={onContinue} className="w-full h-14 bg-primary text-primary-foreground rounded-xl font-semibold btn-press">Continue</button>
+            <div className="card-elevated p-4 mb-4 border border-border">
+              <h3 className="font-medium text-foreground text-sm mb-1">Want to get ahead of this?</h3>
+              <p className="text-xs text-muted-foreground mb-2">Even though this isn't urgent, speaking to a specialist is never a bad idea.</p>
+              <button onClick={() => navigate('/find-specialist')} className="text-xs font-medium text-primary">Find a specialist</button>
+            </div>
+            <button onClick={onContinue} className="w-full h-14 bg-primary text-primary-foreground rounded-xl font-semibold btn-press">Continue</button>
+          </motion.div>
         </>
       )}
 
