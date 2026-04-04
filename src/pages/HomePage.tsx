@@ -7,7 +7,7 @@ import {
   Camera, FlaskConical, Heart, Sparkles, RefreshCw, AlertTriangle,
 } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
-import { didYouKnowFacts } from '@/data/didYouKnowFacts';
+import { getPrioritisedFact } from '@/data/didYouKnowFacts';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar as CalendarPicker } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
@@ -479,7 +479,7 @@ const HomePage = () => {
                 Did you know?
               </p>
               <p style={{ fontFamily: dm, fontSize: 11, color: C.warm, lineHeight: 1.6, margin: 0 }}>
-                {didYouKnowFacts[dayOfYear % didYouKnowFacts.length]}
+                {getPrioritisedFact(onboardingData.goals, dayOfYear)}
               </p>
               <button
                 onClick={() => navigate('/learn')}
