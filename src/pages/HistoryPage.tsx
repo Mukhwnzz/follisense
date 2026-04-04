@@ -70,6 +70,63 @@ const angleLabel: Record<string, string> = { front: 'Front', side: 'Side', nape:
 
 type Tab = 'photos' | 'health';
 
+// ── Symptom Trend Timeline ────────────────────────────────────────────────────
+const trendDots = [
+  { date: 'Jan 5', triage: 'green' as const },
+  { date: 'Jan 28', triage: 'green' as const },
+  { date: 'Feb 12', triage: 'amber' as const },
+  { date: 'Feb 24', triage: 'green' as const },
+  { date: 'Mar 10', triage: 'red' as const },
+];
+
+const trendDotColor: Record<string, string> = {
+  green: '#7C9A8E',
+  amber: '#C4967A',
+  red: '#B85C5C',
+};
+
+const SymptomTrendTimeline = () => {
+  const W = 320;
+  const dotR = 6;
+  const H = 50;
+  const PL = 16, PR = 16;
+  const iW = W - PL - PR;
+
+  return (
+    <div style={{
+      background: C.white,
+      border: `1.5px solid ${C.mid}`,
+      borderRadius: 18,
+      padding: '14px 12px 6px',
+      boxShadow: '0 2px 12px rgba(0,0,0,0.05)',
+    }}>
+      <p style={{ fontFamily: dm, fontSize: 10, fontWeight: 700, color: C.muted, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 8 }}>
+        Trend
+      </p>
+      <svg width="100%" viewBox={`0 0 ${W} ${H}`} style={{ display: 'block' }}>
+        <line
+          x1={PL} y1={dotR + 4}
+          x2={W - PR} y2={dotR + 4}
+          stroke="#7A7570" strokeWidth={1} opacity={0.3}
+        />
+        {trendDots.map((d, i) => {
+          const x = PL + (i / (trendDots.length - 1)) * iW;
+          return (
+            <g key={i}>
+              <circle cx={x} cy={dotR + 4} r={dotR}
+                fill={trendDotColor[d.triage]} stroke={C.white} strokeWidth={2}
+              />
+              <text x={x} y={H - 4} fontSize={10} fill="#7A7570" textAnchor="middle" fontFamily={dm}>
+                {d.date}
+              </text>
+            </g>
+          );
+        })}
+      </svg>
+    </div>
+  );
+};
+
 // ── Sparkline ─────────────────────────────────────────────────────────────────
 const SparkLine = ({ data }: { data: CheckInEntry[] }) => {
   const W = 320, H = 100, PL = 6, PR = 6, PT = 12, PB = 26;
