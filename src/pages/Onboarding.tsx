@@ -77,7 +77,7 @@ const maleLongStyleNames = ['Locs', 'Twists', 'Cornrows'];
 
 const protectiveFreqOptions = ['Most of the time', 'Sometimes', 'Rarely', 'Never'];
 const barberFreqOptions = ['Every 1-2 weeks', 'Every 3-4 weeks', 'Monthly', 'Less often', 'I cut my own hair'];
-const cycleLengthOptions = ['1-2 weeks', '3-4 weeks', '5-6 weeks', '7-8 weeks', 'Longer than 8 weeks', 'It varies'];
+const cycleLengthOptions = ['1-2 weeks', '3-4 weeks', '5-6 weeks', '7-8 weeks', 'Longer than 8 weeks', 'Not sure yet'];
 const betweenWashOptions = ['Nothing', 'Oil my scalp', 'Scalp spray or tonic', 'Rinse with water only', 'Other'];
 const concernOptions = [
   'Itching', 'Flaking', 'Thinning', 'Tenderness', 'Breakage', 'Dryness',
