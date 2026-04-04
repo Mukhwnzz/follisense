@@ -479,7 +479,7 @@ const HomePage = () => {
                 Did you know?
               </p>
               <p style={{ fontFamily: dm, fontSize: 11, color: C.warm, lineHeight: 1.6, margin: 0 }}>
-                {didYouKnowFacts[dayOfYear % didYouKnowFacts.length]}
+                {getPrioritisedFact(onboardingData.goals, dayOfYear)}
               </p>
               <button
                 onClick={() => navigate('/learn')}
