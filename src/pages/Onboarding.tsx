@@ -1463,31 +1463,33 @@ const OnboardingTriageResult = ({ risk, symptomResponses, onboardingSymptoms: sy
 
   return (
     <div>
-      <div className="flex justify-center mb-6">
-        <motion.div
-          initial={{ scale: 0.8 }} animate={{ scale: 1 }} transition={{ duration: 0.5, ease: 'easeOut' }}
-          className={`w-28 h-28 rounded-full ${circleColors[risk]} flex items-center justify-center`}
-        >
+      <motion.div className="flex justify-center mb-6"
+        initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.4, ease: 'easeOut' }}
+      >
+        <div className={`w-28 h-28 rounded-full ${circleColors[risk]} flex items-center justify-center`}>
           {risk === 'green' && <Check size={40} className="text-primary-foreground" strokeWidth={2} />}
           {risk === 'amber' && <Eye size={40} className="text-warning-foreground" strokeWidth={1.8} />}
           {risk === 'red' && <Stethoscope size={40} className="text-destructive-foreground" strokeWidth={1.8} />}
-        </motion.div>
-      </div>
+        </div>
+      </motion.div>
 
       {risk === 'green' && (
         <>
-          <h2 className="text-2xl font-semibold text-center mb-2">Looking good</h2>
-          <p className="text-muted-foreground text-center mb-6">Based on what you've shared, there are no red flags right now. Your scalp is looking good.</p>
-          {triageReasoning && <p className="text-center mb-6" style={{ color: '#7A7570', fontSize: '13px' }}>{triageReasoning}</p>}
-          <div className="card-elevated p-5 mb-4">
-            <h3 className="font-semibold mb-2">Keep it up</h3>
-            <p className="text-sm text-muted-foreground">Your current routine is working well. We'll check in again at your next scheduled time.</p>
-          </div>
-          {goalMessage && <div className="rounded-2xl bg-sage-light p-4 mb-4"><p className="text-sm text-foreground">{goalMessage}</p></div>}
-          <div className="rounded-2xl bg-sage-light p-5 mb-8">
-            <p className="text-sm text-foreground"><strong>Tip:</strong> A gentle scalp massage with your fingertips can help with circulation. You don't need to add product for this to work.</p>
-          </div>
-          <button onClick={onContinue} className="w-full h-14 bg-primary text-primary-foreground rounded-xl font-semibold btn-press">Continue</button>
+          <motion.h2 initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2, duration: 0.3 }} className="text-2xl font-semibold text-center mb-2">Looking good</motion.h2>
+          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2, duration: 0.3 }} className="text-muted-foreground text-center mb-6">Based on what you've shared, there are no red flags right now. Your scalp is looking good.</motion.p>
+          {triageReasoning && <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4, duration: 0.3 }} className="text-center mb-6" style={{ color: '#7A7570', fontSize: '13px' }}>{triageReasoning}</motion.p>}
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6, duration: 0.3 }}>
+            <div className="card-elevated p-5 mb-4">
+              <h3 className="font-semibold mb-2">Keep it up</h3>
+              <p className="text-sm text-muted-foreground">Your current routine is working well. We'll check in again at your next scheduled time.</p>
+            </div>
+            {goalMessage && <div className="rounded-2xl bg-sage-light p-4 mb-4"><p className="text-sm text-foreground">{goalMessage}</p></div>}
+            <div className="rounded-2xl bg-sage-light p-5 mb-8">
+              <p className="text-sm text-foreground"><strong>Tip:</strong> A gentle scalp massage with your fingertips can help with circulation. You don't need to add product for this to work.</p>
+            </div>
+            <button onClick={onContinue} className="w-full h-14 bg-primary text-primary-foreground rounded-xl font-semibold btn-press">Continue</button>
+          </motion.div>
         </>
       )}
 
