@@ -73,9 +73,11 @@ interface ScalpBaselineCaptureProps {
   onComplete: (photos: { area: string; dataUrl: string }[]) => void;
   onBack: () => void;
   gender?: string;
+  isCheckIn?: boolean;
+  baselinePhotos?: { area: string; dataUrl?: string }[];
 }
 
-const ScalpBaselineCapture = ({ onComplete, onBack, gender = 'woman' }: ScalpBaselineCaptureProps) => {
+const ScalpBaselineCapture = ({ onComplete, onBack, gender = 'woman', isCheckIn = false, baselinePhotos = [] }: ScalpBaselineCaptureProps) => {
   const scalpSteps = getScalpSteps(gender);
   const [currentStep, setCurrentStep] = useState(0);
   const [capturedPhotos, setCapturedPhotos] = useState<{ area: string; dataUrl: string }[]>([]);
