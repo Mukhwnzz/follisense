@@ -660,9 +660,17 @@ const Onboarding = () => {
                 {Array.from({ length: totalProgressSegments }).map((_, i) => (
                   <div
                     key={i}
-                    className={`h-1 rounded-full transition-colors duration-300 ${i <= activeSegment ? 'bg-primary' : 'bg-border'}`}
+                    className="h-1 rounded-full bg-border overflow-hidden"
                     style={{ width: '28px' }}
-                  />
+                  >
+                    <div
+                      className="h-full bg-primary rounded-full"
+                      style={{
+                        width: i <= activeSegment ? '100%' : '0%',
+                        transition: 'width 300ms ease-out',
+                      }}
+                    />
+                  </div>
                 ))}
               </div>
               <div className="w-10" />
