@@ -286,6 +286,12 @@ const HistoryPage = () => {
 
       {/* ── Content ──────────────────────────────────────────────────────────── */}
       <div style={{ padding: '20px 20px 0' }}>
+
+        {/* ── Symptom Trend Timeline ── */}
+        <div style={{ marginBottom: 20 }}>
+          <SymptomTrendTimeline />
+        </div>
+
         <AnimatePresence mode="wait">
 
           {/* ── Photos tab ── */}
