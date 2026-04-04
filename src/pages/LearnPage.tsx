@@ -100,15 +100,12 @@ const ArticleRow = ({
         transition: 'border 0.18s, box-shadow 0.18s',
       }}
     >
-      {/* Left gold accent bar */}
       <div style={{
         width: hovered ? 4 : 3, flexShrink: 0,
         background: accent,
         opacity: hovered ? 1 : 0.45,
         transition: 'width 0.18s, opacity 0.18s',
       }} />
-
-      {/* Thumbnail */}
       {img && (
         <div style={{
           width: 88, flexShrink: 0,
@@ -116,7 +113,6 @@ const ArticleRow = ({
           backgroundSize: 'cover', backgroundPosition: 'center',
         }} />
       )}
-
       <div style={{ flex: 1, padding: '14px 14px' }}>
         <span style={{
           fontFamily: mont, fontSize: 9, fontWeight: 700,
@@ -146,9 +142,87 @@ const ArticleRow = ({
           <span>{article.readTime} min read</span>
         </div>
       </div>
-
       <div style={{ display: 'flex', alignItems: 'center', paddingRight: 14 }}>
         <ChevronRight size={14} color={hovered ? C.gold : C.mid} style={{ transition: 'color 0.18s' }} />
+      </div>
+    </motion.button>
+  );
+};
+
+const FeaturedCard = ({
+  article, onClick,
+}: { article: any; onClick: () => void }) => {
+  const [hovered, setHovered] = useState(false);
+  const featuredImg = getArticleImage(article.id);
+
+  return (
+    <motion.button
+      key={article.id + '-featured'} layout
+      initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0 }} transition={{ duration: 0.2 }}
+      onClick={onClick}
+      onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}
+      onFocus={() => setHovered(true)} onBlur={() => setHovered(false)}
+      style={{
+        width: '100%', textAlign: 'left',
+        background: C.white, borderRadius: 22, overflow: 'hidden', marginBottom: 12,
+        border: hovered ? `1.5px solid ${C.goldBorder}` : `1.5px solid ${C.mid}`,
+        cursor: 'pointer',
+        boxShadow: hovered
+          ? `0 8px 28px rgba(212,168,102,0.16), 0 2px 8px rgba(0,0,0,0.05)`
+          : '0 3px 14px rgba(0,0,0,0.06)',
+        transition: 'border 0.18s, box-shadow 0.18s',
+      }}
+    >
+      <div style={{
+        height: 160,
+        background: featuredImg
+          ? `url(${featuredImg}) center/cover no-repeat`
+          : `linear-gradient(135deg, ${C.gold10} 0%, ${C.surface} 100%)`,
+        position: 'relative',
+        display: 'flex', alignItems: 'flex-end', padding: '12px 16px',
+      }}>
+        <span style={{
+          position: 'relative', zIndex: 1,
+          fontFamily: mont, fontSize: 9, fontWeight: 700,
+          padding: '3px 10px', borderRadius: 100, letterSpacing: '0.06em',
+          background: featuredImg ? 'rgba(255,255,255,0.9)' : C.gold10,
+          color: categoryColor[article.category] || C.goldDeep,
+          border: `1px solid ${C.goldBorder}`,
+          textTransform: 'uppercase',
+        }}>
+          {article.category}
+        </span>
+      </div>
+      <div style={{ padding: '14px 18px 18px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 7 }}>
+          <Sparkles size={11} color={C.gold} />
+          <span style={{ fontFamily: mont, fontSize: 9, fontWeight: 700, color: C.gold, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+            Featured
+          </span>
+        </div>
+        <h3 style={{
+          fontFamily: mont, fontSize: 16, fontWeight: 700,
+          color: hovered ? C.goldDeep : C.ink,
+          margin: '0 0 7px', lineHeight: 1.3, transition: 'color 0.18s',
+        }}>
+          {article.title}
+        </h3>
+        <p style={{
+          fontFamily: mont, fontSize: 12, fontWeight: 400,
+          color: C.warm, margin: '0 0 12px', lineHeight: 1.6,
+          display: '-webkit-box', WebkitLineClamp: 2,
+          WebkitBoxOrient: 'vertical', overflow: 'hidden',
+        }}>
+          {article.preview}
+        </p>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 5, color: C.muted, fontFamily: mont, fontSize: 10 }}>
+            <Clock size={11} />
+            <span>{article.readTime} min read</span>
+          </div>
+          <ChevronRight size={14} color={hovered ? C.gold : C.mid} style={{ transition: 'color 0.18s' }} />
+        </div>
       </div>
     </motion.button>
   );
@@ -312,82 +386,9 @@ const LearnPage = () => {
             ) : (
               <>
                 {/* Featured card */}
-                {featuredArticle && (() => {
-                  const [hovered, setHovered] = useState(false);
-                  return (
-                    <motion.button
-                      key={featuredArticle.id + '-featured'} layout
-                      initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0 }} transition={{ duration: 0.2 }}
-                      onClick={() => setSelectedArticleId(featuredArticle.id)}
-                      onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}
-                      onFocus={() => setHovered(true)} onBlur={() => setHovered(false)}
-                      style={{
-                        width: '100%', textAlign: 'left',
-                        background: C.white, borderRadius: 22, overflow: 'hidden', marginBottom: 12,
-                        border: hovered ? `1.5px solid ${C.goldBorder}` : `1.5px solid ${C.mid}`,
-                        cursor: 'pointer',
-                        boxShadow: hovered
-                          ? `0 8px 28px rgba(212,168,102,0.16), 0 2px 8px rgba(0,0,0,0.05)`
-                          : '0 3px 14px rgba(0,0,0,0.06)',
-                        transition: 'border 0.18s, box-shadow 0.18s',
-                      }}
-                    >
-                      {/* Image area */}
-                      <div style={{
-                        height: 160,
-                        background: featuredImg
-                          ? `url(${featuredImg}) center/cover no-repeat`
-                          : `linear-gradient(135deg, ${C.gold10} 0%, ${C.surface} 100%)`,
-                        position: 'relative',
-                        display: 'flex', alignItems: 'flex-end', padding: '12px 16px',
-                      }}>
-                        <span style={{
-                          position: 'relative', zIndex: 1,
-                          fontFamily: mont, fontSize: 9, fontWeight: 700,
-                          padding: '3px 10px', borderRadius: 100, letterSpacing: '0.06em',
-                          background: featuredImg ? 'rgba(255,255,255,0.9)' : C.gold10,
-                          color: categoryColor[featuredArticle.category] || C.goldDeep,
-                          border: `1px solid ${C.goldBorder}`,
-                          textTransform: 'uppercase',
-                        }}>
-                          {featuredArticle.category}
-                        </span>
-                      </div>
-
-                      <div style={{ padding: '14px 18px 18px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 7 }}>
-                          <Sparkles size={11} color={C.gold} />
-                          <span style={{ fontFamily: mont, fontSize: 9, fontWeight: 700, color: C.gold, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
-                            Featured
-                          </span>
-                        </div>
-                        <h3 style={{
-                          fontFamily: mont, fontSize: 16, fontWeight: 700,
-                          color: hovered ? C.goldDeep : C.ink,
-                          margin: '0 0 7px', lineHeight: 1.3, transition: 'color 0.18s',
-                        }}>
-                          {featuredArticle.title}
-                        </h3>
-                        <p style={{
-                          fontFamily: mont, fontSize: 12, fontWeight: 400,
-                          color: C.warm, margin: '0 0 12px', lineHeight: 1.6,
-                          display: '-webkit-box', WebkitLineClamp: 2,
-                          WebkitBoxOrient: 'vertical', overflow: 'hidden',
-                        }}>
-                          {featuredArticle.preview}
-                        </p>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 5, color: C.muted, fontFamily: mont, fontSize: 10 }}>
-                            <Clock size={11} />
-                            <span>{featuredArticle.readTime} min read</span>
-                          </div>
-                          <ChevronRight size={14} color={hovered ? C.gold : C.mid} style={{ transition: 'color 0.18s' }} />
-                        </div>
-                      </div>
-                    </motion.button>
-                  );
-                })()}
+                {featuredArticle && (
+                  <FeaturedCard article={featuredArticle} onClick={() => setSelectedArticleId(featuredArticle.id)} />
+                )}
 
                 {/* Article list */}
                 {restArticles.map((article, i) => (
