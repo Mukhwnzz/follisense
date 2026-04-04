@@ -1199,47 +1199,68 @@ const Onboarding = () => {
                     <p className="text-xs text-muted-foreground mb-1">{symptomIndex + 1} of {activeSymptoms.length}</p>
                     <h2 className="text-lg font-semibold text-foreground mb-6">{activeSymptoms[symptomIndex].question}</h2>
                     <div className="space-y-3">
-                      {severityOptions.map(sev => (
-                        <button
-                          key={sev}
-                          onClick={() => {
-                            const currentSymptom = activeSymptoms[symptomIndex];
-                            setSymptomResponses(prev => ({ ...prev, [currentSymptom.key]: sev }));
-                            if (sev === 'None') {
-                              if (symptomIndex < activeSymptoms.length - 1) {
-                                setTimeout(() => setSymptomIndex(symptomIndex + 1), 150);
-                              } else {
-                                setTimeout(() => {
-                                  const checkIn = buildCheckInFromSymptoms({ ...symptomResponses, [currentSymptom.key]: sev });
-                                  const risk = computeHistoricalRisk(checkIn, []);
-                                  setTriageResult(risk);
-                                  setSymptomPhase('thanks');
-                                }, 150);
-                              }
-                            } else {
-                              const ack = getAck(sev, currentSymptom.label, symptomIndex, currentSymptom.key);
-                              setSymptomAck(ack);
-                              setTimeout(() => {
-                                setSymptomAck(null);
+                      {severityOptions.map(sev => {
+                        const isSelected = symptomResponses[activeSymptoms[symptomIndex].key] === sev;
+                        const hasSelection = !!symptomResponses[activeSymptoms[symptomIndex].key];
+                        return (
+                          <motion.button
+                            key={sev}
+                            whileTap={{ scale: 1.02 }}
+                            transition={{ duration: 0.15 }}
+                            onClick={() => {
+                              const currentSymptom = activeSymptoms[symptomIndex];
+                              setSymptomResponses(prev => ({ ...prev, [currentSymptom.key]: sev }));
+                              if (sev === 'None') {
                                 if (symptomIndex < activeSymptoms.length - 1) {
-                                  setSymptomIndex(symptomIndex + 1);
+                                  setTimeout(() => setSymptomIndex(symptomIndex + 1), 150);
                                 } else {
-                                  const checkIn = buildCheckInFromSymptoms({ ...symptomResponses, [currentSymptom.key]: sev });
-                                  const risk = computeHistoricalRisk(checkIn, []);
-                                  setTriageResult(risk);
-                                  setSymptomPhase('thanks');
+                                  setTimeout(() => {
+                                    const checkIn = buildCheckInFromSymptoms({ ...symptomResponses, [currentSymptom.key]: sev });
+                                    const risk = computeHistoricalRisk(checkIn, []);
+                                    setTriageResult(risk);
+                                    setSymptomPhase('thanks');
+                                  }, 150);
                                 }
-                              }, 1500);
-                            }
-                          }}
-                          className={`selection-card w-full text-left ${symptomResponses[activeSymptoms[symptomIndex].key] === sev ? 'selected' : ''}`}
-                        >
-                          <p className="font-medium text-foreground text-sm">{sev}</p>
-                          {activeDescriptors[activeSymptoms[symptomIndex].key]?.[sev] && (
-                            <p className="text-xs mt-0.5" style={{ color: '#7A7570', fontSize: '12px' }}>{activeDescriptors[activeSymptoms[symptomIndex].key][sev]}</p>
-                          )}
-                        </button>
-                      ))}
+                              } else {
+                                const ack = getAck(sev, currentSymptom.label, symptomIndex, currentSymptom.key);
+                                setSymptomAck(ack);
+                                setTimeout(() => {
+                                  setSymptomAck(null);
+                                  if (symptomIndex < activeSymptoms.length - 1) {
+                                    setSymptomIndex(symptomIndex + 1);
+                                  } else {
+                                    const checkIn = buildCheckInFromSymptoms({ ...symptomResponses, [currentSymptom.key]: sev });
+                                    const risk = computeHistoricalRisk(checkIn, []);
+                                    setTriageResult(risk);
+                                    setSymptomPhase('thanks');
+                                  }
+                                }, 1500);
+                              }
+                            }}
+                            className={`selection-card w-full text-left relative ${isSelected ? 'selected' : ''}`}
+                            style={{
+                              opacity: hasSelection && !isSelected ? 0.6 : 1,
+                              transition: 'opacity 200ms ease, border-color 150ms ease',
+                            }}
+                          >
+                            {isSelected && (
+                              <motion.div
+                                initial={{ opacity: 0, scale: 0.5 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0 }}
+                                transition={{ duration: 0.2 }}
+                                className="absolute top-3 right-3"
+                              >
+                                <Check size={16} className="text-primary" strokeWidth={2.5} />
+                              </motion.div>
+                            )}
+                            <p className="font-medium text-foreground text-sm">{sev}</p>
+                            {activeDescriptors[activeSymptoms[symptomIndex].key]?.[sev] && (
+                              <p className="text-xs mt-0.5" style={{ color: '#7A7570', fontSize: '12px' }}>{activeDescriptors[activeSymptoms[symptomIndex].key][sev]}</p>
+                            )}
+                          </motion.button>
+                        );
+                      })}
                     </div>
                   </div>
                 )}
