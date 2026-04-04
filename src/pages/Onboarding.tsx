@@ -1543,47 +1543,49 @@ const OnboardingTriageResult = ({ risk, symptomResponses, onboardingSymptoms: sy
 
       {risk === 'red' && (
         <>
-          <h2 className="text-2xl font-semibold text-center mb-2">We recommend professional advice</h2>
-          <p className="text-muted-foreground text-center mb-6">Your symptoms suggest a pattern that would benefit from expert review</p>
-          {triageReasoning && <p className="text-center mb-6" style={{ color: '#7A7570', fontSize: '13px' }}>{triageReasoning}</p>}
-          {triageGuidance.length > 0 && (
-            <div className="card-elevated p-5 mb-4">
-              <h3 className="font-semibold mb-3">Pattern analysis</h3>
-              <div className="space-y-3">
-                {triageGuidance.map((g, i) => (
-                  <p key={i} className="text-sm text-muted-foreground"><strong className="text-foreground">{g.heading}:</strong> {g.message}</p>
-                ))}
+          <motion.h2 initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2, duration: 0.3 }} className="text-2xl font-semibold text-center mb-2">We recommend professional advice</motion.h2>
+          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2, duration: 0.3 }} className="text-muted-foreground text-center mb-6">Your symptoms suggest a pattern that would benefit from expert review</motion.p>
+          {triageReasoning && <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4, duration: 0.3 }} className="text-center mb-6" style={{ color: '#7A7570', fontSize: '13px' }}>{triageReasoning}</motion.p>}
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6, duration: 0.3 }}>
+            {triageGuidance.length > 0 && (
+              <div className="card-elevated p-5 mb-4">
+                <h3 className="font-semibold mb-3">Pattern analysis</h3>
+                <div className="space-y-3">
+                  {triageGuidance.map((g, i) => (
+                    <p key={i} className="text-sm text-muted-foreground"><strong className="text-foreground">{g.heading}:</strong> {g.message}</p>
+                  ))}
+                </div>
               </div>
+            )}
+            <div className="card-elevated p-5 mb-4">
+              <h3 className="font-semibold mb-2">What this means</h3>
+              <p className="text-sm text-muted-foreground">{maleIsShortHairOnly ? 'Persistent or worsening symptoms can sometimes indicate conditions like male pattern hair loss or scalp inflammation that respond best to early treatment. Seeing a professional now gives you the best options.' : 'Persistent or worsening symptoms can sometimes indicate conditions like traction alopecia or scalp inflammation that respond best to early treatment. Seeing a professional now gives you the best options.'}</p>
             </div>
-          )}
-          <div className="card-elevated p-5 mb-4">
-            <h3 className="font-semibold mb-2">What this means</h3>
-            <p className="text-sm text-muted-foreground">{maleIsShortHairOnly ? 'Persistent or worsening symptoms can sometimes indicate conditions like male pattern hair loss or scalp inflammation that respond best to early treatment. Seeing a professional now gives you the best options.' : 'Persistent or worsening symptoms can sometimes indicate conditions like traction alopecia or scalp inflammation that respond best to early treatment. Seeing a professional now gives you the best options.'}</p>
-          </div>
-          {telogenTriggers.length > 0 && (
-            <div className="rounded-2xl bg-accent p-5 mb-4">
-              <h3 className="font-semibold mb-2">Worth knowing</h3>
-              <p className="text-sm text-muted-foreground">You've mentioned {telogenTriggers.join(', ')}. Increased shedding can be a normal temporary response, sometimes called telogen effluvium. It usually resolves within 6-12 months, but monitoring helps.</p>
+            {telogenTriggers.length > 0 && (
+              <div className="rounded-2xl bg-accent p-5 mb-4">
+                <h3 className="font-semibold mb-2">Worth knowing</h3>
+                <p className="text-sm text-muted-foreground">You've mentioned {telogenTriggers.join(', ')}. Increased shedding can be a normal temporary response, sometimes called telogen effluvium. It usually resolves within 6-12 months, but monitoring helps.</p>
+              </div>
+            )}
+            <div className="card-elevated p-5 mb-4">
+              <h3 className="font-semibold mb-2">Your clinical summary is ready</h3>
+              <p className="text-sm text-muted-foreground mb-4">A structured summary you can share with a GP, trichologist, or dermatologist. This was generated automatically based on your symptom patterns.</p>
+              <button onClick={() => navigate('/clinician-summary')} className="w-full h-12 rounded-xl border-2 border-primary text-primary font-semibold btn-press">View clinical summary</button>
             </div>
-          )}
-          <div className="card-elevated p-5 mb-4">
-            <h3 className="font-semibold mb-2">Your clinical summary is ready</h3>
-            <p className="text-sm text-muted-foreground mb-4">A structured summary you can share with a GP, trichologist, or dermatologist. This was generated automatically based on your symptom patterns.</p>
-            <button onClick={() => navigate('/clinician-summary')} className="w-full h-12 rounded-xl border-2 border-primary text-primary font-semibold btn-press">View clinical summary</button>
-          </div>
-          <div className="card-elevated p-5 mb-4">
-            <h3 className="font-semibold mb-2">Who to see</h3>
-            <p className="text-sm text-muted-foreground">A trichologist specialises in hair and scalp. A dermatologist can investigate further. Your GP can refer you.{isMale && ' Your barber may also notice changes. Ask them to flag anything they see.'}</p>
-          </div>
-          <div className="card-elevated p-5 mb-4">
-            <h3 className="font-semibold mb-2">Find a specialist</h3>
-            <p className="text-sm text-muted-foreground mb-3">We're building a directory of professionals who understand textured hair.</p>
-            <button onClick={() => navigate('/find-specialist')} className="w-full h-12 rounded-xl border-2 border-border font-medium text-sm btn-press flex items-center justify-center gap-2">
-              <Search size={16} strokeWidth={1.8} /> Find someone near me
-            </button>
-          </div>
-          {goalMessage && <div className="rounded-2xl bg-sage-light p-4 mb-4"><p className="text-sm text-foreground">{goalMessage}</p></div>}
-          <button onClick={onContinue} className="w-full h-14 bg-primary text-primary-foreground rounded-xl font-semibold btn-press">Continue</button>
+            <div className="card-elevated p-5 mb-4">
+              <h3 className="font-semibold mb-2">Who to see</h3>
+              <p className="text-sm text-muted-foreground">A trichologist specialises in hair and scalp. A dermatologist can investigate further. Your GP can refer you.{isMale && ' Your barber may also notice changes. Ask them to flag anything they see.'}</p>
+            </div>
+            <div className="card-elevated p-5 mb-4">
+              <h3 className="font-semibold mb-2">Find a specialist</h3>
+              <p className="text-sm text-muted-foreground mb-3">We're building a directory of professionals who understand textured hair.</p>
+              <button onClick={() => navigate('/find-specialist')} className="w-full h-12 rounded-xl border-2 border-border font-medium text-sm btn-press flex items-center justify-center gap-2">
+                <Search size={16} strokeWidth={1.8} /> Find someone near me
+              </button>
+            </div>
+            {goalMessage && <div className="rounded-2xl bg-sage-light p-4 mb-4"><p className="text-sm text-foreground">{goalMessage}</p></div>}
+            <button onClick={onContinue} className="w-full h-14 bg-primary text-primary-foreground rounded-xl font-semibold btn-press">Continue</button>
+          </motion.div>
         </>
       )}
     </div>
