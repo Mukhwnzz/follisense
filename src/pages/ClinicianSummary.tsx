@@ -277,7 +277,7 @@ const ClinicianSummary = () => {
           }}>
             Find a specialist to share this with
           </button>
-          <button onClick={() => navigate(-1)} className="w-full h-14 bg-primary text-primary-foreground rounded-xl font-semibold btn-press">
+          <button onClick={() => navigate('/results')} className="w-full h-14 bg-primary text-primary-foreground rounded-xl font-semibold btn-press">
             Back to results
           </button>
         </motion.div>

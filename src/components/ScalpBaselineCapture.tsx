@@ -8,7 +8,7 @@ import scalpBackFemale from '@/assets/scalp-back-female.jpeg';
 import refFemaleTop from '@/assets/ref-female-top.jpg';
 import refMaleFront from '@/assets/ref-male-front.jpg';
 import scalpSideMaleB from '@/assets/scalp-side-male-b.jpeg';
-import refMaleTop from '@/assets/ref-male-top.png';
+import refMaleCrown from '@/assets/ref-male-crown.png';
 
 interface ScalpStep {
   title: string;
@@ -34,7 +34,7 @@ const getScalpSteps = (gender: string): ScalpStep[] => {
       {
         title: 'Crown',
         instruction: 'Tilt your head forward. Hold your phone above and point down at the top of your head.',
-        referenceImage: refMaleTop,
+        referenceImage: refMaleCrown,
       },
     ];
   }
