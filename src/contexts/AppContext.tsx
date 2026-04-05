@@ -47,6 +47,10 @@ export interface OnboardingData {
   otherHairProduct: string;
   hairProductFrequency: string;
   scalpProductFrequency: string;
+  // Male-specific fields
+  norwoodBaseline: string;
+  familyHistory: string;
+  cutCadence: string;
 }
 
 export interface CheckInData {
