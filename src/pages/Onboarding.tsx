@@ -7,6 +7,8 @@ import { computeHistoricalRisk, getTriageGuidance } from '@/utils/triageLogic';
 import type { CheckInData, HealthProfileData } from '@/contexts/AppContext';
 import { Leaf } from 'lucide-react';
 import ScalpBaselineCapture from '@/components/ScalpBaselineCapture';
+import NorwoodScale from '@/components/NorwoodScale';
+import { computeMaleTriageRisk, getMaleTriageMessage, getMaleTriageReasoning } from '@/utils/maleTriageLogic';
 
 // ─── Image imports ───────────────────────────────────────────────────────────
 import hairType4Hero from '@/assets/hair-type4-hero.png';
@@ -90,6 +92,39 @@ const maleShortHairConcerns = [
   'I just want to stay on top of things', 'Not sure',
 ];
 
+// New male onboarding symptom questions
+const maleCoreSymptomsNew = [
+  { key: 'hairlineChange', label: 'Hairline changes', question: 'Have you noticed any changes to your hairline recently?' },
+  { key: 'thinning', label: 'Thinning', question: 'Any thinning at your temples or crown?' },
+  { key: 'scalpIssues', label: 'Scalp issues', question: 'Any itching, flaking, or dryness?' },
+];
+
+const maleSecondaryShortHair = [
+  { key: 'razorBumps', label: 'Razor bumps', question: 'Any razor bumps or ingrown hairs?' },
+  { key: 'barberIrritation', label: 'Barber irritation', question: 'Any scalp irritation after your last cut?' },
+];
+
+const maleSecondaryLongHair = [
+  { key: 'buildup', label: 'Buildup', question: 'Any buildup or odour between washes?' },
+  { key: 'tenderness', label: 'Tenderness', question: 'Any tenderness or tightness at the roots?' },
+];
+
+const maleSecondaryAfro = [
+  { key: 'breakage', label: 'Breakage', question: 'Any breakage or excessive shedding?' },
+];
+
+const maleNewDescriptors: Record<string, Record<string, string>> = {
+  hairlineChange: { None: 'No changes noticed', Mild: 'Something looks slightly different but hard to say', Moderate: 'Hairline has visibly moved back or thinned', Severe: 'Clear recession or thinning compared to a year ago' },
+  thinning: { None: 'No thinning', Mild: 'Slightly thinner at the crown or temples', Moderate: 'Noticeably thinner areas, scalp more visible', Severe: 'Scalp clearly visible, hairline receding' },
+  scalpIssues: { None: 'No scalp issues', Mild: 'Occasional itch or a few flakes', Moderate: 'Frequent itching, visible flaking, or persistent dryness', Severe: 'Constant discomfort, heavy flaking, or painful dryness' },
+  razorBumps: { None: 'No razor bumps', Mild: 'A few bumps after a cut, go away on their own', Moderate: 'Regular bumps after cuts, some painful or inflamed', Severe: 'Persistent bumps, painful, some with pus or scarring' },
+  barberIrritation: { None: 'No irritation after cuts', Mild: 'Slight redness or sensitivity for a day or two', Moderate: 'Burning, stinging, or rash lasting several days', Severe: 'Intense reaction every time, open sores or lasting marks' },
+  buildup: { None: 'No buildup or odour', Mild: 'Slight buildup, no smell', Moderate: 'Noticeable buildup or faint odour', Severe: 'Heavy buildup, persistent odour despite washing' },
+  tenderness: { None: 'No tenderness', Mild: 'Slight tightness, goes away quickly', Moderate: 'Sore to touch, especially after a fresh install', Severe: 'Painful without touching, constant tightness' },
+  breakage: { None: 'No breakage', Mild: 'A few short pieces when styling', Moderate: 'Noticeable shedding, uneven lengths appearing', Severe: 'Significant breakage or shedding daily' },
+};
+
+// Legacy male short hair symptoms (kept for reference/fallback)
 const maleShortHairSymptoms = [
   { key: 'itch', label: 'Itching', question: 'Have you noticed any scalp itching in the last few weeks?' },
   { key: 'flaking', label: 'Flaking', question: 'Have you noticed any flaking or dandruff in the last few weeks?' },
@@ -102,11 +137,8 @@ const maleShortHairSymptoms = [
 ];
 
 const maleShortHairDescriptorOverrides: Record<string, Record<string, string>> = {
+  ...maleNewDescriptors,
   flaking: { None: 'No flaking', Mild: 'A few flakes when you scratch or rub', Moderate: 'Visible flakes on your scalp or collar', Severe: "Heavy, persistent flaking that won't clear" },
-  tenderness: { None: 'No tenderness', Mild: 'Slight sensitivity when you touch or press', Moderate: 'Sore to touch, especially after a cut', Severe: 'Painful without touching, or sharp pain when pressed' },
-  hairline: { None: 'No thinning', Mild: 'Slightly thinner at the crown or temples', Moderate: 'Noticeably thinner areas, scalp more visible', Severe: 'Scalp clearly visible, hairline receding' },
-  razorBumps: { None: 'No razor bumps', Mild: 'A few bumps after a cut, go away on their own', Moderate: 'Regular bumps after cuts, some painful or inflamed', Severe: 'Persistent bumps, painful, some with pus or scarring' },
-  barberIrritation: { None: 'No irritation after cuts', Mild: 'Slight redness or sensitivity for a day or two', Moderate: 'Burning, stinging, or rash lasting several days', Severe: 'Intense reaction every time, open sores or lasting marks' },
   dryness: { None: 'No dryness', Mild: 'Slightly dry or tight between washes', Moderate: 'Dry and ashy despite moisturising', Severe: 'Extremely dry, flaking, or painful tightness' },
 };
 
@@ -306,15 +338,37 @@ const Onboarding = () => {
   const [showProtectiveInfo, setShowProtectiveInfo] = useState(false);
   const [barberFreq, setBarberFreq] = useState('');
 
+  // Male-specific onboarding state
+  const [norwoodStage, setNorwoodStage] = useState(onboardingData.norwoodBaseline || '');
+  const [mFamilyHistory, setMFamilyHistory] = useState(onboardingData.familyHistory || '');
+  const [mCutCadence, setMCutCadence] = useState(onboardingData.cutCadence || '');
+
   // Male style classification
+  const maleHasShortStyles = isMale && styles.some(s => ['Low cut / fade', 'Waves', 'Bald / shaved'].includes(s));
   const maleHasLongStyles = isMale && styles.some(s => maleLongStyleNames.includes(s));
+  const maleHasAfroOnly = isMale && styles.includes('Afro') && !maleHasShortStyles && !maleHasLongStyles;
   const maleIsShortHairOnly = isMale && !maleHasLongStyles;
   const maleNeedsProtectiveQ = isMale && styles.some(s => [...maleLongStyleNames, 'Afro'].includes(s));
 
+  // Compute male-specific active symptoms based on style selection
+  const getMaleActiveSymptoms = () => {
+    const core = [...maleCoreSymptomsNew];
+    if (maleHasShortStyles) {
+      return [...core, ...maleSecondaryShortHair];
+    }
+    if (maleHasLongStyles) {
+      return [...core, ...maleSecondaryLongHair];
+    }
+    if (maleHasAfroOnly) {
+      return [...core, ...maleSecondaryAfro];
+    }
+    return core; // fallback: just core 3 questions
+  };
+
   // Active symptoms and descriptors based on gender/style
-  const activeSymptoms = maleIsShortHairOnly ? maleShortHairSymptoms : onboardingSymptoms;
-  const activeDescriptors = maleIsShortHairOnly
-    ? { ...severityDescriptors, ...maleShortHairDescriptorOverrides }
+  const activeSymptoms = isMale ? getMaleActiveSymptoms() : onboardingSymptoms;
+  const activeDescriptors = isMale
+    ? { ...severityDescriptors, ...maleNewDescriptors }
     : severityDescriptors;
   const activeBetweenWashOptions = betweenWashOptions;
   const activeConcernOptions = maleIsShortHairOnly ? maleShortHairConcerns : concernOptions;
@@ -372,11 +426,12 @@ const Onboarding = () => {
   const getProgressSegment = () => {
     if (isMale) {
       if (step <= 0) return 0;
-      if (step === 3) return 1;
-      if (step === 4) return 2;
-      if (step === 5) return 3;
-      if (step === 6 || step === 7) return 4;
-      if (step === 8) return 5;
+      if (step === 20) return 1; // Norwood
+      if (step === 21) return 2; // Family history
+      if (step === 22) return 3; // Styles
+      if (step === 23) return 4; // Cut cadence
+      if (step === 6 || step === 7) return 5; // Guidelines + photos
+      if (step === 8) return 6; // Symptoms
       if (step >= 9) return 6;
       return 0;
     }
@@ -443,6 +498,15 @@ const Onboarding = () => {
     date: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }),
   });
 
+  const computeRisk = (responses: Record<string, string>): 'green' | 'amber' | 'red' => {
+    if (isMale) {
+      const checkIn = buildCheckInFromSymptoms(responses);
+      return computeMaleTriageRisk(checkIn, [], norwoodStage, norwoodStage);
+    }
+    const checkIn = buildCheckInFromSymptoms(responses);
+    return computeHistoricalRisk(checkIn, []);
+  };
+
   const saveAndComplete = (checkIn: CheckInData, risk: 'green' | 'amber' | 'red') => {
     const effectiveHairType = hairSubType || hairType;
     setOnboardingData({
@@ -461,6 +525,10 @@ const Onboarding = () => {
       betweenWashCare: betweenWash,
       otherBetweenWashCare: otherBetweenWash,
       goals: concerns,
+      // Male-specific fields
+      norwoodBaseline: norwoodStage,
+      familyHistory: mFamilyHistory,
+      cutCadence: mCutCadence,
     });
     setCurrentCheckIn(checkIn);
     addToCheckInHistory(checkIn);
@@ -521,7 +589,7 @@ const Onboarding = () => {
             setSymptomIndex(symptomIndex + 1);
           } else {
             const checkIn = buildCheckInFromSymptoms(symptomResponses);
-            const risk = computeHistoricalRisk(checkIn, []);
+            const risk = isMale ? computeMaleTriageRisk(checkIn, [], norwoodStage, norwoodStage) : computeHistoricalRisk(checkIn, []);
             setTriageResult(risk);
             setSymptomPhase('result');
           }
@@ -538,12 +606,16 @@ const Onboarding = () => {
           setSymptomIndex(symptomIndex + 1);
         } else {
           const checkIn = buildCheckInFromSymptoms(symptomResponses);
-          const risk = computeHistoricalRisk(checkIn, []);
+          const risk = isMale ? computeMaleTriageRisk(checkIn, [], norwoodStage, norwoodStage) : computeHistoricalRisk(checkIn, []);
           setTriageResult(risk);
           setSymptomPhase('result');
         }
       } else if (symptomPhase === 'result') {
-        setStep(9);
+        if (isMale) {
+          setStep(11); // Skip length check for males
+        } else {
+          setStep(9);
+        }
       }
     } else if (step === 9 || step === 10) {
       setStep(step + 1);
@@ -585,9 +657,18 @@ const Onboarding = () => {
       }
     } else if (step === 2 && chemicalStep > 0) {
       setChemicalStep(chemicalStep - 1);
+    } else if (isMale) {
+      // Male back navigation
+      if (step === 20) { setStep(0); return; }
+      if (step === 21) { setStep(20); return; }
+      if (step === 22) { setStep(21); return; }
+      if (step === 23) { setStep(22); return; }
+      if (step === 6) { setStep(23); return; }
+      if (step === 7) { setStep(6); return; }
+      if (step === 11) { setStep(8); return; }
+      setStep(step - 1);
     } else if (step > 0) {
       if (step === 2) setChemicalStep(0);
-      if (isMale && step === 3) { setStep(0); return; }
       setStep(step - 1);
     } else {
       navigate(-1);
@@ -614,8 +695,9 @@ const Onboarding = () => {
     return 'Next';
   };
 
-  // Hide bottom button on welcome, auto-advance screens, photo capture, consent, and symptom flow
+  // Hide bottom button on welcome, auto-advance screens, photo capture, consent, male-specific screens, and symptom flow
   const showBottomButton = step !== -1 && step !== 0 && step !== 1 && step !== 6 && step !== 7 && step !== 9
+    && step !== 20 && step !== 21 && step !== 22 && step !== 23
     && !(step === 8 && (symptomPhase === 'transition' || symptomPhase === 'symptoms' || symptomPhase === 'thanks' || symptomPhase === 'result'))
     && !(step === 2 && chemicalStep !== 1);
 
@@ -724,7 +806,7 @@ const Onboarding = () => {
                           key={opt.id}
                           onClick={() => {
                           setOnboardingData({ ...onboardingData, gender: opt.id });
-                            setStep(opt.id === 'man' ? 3 : 1);
+                            setStep(opt.id === 'man' ? 20 : 1);
                           }}
                           className="selection-card w-full text-left flex items-center gap-4"
                         >
@@ -741,7 +823,103 @@ const Onboarding = () => {
                   </div>
                 )}
 
-                {/* ── Screen 1: Hair Type (show subtypes + Continue) ── */}
+                {/* ── Screen 20 (MALE): Norwood Scale Self-Assessment ── */}
+                {step === 20 && (
+                  <div>
+                    <NorwoodScale
+                      selected={norwoodStage}
+                      onSelect={(stage) => setNorwoodStage(stage)}
+                    />
+                    {norwoodStage && (
+                      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mt-4">
+                        <button
+                          onClick={() => setStep(21)}
+                          className="w-full h-14 rounded-xl bg-primary text-primary-foreground font-semibold text-base"
+                        >
+                          Next
+                        </button>
+                      </motion.div>
+                    )}
+                  </div>
+                )}
+
+                {/* ── Screen 21 (MALE): Family History (auto-advance) ── */}
+                {step === 21 && (
+                  <div>
+                    <h2 className="text-lg font-semibold text-foreground mb-1">Does hair loss run in your family?</h2>
+                    <p className="text-sm text-muted-foreground mb-6">Family history helps us understand your risk profile.</p>
+                    <div className="space-y-3">
+                      {["Yes, father's side", "Yes, mother's side", "Yes, both sides", "No", "Not sure"].map(opt => (
+                        <button
+                          key={opt}
+                          onClick={() => {
+                            setMFamilyHistory(opt);
+                            setTimeout(() => setStep(22), 200);
+                          }}
+                          className={`selection-card w-full text-left ${mFamilyHistory === opt ? 'selected' : ''}`}
+                        >
+                          <p className="font-medium text-foreground text-sm">{opt}</p>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* ── Screen 22 (MALE): Hairstyles (multi-select + Next) ── */}
+                {step === 22 && (
+                  <div>
+                    <h2 className="text-lg font-semibold text-foreground mb-1">How do you usually wear your hair?</h2>
+                    <p className="text-sm text-muted-foreground mb-5">Select everything you rotate between.</p>
+                    <div className="flex flex-wrap gap-2">
+                      {maleStyleOptions.map(s => (
+                        <button
+                          key={s}
+                          onClick={() => toggleStyle(s)}
+                          className={`pill-option ${styles.includes(s) ? 'selected' : ''}`}
+                        >
+                          {s}
+                        </button>
+                      ))}
+                    </div>
+                    {styles.includes('Other') && (
+                      <input type="text" value={otherStyle} onChange={e => setOtherStyle(e.target.value)} placeholder="Describe your style" className="w-full h-12 px-4 rounded-xl border border-border bg-card text-foreground text-sm mt-3" />
+                    )}
+                    {styles.length > 0 && (
+                      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mt-5">
+                        <button
+                          onClick={() => setStep(23)}
+                          className="w-full h-14 rounded-xl bg-primary text-primary-foreground font-semibold text-base"
+                        >
+                          Next
+                        </button>
+                      </motion.div>
+                    )}
+                  </div>
+                )}
+
+                {/* ── Screen 23 (MALE): Cut/Maintenance Cadence (auto-advance) ── */}
+                {step === 23 && (
+                  <div>
+                    <h2 className="text-lg font-semibold text-foreground mb-1">How often do you get your hair cut or maintained?</h2>
+                    <p className="text-sm text-muted-foreground mb-6">This sets your check-in reminders.</p>
+                    <div className="space-y-3">
+                      {["Weekly", "Every 2 weeks", "Monthly", "Every 6+ weeks", "I maintain it myself"].map(opt => (
+                        <button
+                          key={opt}
+                          onClick={() => {
+                            setMCutCadence(opt);
+                            setTimeout(() => setStep(6), 200);
+                          }}
+                          className={`selection-card w-full text-left ${mCutCadence === opt ? 'selected' : ''}`}
+                        >
+                          <p className="font-medium text-foreground text-sm">{opt}</p>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+
                 {step === 1 && (
                   <div>
                     <h2 className="text-lg font-semibold text-foreground mb-1">What's your hair type?</h2>
@@ -1216,7 +1394,7 @@ const Onboarding = () => {
                                 } else {
                                   setTimeout(() => {
                                     const checkIn = buildCheckInFromSymptoms({ ...symptomResponses, [currentSymptom.key]: sev });
-                                    const risk = computeHistoricalRisk(checkIn, []);
+                                    const risk = isMale ? computeMaleTriageRisk(checkIn, [], norwoodStage, norwoodStage) : computeHistoricalRisk(checkIn, []);
                                     setTriageResult(risk);
                                     setSymptomPhase('thanks');
                                   }, 150);
@@ -1230,7 +1408,7 @@ const Onboarding = () => {
                                     setSymptomIndex(symptomIndex + 1);
                                   } else {
                                     const checkIn = buildCheckInFromSymptoms({ ...symptomResponses, [currentSymptom.key]: sev });
-                                    const risk = computeHistoricalRisk(checkIn, []);
+                                    const risk = isMale ? computeMaleTriageRisk(checkIn, [], norwoodStage, norwoodStage) : computeHistoricalRisk(checkIn, []);
                                     setTriageResult(risk);
                                     setSymptomPhase('thanks');
                                   }
@@ -1457,7 +1635,10 @@ const OnboardingTriageResult = ({ risk, symptomResponses, onboardingSymptoms: sy
   const telogenTriggers = hasTelogenTriggers(hp);
   const triageGuidance = getTriageGuidance(risk, checkIn, []);
   const goalMessage = getGoalMessage(goals, risk);
-  const triageReasoning = getTriageReasoning(risk, symptomResponses, symptoms);
+  const triageReasoning = isMale
+    ? getMaleTriageReasoning(risk, symptomResponses)
+    : getTriageReasoning(risk, symptomResponses, symptoms);
+  const maleMessage = isMale ? getMaleTriageMessage(risk) : null;
 
   const circleColors: Record<string, string> = { green: 'bg-primary', amber: 'bg-warning', red: 'bg-destructive' };
 

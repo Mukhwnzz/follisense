@@ -22,6 +22,12 @@ export const didYouKnowFactsTagged: DidYouKnowFact[] = [
   { text: "CCCA (Central Centrifugal Cicatricial Alopecia) starts at the crown and works outward. Early detection matters because scarring alopecia is permanent if untreated.", topics: ['thinning'] },
   { text: "Your scalp has more blood vessels per square centimetre than almost any other part of your body. That's why scalp cuts bleed so much, and why circulation matters for growth.", topics: ['thinning'] },
   { text: "Seborrheic dermatitis is not caused by poor hygiene. It's driven by an overgrowth of a yeast that naturally lives on your skin.", topics: ['flaking', 'itching'] },
+  { text: "Androgenetic alopecia (male pattern hair loss) affects around 50% of men by age 50. It's driven by genetics and DHT, and early treatment gives the best results.", topics: ['thinning', 'edge'] },
+  { text: "The Norwood Scale was developed in the 1970s to classify male pattern baldness into seven stages. Knowing your stage helps track changes.", topics: ['thinning'] },
+  { text: "Razor bumps (pseudofolliculitis barbae) occur when shaved hairs curl back into the skin. Using a single-blade razor or electric trimmer can reduce them.", topics: ['bumps', 'itching'] },
+  { text: "Post-cut scalp irritation is often caused by bacteria on shared tools. Ask your barber about sterilisation practices.", topics: ['itching', 'bumps'] },
+  { text: "Finasteride and minoxidil are the two most evidence-backed treatments for male pattern hair loss. A dermatologist can help you weigh the options.", topics: ['thinning'] },
+  { text: "Scalp massages increase blood flow to hair follicles. Even 5 minutes a day may support healthier growth.", topics: ['thinning'] },
 ];
 
 // Legacy export for backward compat

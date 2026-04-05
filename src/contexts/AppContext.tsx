@@ -47,6 +47,10 @@ export interface OnboardingData {
   otherHairProduct: string;
   hairProductFrequency: string;
   scalpProductFrequency: string;
+  // Male-specific fields
+  norwoodBaseline: string;
+  familyHistory: string;
+  cutCadence: string;
 }
 
 export interface CheckInData {
@@ -223,6 +227,7 @@ const defaultOnboarding: OnboardingData = {
   menstrualTracking: '', lastPeriodDate: '', menstrualCycleLength: '',
   hormonalContraception: '', goals: [], hairProducts: [],
   otherHairProduct: '', hairProductFrequency: '', scalpProductFrequency: '',
+  norwoodBaseline: '', familyHistory: '', cutCadence: '',
 };
 
 const demoHistory: CycleEntry[] = [

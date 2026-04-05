@@ -12,6 +12,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar as CalendarPicker } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
+import MaleDashboard from '@/components/MaleDashboard';
 
 const serviceOptions = [
   'Wash', 'Treatment', 'Style installation', 'Style removal/takedown',
@@ -72,6 +73,8 @@ const HomePage = () => {
     research, setResearch, progressiveDismissed, dismissProgressivePrompt, checkInHistory,
     setOnboardingData,
   } = useApp();
+
+  const isMaleUser = onboardingData.gender === 'man';
 
   const [showSalonForm, setShowSalonForm]               = useState(false);
   const [showSalonVisitPicker, setShowSalonVisitPicker] = useState(false);
@@ -239,6 +242,10 @@ const HomePage = () => {
     );
     return null;
   };
+
+  if (isMaleUser) {
+    return <MaleDashboard />;
+  }
 
   return (
     <div style={{ fontFamily: dm, background: C.bg, minHeight: '100vh' }}>

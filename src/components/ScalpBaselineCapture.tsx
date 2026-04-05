@@ -24,23 +24,18 @@ const getScalpSteps = (gender: string): ScalpStep[] => {
     return [
       {
         title: 'Front hairline',
-        instruction: 'Keep your forehead visible. Show your hairline and temples clearly.',
+        instruction: 'Face the camera straight on. Show your full hairline clearly.',
         referenceImage: refMaleFront,
       },
       {
-        title: 'Side view',
-        instruction: 'Show your temple area and the hairline around your ear.',
+        title: 'Temples',
+        instruction: 'Angle slightly to show the corner recession area at your temple.',
         referenceImage: scalpSideMaleB,
       },
       {
-        title: 'Top of head',
-        instruction: 'Tilt your head forward. Hold your phone above and point down at your crown.',
+        title: 'Crown',
+        instruction: 'Tilt your head forward. Hold your phone above and point down at the top of your head.',
         referenceImage: refMaleTop,
-      },
-      {
-        title: 'Back and nape',
-        instruction: 'Show the back of your neck and nape. This is where clipper irritation often shows up.',
-        referenceImage: scalpBackMale,
       },
     ];
   }
@@ -147,6 +142,9 @@ const ScalpBaselineCapture = ({ onComplete, onBack, gender = 'woman', isCheckIn 
         Step {currentStep + 1} of {scalpSteps.length}
       </p>
       <h2 className="text-lg font-semibold text-foreground mb-1">{step.title}</h2>
+      <p className="text-sm text-muted-foreground mb-5 leading-relaxed">
+        {step.instruction}
+      </p>
       <p className="text-sm text-muted-foreground mb-5 leading-relaxed">
         {currentStep === 3
           ? "Show the back of your head and your nape. This one's tricky on your own."
