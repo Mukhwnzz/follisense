@@ -593,9 +593,18 @@ const Onboarding = () => {
       }
     } else if (step === 2 && chemicalStep > 0) {
       setChemicalStep(chemicalStep - 1);
+    } else if (isMale) {
+      // Male back navigation
+      if (step === 20) { setStep(0); return; }
+      if (step === 21) { setStep(20); return; }
+      if (step === 22) { setStep(21); return; }
+      if (step === 23) { setStep(22); return; }
+      if (step === 6) { setStep(23); return; }
+      if (step === 7) { setStep(6); return; }
+      if (step === 11) { setStep(8); return; }
+      setStep(step - 1);
     } else if (step > 0) {
       if (step === 2) setChemicalStep(0);
-      if (isMale && step === 3) { setStep(0); return; }
       setStep(step - 1);
     } else {
       navigate(-1);
