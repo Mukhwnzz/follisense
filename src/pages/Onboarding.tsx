@@ -695,8 +695,9 @@ const Onboarding = () => {
     return 'Next';
   };
 
-  // Hide bottom button on welcome, auto-advance screens, photo capture, consent, and symptom flow
+  // Hide bottom button on welcome, auto-advance screens, photo capture, consent, male-specific screens, and symptom flow
   const showBottomButton = step !== -1 && step !== 0 && step !== 1 && step !== 6 && step !== 7 && step !== 9
+    && step !== 20 && step !== 21 && step !== 22 && step !== 23
     && !(step === 8 && (symptomPhase === 'transition' || symptomPhase === 'symptoms' || symptomPhase === 'thanks' || symptomPhase === 'result'))
     && !(step === 2 && chemicalStep !== 1);
 
