@@ -469,6 +469,10 @@ const Onboarding = () => {
       betweenWashCare: betweenWash,
       otherBetweenWashCare: otherBetweenWash,
       goals: concerns,
+      // Male-specific fields
+      norwoodBaseline: norwoodStage,
+      familyHistory: mFamilyHistory,
+      cutCadence: mCutCadence,
     });
     setCurrentCheckIn(checkIn);
     addToCheckInHistory(checkIn);
