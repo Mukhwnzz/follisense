@@ -243,6 +243,10 @@ const HomePage = () => {
     return null;
   };
 
+  if (isMaleUser) {
+    return <MaleDashboard />;
+  }
+
   return (
     <div style={{ fontFamily: dm, background: C.bg, minHeight: '100vh' }}>
 
