@@ -34,7 +34,7 @@ const getScalpSteps = (gender: string): ScalpStep[] => {
       {
         title: 'Crown',
         instruction: 'Tilt your head forward. Hold your phone above and point down at the top of your head.',
-        referenceImage: refMaleTop,
+        referenceImage: refMaleCrown,
       },
     ];
   }
