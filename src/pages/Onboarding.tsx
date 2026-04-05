@@ -822,7 +822,103 @@ const Onboarding = () => {
                   </div>
                 )}
 
-                {/* ── Screen 1: Hair Type (show subtypes + Continue) ── */}
+                {/* ── Screen 20 (MALE): Norwood Scale Self-Assessment ── */}
+                {step === 20 && (
+                  <div>
+                    <NorwoodScale
+                      selected={norwoodStage}
+                      onSelect={(stage) => setNorwoodStage(stage)}
+                    />
+                    {norwoodStage && (
+                      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mt-4">
+                        <button
+                          onClick={() => setStep(21)}
+                          className="w-full h-14 rounded-xl bg-primary text-primary-foreground font-semibold text-base"
+                        >
+                          Next
+                        </button>
+                      </motion.div>
+                    )}
+                  </div>
+                )}
+
+                {/* ── Screen 21 (MALE): Family History (auto-advance) ── */}
+                {step === 21 && (
+                  <div>
+                    <h2 className="text-lg font-semibold text-foreground mb-1">Does hair loss run in your family?</h2>
+                    <p className="text-sm text-muted-foreground mb-6">Family history helps us understand your risk profile.</p>
+                    <div className="space-y-3">
+                      {["Yes, father's side", "Yes, mother's side", "Yes, both sides", "No", "Not sure"].map(opt => (
+                        <button
+                          key={opt}
+                          onClick={() => {
+                            setMFamilyHistory(opt);
+                            setTimeout(() => setStep(22), 200);
+                          }}
+                          className={`selection-card w-full text-left ${mFamilyHistory === opt ? 'selected' : ''}`}
+                        >
+                          <p className="font-medium text-foreground text-sm">{opt}</p>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* ── Screen 22 (MALE): Hairstyles (multi-select + Next) ── */}
+                {step === 22 && (
+                  <div>
+                    <h2 className="text-lg font-semibold text-foreground mb-1">How do you usually wear your hair?</h2>
+                    <p className="text-sm text-muted-foreground mb-5">Select everything you rotate between.</p>
+                    <div className="flex flex-wrap gap-2">
+                      {maleStyleOptions.map(s => (
+                        <button
+                          key={s}
+                          onClick={() => toggleStyle(s)}
+                          className={`pill-option ${styles.includes(s) ? 'selected' : ''}`}
+                        >
+                          {s}
+                        </button>
+                      ))}
+                    </div>
+                    {styles.includes('Other') && (
+                      <input type="text" value={otherStyle} onChange={e => setOtherStyle(e.target.value)} placeholder="Describe your style" className="w-full h-12 px-4 rounded-xl border border-border bg-card text-foreground text-sm mt-3" />
+                    )}
+                    {styles.length > 0 && (
+                      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mt-5">
+                        <button
+                          onClick={() => setStep(23)}
+                          className="w-full h-14 rounded-xl bg-primary text-primary-foreground font-semibold text-base"
+                        >
+                          Next
+                        </button>
+                      </motion.div>
+                    )}
+                  </div>
+                )}
+
+                {/* ── Screen 23 (MALE): Cut/Maintenance Cadence (auto-advance) ── */}
+                {step === 23 && (
+                  <div>
+                    <h2 className="text-lg font-semibold text-foreground mb-1">How often do you get your hair cut or maintained?</h2>
+                    <p className="text-sm text-muted-foreground mb-6">This sets your check-in reminders.</p>
+                    <div className="space-y-3">
+                      {["Weekly", "Every 2 weeks", "Monthly", "Every 6+ weeks", "I maintain it myself"].map(opt => (
+                        <button
+                          key={opt}
+                          onClick={() => {
+                            setMCutCadence(opt);
+                            setTimeout(() => setStep(6), 200);
+                          }}
+                          className={`selection-card w-full text-left ${mCutCadence === opt ? 'selected' : ''}`}
+                        >
+                          <p className="font-medium text-foreground text-sm">{opt}</p>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+
                 {step === 1 && (
                   <div>
                     <h2 className="text-lg font-semibold text-foreground mb-1">What's your hair type?</h2>
