@@ -308,6 +308,11 @@ const Onboarding = () => {
   const [showProtectiveInfo, setShowProtectiveInfo] = useState(false);
   const [barberFreq, setBarberFreq] = useState('');
 
+  // Male-specific onboarding state
+  const [norwoodStage, setNorwoodStage] = useState(onboardingData.norwoodBaseline || '');
+  const [mFamilyHistory, setMFamilyHistory] = useState(onboardingData.familyHistory || '');
+  const [mCutCadence, setMCutCadence] = useState(onboardingData.cutCadence || '');
+
   // Male style classification
   const maleHasLongStyles = isMale && styles.some(s => maleLongStyleNames.includes(s));
   const maleIsShortHairOnly = isMale && !maleHasLongStyles;
@@ -726,7 +731,7 @@ const Onboarding = () => {
                           key={opt.id}
                           onClick={() => {
                           setOnboardingData({ ...onboardingData, gender: opt.id });
-                            setStep(opt.id === 'man' ? 3 : 1);
+                            setStep(opt.id === 'man' ? 20 : 1);
                           }}
                           className="selection-card w-full text-left flex items-center gap-4"
                         >
