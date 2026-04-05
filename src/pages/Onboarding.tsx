@@ -7,6 +7,8 @@ import { computeHistoricalRisk, getTriageGuidance } from '@/utils/triageLogic';
 import type { CheckInData, HealthProfileData } from '@/contexts/AppContext';
 import { Leaf } from 'lucide-react';
 import ScalpBaselineCapture from '@/components/ScalpBaselineCapture';
+import NorwoodScale from '@/components/NorwoodScale';
+import { computeMaleTriageRisk, getMaleTriageMessage, getMaleTriageReasoning } from '@/utils/maleTriageLogic';
 
 // ─── Image imports ───────────────────────────────────────────────────────────
 import hairType4Hero from '@/assets/hair-type4-hero.png';
