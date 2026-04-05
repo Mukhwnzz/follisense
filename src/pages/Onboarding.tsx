@@ -8,7 +8,7 @@ import type { CheckInData, HealthProfileData } from '@/contexts/AppContext';
 import { Leaf } from 'lucide-react';
 import ScalpBaselineCapture from '@/components/ScalpBaselineCapture';
 import NorwoodScale from '@/components/NorwoodScale';
-import { computeMaleTriageRisk, getMaleTriageMessage, getMaleTriageReasoning } from '@/utils/maleTriageLogic';
+import { computeMaleTriageRisk, getMaleTriageMessage, getMaleTriageReasoning, getSeverityTransitionText, computeSeverityDotSummary, getInterimCareSteps, getSeverityLevel } from '@/utils/maleTriageLogic';
 
 // ─── Image imports ───────────────────────────────────────────────────────────
 import hairType4Hero from '@/assets/hair-type4-hero.png';
@@ -86,9 +86,10 @@ const concernOptions = [
   'Going grey or premature greying',
   'I just want to stay on top of things', 'Not sure',
 ];
-const maleShortHairConcerns = [
-  'Itching', 'Flaking', 'Thinning', 'Razor bumps or ingrowns', 'Irritation after cuts',
-  'Dryness', 'Going grey or premature greying',
+
+const maleConcernOptions = [
+  'Hairline recession', 'Thinning at the crown', 'Razor bumps or ingrowns',
+  'Itching or flaking', 'Scalp irritation',
   'I just want to stay on top of things', 'Not sure',
 ];
 
@@ -122,24 +123,6 @@ const maleNewDescriptors: Record<string, Record<string, string>> = {
   buildup: { None: 'No buildup or odour', Mild: 'Slight buildup, no smell', Moderate: 'Noticeable buildup or faint odour', Severe: 'Heavy buildup, persistent odour despite washing' },
   tenderness: { None: 'No tenderness', Mild: 'Slight tightness, goes away quickly', Moderate: 'Sore to touch, especially after a fresh install', Severe: 'Painful without touching, constant tightness' },
   breakage: { None: 'No breakage', Mild: 'A few short pieces when styling', Moderate: 'Noticeable shedding, uneven lengths appearing', Severe: 'Significant breakage or shedding daily' },
-};
-
-// Legacy male short hair symptoms (kept for reference/fallback)
-const maleShortHairSymptoms = [
-  { key: 'itch', label: 'Itching', question: 'Have you noticed any scalp itching in the last few weeks?' },
-  { key: 'flaking', label: 'Flaking', question: 'Have you noticed any flaking or dandruff in the last few weeks?' },
-  { key: 'tenderness', label: 'Tenderness', question: 'Have you noticed any scalp tenderness or pain in the last few weeks?' },
-  { key: 'hairline', label: 'Thinning', question: 'Have you noticed any thinning or hair loss in the last few weeks?' },
-  { key: 'razorBumps', label: 'Razor bumps or ingrowns', question: 'Have you noticed any razor bumps or ingrown hairs in the last few weeks?' },
-  { key: 'barberIrritation', label: 'Irritation after barber visits', question: 'Have you noticed any irritation after barber visits in the last few weeks?' },
-  { key: 'bumps', label: 'Bumps or irritation', question: 'Have you noticed any bumps or raised areas on your scalp in the last few weeks?' },
-  { key: 'dryness', label: 'Dryness', question: 'Have you noticed any scalp dryness in the last few weeks?' },
-];
-
-const maleShortHairDescriptorOverrides: Record<string, Record<string, string>> = {
-  ...maleNewDescriptors,
-  flaking: { None: 'No flaking', Mild: 'A few flakes when you scratch or rub', Moderate: 'Visible flakes on your scalp or collar', Severe: "Heavy, persistent flaking that won't clear" },
-  dryness: { None: 'No dryness', Mild: 'Slightly dry or tight between washes', Moderate: 'Dry and ashy despite moisturising', Severe: 'Extremely dry, flaking, or painful tightness' },
 };
 
 // ─── CHEMICAL PROCESSING ─────────────────────────────────────────────────────
@@ -232,6 +215,31 @@ const symptomAcks: Record<string, { mild: string; moderate: string; severe: stri
     moderate: "Reactions like that aren't something you should just live with. We'll track this.",
     severe: "That kind of reaction every time needs professional attention.",
   },
+  hairlineChange: {
+    mild: "Slight changes are hard to be sure about. Good that you're tracking.",
+    moderate: "Visible changes to your hairline are worth monitoring closely.",
+    severe: "That level of change deserves professional attention. We'll help you take the next step.",
+  },
+  thinning: {
+    mild: "Slight thinning can be hard to spot. Good that you noticed.",
+    moderate: "Noticeable thinning is worth paying attention to. We'll track this closely.",
+    severe: "Significant thinning deserves professional input. We'll help you take the right next step.",
+  },
+  scalpIssues: {
+    mild: "Noted. We'll factor this into your profile.",
+    moderate: "Persistent scalp issues are worth investigating. We're tracking this.",
+    severe: "Severe scalp discomfort needs attention. We're noting this carefully.",
+  },
+  buildup: {
+    mild: "Noted. We'll track this.",
+    moderate: "Noticeable buildup is worth addressing. We'll keep an eye on it.",
+    severe: "Heavy buildup can affect scalp health. Good that you're telling us.",
+  },
+  breakage: {
+    mild: "Noted. We'll see how this tracks over time.",
+    moderate: "More breakage than expected. Could be worth looking at your routine.",
+    severe: "That level of breakage can signal something deeper going on. Good that you're telling us.",
+  },
 };
 
 // ─── SEVERITY DESCRIPTORS ────────────────────────────────────────────────────
@@ -273,10 +281,9 @@ const CurlIcon = ({ type }: { type: string }) => {
   return null;
 };
 
-// Total main screens: -1=welcome, 0=gender, 1=hair type, 2=chemical, 3=styles, 4=routine, 5=concerns,
-// 6=photo guidelines, 7=scalp photos, 8=symptoms, 9=length check transition, 10=length photos, 11=completion
-const TOTAL_PROGRESS_SEGMENTS_FEMALE = 8; // gender, hair, chemical, styles, routine, concerns, guidelines+photos, symptoms
-const TOTAL_PROGRESS_SEGMENTS_MALE = 7; // gender, styles, routine, concerns, guidelines+photos, symptoms, length
+// Total main screens
+const TOTAL_PROGRESS_SEGMENTS_FEMALE = 8;
+const TOTAL_PROGRESS_SEGMENTS_MALE = 8; // gender, norwood, family, styles, cadence, concerns, guidelines+photos, symptoms
 
 const Onboarding = () => {
   const navigate = useNavigate();
@@ -286,7 +293,7 @@ const Onboarding = () => {
     healthProfile,
   } = useApp();
 
-  const [step, setStep] = useState(-1); // Start at welcome screen (-1)
+  const [step, setStep] = useState(-1);
   const [symptomAck, setSymptomAck] = useState<string | null>(null);
   const [consentChecked, setConsentChecked] = useState(false);
   const consentButtonRef = useRef<HTMLButtonElement>(null);
@@ -302,7 +309,7 @@ const Onboarding = () => {
 
   // Chemical processing
   const [chemicalStatus, setChemicalStatus] = useState(onboardingData.chemicalProcessing || '');
-  const [chemicalStep, setChemicalStep] = useState(0); // 0=status, 1=type, 2=timing, 3=frequency
+  const [chemicalStep, setChemicalStep] = useState(0);
   const [chemicalTypes, setChemicalTypes] = useState<string[]>(onboardingData.chemicalProcessingMultiple || []);
   const [chemicalOtherType, setChemicalOtherType] = useState('');
   const [lastTreatment, setLastTreatment] = useState(onboardingData.lastChemicalTreatment || '');
@@ -362,7 +369,7 @@ const Onboarding = () => {
     if (maleHasAfroOnly) {
       return [...core, ...maleSecondaryAfro];
     }
-    return core; // fallback: just core 3 questions
+    return core;
   };
 
   // Active symptoms and descriptors based on gender/style
@@ -371,7 +378,6 @@ const Onboarding = () => {
     ? { ...severityDescriptors, ...maleNewDescriptors }
     : severityDescriptors;
   const activeBetweenWashOptions = betweenWashOptions;
-  const activeConcernOptions = maleIsShortHairOnly ? maleShortHairConcerns : concernOptions;
 
   // Auto-scroll to Let's go button after consent checked
   useEffect(() => {
@@ -430,9 +436,10 @@ const Onboarding = () => {
       if (step === 21) return 2; // Family history
       if (step === 22) return 3; // Styles
       if (step === 23) return 4; // Cut cadence
-      if (step === 6 || step === 7) return 5; // Guidelines + photos
-      if (step === 8) return 6; // Symptoms
-      if (step >= 9) return 6;
+      if (step === 24) return 5; // Concerns
+      if (step === 6 || step === 7) return 6; // Guidelines + photos
+      if (step === 8) return 7; // Symptoms
+      if (step >= 9) return 7;
       return 0;
     }
     if (step <= 0) return 0;
@@ -448,7 +455,7 @@ const Onboarding = () => {
 
   const canProceed = () => {
     switch (step) {
-      case -1: return true; // welcome
+      case -1: return true;
       case 0: return !!gender;
       case 1: return !!hairType;
       case 2: {
@@ -485,11 +492,11 @@ const Onboarding = () => {
   };
 
   const buildCheckInFromSymptoms = (responses: Record<string, string>): CheckInData => ({
-    itch: responses.itch || 'None',
+    itch: responses.itch || responses.scalpIssues || 'None',
     tenderness: responses.tenderness || 'None',
-    hairline: responses.hairline || 'None',
+    hairline: responses.hairline || responses.hairlineChange || 'None',
     flaking: responses.flaking || 'None',
-    shedding: responses.shedding || 'None',
+    shedding: responses.shedding || responses.breakage || 'None',
     bumps: responses.bumps || 'None',
     dryness: responses.dryness || 'None',
     razorBumps: responses.razorBumps || 'None',
@@ -525,7 +532,6 @@ const Onboarding = () => {
       betweenWashCare: betweenWash,
       otherBetweenWashCare: otherBetweenWash,
       goals: concerns,
-      // Male-specific fields
       norwoodBaseline: norwoodStage,
       familyHistory: mFamilyHistory,
       cutCadence: mCutCadence,
@@ -591,7 +597,7 @@ const Onboarding = () => {
             const checkIn = buildCheckInFromSymptoms(symptomResponses);
             const risk = isMale ? computeMaleTriageRisk(checkIn, [], norwoodStage, norwoodStage) : computeHistoricalRisk(checkIn, []);
             setTriageResult(risk);
-            setSymptomPhase('result');
+            setSymptomPhase('thanks');
           }
           return;
         }
@@ -608,7 +614,7 @@ const Onboarding = () => {
           const checkIn = buildCheckInFromSymptoms(symptomResponses);
           const risk = isMale ? computeMaleTriageRisk(checkIn, [], norwoodStage, norwoodStage) : computeHistoricalRisk(checkIn, []);
           setTriageResult(risk);
-          setSymptomPhase('result');
+          setSymptomPhase('thanks');
         }
       } else if (symptomPhase === 'result') {
         if (isMale) {
@@ -663,7 +669,8 @@ const Onboarding = () => {
       if (step === 21) { setStep(20); return; }
       if (step === 22) { setStep(21); return; }
       if (step === 23) { setStep(22); return; }
-      if (step === 6) { setStep(23); return; }
+      if (step === 24) { setStep(23); return; }
+      if (step === 6) { setStep(24); return; }
       if (step === 7) { setStep(6); return; }
       if (step === 11) { setStep(8); return; }
       setStep(step - 1);
@@ -681,9 +688,9 @@ const Onboarding = () => {
   );
 
   const getButtonText = () => {
-    if (step === -1) return ''; // welcome has its own button
+    if (step === -1) return '';
     if (step === 2 && chemicalStep === 1) return 'Next';
-    if (step === 6) return ''; // handled by sticky button
+    if (step === 6) return '';
     if (step === 8) {
       if (symptomPhase === 'transition') return '';
       if (symptomPhase === 'symptoms') return '';
@@ -697,7 +704,7 @@ const Onboarding = () => {
 
   // Hide bottom button on welcome, auto-advance screens, photo capture, consent, male-specific screens, and symptom flow
   const showBottomButton = step !== -1 && step !== 0 && step !== 1 && step !== 6 && step !== 7 && step !== 9
-    && step !== 20 && step !== 21 && step !== 22 && step !== 23
+    && step !== 20 && step !== 21 && step !== 22 && step !== 23 && step !== 24
     && !(step === 8 && (symptomPhase === 'transition' || symptomPhase === 'symptoms' || symptomPhase === 'thanks' || symptomPhase === 'result'))
     && !(step === 2 && chemicalStep !== 1);
 
@@ -908,7 +915,7 @@ const Onboarding = () => {
                           key={opt}
                           onClick={() => {
                             setMCutCadence(opt);
-                            setTimeout(() => setStep(6), 200);
+                            setTimeout(() => setStep(24), 200);
                           }}
                           className={`selection-card w-full text-left ${mCutCadence === opt ? 'selected' : ''}`}
                         >
@@ -916,6 +923,32 @@ const Onboarding = () => {
                         </button>
                       ))}
                     </div>
+                  </div>
+                )}
+
+                {/* ── Screen 24 (MALE): What matters most to you ── */}
+                {step === 24 && (
+                  <div>
+                    <h2 className="text-lg font-semibold text-foreground mb-1">What matters most to you right now?</h2>
+                    <p className="text-sm text-muted-foreground mb-4">This personalises your experience so we focus on what matters to you.</p>
+                    <p className="text-muted-foreground mb-4 text-sm">Select all that apply</p>
+                    <div className="space-y-3">
+                      {maleConcernOptions.map(c => (
+                        <button key={c} onClick={() => toggleConcern(c)} className={`selection-card w-full text-left ${concerns.includes(c) ? 'selected' : ''}`}>
+                          <p className="font-medium text-foreground text-sm">{c}</p>
+                        </button>
+                      ))}
+                    </div>
+                    {concerns.length > 0 && (
+                      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mt-5">
+                        <button
+                          onClick={() => setStep(6)}
+                          className="w-full h-14 rounded-xl bg-primary text-primary-foreground font-semibold text-base"
+                        >
+                          Next
+                        </button>
+                      </motion.div>
+                    )}
                   </div>
                 )}
 
@@ -1192,9 +1225,9 @@ const Onboarding = () => {
                           <button
                             onClick={() => setShowProtectiveInfo(!showProtectiveInfo)}
                             className="text-xs font-medium shrink-0"
-                            style={{ color: '#7C9A8E' }}
+                            style={{ color: '#7A7570', textDecoration: 'underline', textUnderlineOffset: 3, background: 'none', border: 'none', cursor: 'pointer' }}
                           >
-                            What's this?
+                            What counts?
                           </button>
                         </div>
                         {showProtectiveInfo && (
@@ -1265,7 +1298,7 @@ const Onboarding = () => {
                     <p className="text-xs text-muted-foreground mb-4">{sectionExplainers[5]}</p>
                     <p className="text-muted-foreground mb-4 text-sm">Select all that apply</p>
                     <div className="space-y-3">
-                      {activeConcernOptions.map(c => (
+                      {concernOptions.map(c => (
                         <button key={c} onClick={() => toggleConcern(c)} className={`selection-card w-full text-left ${concerns.includes(c) ? 'selected' : ''}`}>
                           <p className="font-medium text-foreground text-sm">{c}</p>
                         </button>
@@ -1284,8 +1317,8 @@ const Onboarding = () => {
                     </div>
                     <h2 className="text-lg font-semibold text-foreground text-center mb-1">Let's capture your starting point</h2>
                     <p className="text-sm text-muted-foreground text-center mb-5 leading-relaxed">
-                      {maleIsShortHairOnly
-                        ? "No need to move anything, just show your hairline clearly. We'll compare these to future check-ins so you can see changes over time. Only you can see these."
+                      {isMale
+                        ? "These photos help you spot hairline changes that happen too slowly to notice day to day. We'll compare them to future check-ins. Only you can see these."
                         : "These photos help you spot changes that happen too slowly to notice day to day. We'll compare them to future check-ins so you can see your progress over time. Only you can see these."}
                     </p>
 
@@ -1306,10 +1339,12 @@ const Onboarding = () => {
                         <span className="text-xs mt-0.5">💡</span>
                         <p className="text-xs text-muted-foreground">Use your front (selfie) camera. For back and top shots, use a mirror or ask someone to help</p>
                       </div>
-                      <div className="flex items-start gap-2">
-                        <span className="text-xs mt-0.5">💡</span>
-                        <p className="text-xs text-muted-foreground">Ideally take photos on wash day or takedown day</p>
-                      </div>
+                      {!isMale && (
+                        <div className="flex items-start gap-2">
+                          <span className="text-xs mt-0.5">💡</span>
+                          <p className="text-xs text-muted-foreground">Ideally take photos on wash day or takedown day</p>
+                        </div>
+                      )}
                     </div>
 
                     <div className="rounded-xl border border-border p-3 mb-4 bg-accent/20">
@@ -1332,7 +1367,6 @@ const Onboarding = () => {
                       </p>
                     </label>
 
-                    {/* Sticky Let's go button - appears after consent */}
                     {consentChecked && (
                       <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
                         <button
@@ -1393,7 +1427,8 @@ const Onboarding = () => {
                                   setTimeout(() => setSymptomIndex(symptomIndex + 1), 150);
                                 } else {
                                   setTimeout(() => {
-                                    const checkIn = buildCheckInFromSymptoms({ ...symptomResponses, [currentSymptom.key]: sev });
+                                    const allResponses = { ...symptomResponses, [currentSymptom.key]: sev };
+                                    const checkIn = buildCheckInFromSymptoms(allResponses);
                                     const risk = isMale ? computeMaleTriageRisk(checkIn, [], norwoodStage, norwoodStage) : computeHistoricalRisk(checkIn, []);
                                     setTriageResult(risk);
                                     setSymptomPhase('thanks');
@@ -1407,7 +1442,8 @@ const Onboarding = () => {
                                   if (symptomIndex < activeSymptoms.length - 1) {
                                     setSymptomIndex(symptomIndex + 1);
                                   } else {
-                                    const checkIn = buildCheckInFromSymptoms({ ...symptomResponses, [currentSymptom.key]: sev });
+                                    const allResponses = { ...symptomResponses, [currentSymptom.key]: sev };
+                                    const checkIn = buildCheckInFromSymptoms(allResponses);
                                     const risk = isMale ? computeMaleTriageRisk(checkIn, [], norwoodStage, norwoodStage) : computeHistoricalRisk(checkIn, []);
                                     setTriageResult(risk);
                                     setSymptomPhase('thanks');
@@ -1459,19 +1495,26 @@ const Onboarding = () => {
                       transition={{ duration: 0.6 }}
                       style={{ color: '#7C9A8E', fontSize: '20px', textAlign: 'center', fontWeight: 500 }}
                     >
-                      Thanks for sharing that
+                      {getSeverityTransitionText(symptomResponses)}
                     </motion.p>
                   </div>
                 )}
 
                 {step === 8 && symptomPhase === 'result' && triageResult && (
-                  <OnboardingTriageResult
+                  <UnifiedTriageResult
                     risk={triageResult}
                     symptomResponses={symptomResponses}
-                    onboardingSymptoms={activeSymptoms}
+                    activeSymptoms={activeSymptoms}
                     isMale={isMale}
-                    maleIsShortHairOnly={maleIsShortHairOnly}
-                    onContinue={() => setStep(9)}
+                    maleHasShortStyles={maleHasShortStyles}
+                    maleHasLongStyles={maleHasLongStyles}
+                    onContinue={() => {
+                      if (isMale) {
+                        setStep(11);
+                      } else {
+                        setStep(9);
+                      }
+                    }}
                     navigate={navigate}
                     healthProfile={healthProfile}
                     goals={concerns}
@@ -1526,10 +1569,12 @@ const Onboarding = () => {
                       </motion.div>
                     </div>
                     <h2 className="text-lg font-semibold text-foreground text-center mb-3">
-                      {lengthPhotos.length > 0 ? "Baseline set. You're ready to go." : "You're all set."}
+                      {isMale ? "You're all set." : (lengthPhotos.length > 0 ? "Baseline set. You're ready to go." : "You're all set.")}
                     </h2>
                     <p className="text-sm text-muted-foreground text-center leading-relaxed mb-6">
-                      Tip: Tap 'My Routine' on your dashboard to add the products you use. This helps us spot what might be helping or irritating your scalp.
+                      {isMale
+                        ? "Tip: Tap 'My Routine' on your dashboard to add the products you use. This helps us spot what might be helping or irritating your scalp."
+                        : "Tip: Tap 'My Routine' on your dashboard to add the products you use. This helps us spot what might be helping or irritating your scalp."}
                     </p>
                   </div>
                 )}
@@ -1559,7 +1604,7 @@ const Onboarding = () => {
   );
 };
 
-// ─── Onboarding Triage Result (mirrors RiskOutput.tsx) ───────────────────────
+// ─── UNIFIED TRIAGE RESULT (both male and female) ────────────────────────────
 const hasTelogenTriggers = (hp: HealthProfileData): string[] => {
   const triggers: string[] = [];
   if (hp.pregnancyStatus === 'Postpartum (within 12 months)') triggers.push('postpartum status');
@@ -1576,201 +1621,284 @@ const getGoalMessage = (goals: string[], risk: 'green' | 'amber' | 'red'): strin
   return `You flagged ${primaryConcern.toLowerCase()} as a priority. Your symptoms suggest this needs attention. Here's what to do next.`;
 };
 
-interface OnboardingTriageResultProps {
+interface UnifiedTriageResultProps {
   risk: 'green' | 'amber' | 'red';
   symptomResponses: Record<string, string>;
-  onboardingSymptoms: { key: string; label: string; question: string }[];
+  activeSymptoms: { key: string; label: string; question: string }[];
   isMale: boolean;
-  maleIsShortHairOnly: boolean;
+  maleHasShortStyles: boolean;
+  maleHasLongStyles: boolean;
   onContinue: () => void;
   navigate: (path: string) => void;
   healthProfile: HealthProfileData;
   goals: string[];
 }
 
-const getTriageReasoning = (risk: 'green' | 'amber' | 'red', responses: Record<string, string>, symptoms: { key: string; label: string }[]): string | null => {
-  const NONE_VALUES = ['None', 'No', 'No change', 'Normal', 'No concerns'];
-  const MILD_VALUES = ['Mild', 'A little', 'Some flaking', 'Slight concern', 'A bit dry', 'A little more breakage or dryness than usual'];
-  const SEVERE_VALUES = ['Severe', 'Yes, painful', 'Very concerned', 'Alarming amount', 'Heavy flaking', "Concerned about my hair's condition", 'Significant'];
+const DOT_COLORS: Record<number, string> = {
+  0: '#FAF8F5', // off-white (none)
+  1: '#7C9A8E', // sage green (mild)
+  2: '#C4967A', // terracotta (moderate)
+  3: '#B85C5C', // dusty rose-red (severe)
+};
 
-  const activeSymptoms = symptoms.filter(s => responses[s.key] && !NONE_VALUES.includes(responses[s.key]));
-  const mildSymptoms = activeSymptoms.filter(s => MILD_VALUES.includes(responses[s.key]));
-  const severeSymptoms = activeSymptoms.filter(s => SEVERE_VALUES.includes(responses[s.key]));
+const BANNER_COLORS: Record<string, string> = {
+  green: '#7C9A8E',
+  amber: '#C4967A',
+  red: '#B85C5C',
+};
+
+const BANNER_LABELS: Record<string, string> = {
+  green: 'Looking good',
+  amber: 'Worth watching',
+  red: 'Professional review recommended',
+};
+
+const UnifiedTriageResult = ({ risk, symptomResponses, activeSymptoms, isMale, maleHasShortStyles, maleHasLongStyles, onContinue, navigate, healthProfile: hp, goals }: UnifiedTriageResultProps) => {
+  const symptomKeys = activeSymptoms.map(s => s.key);
+  const dotSummary = computeSeverityDotSummary(symptomResponses, symptomKeys);
+  const interimSteps = getInterimCareSteps(risk, symptomResponses, isMale);
+
+  // Compute reasoning
+  const reasoning = isMale
+    ? getMaleTriageReasoning(risk, symptomResponses, goals, maleHasShortStyles, maleHasLongStyles)
+    : getTriageReasoningFemale(risk, symptomResponses, activeSymptoms);
+
+  const telogenTriggers = hasTelogenTriggers(hp);
+  const goalMessage = getGoalMessage(goals, risk);
+
+  // Flagged symptoms list
+  const flaggedSymptoms = activeSymptoms.filter(s => {
+    const level = getSeverityLevel(symptomResponses[s.key]);
+    return level > 0;
+  }).map(s => {
+    const level = getSeverityLevel(symptomResponses[s.key]);
+    const severityLabel = level === 1 ? 'mild' : level === 2 ? 'moderate' : 'severe';
+    return { label: s.label, severity: severityLabel };
+  });
+
+  // Main message
+  let mainMessage = '';
+  if (risk === 'green') {
+    mainMessage = isMale
+      ? "Based on what you've shared, no concerning changes detected. Keep tracking."
+      : "Based on what you've shared, your scalp is looking good. We'll check in again at your next cycle.";
+  } else if (risk === 'amber') {
+    mainMessage = isMale
+      ? "You've reported some changes worth monitoring. We'll flag if this progresses."
+      : "We've noted a few things worth watching. Here are some steps that might help.";
+  } else {
+    mainMessage = getMaleTriageMessage(risk, dotSummary.flaggedCount, dotSummary.severeCount);
+  }
+
+  // "What this means" for red
+  const whatThisMeans = risk === 'red' ? (
+    isMale
+      ? (maleHasLongStyles && !maleHasShortStyles
+        ? 'Persistent or worsening symptoms can sometimes indicate conditions like traction-related damage or scalp inflammation that respond best to early treatment. Seeing a professional now gives you the best options.'
+        : 'Persistent or worsening symptoms can sometimes indicate conditions like male pattern hair loss or scalp inflammation that respond best to early treatment. Seeing a professional now gives you the best options.')
+      : 'Persistent or worsening symptoms can sometimes indicate conditions like traction alopecia or scalp inflammation that respond best to early treatment. Seeing a professional now gives you the best options.'
+  ) : null;
+
+  return (
+    <div>
+      {/* Colour banner */}
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+        style={{
+          background: BANNER_COLORS[risk],
+          borderRadius: 16,
+          padding: '20px 16px',
+          marginBottom: 16,
+          textAlign: 'center',
+        }}
+      >
+        <div style={{ marginBottom: 8 }}>
+          {risk === 'green' && <Check size={32} color="#fff" strokeWidth={2} />}
+          {risk === 'amber' && <Eye size={32} color="#fff" strokeWidth={1.8} />}
+          {risk === 'red' && <Stethoscope size={32} color="#fff" strokeWidth={1.8} />}
+        </div>
+        <h2 style={{ color: '#fff', fontSize: 22, fontWeight: 600, margin: '0 0 6px' }}>{BANNER_LABELS[risk]}</h2>
+        <p style={{ color: 'rgba(255,255,255,0.9)', fontSize: 13, lineHeight: 1.5, margin: 0 }}>{mainMessage}</p>
+      </motion.div>
+
+      {/* Reasoning line */}
+      {reasoning && (
+        <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}
+          style={{ color: '#7A7570', fontSize: 13, lineHeight: 1.6, marginBottom: 14, padding: '0 4px' }}
+        >
+          {reasoning}
+        </motion.p>
+      )}
+
+      {/* Goal message */}
+      {goalMessage && (
+        <div style={{ background: 'rgba(124,154,142,0.08)', borderRadius: 14, padding: '12px 14px', marginBottom: 14 }}>
+          <p style={{ fontSize: 13, color: '#2D2D2D', lineHeight: 1.5 }}>{goalMessage}</p>
+        </div>
+      )}
+
+      {/* Symptom list card */}
+      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}
+        style={{ background: '#F5F0EB', border: '1.5px solid #E8DED1', borderRadius: 14, padding: '14px 16px', marginBottom: 14 }}
+      >
+        <p style={{ fontSize: 12, fontWeight: 700, color: '#999', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10 }}>
+          Here's what you reported
+        </p>
+        {flaggedSymptoms.length === 0 ? (
+          <p style={{ fontSize: 13, color: '#666' }}>No symptoms flagged.</p>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            {flaggedSymptoms.map((s, i) => (
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div style={{
+                  width: 8, height: 8, borderRadius: '50%',
+                  background: s.severity === 'mild' ? '#7C9A8E' : s.severity === 'moderate' ? '#C4967A' : '#B85C5C',
+                }} />
+                <p style={{ fontSize: 13, color: '#2D2D2D' }}>{s.label} <span style={{ color: '#999' }}>({s.severity})</span></p>
+              </div>
+            ))}
+          </div>
+        )}
+      </motion.div>
+
+      {/* Severity dot summary */}
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}
+        style={{ padding: '0 4px', marginBottom: 16 }}
+      >
+        <div style={{ display: 'flex', gap: 6, marginBottom: 6, justifyContent: 'center' }}>
+          {dotSummary.dots.map((level, i) => (
+            <div key={i} style={{
+              width: 10, height: 10, borderRadius: '50%',
+              background: DOT_COLORS[level] || DOT_COLORS[0],
+              border: level === 0 ? '1px solid #E8DED1' : 'none',
+            }} />
+          ))}
+        </div>
+        <p style={{ fontSize: 11, color: '#7A7570', textAlign: 'center', lineHeight: 1.5 }}>{dotSummary.summaryText}</p>
+      </motion.div>
+
+      {/* Interim care steps */}
+      {interimSteps.length > 0 && (
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }}
+          style={{ background: '#F5F0EB', border: '1.5px solid #E8DED1', borderRadius: 14, padding: '14px 16px', marginBottom: 14 }}
+        >
+          <p style={{ fontSize: 13, fontWeight: 600, color: '#2D2D2D', marginBottom: 10 }}>
+            {risk === 'red' ? 'While you find a specialist' : 'In the meantime'}
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {interimSteps.map((step, i) => (
+              <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                <div style={{
+                  width: 20, height: 20, borderRadius: '50%',
+                  background: 'rgba(124,154,142,0.12)', flexShrink: 0,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: 10, fontWeight: 600, color: '#7C9A8E', marginTop: 1,
+                }}>{i + 1}</div>
+                <p style={{ fontSize: 12, color: '#666', lineHeight: 1.55 }}>{step}</p>
+              </div>
+            ))}
+          </div>
+        </motion.div>
+      )}
+
+      {/* What this means (RED only) */}
+      {whatThisMeans && (
+        <div style={{ background: '#F5F0EB', border: '1.5px solid #E8DED1', borderRadius: 14, padding: '14px 16px', marginBottom: 14 }}>
+          <p style={{ fontSize: 13, fontWeight: 600, color: '#2D2D2D', marginBottom: 6 }}>What this means</p>
+          <p style={{ fontSize: 12, color: '#666', lineHeight: 1.55 }}>{whatThisMeans}</p>
+        </div>
+      )}
+
+      {/* Telogen triggers */}
+      {telogenTriggers.length > 0 && !isMale && (
+        <div style={{ background: 'hsl(var(--accent))', borderRadius: 14, padding: '14px 16px', marginBottom: 14 }}>
+          <p style={{ fontSize: 13, fontWeight: 600, color: '#2D2D2D', marginBottom: 6 }}>Worth knowing</p>
+          <p style={{ fontSize: 12, color: '#666', lineHeight: 1.55 }}>You've mentioned {telogenTriggers.join(', ')}. Increased shedding can be a normal temporary response, sometimes called telogen effluvium. It usually resolves within 6-12 months, but monitoring helps.</p>
+        </div>
+      )}
+
+      {/* Clinician summary (RED only) */}
+      {risk === 'red' && (
+        <button
+          onClick={() => navigate('/clinician-summary')}
+          style={{
+            width: '100%', height: 52, borderRadius: 14,
+            background: '#7C9A8E', color: '#fff',
+            border: 'none', fontSize: 14, fontWeight: 600,
+            cursor: 'pointer', marginBottom: 10,
+          }}
+        >
+          Generate clinician summary
+        </button>
+      )}
+
+      {/* Find specialist (AMBER and RED) */}
+      {(risk === 'amber' || risk === 'red') && (
+        <button
+          onClick={() => navigate('/find-specialist')}
+          style={{
+            width: '100%', height: 44, borderRadius: 14,
+            background: 'transparent', color: '#7C9A8E',
+            border: '1.5px solid #7C9A8E', fontSize: 13, fontWeight: 600,
+            cursor: 'pointer', marginBottom: 14,
+          }}
+        >
+          Find a specialist
+        </button>
+      )}
+
+      {/* Continue button */}
+      <button
+        onClick={onContinue}
+        style={{
+          width: '100%', height: 52, borderRadius: 14,
+          background: risk === 'green' ? '#7C9A8E' : '#F5F0EB',
+          color: risk === 'green' ? '#fff' : '#2D2D2D',
+          border: risk === 'green' ? 'none' : '1.5px solid #E8DED1',
+          fontSize: 14, fontWeight: 600, cursor: 'pointer',
+        }}
+      >
+        Continue to dashboard
+      </button>
+    </div>
+  );
+};
+
+// Female triage reasoning (constellation-aware)
+const getTriageReasoningFemale = (risk: 'green' | 'amber' | 'red', responses: Record<string, string>, symptoms: { key: string; label: string }[]): string | null => {
+  const activeSymptoms = symptoms.filter(s => {
+    const level = getSeverityLevel(responses[s.key]);
+    return level > 0;
+  });
+  const severeSymptoms = activeSymptoms.filter(s => getSeverityLevel(responses[s.key]) >= 3);
 
   if (risk === 'green') {
     if (activeSymptoms.length === 0) return null;
-    if (activeSymptoms.length === 1 && mildSymptoms.length === 1) {
+    if (activeSymptoms.length === 1) {
       return "You flagged one area as mild. On its own, that's not a concern, but we'll track it going forward.";
     }
     return null;
   }
 
+  const names = activeSymptoms.map(s => `${s.label} (${getSeverityLevel(responses[s.key]) === 1 ? 'mild' : getSeverityLevel(responses[s.key]) === 2 ? 'moderate' : 'severe'})`).join(', ');
+
   if (risk === 'amber') {
-    const names = activeSymptoms.map(s => s.label.toLowerCase()).join(', ');
-    return `You've flagged ${names} at a level worth watching. Let's see if these steps help.`;
+    return `You reported: ${names}. Let's see if these steps help.`;
   }
 
   if (risk === 'red') {
     if (severeSymptoms.length > 0) {
-      return `${severeSymptoms[0].label} at this level needs professional attention.`;
+      return `You reported: ${names}. The combination of these, particularly ${severeSymptoms.map(s => s.label.toLowerCase()).join(' and ')}, is why we're recommending a professional review.`;
     }
     if (activeSymptoms.length >= 3) {
-      return `You've flagged ${activeSymptoms.length} areas of concern. While each one on its own may feel mild, experiencing several at once can sometimes point to something worth checking with a professional.`;
+      return `You reported: ${names}. Experiencing several symptoms at once can sometimes point to something worth checking with a professional.`;
     }
-    const names = activeSymptoms.map(s => s.label.toLowerCase()).join(', ');
-    return `You've flagged ${names} at a level that needs attention.`;
+    return `You reported: ${names}. This pattern needs attention.`;
   }
 
   return null;
-};
-
-const OnboardingTriageResult = ({ risk, symptomResponses, onboardingSymptoms: symptoms, isMale, maleIsShortHairOnly, onContinue, navigate, healthProfile: hp, goals }: OnboardingTriageResultProps) => {
-  const checkIn: CheckInData = {
-    itch: symptomResponses.itch || 'None', tenderness: symptomResponses.tenderness || 'None',
-    hairline: symptomResponses.hairline || 'None', flaking: symptomResponses.flaking || 'None',
-    shedding: symptomResponses.shedding || 'None', bumps: symptomResponses.bumps || 'None',
-    dryness: symptomResponses.dryness || 'None', type: 'baseline',
-    date: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }),
-  };
-  const telogenTriggers = hasTelogenTriggers(hp);
-  const triageGuidance = getTriageGuidance(risk, checkIn, []);
-  const goalMessage = getGoalMessage(goals, risk);
-  const triageReasoning = isMale
-    ? getMaleTriageReasoning(risk, symptomResponses)
-    : getTriageReasoning(risk, symptomResponses, symptoms);
-  const maleMessage = isMale ? getMaleTriageMessage(risk) : null;
-
-  const circleColors: Record<string, string> = { green: 'bg-primary', amber: 'bg-warning', red: 'bg-destructive' };
-
-  return (
-    <div>
-      <motion.div className="flex justify-center mb-6"
-        initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.4, ease: 'easeOut' }}
-      >
-        <div className={`w-28 h-28 rounded-full ${circleColors[risk]} flex items-center justify-center`}>
-          {risk === 'green' && <Check size={40} className="text-primary-foreground" strokeWidth={2} />}
-          {risk === 'amber' && <Eye size={40} className="text-warning-foreground" strokeWidth={1.8} />}
-          {risk === 'red' && <Stethoscope size={40} className="text-destructive-foreground" strokeWidth={1.8} />}
-        </div>
-      </motion.div>
-
-      {risk === 'green' && (
-        <>
-          <motion.h2 initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2, duration: 0.3 }} className="text-2xl font-semibold text-center mb-2">Looking good</motion.h2>
-          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2, duration: 0.3 }} className="text-muted-foreground text-center mb-6">Based on what you've shared, there are no red flags right now. Your scalp is looking good.</motion.p>
-          {triageReasoning && <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4, duration: 0.3 }} className="text-center mb-6" style={{ color: '#7A7570', fontSize: '13px' }}>{triageReasoning}</motion.p>}
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6, duration: 0.3 }}>
-            <div className="card-elevated p-5 mb-4">
-              <h3 className="font-semibold mb-2">Keep it up</h3>
-              <p className="text-sm text-muted-foreground">Your current routine is working well. We'll check in again at your next scheduled time.</p>
-            </div>
-            {goalMessage && <div className="rounded-2xl bg-sage-light p-4 mb-4"><p className="text-sm text-foreground">{goalMessage}</p></div>}
-            <div className="rounded-2xl bg-sage-light p-5 mb-8">
-              <p className="text-sm text-foreground"><strong>Tip:</strong> A gentle scalp massage with your fingertips can help with circulation. You don't need to add product for this to work.</p>
-            </div>
-            <button onClick={onContinue} className="w-full h-14 bg-primary text-primary-foreground rounded-xl font-semibold btn-press">Continue</button>
-          </motion.div>
-        </>
-      )}
-
-      {risk === 'amber' && (
-        <>
-          <motion.h2 initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2, duration: 0.3 }} className="text-2xl font-semibold text-center mb-2">Some patterns worth watching</motion.h2>
-          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2, duration: 0.3 }} className="text-muted-foreground text-center mb-6">Nothing urgent, but let's keep an eye on a few things</motion.p>
-          {triageReasoning && <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4, duration: 0.3 }} className="text-center mb-6" style={{ color: '#7A7570', fontSize: '13px' }}>{triageReasoning}</motion.p>}
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6, duration: 0.3 }}>
-            {triageGuidance.length > 0 && (
-              <div className="card-elevated p-5 mb-4">
-                <h3 className="font-semibold mb-3">What we're seeing</h3>
-                <div className="space-y-3">
-                  {triageGuidance.map((g, i) => (
-                    <p key={i} className="text-sm text-muted-foreground"><strong className="text-foreground">{g.heading}:</strong> {g.message}</p>
-                  ))}
-                </div>
-              </div>
-            )}
-            <div className="card-elevated p-5 mb-4">
-              <h3 className="font-semibold mb-3">Recommended next steps</h3>
-              <ol className="space-y-3">
-                {['Gently cleanse your scalp mid-cycle with a sulphate-free rinse', "Avoid re-tightening your edges. If they're loose, leave them", 'If your scalp feels dry or tight, a fragrance-free scalp moisturiser or hydrating mist may help. Avoid heavy oils or butters directly on the scalp as these can clog follicles and worsen buildup.'].map((tip, i) => (
-                  <li key={i} className="flex gap-3 text-sm">
-                    <span className="w-6 h-6 rounded-full bg-sage-light flex items-center justify-center flex-shrink-0 text-xs font-semibold text-primary">{i + 1}</span>
-                    <span className="text-muted-foreground">{tip}</span>
-                  </li>
-                ))}
-              </ol>
-            </div>
-            {telogenTriggers.length > 0 && (
-              <div className="rounded-2xl bg-accent p-5 mb-4">
-                <h3 className="font-semibold mb-2">Worth knowing</h3>
-                <p className="text-sm text-muted-foreground">You've mentioned {telogenTriggers.join(', ')}. Increased shedding can be a normal temporary response, sometimes called telogen effluvium. It usually resolves within 6-12 months, but monitoring helps.</p>
-              </div>
-            )}
-            {goalMessage && <div className="rounded-2xl bg-sage-light p-4 mb-4"><p className="text-sm text-foreground">{goalMessage}</p></div>}
-            <div className="card-elevated p-5 mb-4">
-              <h3 className="font-semibold mb-2">We'll reassess</h3>
-              <p className="text-sm text-muted-foreground">At your next check-in, we'll compare. If things get worse, check in anytime.</p>
-            </div>
-            <div className="card-elevated p-4 mb-4 border border-border">
-              <h3 className="font-medium text-foreground text-sm mb-1">Want to get ahead of this?</h3>
-              <p className="text-xs text-muted-foreground mb-2">Even though this isn't urgent, speaking to a specialist is never a bad idea.</p>
-              <button onClick={() => navigate('/find-specialist')} className="text-xs font-medium text-primary">Find a specialist</button>
-            </div>
-            <button onClick={onContinue} className="w-full h-14 bg-primary text-primary-foreground rounded-xl font-semibold btn-press">Continue</button>
-          </motion.div>
-        </>
-      )}
-
-      {risk === 'red' && (
-        <>
-          <motion.h2 initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2, duration: 0.3 }} className="text-2xl font-semibold text-center mb-2">We recommend professional advice</motion.h2>
-          <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2, duration: 0.3 }} className="text-muted-foreground text-center mb-6">Your symptoms suggest a pattern that would benefit from expert review</motion.p>
-          {triageReasoning && <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4, duration: 0.3 }} className="text-center mb-6" style={{ color: '#7A7570', fontSize: '13px' }}>{triageReasoning}</motion.p>}
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6, duration: 0.3 }}>
-            {triageGuidance.length > 0 && (
-              <div className="card-elevated p-5 mb-4">
-                <h3 className="font-semibold mb-3">Pattern analysis</h3>
-                <div className="space-y-3">
-                  {triageGuidance.map((g, i) => (
-                    <p key={i} className="text-sm text-muted-foreground"><strong className="text-foreground">{g.heading}:</strong> {g.message}</p>
-                  ))}
-                </div>
-              </div>
-            )}
-            <div className="card-elevated p-5 mb-4">
-              <h3 className="font-semibold mb-2">What this means</h3>
-              <p className="text-sm text-muted-foreground">{maleIsShortHairOnly ? 'Persistent or worsening symptoms can sometimes indicate conditions like male pattern hair loss or scalp inflammation that respond best to early treatment. Seeing a professional now gives you the best options.' : 'Persistent or worsening symptoms can sometimes indicate conditions like traction alopecia or scalp inflammation that respond best to early treatment. Seeing a professional now gives you the best options.'}</p>
-            </div>
-            {telogenTriggers.length > 0 && (
-              <div className="rounded-2xl bg-accent p-5 mb-4">
-                <h3 className="font-semibold mb-2">Worth knowing</h3>
-                <p className="text-sm text-muted-foreground">You've mentioned {telogenTriggers.join(', ')}. Increased shedding can be a normal temporary response, sometimes called telogen effluvium. It usually resolves within 6-12 months, but monitoring helps.</p>
-              </div>
-            )}
-            <div className="card-elevated p-5 mb-4">
-              <h3 className="font-semibold mb-2">Your clinical summary is ready</h3>
-              <p className="text-sm text-muted-foreground mb-4">A structured summary you can share with a GP, trichologist, or dermatologist. This was generated automatically based on your symptom patterns.</p>
-              <button onClick={() => navigate('/clinician-summary')} className="w-full h-12 rounded-xl border-2 border-primary text-primary font-semibold btn-press">View clinical summary</button>
-            </div>
-            <div className="card-elevated p-5 mb-4">
-              <h3 className="font-semibold mb-2">Who to see</h3>
-              <p className="text-sm text-muted-foreground">A trichologist specialises in hair and scalp. A dermatologist can investigate further. Your GP can refer you.{isMale && ' Your barber may also notice changes. Ask them to flag anything they see.'}</p>
-            </div>
-            <div className="card-elevated p-5 mb-4">
-              <h3 className="font-semibold mb-2">Find a specialist</h3>
-              <p className="text-sm text-muted-foreground mb-3">We're building a directory of professionals who understand textured hair.</p>
-              <button onClick={() => navigate('/find-specialist')} className="w-full h-12 rounded-xl border-2 border-border font-medium text-sm btn-press flex items-center justify-center gap-2">
-                <Search size={16} strokeWidth={1.8} /> Find someone near me
-              </button>
-            </div>
-            {goalMessage && <div className="rounded-2xl bg-sage-light p-4 mb-4"><p className="text-sm text-foreground">{goalMessage}</p></div>}
-            <button onClick={onContinue} className="w-full h-14 bg-primary text-primary-foreground rounded-xl font-semibold btn-press">Continue</button>
-          </motion.div>
-        </>
-      )}
-    </div>
-  );
 };
 
 // ─── Length Check Photos Component ────────────────────────────────────────────
