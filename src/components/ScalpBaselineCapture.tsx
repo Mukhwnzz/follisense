@@ -8,7 +8,6 @@ import scalpBackFemale from '@/assets/scalp-back-female.jpeg';
 import refFemaleTop from '@/assets/ref-female-top.jpg';
 import refMaleFront from '@/assets/ref-male-front.jpg';
 import scalpSideMaleB from '@/assets/scalp-side-male-b.jpeg';
-import scalpBackMale from '@/assets/scalp-back-male.png';
 import refMaleTop from '@/assets/ref-male-top.png';
 
 interface ScalpStep {
@@ -81,6 +80,7 @@ const ScalpBaselineCapture = ({ onComplete, onBack, gender = 'woman', isCheckIn 
   const galleryRef = useRef<HTMLInputElement>(null);
 
   const step = scalpSteps[currentStep];
+  const isFemaleBackStep = gender !== 'man' && currentStep === 3;
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -145,11 +145,6 @@ const ScalpBaselineCapture = ({ onComplete, onBack, gender = 'woman', isCheckIn 
       <p className="text-sm text-muted-foreground mb-5 leading-relaxed">
         {step.instruction}
       </p>
-      <p className="text-sm text-muted-foreground mb-5 leading-relaxed">
-        {currentStep === 3
-          ? "Show the back of your head and your nape. This one's tricky on your own."
-          : step.instruction}
-      </p>
 
       {!previewUrl ? (
         <>
@@ -176,7 +171,7 @@ const ScalpBaselineCapture = ({ onComplete, onBack, gender = 'woman', isCheckIn 
             </button>
           </div>
 
-          {currentStep === 3 && (
+          {isFemaleBackStep && (
             <div className="mt-4 text-center">
               <button
                 onClick={handleSkipStep}

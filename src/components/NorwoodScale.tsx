@@ -10,11 +10,11 @@ interface NorwoodScaleProps {
 const stages = [
   { id: '1', label: 'Stage 1', desc: 'Full hairline, no recession' },
   { id: '2', label: 'Stage 2', desc: 'Slight recession at temples' },
-  { id: '3', label: 'Stage 3', desc: 'Deeper temple recession, M shape' },
-  { id: '3v', label: 'Stage 3 Vertex', desc: 'Temple recession + crown thinning' },
-  { id: '4', label: 'Stage 4', desc: 'Further recession, band between' },
-  { id: '5', label: 'Stage 5', desc: 'Band between front and crown thins' },
-  { id: '6', label: 'Stage 6', desc: 'Front and crown merge, sides remain' },
+  { id: '3', label: 'Stage 3', desc: 'Deeper temple recession, M shape forming' },
+  { id: '3v', label: 'Stage 3 Vertex', desc: 'Temple recession plus crown thinning' },
+  { id: '4', label: 'Stage 4', desc: 'Further recession and crown thinning' },
+  { id: '5', label: 'Stage 5', desc: 'Band between front and crown thinning' },
+  { id: '6', label: 'Stage 6', desc: 'Front and crown merging' },
   { id: '7', label: 'Stage 7', desc: 'Only hair on sides and back' },
 ];
 
