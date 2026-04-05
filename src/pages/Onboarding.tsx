@@ -1635,7 +1635,10 @@ const OnboardingTriageResult = ({ risk, symptomResponses, onboardingSymptoms: sy
   const telogenTriggers = hasTelogenTriggers(hp);
   const triageGuidance = getTriageGuidance(risk, checkIn, []);
   const goalMessage = getGoalMessage(goals, risk);
-  const triageReasoning = getTriageReasoning(risk, symptomResponses, symptoms);
+  const triageReasoning = isMale
+    ? getMaleTriageReasoning(risk, symptomResponses)
+    : getTriageReasoning(risk, symptomResponses, symptoms);
+  const maleMessage = isMale ? getMaleTriageMessage(risk) : null;
 
   const circleColors: Record<string, string> = { green: 'bg-primary', amber: 'bg-warning', red: 'bg-destructive' };
 
