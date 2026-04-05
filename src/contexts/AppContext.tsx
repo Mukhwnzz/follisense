@@ -227,6 +227,7 @@ const defaultOnboarding: OnboardingData = {
   menstrualTracking: '', lastPeriodDate: '', menstrualCycleLength: '',
   hormonalContraception: '', goals: [], hairProducts: [],
   otherHairProduct: '', hairProductFrequency: '', scalpProductFrequency: '',
+  norwoodBaseline: '', familyHistory: '', cutCadence: '',
 };
 
 const demoHistory: CycleEntry[] = [
