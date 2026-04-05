@@ -344,14 +344,31 @@ const Onboarding = () => {
   const [mCutCadence, setMCutCadence] = useState(onboardingData.cutCadence || '');
 
   // Male style classification
+  const maleHasShortStyles = isMale && styles.some(s => ['Low cut / fade', 'Waves', 'Bald / shaved'].includes(s));
   const maleHasLongStyles = isMale && styles.some(s => maleLongStyleNames.includes(s));
+  const maleHasAfroOnly = isMale && styles.includes('Afro') && !maleHasShortStyles && !maleHasLongStyles;
   const maleIsShortHairOnly = isMale && !maleHasLongStyles;
   const maleNeedsProtectiveQ = isMale && styles.some(s => [...maleLongStyleNames, 'Afro'].includes(s));
 
+  // Compute male-specific active symptoms based on style selection
+  const getMaleActiveSymptoms = () => {
+    const core = [...maleCoreSymptomsNew];
+    if (maleHasShortStyles) {
+      return [...core, ...maleSecondaryShortHair];
+    }
+    if (maleHasLongStyles) {
+      return [...core, ...maleSecondaryLongHair];
+    }
+    if (maleHasAfroOnly) {
+      return [...core, ...maleSecondaryAfro];
+    }
+    return core; // fallback: just core 3 questions
+  };
+
   // Active symptoms and descriptors based on gender/style
-  const activeSymptoms = maleIsShortHairOnly ? maleShortHairSymptoms : onboardingSymptoms;
-  const activeDescriptors = maleIsShortHairOnly
-    ? { ...severityDescriptors, ...maleShortHairDescriptorOverrides }
+  const activeSymptoms = isMale ? getMaleActiveSymptoms() : onboardingSymptoms;
+  const activeDescriptors = isMale
+    ? { ...severityDescriptors, ...maleNewDescriptors }
     : severityDescriptors;
   const activeBetweenWashOptions = betweenWashOptions;
   const activeConcernOptions = maleIsShortHairOnly ? maleShortHairConcerns : concernOptions;
