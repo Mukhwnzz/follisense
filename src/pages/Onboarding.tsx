@@ -555,7 +555,11 @@ const Onboarding = () => {
           setSymptomPhase('result');
         }
       } else if (symptomPhase === 'result') {
-        setStep(9);
+        if (isMale) {
+          setStep(11); // Skip length check for males
+        } else {
+          setStep(9);
+        }
       }
     } else if (step === 9 || step === 10) {
       setStep(step + 1);
