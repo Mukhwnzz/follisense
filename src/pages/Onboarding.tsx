@@ -589,7 +589,7 @@ const Onboarding = () => {
             setSymptomIndex(symptomIndex + 1);
           } else {
             const checkIn = buildCheckInFromSymptoms(symptomResponses);
-            const risk = computeHistoricalRisk(checkIn, []);
+            const risk = isMale ? computeMaleTriageRisk(checkIn, [], norwoodStage, norwoodStage) : computeHistoricalRisk(checkIn, []);
             setTriageResult(risk);
             setSymptomPhase('result');
           }
@@ -606,7 +606,7 @@ const Onboarding = () => {
           setSymptomIndex(symptomIndex + 1);
         } else {
           const checkIn = buildCheckInFromSymptoms(symptomResponses);
-          const risk = computeHistoricalRisk(checkIn, []);
+          const risk = isMale ? computeMaleTriageRisk(checkIn, [], norwoodStage, norwoodStage) : computeHistoricalRisk(checkIn, []);
           setTriageResult(risk);
           setSymptomPhase('result');
         }
@@ -1297,7 +1297,7 @@ const Onboarding = () => {
                                 } else {
                                   setTimeout(() => {
                                     const checkIn = buildCheckInFromSymptoms({ ...symptomResponses, [currentSymptom.key]: sev });
-                                    const risk = computeHistoricalRisk(checkIn, []);
+                                    const risk = isMale ? computeMaleTriageRisk(checkIn, [], norwoodStage, norwoodStage) : computeHistoricalRisk(checkIn, []);
                                     setTriageResult(risk);
                                     setSymptomPhase('thanks');
                                   }, 150);
@@ -1311,7 +1311,7 @@ const Onboarding = () => {
                                     setSymptomIndex(symptomIndex + 1);
                                   } else {
                                     const checkIn = buildCheckInFromSymptoms({ ...symptomResponses, [currentSymptom.key]: sev });
-                                    const risk = computeHistoricalRisk(checkIn, []);
+                                    const risk = isMale ? computeMaleTriageRisk(checkIn, [], norwoodStage, norwoodStage) : computeHistoricalRisk(checkIn, []);
                                     setTriageResult(risk);
                                     setSymptomPhase('thanks');
                                   }
