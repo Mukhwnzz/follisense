@@ -92,6 +92,39 @@ const maleShortHairConcerns = [
   'I just want to stay on top of things', 'Not sure',
 ];
 
+// New male onboarding symptom questions
+const maleCoreSymptomsNew = [
+  { key: 'hairlineChange', label: 'Hairline changes', question: 'Have you noticed any changes to your hairline recently?' },
+  { key: 'thinning', label: 'Thinning', question: 'Any thinning at your temples or crown?' },
+  { key: 'scalpIssues', label: 'Scalp issues', question: 'Any itching, flaking, or dryness?' },
+];
+
+const maleSecondaryShortHair = [
+  { key: 'razorBumps', label: 'Razor bumps', question: 'Any razor bumps or ingrown hairs?' },
+  { key: 'barberIrritation', label: 'Barber irritation', question: 'Any scalp irritation after your last cut?' },
+];
+
+const maleSecondaryLongHair = [
+  { key: 'buildup', label: 'Buildup', question: 'Any buildup or odour between washes?' },
+  { key: 'tenderness', label: 'Tenderness', question: 'Any tenderness or tightness at the roots?' },
+];
+
+const maleSecondaryAfro = [
+  { key: 'breakage', label: 'Breakage', question: 'Any breakage or excessive shedding?' },
+];
+
+const maleNewDescriptors: Record<string, Record<string, string>> = {
+  hairlineChange: { None: 'No changes noticed', Mild: 'Something looks slightly different but hard to say', Moderate: 'Hairline has visibly moved back or thinned', Severe: 'Clear recession or thinning compared to a year ago' },
+  thinning: { None: 'No thinning', Mild: 'Slightly thinner at the crown or temples', Moderate: 'Noticeably thinner areas, scalp more visible', Severe: 'Scalp clearly visible, hairline receding' },
+  scalpIssues: { None: 'No scalp issues', Mild: 'Occasional itch or a few flakes', Moderate: 'Frequent itching, visible flaking, or persistent dryness', Severe: 'Constant discomfort, heavy flaking, or painful dryness' },
+  razorBumps: { None: 'No razor bumps', Mild: 'A few bumps after a cut, go away on their own', Moderate: 'Regular bumps after cuts, some painful or inflamed', Severe: 'Persistent bumps, painful, some with pus or scarring' },
+  barberIrritation: { None: 'No irritation after cuts', Mild: 'Slight redness or sensitivity for a day or two', Moderate: 'Burning, stinging, or rash lasting several days', Severe: 'Intense reaction every time, open sores or lasting marks' },
+  buildup: { None: 'No buildup or odour', Mild: 'Slight buildup, no smell', Moderate: 'Noticeable buildup or faint odour', Severe: 'Heavy buildup, persistent odour despite washing' },
+  tenderness: { None: 'No tenderness', Mild: 'Slight tightness, goes away quickly', Moderate: 'Sore to touch, especially after a fresh install', Severe: 'Painful without touching, constant tightness' },
+  breakage: { None: 'No breakage', Mild: 'A few short pieces when styling', Moderate: 'Noticeable shedding, uneven lengths appearing', Severe: 'Significant breakage or shedding daily' },
+};
+
+// Legacy male short hair symptoms (kept for reference/fallback)
 const maleShortHairSymptoms = [
   { key: 'itch', label: 'Itching', question: 'Have you noticed any scalp itching in the last few weeks?' },
   { key: 'flaking', label: 'Flaking', question: 'Have you noticed any flaking or dandruff in the last few weeks?' },
@@ -104,11 +137,8 @@ const maleShortHairSymptoms = [
 ];
 
 const maleShortHairDescriptorOverrides: Record<string, Record<string, string>> = {
+  ...maleNewDescriptors,
   flaking: { None: 'No flaking', Mild: 'A few flakes when you scratch or rub', Moderate: 'Visible flakes on your scalp or collar', Severe: "Heavy, persistent flaking that won't clear" },
-  tenderness: { None: 'No tenderness', Mild: 'Slight sensitivity when you touch or press', Moderate: 'Sore to touch, especially after a cut', Severe: 'Painful without touching, or sharp pain when pressed' },
-  hairline: { None: 'No thinning', Mild: 'Slightly thinner at the crown or temples', Moderate: 'Noticeably thinner areas, scalp more visible', Severe: 'Scalp clearly visible, hairline receding' },
-  razorBumps: { None: 'No razor bumps', Mild: 'A few bumps after a cut, go away on their own', Moderate: 'Regular bumps after cuts, some painful or inflamed', Severe: 'Persistent bumps, painful, some with pus or scarring' },
-  barberIrritation: { None: 'No irritation after cuts', Mild: 'Slight redness or sensitivity for a day or two', Moderate: 'Burning, stinging, or rash lasting several days', Severe: 'Intense reaction every time, open sores or lasting marks' },
   dryness: { None: 'No dryness', Mild: 'Slightly dry or tight between washes', Moderate: 'Dry and ashy despite moisturising', Severe: 'Extremely dry, flaking, or painful tightness' },
 };
 
