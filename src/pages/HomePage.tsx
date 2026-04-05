@@ -74,10 +74,7 @@ const HomePage = () => {
     setOnboardingData,
   } = useApp();
 
-  // Render male dashboard for male users
-  if (onboardingData.gender === 'man') {
-    return <MaleDashboard />;
-  }
+  const isMaleUser = onboardingData.gender === 'man';
 
   const [showSalonForm, setShowSalonForm]               = useState(false);
   const [showSalonVisitPicker, setShowSalonVisitPicker] = useState(false);
