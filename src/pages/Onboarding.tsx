@@ -498,6 +498,15 @@ const Onboarding = () => {
     date: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }),
   });
 
+  const computeRisk = (responses: Record<string, string>): 'green' | 'amber' | 'red' => {
+    if (isMale) {
+      const checkIn = buildCheckInFromSymptoms(responses);
+      return computeMaleTriageRisk(checkIn, [], norwoodStage, norwoodStage);
+    }
+    const checkIn = buildCheckInFromSymptoms(responses);
+    return computeHistoricalRisk(checkIn, []);
+  };
+
   const saveAndComplete = (checkIn: CheckInData, risk: 'green' | 'amber' | 'red') => {
     const effectiveHairType = hairSubType || hairType;
     setOnboardingData({
