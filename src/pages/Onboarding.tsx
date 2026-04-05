@@ -379,11 +379,12 @@ const Onboarding = () => {
   const getProgressSegment = () => {
     if (isMale) {
       if (step <= 0) return 0;
-      if (step === 3) return 1;
-      if (step === 4) return 2;
-      if (step === 5) return 3;
-      if (step === 6 || step === 7) return 4;
-      if (step === 8) return 5;
+      if (step === 20) return 1; // Norwood
+      if (step === 21) return 2; // Family history
+      if (step === 22) return 3; // Styles
+      if (step === 23) return 4; // Cut cadence
+      if (step === 6 || step === 7) return 5; // Guidelines + photos
+      if (step === 8) return 6; // Symptoms
       if (step >= 9) return 6;
       return 0;
     }
