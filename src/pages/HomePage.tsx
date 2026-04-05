@@ -12,6 +12,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar as CalendarPicker } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
+import MaleDashboard from '@/components/MaleDashboard';
 
 const serviceOptions = [
   'Wash', 'Treatment', 'Style installation', 'Style removal/takedown',
