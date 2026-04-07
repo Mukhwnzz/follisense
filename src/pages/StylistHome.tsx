@@ -373,7 +373,7 @@ const StylistHome = () => {
         animate={{ scale: 1, opacity: 1 }}
         transition={{ delay: 0.5, type: 'spring', stiffness: 200 }}
         onClick={() => navigate('/stylist/quiz')}
-        style={{ position: 'fixed', bottom: 28, right: 20, display: 'flex', alignItems: 'center', gap: 8, background: green, color: '#fff', border: 'none', borderRadius: 100, padding: '13px 18px', fontFamily: dm, fontSize: 13, fontWeight: 600, cursor: 'pointer', boxShadow: '0 4px 20px rgba(45,110,85,0.35)', zIndex: 40 }}
+        style={{ position: 'fixed', bottom: 88, right: 20, display: 'flex', alignItems: 'center', gap: 8, background: green, color: '#fff', border: 'none', borderRadius: 100, padding: '13px 18px', fontFamily: dm, fontSize: 13, fontWeight: 600, cursor: 'pointer', boxShadow: '0 4px 20px rgba(45,110,85,0.35)', zIndex: 9999 }}
       >
         <Brain size={16} />
         Quiz

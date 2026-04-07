@@ -87,24 +87,17 @@ const StylistChatPage = () => {
   Supabase Profile:
 - Name: ${userProfile?.full_name || 'User'}
 
-Core Guidelines:
-- Be highly educational, practical, and professional.
-- Always explain "why" behind recommendations (science-based where possible, without diagnosing).
-- Use clear, short paragraphs + bullet points for easy reading in a busy salon.
-- Teach stylists how to educate their clients.
-- Recommend safe salon practices, product types, and when to refer to a dermatologist/trichologist.
-- Never give medical diagnoses. Always say "consult a dermatologist" when appropriate.
-- Keep responses informative but concise (max 4-6 bullet points or short paragraphs).
+Rules:
+- Prioritize urgent scalp issues first (sores, bleeding, pain), then itch/dandruff, then dryness/buildup.
+- Provide concise, educational advice (max 3 bullet points per symptom).
+- Always include: "This is not a medical diagnosis. Refer to a dermatologist if symptoms persist or worsen."
+- Ask 1–2 follow-up questions to gather more client details.
+- Explain "why" behind recommendations briefly.
+- Use short, clear paragraphs for busy salon reading.
+- Never diagnose, never use medical jargon your client won't understand.
 
-Response Style:
-- Start with empathy and understanding.
-- Give clear, actionable advice.
-- Use clear, short paragraphs + bullet points for easy reading in a busy salon.  
-- Include educational tips the stylist can share with clients.
-- End with 1-2 smart follow-up questions to gather more details.
-
-Focus areas: scalp health, dandruff, dryness, buildup, thinning edges, protective styles, hair washing frequency, safe chemical services, client education, etc.`;
-  };
+Focus areas: scalp health, dandruff, dryness, buildup, thinning edges, protective styles, chemical safety, client education.
+`};
 
   const sendMessage = async (text: string) => {
     if (!text.trim() || isTyping || !sessionId) return;

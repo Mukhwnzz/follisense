@@ -21,6 +21,35 @@ interface Message {
   content: string;
 }
 
+interface ConsumerProfile {
+  hair_texture?: string;
+  current_styles?: string[];
+  protective_style_frequency?: string;
+  style_duration?: string;
+  top_concerns?: string[];
+  chemical_processing?: string;
+}
+
+interface Checkin {
+  type?: string;
+  symptoms?: Record<string,  string | number | boolean>;
+  triage_result?: string;
+  notes?: string;
+}
+
+interface UserProfile {
+  full_name?: string;
+  age?: number | string;
+  gender?: string;
+  scalp_type?: string;
+  hair_type?: string;
+  hair_concerns?: string;
+  concerns?: string;
+
+  consumer?: ConsumerProfile;
+  checkin?: Checkin;
+}
+
 const ChatPage = () => {
   const { userName } = useApp();
 
@@ -29,15 +58,7 @@ const ChatPage = () => {
   const [isTyping, setIsTyping] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const [userProfile, setUserProfile] = useState<{
-  full_name?: string;
-  age?: number | string;
-  gender?: string;
-  scalp_type?: string;
-  hair_type?: string;
-  hair_concerns?: string;
-  concerns?: string;
-} | null>(null);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -53,25 +74,47 @@ const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Fetch Supabase profile
   useEffect(() => {
-    const fetchUserProfile = async () => {
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return;
+  const fetchUserData = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
 
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("full_name, age, gender, scalp_type, hair_type, hair_concerns, concerns")
-          .eq("id", user.id)
-          .single();
+      // 1. Base profile
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("full_name, age, gender, scalp_type, hair_type, hair_concerns, concerns")
+        .eq("id", user.id)
+        .single();
 
-        setUserProfile(profile);
-      } catch (err) {
-        console.error("Failed to load profile:", err);
-      }
-    };
+      // 2. Consumer profile
+      const { data: consumerProfile } = await supabase
+        .from("consumer_profiles")
+        .select("*")
+        .eq("user_id", user.id)
+        .single();
 
-    fetchUserProfile();
-  }, []);
+      // 3. Latest checkin
+      const { data: latestCheckin } = await supabase
+        .from("checkins")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .single();
+
+      setUserProfile({
+        ...profile,
+        consumer: consumerProfile,
+        checkin: latestCheckin,
+      });
+
+    } catch (err) {
+      console.error("Failed to load user data:", err);
+    }
+  };
+
+  fetchUserData();
+}, []);
 
   // Create session
   useEffect(() => {
@@ -89,6 +132,9 @@ const fileInputRef = useRef<HTMLInputElement>(null);
   const displayName = userProfile?.full_name?.split(" ")[0] || userName || "there";
 
   const buildSystemPrompt = (): string => {
+    const consumer = userProfile?.consumer;
+    const checkin = userProfile?.checkin;
+
     return `You are Folli — a warm, knowledgeable scalp and hair health assistant for FolliSense.
 
 You are speaking with ${displayName}.
@@ -101,13 +147,29 @@ Supabase Profile:
 - Hair type: ${userProfile?.hair_type || 'Unknown'}
 - Concerns: ${userProfile?.hair_concerns || userProfile?.concerns || 'None'}
 
+CONSUMER PROFILE:
+- Hair texture: ${consumer?.hair_texture || 'Unknown'}
+- Current styles: ${consumer?.current_styles?.join(', ') || 'None'}
+- Protective styling: ${consumer?.protective_style_frequency || 'Unknown'}
+- Style duration: ${consumer?.style_duration || 'Unknown'}
+- Top concerns: ${consumer?.top_concerns?.join(', ') || 'None'}
+- Chemical processing: ${consumer?.chemical_processing || 'Unknown'}
+
+LATEST CHECK-IN:
+- Type: ${checkin?.type || 'None'}
+- Symptoms: ${JSON.stringify(checkin?.symptoms || {})}
+- Triage: ${checkin?.triage_result || 'None'}
+
 Core rules:
+- Personalize advice based on ALL data above
+- Prioritize recent check-in symptoms over general profile
 - Be helpful, empathetic, friendly, and clear. Never diagnose medical conditions.
 - Respond based on proven information from reliable medical sources (e.g., Mayo Clinic, American Academy of Dermatology).
 - ALWAYS recommend seeing a dermatologist or professional when appropriate.
 - Keep EVERY response SHORT and scannable: Use 1-3 short sentences max. Prefer bullet points or numbered lists when listing tips/options.
 - Avoid long paragraphs. Get straight to the point. One idea per sentence.
 - Use simple, everyday language.
+- Never mention "database" or "checkin" explicitly to the user.
 
 Conversation style:
 - After the user's FIRST message in the conversation, FIRST ask 1-2 relevant follow-up questions to understand better, THEN give a short helpful response.

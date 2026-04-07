@@ -39,17 +39,16 @@ export const sendMessage = action({
           const originalText = llmMessages[lastUserIndex].content;
 
           // Replace with array format for vision
-          llmMessages[lastUserIndex]  = {
-            role:"user",
-            content: [
-              {
-              type: "text", text: originalText || "Please analyze this photo of my scalp/hair."},
-              {
-                type: "image_url",
-                image_url: {  url: imageUrl },
-                },
-            ], 
-            };
+           llmMessages[lastUserIndex] = {
+           role: "user",
+           content: `${
+           originalText || "I uploaded a photo of my scalp/hair."
+         }
+
+          [User uploaded an image: ${imageUrl}]
+
+           Please ask me questions to understand what you see and then help me.`,
+         };
         }
       }
     }
@@ -62,7 +61,7 @@ export const sendMessage = action({
     try {
       const finalMessages = [
         { role: "system" as const, content: SYSTEM_PROMPT },
-        ...args.messages.map((m) => ({
+        ...llmMessages.map((m) => ({
           role: m.role as "user" | "assistant" | "system",
           content: m.content,
         })),
