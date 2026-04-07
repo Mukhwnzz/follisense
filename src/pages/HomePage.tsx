@@ -4,14 +4,15 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   User, ChevronRight, Lightbulb, Scissors, X,
   Calendar, Stethoscope, Flame, Microscope, Droplets,
-  Camera, FlaskConical, Heart, Sparkles,
+  Camera, FlaskConical, Heart, Sparkles, RefreshCw, AlertTriangle,
 } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
-import { didYouKnowFacts } from '@/data/didYouKnowFacts';
+import { getPrioritisedFact } from '@/data/didYouKnowFacts';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar as CalendarPicker } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
+import MaleDashboard from '@/components/MaleDashboard';
 
 const serviceOptions = [
   'Wash', 'Treatment', 'Style installation', 'Style removal/takedown',
@@ -22,26 +23,23 @@ const serviceOptions = [
 const dm       = "'DM Sans', sans-serif";
 const playfair = "'Playfair Display', serif";
 
-// ─── Pure white + gold palette ────────────────────────────────────────────────
 const C = {
-  // backgrounds
   bg:       '#FAF8F5',
   surface:  '#F5F0EB',
-  // primary dark — near black, warm undertone
   ink:      '#1C1C1C',
-  // gold accent
   gold:     '#D4A866',
   goldDeep: '#B8893E',
   gold10:   'rgba(212,168,102,0.10)',
   goldBorder:'rgba(212,168,102,0.22)',
-  // neutrals
   mid:      '#EBEBEB',
   muted:    '#999999',
   warm:     '#666666',
   white:    '#FFFFFF',
+  sage:     '#7C9A8E',
+  sand:     '#E8DED1',
+  terracotta: '#C4967A',
 };
 
-// ─── Shared card style ────────────────────────────────────────────────────────
 const cardBase: React.CSSProperties = {
   background: '#F5F0EB',
   border: `1.5px solid #E8DED1`,
@@ -66,12 +64,17 @@ const FormLabel = ({ children }: { children: React.ReactNode }) => (
   </p>
 );
 
+const styleDurationOptions = ['1-2 weeks', '3-4 weeks', '5-6 weeks', '7-8 weeks', 'Longer'];
+
 const HomePage = () => {
   const navigate = useNavigate();
   const {
     onboardingData, addSalonVisit, checkInCount, userName,
     research, setResearch, progressiveDismissed, dismissProgressivePrompt, checkInHistory,
+    setOnboardingData,
   } = useApp();
+
+  const isMaleUser = onboardingData.gender === 'man';
 
   const [showSalonForm, setShowSalonForm]               = useState(false);
   const [showSalonVisitPicker, setShowSalonVisitPicker] = useState(false);
@@ -80,6 +83,21 @@ const HomePage = () => {
   const [stylistName, setStylistName]                   = useState('');
   const [visitNotes, setVisitNotes]                     = useState('');
   const [showResearchPrompt, setShowResearchPrompt]     = useState(false);
+
+  // Style change flow
+  const [showStyleChange, setShowStyleChange] = useState(false);
+  const [styleStep, setStyleStep] = useState(0); // 0=pick style, 1=pick duration, 2=confirmation
+  const [newStyle, setNewStyle] = useState('');
+  const [newDuration, setNewDuration] = useState('');
+  const [addingNewStyle, setAddingNewStyle] = useState(false);
+  const [customNewStyle, setCustomNewStyle] = useState('');
+
+  // Nudge card for 100% cycle
+  const [nudgeDismissed, setNudgeDismissed] = useState(false);
+
+  // Cycle state
+  const [cycleDay, setCycleDay] = useState(14);
+  const [cycleTotalDays, setCycleTotalDays] = useState(21);
 
   useEffect(() => {
     localStorage.setItem('follisense-last-home-visit', String(Date.now()));
@@ -94,9 +112,8 @@ const HomePage = () => {
 
   const isMale       = onboardingData.gender === 'man';
   const currentStyle = onboardingData.protectiveStyles[0] || 'Braids';
-  const currentDay   = 14;
-  const totalDays    = 28;
-  const progress     = (currentDay / totalDays) * 100;
+  const progress     = Math.min((cycleDay / cycleTotalDays) * 100, 100);
+  const cycleComplete = cycleDay >= cycleTotalDays;
 
   const hour     = new Date().getHours();
   const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
@@ -104,11 +121,13 @@ const HomePage = () => {
     (Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000,
   );
 
-  const ringSize = 60;
-  const stroke   = 4;
+  // Ring config
+  const ringSize = 200;
+  const stroke   = 10;
   const r        = (ringSize - stroke) / 2;
   const circ     = 2 * Math.PI * r;
   const offset   = circ - (progress / 100) * circ;
+  const ringColor = progress >= 75 ? C.terracotta : C.sage;
 
   const showPhotosPrompt    = checkInCount >= 2 && !progressiveDismissed['photos'];
   const showChemicalPrompt  = !onboardingData.chemicalProcessing && !progressiveDismissed['chemical'] && checkInCount >= 1 && !showPhotosPrompt;
@@ -141,6 +160,39 @@ const HomePage = () => {
   const handleResearchOptIn = () => {
     setShowResearchPrompt(false);
     setResearch({ ...research, consented: true, consentDate: new Date().toISOString() });
+  };
+
+  // Style change handlers
+  const handleStyleSelect = (style: string) => {
+    setNewStyle(style);
+    setTimeout(() => setStyleStep(1), 200);
+  };
+
+  const handleDurationSelect = (dur: string) => {
+    setNewDuration(dur);
+    setStyleStep(2);
+    // Reset cycle
+    setCycleDay(1);
+    const durationMap: Record<string, number> = {
+      '1-2 weeks': 14, '3-4 weeks': 28, '5-6 weeks': 42, '7-8 weeks': 56, 'Longer': 70,
+    };
+    setCycleTotalDays(durationMap[dur] || 21);
+    // Close after 2s
+    setTimeout(() => {
+      setShowStyleChange(false);
+      setStyleStep(0);
+      setNewStyle('');
+      setNewDuration('');
+    }, 2000);
+  };
+
+  const handleAddCustomStyle = () => {
+    if (customNewStyle.trim()) {
+      setNewStyle(customNewStyle.trim());
+      setAddingNewStyle(false);
+      setCustomNewStyle('');
+      setTimeout(() => setStyleStep(1), 200);
+    }
   };
 
   const progressiveCard = () => {
@@ -191,6 +243,10 @@ const HomePage = () => {
     return null;
   };
 
+  if (isMaleUser) {
+    return <MaleDashboard />;
+  }
+
   return (
     <div style={{ fontFamily: dm, background: C.bg, minHeight: '100vh' }}>
 
@@ -208,12 +264,10 @@ const HomePage = () => {
             alt=""
             style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
           />
-          {/* Fade to pure white */}
           <div style={{
             position: 'absolute', bottom: 0, left: 0, right: 0, height: 100,
             background: `linear-gradient(to top, ${C.bg}, transparent)`,
           }} />
-          {/* Top overlay for legibility */}
           <div style={{
             position: 'absolute', top: 0, left: 0, right: 0, height: '50%',
             background: 'linear-gradient(to bottom, rgba(28,28,28,0.5), transparent)',
@@ -225,7 +279,6 @@ const HomePage = () => {
             display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between',
           }}>
             <div>
-              {/* Brand row */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 10 }}>
                 <div style={{ width: 7, height: 7, borderRadius: '50%', background: C.gold }} />
                 <span style={{ fontFamily: dm, fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.85)', letterSpacing: '0.12em', textTransform: 'uppercase' }}>
@@ -261,10 +314,138 @@ const HomePage = () => {
         {/* ── Body ─────────────────────────────────────────────────────────── */}
         <div style={{ padding: '4px 20px 110px' }}>
 
+          {/* ── Nudge card (when cycle reaches 100%) ── */}
+          {cycleComplete && !nudgeDismissed && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+              style={{
+                ...cardBase,
+                padding: '14px 16px', marginBottom: 16,
+                borderLeft: `3px solid ${C.terracotta}`,
+              }}
+            >
+              <p style={{ fontFamily: dm, fontSize: 13, fontWeight: 500, color: C.ink, marginBottom: 4 }}>
+                Style change coming up?
+              </p>
+              <p style={{ fontFamily: dm, fontSize: 11, color: C.warm, lineHeight: 1.5, marginBottom: 10 }}>
+                Let us know what's next so we can adjust your check-ins.
+              </p>
+              <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+                <button
+                  onClick={() => setShowStyleChange(true)}
+                  style={{
+                    fontFamily: dm, fontSize: 12, fontWeight: 600,
+                    color: C.white, background: C.sage,
+                    border: 'none', borderRadius: 100, padding: '7px 16px', cursor: 'pointer',
+                  }}
+                >
+                  Log a style change
+                </button>
+                <button
+                  onClick={() => setNudgeDismissed(true)}
+                  style={{
+                    fontFamily: dm, fontSize: 12, color: C.muted,
+                    background: 'none', border: 'none', cursor: 'pointer',
+                  }}
+                >
+                  Dismiss
+                </button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* ── Cycle Progress Ring ──────────────────────────────────────────── */}
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+            transition={{ delay: 0, duration: 0.3 }}
+            onClick={() => navigate('/scalp-check')}
+            style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', cursor: 'pointer', marginBottom: 8 }}
+          >
+            <div style={{ position: 'relative', width: ringSize, height: ringSize }}>
+              <svg width={ringSize} height={ringSize} style={{ transform: 'rotate(-90deg)' }}>
+                <circle
+                  cx={ringSize/2} cy={ringSize/2} r={r}
+                  fill="none" stroke={C.sand} strokeWidth={stroke}
+                />
+                <motion.circle
+                  cx={ringSize/2} cy={ringSize/2} r={r}
+                  fill="none" stroke={ringColor} strokeWidth={stroke}
+                  strokeDasharray={circ} strokeDashoffset={offset}
+                  strokeLinecap="round"
+                  initial={{ strokeDashoffset: circ }}
+                  animate={{ strokeDashoffset: offset }}
+                  transition={{ duration: 1.2, ease: 'easeOut', delay: 0.3 }}
+                />
+              </svg>
+              <div style={{
+                position: 'absolute', inset: 0,
+                display: 'flex', flexDirection: 'column',
+                alignItems: 'center', justifyContent: 'center',
+              }}>
+                <span style={{ fontFamily: playfair, fontSize: 36, fontWeight: 500, color: C.ink, lineHeight: 1 }}>
+                  Day {cycleDay}
+                </span>
+                <span style={{ fontFamily: dm, fontSize: 14, color: C.muted, marginTop: 2 }}>
+                  of {cycleTotalDays}
+                </span>
+              </div>
+            </div>
+            <p style={{ fontFamily: dm, fontSize: 13, color: '#7A7570', marginTop: 8, textAlign: 'center' }}>
+              {progress >= 75 ? 'Wash day approaching' : 'Mid-cycle check-in due'}
+            </p>
+          </motion.div>
+
+          {/* ── Start check-in button ─────────────────────────────────────── */}
+          <motion.button
+            onClick={() => navigate('/scalp-check')}
+            initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1, duration: 0.3 }}
+            whileTap={{ scale: 0.98 }}
+            style={{
+              width: '100%', height: 52, borderRadius: 16,
+              background: C.sage, color: C.white,
+              border: 'none', fontFamily: dm, fontSize: 14, fontWeight: 600,
+              cursor: 'pointer', marginBottom: 20,
+              boxShadow: '0 4px 16px rgba(124,154,142,0.25)',
+            }}
+          >
+            Start check-in
+          </motion.button>
+
+          {/* ── Quick actions ─────────────────────────────────────────────────── */}
+          <SectionLabel>Quick actions</SectionLabel>
+          <motion.div
+            initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2, duration: 0.3 }}
+            style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10, marginBottom: 20 }}
+          >
+            <QuickActionBtn
+              icon={<AlertTriangle size={18} color={C.goldDeep} strokeWidth={1.6} />}
+              label="Something feels off?"
+              onClick={() => navigate('/spot-it?mode=symptoms')}
+            />
+            <QuickActionBtn
+              icon={<Scissors size={18} color={C.warm} strokeWidth={1.6} />}
+              label="Salon visit"
+              onClick={() => setShowSalonVisitPicker(true)}
+            />
+            <QuickActionBtn
+              icon={<RefreshCw size={18} color={C.sage} strokeWidth={1.6} />}
+              label="Log a style change"
+              onClick={() => setShowStyleChange(true)}
+            />
+            <QuickActionBtn
+              icon={<Droplets size={18} color={C.goldDeep} strokeWidth={1.6} />}
+              label="My routine"
+              onClick={() => navigate('/routine-tracker')}
+            />
+          </motion.div>
+
           {/* Streak pill */}
           <motion.div
             initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.15 }}
+            transition={{ delay: 0.3, duration: 0.3 }}
             style={{
               display: 'inline-flex', alignItems: 'center', gap: 8,
               background: C.ink, color: '#f5f5f5',
@@ -284,88 +465,10 @@ const HomePage = () => {
             </div>
           </motion.div>
 
-          {/* ── Primary CTA ──────────────────────────────────────────────────── */}
-          <motion.button
-            onClick={() => navigate('/scalp-check')}
-            initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            whileTap={{ scale: 0.98 }}
-            style={{
-              width: '100%', background: C.ink, borderRadius: 22,
-              padding: '20px 22px', marginBottom: 20, border: 'none',
-              display: 'flex', alignItems: 'center', gap: 18, cursor: 'pointer',
-              textAlign: 'left', fontFamily: dm,
-              boxShadow: '0 4px 20px rgba(0,0,0,0.14)',
-            }}
-          >
-            {/* Progress ring */}
-            <div style={{ position: 'relative', flexShrink: 0 }}>
-              <svg width={ringSize} height={ringSize} style={{ transform: 'rotate(-90deg)' }}>
-                <circle cx={ringSize/2} cy={ringSize/2} r={r}
-                  fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth={stroke} />
-                <motion.circle
-                  cx={ringSize/2} cy={ringSize/2} r={r}
-                  fill="none" stroke={C.gold} strokeWidth={stroke}
-                  strokeDasharray={circ} strokeDashoffset={offset}
-                  strokeLinecap="round"
-                  initial={{ strokeDashoffset: circ }}
-                  animate={{ strokeDashoffset: offset }}
-                  transition={{ duration: 1.2, ease: 'easeOut', delay: 0.3 }}
-                />
-              </svg>
-              <div style={{
-                position: 'absolute', inset: 0,
-                display: 'flex', flexDirection: 'column',
-                alignItems: 'center', justifyContent: 'center',
-              }}>
-                <span style={{ fontFamily: playfair, fontSize: 17, fontWeight: 500, color: '#f5f5f5', lineHeight: 1 }}>
-                  {currentDay}
-                </span>
-                <span style={{ fontFamily: dm, fontSize: 9, color: C.gold }}>/ {totalDays}</span>
-              </div>
-            </div>
-
-            <div style={{ flex: 1 }}>
-              <p style={{ fontFamily: playfair, fontSize: 17, color: '#f5f5f5', margin: '0 0 5px' }}>
-                Scalp check-in
-              </p>
-              <p style={{ fontFamily: dm, fontSize: 12, color: 'rgba(245,245,245,0.55)', lineHeight: 1.45, margin: 0 }}>
-                {isMale
-                  ? 'Quick scalp check — takes about a minute.'
-                  : `${currentStyle} day ${currentDay}. Ready for a quick check?`}
-              </p>
-            </div>
-
-            <ChevronRight size={17} color={C.gold} strokeWidth={1.8} style={{ flexShrink: 0 }} />
-          </motion.button>
-
-          {/* ── Quick actions ─────────────────────────────────────────────────── */}
-          <SectionLabel>Quick actions</SectionLabel>
-          <motion.div
-            initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.25 }}
-            style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 20 }}
-          >
-            <MiniCard
-              iconBg={C.gold10}
-              icon={<Droplets size={17} color={C.goldDeep} strokeWidth={1.8} />}
-              title="Your Routine"
-              desc="Wash cycle & products"
-              onClick={() => navigate('/routine-tracker')}
-            />
-            <MiniCard
-              iconBg={C.surface}
-              icon={<Scissors size={17} color={C.warm} strokeWidth={1.8} />}
-              title="Salon Visit"
-              desc="Log or stylist check-in"
-              onClick={() => setShowSalonVisitPicker(true)}
-            />
-          </motion.div>
-
           {/* ── Did you know ──────────────────────────────────────────────────── */}
           <motion.div
             initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
+            transition={{ delay: 0.4, duration: 0.3 }}
             style={{
               ...cardBase,
               padding: '16px 18px', marginBottom: 14,
@@ -383,7 +486,7 @@ const HomePage = () => {
                 Did you know?
               </p>
               <p style={{ fontFamily: dm, fontSize: 11, color: C.warm, lineHeight: 1.6, margin: 0 }}>
-                {didYouKnowFacts[dayOfYear % didYouKnowFacts.length]}
+                {getPrioritisedFact(onboardingData.goals, dayOfYear)}
               </p>
               <button
                 onClick={() => navigate('/learn')}
@@ -397,7 +500,6 @@ const HomePage = () => {
             </div>
           </motion.div>
 
-          {/* Progressive profiling cards removed per spec — dashboard stays clean */}
         </div>
 
       </motion.div>
@@ -555,11 +657,172 @@ const HomePage = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* ── Style Change Flow Sheet ───────────────────────────────────────────── */}
+      <AnimatePresence>
+        {showStyleChange && (
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            style={{
+              position: 'fixed', inset: 0,
+              background: 'rgba(0,0,0,0.3)', zIndex: 50,
+              display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+            }}
+          >
+            <motion.div
+              initial={{ y: '100%' }} animate={{ y: 0 }} exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 28, stiffness: 320 }}
+              style={{
+                background: C.bg, borderRadius: '28px 28px 0 0',
+                width: '100%', maxWidth: 430, maxHeight: '80vh',
+                overflowY: 'auto', padding: 24,
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+                <h3 style={{ fontFamily: playfair, fontSize: 18, color: C.ink, margin: 0 }}>
+                  {styleStep === 0 ? "What's your new style?" : styleStep === 1 ? 'How long do you plan to keep it?' : ''}
+                </h3>
+                {styleStep < 2 && (
+                  <button onClick={() => { setShowStyleChange(false); setStyleStep(0); }} style={iconBtn}>
+                    <X size={19} color={C.muted} strokeWidth={1.8} />
+                  </button>
+                )}
+              </div>
+
+              <AnimatePresence mode="wait">
+                {styleStep === 0 && (
+                  <motion.div key="step0" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.2 }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                      {onboardingData.protectiveStyles.filter(s => s !== 'Other').map(style => (
+                        <motion.button
+                          key={style}
+                          whileTap={{ scale: 0.98 }}
+                          onClick={() => handleStyleSelect(style)}
+                          style={{
+                            width: '100%', textAlign: 'left',
+                            background: C.white, border: `1.5px solid ${C.sand}`,
+                            borderRadius: 14, padding: '14px 16px',
+                            fontFamily: dm, fontSize: 14, fontWeight: 500, color: C.ink,
+                            cursor: 'pointer',
+                          }}
+                        >
+                          {style}
+                        </motion.button>
+                      ))}
+                    </div>
+                    {!addingNewStyle ? (
+                      <button
+                        onClick={() => setAddingNewStyle(true)}
+                        style={{
+                          fontFamily: dm, fontSize: 13, fontWeight: 600, color: C.sage,
+                          background: 'none', border: 'none', cursor: 'pointer',
+                          padding: '12px 0 0', display: 'block',
+                        }}
+                      >
+                        + Add a style
+                      </button>
+                    ) : (
+                      <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+                        <input
+                          type="text"
+                          value={customNewStyle}
+                          onChange={e => setCustomNewStyle(e.target.value)}
+                          placeholder="Enter style name"
+                          autoFocus
+                          style={{ ...formField, marginBottom: 0, flex: 1 }}
+                          onKeyDown={e => e.key === 'Enter' && handleAddCustomStyle()}
+                        />
+                        <button onClick={handleAddCustomStyle} style={{
+                          background: C.sage, color: C.white, border: 'none',
+                          borderRadius: 14, padding: '0 16px', fontFamily: dm,
+                          fontSize: 13, fontWeight: 600, cursor: 'pointer',
+                        }}>
+                          Add
+                        </button>
+                      </div>
+                    )}
+                  </motion.div>
+                )}
+
+                {styleStep === 1 && (
+                  <motion.div key="step1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} transition={{ duration: 0.2 }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                      {styleDurationOptions.map(dur => (
+                        <motion.button
+                          key={dur}
+                          whileTap={{ scale: 0.98 }}
+                          onClick={() => handleDurationSelect(dur)}
+                          style={{
+                            width: '100%', textAlign: 'left',
+                            background: C.white, border: `1.5px solid ${C.sand}`,
+                            borderRadius: 14, padding: '14px 16px',
+                            fontFamily: dm, fontSize: 14, fontWeight: 500, color: C.ink,
+                            cursor: 'pointer',
+                          }}
+                        >
+                          {dur}
+                        </motion.button>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+
+                {styleStep === 2 && (
+                  <motion.div key="step2" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4 }}
+                    style={{ textAlign: 'center', padding: '40px 0' }}
+                  >
+                    <motion.div
+                      initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+                      transition={{ duration: 0.4 }}
+                      style={{
+                        width: 56, height: 56, borderRadius: '50%', background: 'rgba(124,154,142,0.12)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        margin: '0 auto 16px',
+                      }}
+                    >
+                      <RefreshCw size={24} color={C.sage} strokeWidth={1.6} />
+                    </motion.div>
+                    <p style={{ fontFamily: dm, fontSize: 15, fontWeight: 500, color: C.ink }}>
+                      Got it. Your check-ins are updated.
+                    </p>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
+
+const QuickActionBtn = ({
+  icon, label, onClick,
+}: { icon: React.ReactNode; label: string; onClick: () => void }) => (
+  <motion.button
+    onClick={onClick} whileTap={{ scale: 0.95 }}
+    style={{
+      display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
+      padding: '12px 4px', borderRadius: 16,
+      background: '#fff', border: '1.5px solid #EBEBEB',
+      cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
+      boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+    }}
+  >
+    <div style={{
+      width: 36, height: 36, borderRadius: 10,
+      background: 'rgba(212,168,102,0.08)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+    }}>
+      {icon}
+    </div>
+    <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 10, fontWeight: 500, color: '#666', textAlign: 'center', lineHeight: 1.3 }}>
+      {label}
+    </span>
+  </motion.button>
+);
 
 const MiniCard = ({
   iconBg, icon, title, desc, onClick,

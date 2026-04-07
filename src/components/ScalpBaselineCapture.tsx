@@ -2,14 +2,13 @@ import { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Camera, ImageIcon } from 'lucide-react';
 
-import scalpFrontFemale from '@/assets/scalp-front-female.jpeg';
+import refFemaleFront from '@/assets/ref-female-front.jpg';
 import scalpSideFemale from '@/assets/scalp-side-female.jpeg';
 import scalpBackFemale from '@/assets/scalp-back-female.jpeg';
-import scalpTopFemale from '@/assets/scalp-top-female.jpeg';
-import scalpSideMaleA from '@/assets/scalp-side-male-a.jpeg';
+import refFemaleTop from '@/assets/ref-female-top.jpg';
+import refMaleFront from '@/assets/ref-male-front.jpg';
 import scalpSideMaleB from '@/assets/scalp-side-male-b.jpeg';
-import scalpBackMale from '@/assets/scalp-back-male.png';
-import scalpTopMale from '@/assets/scalp-top-male.png';
+import refMaleCrown from '@/assets/ref-male-crown.png';
 
 interface ScalpStep {
   title: string;
@@ -24,23 +23,18 @@ const getScalpSteps = (gender: string): ScalpStep[] => {
     return [
       {
         title: 'Front hairline',
-        instruction: 'Keep your forehead visible. Pull hair back to show your hairline and temples.',
-        referenceImage: scalpSideMaleA,
+        instruction: 'Face the camera straight on. Show your full hairline clearly.',
+        referenceImage: refMaleFront,
       },
       {
-        title: 'Side view',
-        instruction: 'Show your temple area and the hairline around your ear.',
+        title: 'Temples',
+        instruction: 'Angle slightly to show the corner recession area at your temple.',
         referenceImage: scalpSideMaleB,
       },
       {
-        title: 'Back and nape',
-        instruction: 'Show the back of your head and your nape. Use a mirror or ask someone to help.',
-        referenceImage: scalpBackMale,
-      },
-      {
-        title: 'Top of head',
-        instruction: 'Tilt your head forward. Hold your phone above and point down at your crown.',
-        referenceImage: scalpTopMale,
+        title: 'Crown',
+        instruction: 'Tilt your head forward. Hold your phone above and point down at the top of your head.',
+        referenceImage: refMaleCrown,
       },
     ];
   }
@@ -49,7 +43,7 @@ const getScalpSteps = (gender: string): ScalpStep[] => {
     {
       title: 'Front hairline',
       instruction: 'Keep your forehead visible. Pull hair back to show your hairline and temples.',
-      referenceImage: scalpFrontFemale,
+      referenceImage: refFemaleFront,
     },
     {
       title: 'Side view',
@@ -57,14 +51,14 @@ const getScalpSteps = (gender: string): ScalpStep[] => {
       referenceImage: scalpSideFemale,
     },
     {
+      title: 'Top of head',
+      instruction: 'Tilt your head forward. Hold your phone above and point down at your crown.',
+      referenceImage: refFemaleTop,
+    },
+    {
       title: 'Back and nape',
       instruction: 'Show the back of your head and your nape. Use a mirror or ask someone to help.',
       referenceImage: scalpBackFemale,
-    },
-    {
-      title: 'Top of head',
-      instruction: 'Tilt your head forward. Hold your phone above and point down at your crown.',
-      referenceImage: scalpTopFemale,
     },
   ];
 };
@@ -73,9 +67,11 @@ interface ScalpBaselineCaptureProps {
   onComplete: (photos: { area: string; dataUrl: string }[]) => void;
   onBack: () => void;
   gender?: string;
+  isCheckIn?: boolean;
+  baselinePhotos?: { area: string; dataUrl?: string }[];
 }
 
-const ScalpBaselineCapture = ({ onComplete, onBack, gender = 'woman' }: ScalpBaselineCaptureProps) => {
+const ScalpBaselineCapture = ({ onComplete, onBack, gender = 'woman', isCheckIn = false, baselinePhotos = [] }: ScalpBaselineCaptureProps) => {
   const scalpSteps = getScalpSteps(gender);
   const [currentStep, setCurrentStep] = useState(0);
   const [capturedPhotos, setCapturedPhotos] = useState<{ area: string; dataUrl: string }[]>([]);
@@ -84,6 +80,7 @@ const ScalpBaselineCapture = ({ onComplete, onBack, gender = 'woman' }: ScalpBas
   const galleryRef = useRef<HTMLInputElement>(null);
 
   const step = scalpSteps[currentStep];
+  const isFemaleBackStep = gender !== 'man' && currentStep === 3;
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -119,16 +116,34 @@ const ScalpBaselineCapture = ({ onComplete, onBack, gender = 'woman' }: ScalpBas
     }
   };
 
+  const baselineForStep = isCheckIn
+    ? baselinePhotos.find(p => p.area === step.title && p.dataUrl)
+    : null;
+
   return (
-    <div>
+    <div style={{ position: 'relative' }}>
+      {/* Baseline comparison thumbnail */}
+      {baselineForStep?.dataUrl && (
+        <div style={{
+          position: 'absolute', top: 0, right: 0, zIndex: 2,
+          display: 'flex', flexDirection: 'column', alignItems: 'center',
+        }}>
+          <div style={{
+            width: 60, height: 60, borderRadius: 10, overflow: 'hidden',
+            border: '2px solid #E8DED1',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+          }}>
+            <img src={baselineForStep.dataUrl} alt="Your baseline" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          </div>
+          <span style={{ fontSize: 9, color: '#7A7570', marginTop: 2 }}>Your baseline</span>
+        </div>
+      )}
       <p className="text-xs text-muted-foreground mb-1">
         Step {currentStep + 1} of {scalpSteps.length}
       </p>
       <h2 className="text-lg font-semibold text-foreground mb-1">{step.title}</h2>
       <p className="text-sm text-muted-foreground mb-5 leading-relaxed">
-        {currentStep === 2
-          ? "Show the back of your head and your nape. This one's tricky on your own."
-          : step.instruction}
+        {step.instruction}
       </p>
 
       {!previewUrl ? (
@@ -156,7 +171,7 @@ const ScalpBaselineCapture = ({ onComplete, onBack, gender = 'woman' }: ScalpBas
             </button>
           </div>
 
-          {currentStep === 2 && (
+          {isFemaleBackStep && (
             <div className="mt-4 text-center">
               <button
                 onClick={handleSkipStep}
@@ -165,7 +180,7 @@ const ScalpBaselineCapture = ({ onComplete, onBack, gender = 'woman' }: ScalpBas
                 Skip this one for now
               </button>
               <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">
-                You can add this later, or ask someone to help next time you're at the salon.
+                This one's tricky on your own. You can add it later, or ask someone to help next time you're at the salon.
               </p>
             </div>
           )}
