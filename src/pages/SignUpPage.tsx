@@ -14,7 +14,8 @@ const genderOptions = [
 
 const SignUpPage = () => {
   const navigate = useNavigate();
-  const { setUserName, setOnboardingData, onboardingData } = useApp();
+  const { setUserName, setOnboardingData } = useApp();
+
   const [firstName, setFirstName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -23,18 +24,19 @@ const SignUpPage = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const isStrongPassword =
-   password.length >= 8 &&
-   /[A-Z]/.test(password) &&
-   /[a-z]/.test(password) &&
-   /[0-9]/.test(password);
+  const isStrongPassword = 
+    password.length >= 8 &&
+    /[A-Z]/.test(password) &&
+    /[a-z]/.test(password) &&
+    /[0-9]/.test(password);
 
   const isValidEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
- const canSubmit =
-  firstName.trim().length > 0 &&
-  isValidEmail &&
-  isStrongPassword;
+  const canSubmit = 
+    firstName.trim().length > 0 &&
+    isValidEmail &&
+    isStrongPassword &&
+    !loading;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,67 +46,59 @@ const SignUpPage = () => {
     setLoading(true);
 
     try {
-      // 1️⃣ Create Supabase Auth account
+      // 1. Create Auth user
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          data: {
+            first_name: firstName,
+          }
+        }
       });
 
-    if (authError) {
-        console.error('Auth error:', authError);
+      if (authError) {
         setError(authError.message);
         return;
       }
 
-    if (authData.user) {
-       const userId = authData.user.id;
-
-        const { error: profileError } = await supabase
-          .from('profiles')
-           .upsert([
-               {
-                 id: userId,
-                 role: 'consumer',
-                 first_name: firstName,
-                 gender: gender || null,
-                },
-              ]);
-
-      if (profileError) {
-           setError(profileError.message);
-              return;
-             }
-            }
-
-       //ONLY CONTINUE IF USER IS CONFIRMED
-       const user = authData.user;
-
-      // Insert user profile into your table
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .upsert([
-          {
-            id: authData.user.id,
-            role: 'consumer', // change if you implement stylist signup
-            first_name: firstName,
-            gender: gender || null,
-          },
-        ]);
-
-      if (profileError) {
-        console.error('Profile insert error:', profileError);
-        setError(profileError.message);
+      if (!authData.user) {
+        setError("Failed to create account. Please try again.");
         return;
       }
 
-      // 3️⃣ Update app context and navigate
+      const userId = authData.user.id;
+
+      // 2. Insert into profiles table
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .insert({
+          id: userId,
+          role: 'consumer',           // Change to 'stylist' when you add stylist signup
+          first_name: firstName,
+          gender: gender || null,
+        });
+
+      if (profileError) {
+        console.error('Profile insert error:', profileError);
+        setError("Account created but profile failed to save. Please contact support.");
+        return;
+      }
+
+      // 3. Success
       setUserName(firstName);
-      setOnboardingData({ ...onboardingData, gender });
+
+      toast({
+        title: "Account created successfully!",
+        description: "Please check your email to confirm your account.",
+      });
+
+      // Redirect to onboarding (or login if you want email confirmation first)
       navigate('/onboarding');
 
     } catch (err) {
-      console.error('Unexpected error:', err);
-      setError('Something went wrong. Please try again.');
+      console.error('Signup error:', err);
+      setError(err.message || 'Something went wrong. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -125,7 +119,7 @@ const SignUpPage = () => {
 
         <h1 className="text-2xl font-semibold text-foreground text-center mb-6">Create your account</h1>
 
-        {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
+        {error && <p className="text-red-500 text-sm mb-4 text-center">{error}</p>}
 
         <form onSubmit={handleSubmit} className="space-y-4 mb-4">
           {/* First Name */}
@@ -151,10 +145,8 @@ const SignUpPage = () => {
               placeholder="you@example.com"
               className="w-full h-12 px-4 rounded-xl border-2 border-border bg-card text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors"
             />
-             {email && !isValidEmail && (
-             <p className="text-xs text-red-500 mt-1">
-                 Enter a valid email
-              </p>
+            {email && !isValidEmail && (
+              <p className="text-xs text-red-500 mt-1">Please enter a valid email address</p>
             )}
           </div>
 
@@ -169,11 +161,6 @@ const SignUpPage = () => {
                 placeholder="At least 8 characters with uppercase, lowercase & number"
                 className="w-full h-12 px-4 pr-12 rounded-xl border-2 border-border bg-card text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors"
               />
-              {password && !isStrongPassword && (
-                <p className="text-xs text-red-500 mt-1">
-                  Password must be 8+ chars, include uppercase, lowercase & number
-                </p>
-               )}
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
@@ -182,6 +169,11 @@ const SignUpPage = () => {
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
+            {password && !isStrongPassword && (
+              <p className="text-xs text-red-500 mt-1">
+                Password must be 8+ characters and include uppercase, lowercase, and a number
+              </p>
+            )}
           </div>
 
           {/* Gender */}
@@ -208,18 +200,20 @@ const SignUpPage = () => {
 
           <button
             type="submit"
-            disabled={!canSubmit || loading}
-            className={`w-full h-14 rounded-xl font-semibold text-base btn-press transition-colors ${
-              canSubmit ? 'bg-primary text-primary-foreground' : 'bg-border text-muted-foreground cursor-not-allowed'
+            disabled={!canSubmit}
+            className={`w-full h-14 rounded-xl font-semibold text-base transition-all ${
+              canSubmit 
+                ? 'bg-primary text-primary-foreground hover:bg-primary/90' 
+                : 'bg-border text-muted-foreground cursor-not-allowed'
             }`}
           >
             {loading ? 'Creating account...' : 'Create account'}
           </button>
         </form>
 
-        <div className="flex items-center gap-3 text-muted-foreground text-xs mb-4 px-2">
+        <div className="flex items-center gap-3 text-muted-foreground text-xs px-2">
           <Shield size={14} className="flex-shrink-0" />
-          <p>Your health data is private and encrypted. We never share your information without your consent.</p>
+          <p>Your data is private and encrypted. We never share your information.</p>
         </div>
       </motion.div>
     </div>

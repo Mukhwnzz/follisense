@@ -2,24 +2,65 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Eye, EyeOff } from 'lucide-react';
+import { supabase } from '@/lib/supabaseClient';
 import { useApp } from '@/contexts/AppContext';
+import { toast } from '@/hooks/use-toast';
 
 const LoginPage = () => {
   const navigate = useNavigate();
-  const { setUserName, onboardingComplete } = useApp();
+  const { setUserName } = useApp();
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const canSubmit = email.trim().length > 0 && password.length >= 1;
+  const canSubmit = email.trim().length > 0 && password.length >= 6;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!canSubmit) return;
-    const nameFromEmail = email.split('@')[0].replace(/[^a-zA-Z]/g, '');
-    const displayName = nameFromEmail.charAt(0).toUpperCase() + nameFromEmail.slice(1);
-    setUserName(displayName || 'there');
-    navigate(onboardingComplete ? '/home' : '/onboarding');
+
+    setError('');
+    setLoading(true);
+
+    try {
+      const { data, error: loginError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (loginError) {
+        setError(loginError.message);
+        return;
+      }
+
+      if (data.user) {
+        // Get user profile to set name
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('first_name')
+          .eq('id', data.user.id)
+          .single();
+
+        const displayName = profile?.first_name || email.split('@')[0];
+        setUserName(displayName);
+
+        toast({
+          title: "Welcome back!",
+          description: `Logged in as ${displayName}`,
+        });
+
+        // Navigate to home or onboarding
+        navigate('/home');
+      }
+    } catch (err) {
+      console.error('Login error:', err);
+      setError('Invalid email or password. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -61,7 +102,8 @@ const LoginPage = () => {
                 autoFocus
               />
             </div>
-
+            
+              {/*password */}
             <div style={{ marginBottom: '8px' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
                 <label style={{ fontSize: '0.875rem', fontWeight: 500, color: '#ffffff' }}>Password</label>

@@ -34,6 +34,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
     <div className="min-h-screen" style={{ backgroundColor: isWelcomePage ? undefined : '#FAF8F5' }}>
       <div className={`mx-auto min-h-screen relative ${isWelcomePage ? 'w-full max-w-none' : isAuthPage ? 'max-w-[620px]' : 'max-w-[430px]'}`}>
         {children}
+
         {showNav && (
           <nav className="fixed bottom-0 left-0 right-0 z-50">
             <div className="max-w-[430px] mx-auto bg-card border-t border-border">
@@ -57,8 +58,9 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
             </div>
           </nav>
         )}
-        {/* Floating chat for consumer mode only */}
-        {!stylistMode && <FloatingChat />}
+
+        {/* Floating chat for BOTH consumers and stylists */}
+        <FloatingChat />
       </div>
     </div>
   );

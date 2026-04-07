@@ -1,32 +1,12 @@
 import { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Send, Mic, ArrowRight, Leaf, AlertCircle } from 'lucide-react';
+import { Send, ArrowRight, Leaf, Scissors, Paperclip } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 import ReactMarkdown from 'react-markdown';
-
-const dm       = "'DM Sans', sans-serif";
-const playfair = "'Playfair Display', serif";
-
-const C = {
-  bg:         '#FAF8F5',
-  surface:    '#F5F0EB',
-  ink:        '#1C1C1C',
-  gold:       '#D4A866',
-  goldDeep:   '#B8893E',
-  gold10:     'rgba(212,168,102,0.10)',
-  goldBorder: 'rgba(212,168,102,0.22)',
-  mid:        '#EBEBEB',
-  muted:      '#999999',
-  warm:       '#666666',
-  white:      '#FFFFFF',
-};
-
-interface Message {
-  id: string;
-  role: 'user' | 'assistant';
-  content: string;
-}
+import { supabase } from '@/lib/supabaseClient';
+import { useMutation, useAction } from "convex/react";
+import { api } from "../../convex/_generated/api";
+import type { Id } from "../../convex/_generated/dataModel";
 
 const starterQuestions = [
   "My scalp has been really itchy lately",
@@ -35,359 +15,278 @@ const starterQuestions = [
   "What should I eat for healthier hair?",
 ];
 
-const shouldSuggestCheckIn = (content: string) => {
-  const lower = content.toLowerCase();
-  return lower.includes('concerned') || lower.includes('worried') ||
-    lower.includes('getting worse') || lower.includes('significant') ||
-    lower.includes('professional') || lower.includes('trichologist') ||
-    lower.includes('dermatologist');
-};
-
-const shouldLinkLearn = (content: string): { show: boolean; topic: string } => {
-  const lower = content.toLowerCase();
-  if (lower.includes('traction alopecia')) return { show: true, topic: 'Traction alopecia: the basics' };
-  if (lower.includes('telogen effluvium'))  return { show: true, topic: 'Telogen effluvium' };
-  if (lower.includes('wash cycle') || lower.includes('wash day')) return { show: true, topic: 'Understanding your wash cycle' };
-  if (lower.includes('professional') || lower.includes('trichologist')) return { show: true, topic: 'When to see a professional' };
-  if (lower.includes('porosity'))           return { show: true, topic: 'Understanding hair porosity' };
-  if (lower.includes('protein') || lower.includes('moisture balance')) return { show: true, topic: 'Protein-moisture balance' };
-  return { show: false, topic: '' };
-};
+interface Message {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+}
 
 const ChatPage = () => {
-  const navigate = useNavigate();
-  const { onboardingData, currentCheckIn, healthProfile, baselineRisk, checkInHistory, userName } = useApp();
+  const { userName } = useApp();
+
   const [messages, setMessages] = useState<Message[]>([]);
-  const [inputValue, setInputValue]   = useState('');
-  const [isTyping, setIsTyping]       = useState(false);
-  const [error, setError]             = useState<string | null>(null);
+  const [inputValue, setInputValue] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const [userProfile, setUserProfile] = useState<{
+  full_name?: string;
+  age?: number | string;
+  gender?: string;
+  scalp_type?: string;
+  hair_type?: string;
+  hair_concerns?: string;
+  concerns?: string;
+} | null>(null);
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const inputRef       = useRef<HTMLInputElement>(null);
+
+  const createSession = useMutation(api.chat.createSession);
+  const sendMessageAction = useAction(api.chatAction.sendMessage);
+  const [sessionId, setSessionId] = useState<Id<"chatSessions"> | null>(null);
+
+const generateUploadUrl = useMutation(api.files.generateUploadUrl);
+
+const [selectedFile, setSelectedFile] = useState<File | null>(null);
+const [uploading, setUploading] = useState(false);
+const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Fetch Supabase profile
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("full_name, age, gender, scalp_type, hair_type, hair_concerns, concerns")
+          .eq("id", user.id)
+          .single();
+
+        setUserProfile(profile);
+      } catch (err) {
+        console.error("Failed to load profile:", err);
+      }
+    };
+
+    fetchUserProfile();
+  }, []);
+
+  // Create session
+  useEffect(() => {
+    const initSession = async () => {
+      const id = await createSession({});
+      setSessionId(id);
+    };
+    initSession();
+  }, [createSession]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isTyping]);
 
-  // ── Build system prompt from user profile ──────────────────────────────────
-  const buildSystemPrompt = () => {
-    const isMale     = onboardingData.gender === 'man';
-    const latestCheckIn = checkInHistory?.[0];
-    const recentHistory = checkInHistory?.slice(0, 3) ?? [];
+  const displayName = userProfile?.full_name?.split(" ")[0] || userName || "there";
 
-    return `You are FolliSense AI — a warm, knowledgeable scalp and hair health guide embedded in the FolliSense app. You are NOT a doctor and you never diagnose conditions. You help users understand their scalp health, interpret their symptoms, and know when to seek professional care.
+  const buildSystemPrompt = (): string => {
+    return `You are Folli — a warm, knowledgeable scalp and hair health assistant for FolliSense.
 
-You are speaking with ${userName || 'a user'} who has the following profile:
+You are speaking with ${displayName}.
 
-HAIR PROFILE:
-- Gender: ${onboardingData.gender || 'not specified'}
-- Hair type: ${onboardingData.hairType || 'not set'}
-- Current/usual styles: ${onboardingData.protectiveStyles?.join(', ') || 'not set'}
-- Chemical processing: ${onboardingData.chemicalProcessing || 'not set'}
-- Wash frequency: ${onboardingData.washFrequency || onboardingData.washFrequencyPerCycle || 'not set'}
-- Between-wash care: ${onboardingData.betweenWashCare?.join(', ') || 'not set'}
-- Scalp products: ${onboardingData.scalpProducts?.filter(p => p !== 'None').join(', ') || 'none logged'}
-- Hair products: ${onboardingData.hairProducts?.filter(p => p !== 'None').join(', ') || 'none logged'}
-- Goals: ${onboardingData.goals?.join(', ') || 'not set'}
-${isMale ? `- Barber frequency: ${onboardingData.barberFrequency || 'not set'}` : `- Menstrual tracking: ${onboardingData.menstrualTracking || 'off'}`}
+Supabase Profile:
+- Name: ${userProfile?.full_name || 'User'}
+- Age: ${userProfile?.age || 'N/A'}
+- Gender: ${userProfile?.gender || 'N/A'}
+- Scalp type: ${userProfile?.scalp_type || 'Unknown'}
+- Hair type: ${userProfile?.hair_type || 'Unknown'}
+- Concerns: ${userProfile?.hair_concerns || userProfile?.concerns || 'None'}
 
-RECENT CHECK-IN DATA:
-${latestCheckIn ? `- Latest check-in: ${latestCheckIn.date}
-  • Itch: ${latestCheckIn.itch || 'not recorded'}
-  • Tenderness: ${latestCheckIn.tenderness || 'not recorded'}
-  • Hairline: ${latestCheckIn.hairline || 'not recorded'}
-  • Hair concern: ${latestCheckIn.hairConcern || 'not recorded'}
-  • Overall risk: ${baselineRisk || 'not assessed'}` : '- No check-in data recorded yet'}
-${recentHistory.length > 1 ? `- Previous check-ins: ${recentHistory.slice(1).map(c => `${c.date} (risk: ${baselineRisk || 'unknown'})`).join(', ')}` : ''}
+Core rules:
+- Be helpful, empathetic, friendly, and clear. Never diagnose medical conditions.
+- Respond based on proven information from reliable medical sources (e.g., Mayo Clinic, American Academy of Dermatology).
+- ALWAYS recommend seeing a dermatologist or professional when appropriate.
+- Keep EVERY response SHORT and scannable: Use 1-3 short sentences max. Prefer bullet points or numbered lists when listing tips/options.
+- Avoid long paragraphs. Get straight to the point. One idea per sentence.
+- Use simple, everyday language.
 
-HEALTH CONTEXT:
-${healthProfile?.medicalConditions?.length > 0 ? `- Medical conditions: ${healthProfile.medicalConditions.join(', ')}` : ''}
-${healthProfile?.medications ? `- Medications: ${healthProfile.medications}` : ''}
-${healthProfile?.previousHairLoss ? `- Previous hair loss: ${healthProfile.previousHairLoss}` : ''}
-${healthProfile?.familyHistory ? `- Family history: ${healthProfile.familyHistory}` : ''}
+Conversation style:
+- After the user's FIRST message in the conversation, FIRST ask 1-2 relevant follow-up questions to understand better, THEN give a short helpful response.
+- In later turns, answer directly but still ask clarifying follow-ups if needed.
+- End most responses with a short follow-up question to continue the conversation naturally (e.g., "Does that help?" or "What else are you noticing?").
 
-COMMUNICATION STYLE:
-- Warm, direct, and honest — like a knowledgeable friend who happens to know a lot about scalp health
-- Short paragraphs, no walls of text. Get to the point quickly.
-- Use plain language. Explain medical terms when you use them.
-- Reference the user's actual data when relevant (e.g. "Given that you're in braids..." or "Since your last check-in showed mild itching...")
-- Be evidence-based. Call out myths (e.g. castor oil myths, excessive oiling)
-- Always recommend professional assessment for anything serious, progressive, or unclear
-- Never diagnose. Use language like "this could be consistent with..." or "this is worth getting assessed"
-- If a question is completely unrelated to scalp/hair health, gently redirect
-- Keep responses concise — ideally under 150 words unless the question genuinely needs more
-- Do not use excessive bullet points or headers for simple questions — conversational prose is better
-- End responses with a relevant follow-up question or a brief action the user can take`;
-  };
+Example good response:
+"Itchy scalp can often come from dryness or product buildup.
+Try washing 2-3 times a week with a gentle shampoo.
+What symptoms are you seeing — flakes, redness, or something else?"`;
+};
 
-  // ── Call Claude API ────────────────────────────────────────────────────────
   const sendMessage = async (text: string) => {
-    if (!text.trim() || isTyping) return;
+  if ((!text.trim() && !selectedFile) || isTyping || !sessionId) return;
 
-    const userMsg: Message = { id: `user-${Date.now()}`, role: 'user', content: text.trim() };
-    setMessages(prev => [...prev, userMsg]);
-    setInputValue('');
-    setIsTyping(true);
-    setError(null);
+  setIsTyping(true);
+  setUploading(true);
 
+  let storageId: string | null = null;
+
+  // Upload file if any
+  if (selectedFile) {
     try {
-      const conversationHistory = [...messages, userMsg].map(m => ({
-        role: m.role,
-        content: m.content,
-      }));
+      const postUrl = await generateUploadUrl();
 
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 1000,
-          system: buildSystemPrompt(),
-          messages: conversationHistory,
-        }),
+      const result = await fetch(postUrl, {
+        method: "POST",
+        headers: { "Content-Type": selectedFile.type },
+        body: selectedFile,
       });
 
-      if (!response.ok) {
-        throw new Error(`API error ${response.status}`);
-      }
+      if (!result.ok) throw new Error("Upload failed");
 
-      const data = await response.json();
-      const assistantText = data.content?.find((b: any) => b.type === 'text')?.text ?? "Sorry, I didn't get a response. Please try again.";
-
-      const assistantMsg: Message = {
-        id: `assistant-${Date.now()}`,
-        role: 'assistant',
-        content: assistantText,
-      };
-
-      setMessages(prev => [...prev, assistantMsg]);
+      const { storageId: uploadedId } = await result.json();
+      storageId = uploadedId;
     } catch (err) {
-      console.error('Chat error:', err);
-      setError('Something went wrong. Check your connection and try again.');
-    } finally {
+      console.error("File upload failed:", err);
+      alert("Failed to upload the file. Please try again.");
+      setUploading(false);
       setIsTyping(false);
+      return;
     }
+  }
+
+  // Add user message to chat UI
+  const userContent = text.trim() 
+    ? text.trim() 
+    : (selectedFile?.type.startsWith("image/") ? "📸 Shared a photo of my scalp/hair" : "📄 Shared a document");
+
+  const userMsg: Message = { 
+    id: `user-${Date.now()}`, 
+    role: 'user', 
+    content: userContent 
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    sendMessage(inputValue);
-  };
+  setMessages(prev => [...prev, userMsg]);
+  setInputValue('');
+  setSelectedFile(null);
 
-  const lastAssistantMessage = [...messages].reverse().find(m => m.role === 'assistant');
-  const checkInSuggestion    = lastAssistantMessage ? shouldSuggestCheckIn(lastAssistantMessage.content) : false;
-  const learnLink            = lastAssistantMessage ? shouldLinkLearn(lastAssistantMessage.content) : { show: false, topic: '' };
+  // Send to your AI action
+  try {
+    const conversationHistory = [...messages, userMsg].map(m => ({
+      role: m.role,
+      content: m.content,
+    }));
+
+    const assistantText = await sendMessageAction({
+      sessionId,
+      messages: [
+        { role: "system", content: buildSystemPrompt() },
+        ...conversationHistory,
+      ],
+      fileStorageId: storageId || undefined,   // ← Important for vision models
+      fileType: selectedFile?.type || undefined,
+    });
+
+    setMessages(prev => [...prev, { 
+      id: `assistant-${Date.now()}`, 
+      role: 'assistant', 
+      content: assistantText 
+    }]);
+  } catch (err) {
+    console.error("AI response error:", err);
+    // Optional: add error message to chat
+  } finally {
+    setIsTyping(false);
+    setUploading(false);
+  }
+};
 
   return (
-    <div style={{ minHeight: '100vh', background: C.bg, fontFamily: dm, display: 'flex', flexDirection: 'column' }}>
-
-      <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Playfair+Display:wght@500;600&display=swap');`}</style>
-
-      <div style={{ maxWidth: 480, margin: '0 auto', width: '100%', display: 'flex', flexDirection: 'column', height: '100vh' }}>
-
-        {/* Header */}
-        <div style={{ padding: '52px 20px 16px', borderBottom: `1px solid ${C.mid}` }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 6 }}>
-            <div style={{ width: 7, height: 7, borderRadius: '50%', background: C.gold }} />
-            <span style={{ fontFamily: dm, fontSize: 10, fontWeight: 700, color: C.muted, letterSpacing: '0.12em', textTransform: 'uppercase' }}>FolliSense</span>
+    <div className="flex flex-col h-full bg-white">
+      {/* Messages Area */}
+      <div className="flex-1 overflow-y-auto p-5 space-y-4">
+        {messages.length === 0 ? (
+          <div className="text-center py-8">
+            <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+              <Leaf className="h-8 w-8 text-primary" />
+            </div>
+            <p className="text-lg font-medium text-foreground">Hi {displayName}!</p>
+            <p className="text-sm text-muted-foreground mt-2">I'm Folli, your personal scalp and hair assistant.<br />How can I help you today?</p>
           </div>
-          <h1 style={{ fontFamily: playfair, fontSize: 22, fontWeight: 500, color: C.ink, margin: '0 0 2px' }}>Ask FolliSense</h1>
-          <p style={{ fontFamily: dm, fontSize: 12, color: C.muted, margin: 0 }}>Your personal scalp and hair health guide</p>
-        </div>
-
-        {/* Messages */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '16px 20px 8px' }}>
-          {messages.length === 0 ? (
-            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-              {/* Intro card */}
-              <div style={{
-                background: C.white, border: `1.5px solid ${C.mid}`,
-                borderRadius: 20, padding: '16px 18px', marginBottom: 20,
-                boxShadow: '0 2px 10px rgba(0,0,0,0.05)',
-              }}>
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
-                  <div style={{ width: 36, height: 36, borderRadius: '50%', background: C.gold10, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <Leaf size={16} color={C.goldDeep} strokeWidth={1.8} />
-                  </div>
-                  <div>
-                    <p style={{ fontFamily: dm, fontSize: 13, color: C.ink, lineHeight: 1.6, margin: '0 0 6px' }}>
-                      Hi{userName ? ` ${userName}` : ''}! I'm here to help with your scalp and hair health questions. I'm not a doctor, but I'm grounded in clinical evidence and I know your profile.
-                    </p>
-                    {onboardingData.hairType && (
-                      <p style={{ fontFamily: dm, fontSize: 11, color: C.muted, margin: 0 }}>
-                        {onboardingData.hairType} hair
-                        {onboardingData.protectiveStyles?.length > 0 ? ` · ${onboardingData.protectiveStyles.slice(0, 2).join(', ')}` : ''}
-                        {onboardingData.goals?.length > 0 ? ` · Goal: ${onboardingData.goals[0].toLowerCase()}` : ''}
-                      </p>
-                    )}
-                  </div>
-                </div>
+        ) : (
+          messages.map((msg) => (
+            <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+              <div className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm ${msg.role === 'user' 
+                ? 'bg-primary text-white' 
+                : 'bg-gray-100 text-gray-900'}`}>
+                {msg.role === 'assistant' ? <ReactMarkdown>{msg.content}</ReactMarkdown> : msg.content}
               </div>
-
-              <p style={{ fontFamily: dm, fontSize: 11, fontWeight: 700, color: C.muted, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 10 }}>Try asking…</p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {starterQuestions.map(q => (
-                  <button key={q} onClick={() => sendMessage(q)} style={{
-                    width: '100%', textAlign: 'left',
-                    background: C.white, border: `1.5px solid ${C.mid}`,
-                    borderRadius: 16, padding: '13px 16px',
-                    display: 'flex', alignItems: 'center', gap: 12,
-                    cursor: 'pointer', fontFamily: dm,
-                    boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
-                    transition: 'border 0.15s',
-                  }}
-                    onMouseEnter={e => (e.currentTarget.style.border = `1.5px solid ${C.goldBorder}`)}
-                    onMouseLeave={e => (e.currentTarget.style.border = `1.5px solid ${C.mid}`)}
-                  >
-                    <span style={{ fontFamily: dm, fontSize: 13, color: C.ink, flex: 1 }}>{q}</span>
-                    <ArrowRight size={14} color={C.muted} style={{ flexShrink: 0 }} />
-                  </button>
-                ))}
-              </div>
-            </motion.div>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              {messages.map((msg, idx) => (
-                <motion.div key={msg.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}>
-                  {msg.role === 'user' ? (
-                    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                      <div style={{
-                        background: C.ink, color: '#f5f5f5',
-                        borderRadius: '18px 18px 4px 18px',
-                        padding: '12px 16px', maxWidth: '85%',
-                        fontFamily: dm, fontSize: 13, lineHeight: 1.55,
-                      }}>
-                        {msg.content}
-                      </div>
-                    </div>
-                  ) : (
-                    <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
-                      <div style={{
-                        background: C.white, border: `1.5px solid ${C.mid}`,
-                        borderRadius: '18px 18px 18px 4px',
-                        padding: '12px 16px', maxWidth: '90%',
-                        boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
-                      }}>
-                        <div style={{ fontFamily: dm, fontSize: 13, color: C.ink, lineHeight: 1.65 }}>
-                          <ReactMarkdown
-                            components={{
-                              p: ({ children }) => <p style={{ margin: '0 0 8px', fontFamily: dm, fontSize: 13, color: C.ink, lineHeight: 1.65 }}>{children}</p>,
-                              strong: ({ children }) => <strong style={{ fontWeight: 600, color: C.ink }}>{children}</strong>,
-                              ul: ({ children }) => <ul style={{ margin: '4px 0 8px', paddingLeft: 18 }}>{children}</ul>,
-                              li: ({ children }) => <li style={{ fontFamily: dm, fontSize: 13, color: C.ink, marginBottom: 3 }}>{children}</li>,
-                            }}
-                          >
-                            {msg.content}
-                          </ReactMarkdown>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Smart CTAs after last assistant message */}
-                  {msg.role === 'assistant' && idx === messages.length - 1 && (
-                    <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 8 }}>
-                      {checkInSuggestion && (
-                        <div style={{
-                          background: C.gold10, border: `1.5px solid ${C.goldBorder}`,
-                          borderLeft: `3px solid ${C.gold}`,
-                          borderRadius: 14, padding: '12px 14px',
-                        }}>
-                          <p style={{ fontFamily: dm, fontSize: 12, color: C.warm, margin: '0 0 6px', lineHeight: 1.5 }}>
-                            Based on what you're describing, it might be worth doing a check-in.
-                          </p>
-                          <button onClick={() => navigate('/wash-day')} style={{ fontFamily: dm, fontSize: 12, fontWeight: 700, color: C.goldDeep, background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex', alignItems: 'center', gap: 4 }}>
-                            Start a check-in <ArrowRight size={12} />
-                          </button>
-                        </div>
-                      )}
-                      {learnLink.show && (
-                        <button onClick={() => navigate('/learn')} style={{ fontFamily: dm, fontSize: 12, fontWeight: 700, color: C.goldDeep, background: 'none', border: 'none', cursor: 'pointer', padding: '4px 0', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 4 }}>
-                          Read more → {learnLink.topic}
-                        </button>
-                      )}
-                    </div>
-                  )}
-                </motion.div>
-              ))}
-
-              {/* Typing indicator */}
-              {isTyping && (
-                <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} style={{ display: 'flex', justifyContent: 'flex-start' }}>
-                  <div style={{
-                    background: C.white, border: `1.5px solid ${C.mid}`,
-                    borderRadius: '18px 18px 18px 4px', padding: '14px 18px',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
-                  }}>
-                    <div style={{ display: 'flex', gap: 5, alignItems: 'center' }}>
-                      {[0, 0.2, 0.4].map((delay, i) => (
-                        <motion.div key={i}
-                          animate={{ opacity: [0.3, 1, 0.3] }}
-                          transition={{ repeat: Infinity, duration: 1.2, delay }}
-                          style={{ width: 7, height: 7, borderRadius: '50%', background: C.gold }}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-
-              {/* Error */}
-              {error && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '12px 14px', borderRadius: 14, background: 'rgba(176,80,64,0.08)', border: '1px solid rgba(176,80,64,0.2)' }}>
-                  <AlertCircle size={14} color="#B05040" style={{ flexShrink: 0 }} />
-                  <p style={{ fontFamily: dm, fontSize: 12, color: '#B05040', margin: 0 }}>{error}</p>
-                </div>
-              )}
-
-              <div ref={messagesEndRef} />
             </div>
-          )}
-        </div>
-
-        {/* Input bar */}
-        <div style={{ padding: '12px 20px 90px', background: C.bg, borderTop: `1px solid ${C.mid}` }}>
-          <form onSubmit={handleSubmit} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{ flex: 1, position: 'relative' }}>
-              <input
-                ref={inputRef}
-                type="text"
-                value={inputValue}
-                onChange={e => setInputValue(e.target.value)}
-                placeholder="Ask about your scalp or hair…"
-                disabled={isTyping}
-                style={{
-                  width: '100%', height: 48, paddingLeft: 16, paddingRight: 48,
-                  borderRadius: 16, border: `1.5px solid ${C.mid}`,
-                  background: C.surface, fontFamily: dm, fontSize: 13, color: C.ink,
-                  outline: 'none', boxSizing: 'border-box',
-                  transition: 'border 0.15s',
-                }}
-                onFocus={e => (e.target.style.border = `1.5px solid ${C.goldBorder}`)}
-                onBlur={e => (e.target.style.border = `1.5px solid ${C.mid}`)}
-              />
-              <button type="button" style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: C.muted, display: 'flex' }}>
-                <Mic size={18} strokeWidth={1.8} />
-              </button>
-            </div>
-            <button
-              type="submit"
-              disabled={!inputValue.trim() || isTyping}
-              style={{
-                width: 48, height: 48, borderRadius: 16, border: 'none',
-                background: inputValue.trim() && !isTyping ? C.ink : C.mid,
-                color: inputValue.trim() && !isTyping ? '#f5f5f5' : C.muted,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                cursor: inputValue.trim() && !isTyping ? 'pointer' : 'not-allowed',
-                transition: 'background 0.2s', flexShrink: 0,
-              }}
-            >
-              <Send size={18} strokeWidth={1.8} />
-            </button>
-          </form>
-        </div>
+          ))
+        )}
       </div>
-    </div>
+
+      {/* Input Area */}
+<div className="border-t p-4 bg-white">
+  <form 
+    onSubmit={(e) => { e.preventDefault(); sendMessage(inputValue); }}
+    className="flex gap-2"
+  >
+    <button
+      type="button"
+      onClick={() => fileInputRef.current?.click()}
+      className="h-12 w-12 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-2xl flex items-center justify-center"
+      disabled={isTyping || uploading}
+    >
+      <Paperclip size={20} />
+    </button>
+
+    <input
+      type="file"
+      ref={fileInputRef}
+      className="hidden"
+      accept="image/*,.pdf" 
+      onChange={(e) => {
+        const file = e.target.files?.[0];
+        if (file) {
+          if (file.size > 15 * 1024 * 1024) { // 15MB limit
+            alert("File is too large (max 15MB)");
+            return;
+          }
+          setSelectedFile(file);
+        }
+      }}
+    />
+
+    <input
+      type="text"
+      value={inputValue}
+      onChange={(e) => setInputValue(e.target.value)}
+      placeholder={selectedFile ? "Add message (optional)..." : "Ask about your scalp or hair..."}
+      className="flex-1 h-12 px-4 rounded-2xl border border-gray-200 focus:outline-none focus:border-primary text-sm"
+      disabled={isTyping || uploading}
+    />
+
+    <button
+      type="submit"
+      disabled={(!inputValue.trim() && !selectedFile) || isTyping || uploading}
+      className="h-12 w-12 bg-primary text-white rounded-2xl flex items-center justify-center disabled:opacity-50"
+    >
+      {uploading ? "↑" : <Send size={20} />}
+    </button>
+  </form>
+
+  {selectedFile && (
+    <p className="text-xs text-muted-foreground mt-2 pl-14 flex items-center gap-2">
+      📎 {selectedFile.name}
+      <button 
+        onClick={() => setSelectedFile(null)}
+        className="text-red-500 hover:underline text-[10px]"
+      >
+        remove
+      </button>
+    </p>
+  )}
+</div>
+</div>
   );
 };
 
-export default ChatPage;
+export default ChatPage;     

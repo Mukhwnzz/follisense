@@ -27,6 +27,7 @@ import StylistLoginPage from "./pages/StylistLoginPage";
 import StylistOnboarding from "./pages/StylistOnboarding";
 import StylistProfilePage from "./pages/StylistProfilePage";
 import ChatPage from "./pages/ChatPage";
+import StylistChatPage from"./pages/StylistChatPage";
 import ProductDirectory from "./pages/ProductDirectory";
 import ResearchProgramme from "./pages/ResearchProgramme";
 import FindSpecialist from "./pages/FindSpecialist";
@@ -45,57 +46,58 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
 
 const App = () => {
-return (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <AppProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Layout>
-            <Routes>
-              <Route path="/" element={<Welcome />} />
-              <Route path="/signup" element={<SignUpPage />} />
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-              <Route path="/onboarding" element={<Onboarding />} />
-              <Route path="/onboarding/baseline-response" element={<BaselineResponse />} />
-              <Route path="/home" element={<HomePage />} />
-              <Route path="/my-routine" element={<MyRoutine />} />
-              <Route path="/routine-tracker" element={<RoutineTracker />} />
-              <Route path="/salon-booking" element={<SalonBooking />} />
-              <Route path="/chat" element={<ChatPage />} />
-              <Route path="/mid-cycle" element={<MidCycleCheckIn />} />
-              <Route path="/wash-day" element={<WashDayAssessment />} />
-              <Route path="/results" element={<RiskOutput />} />
-              <Route path="/clinician-summary" element={<ClinicianSummary />} />
-              <Route path="/health-profile" element={<HealthProfile />} />
-              <Route path="/products" element={<ProductDirectory />} />
-              <Route path="/research" element={<ResearchProgramme />} />
-              <Route path="/find-specialist" element={<FindSpecialist />} />
-              <Route path="/history" element={<HistoryPage />} />
-              <Route path="/learn" element={<LearnPage />} />
-              <Route path="/profile" element={<ProfilePage />} />
-              <Route path="/scalp-check" element={<ScalpCheckIn />} />
-              <Route path="/spot-it" element={<SpotIt />} />
-              <Route path="/salon-checkin" element={<SalonCheckIn />} />
-              <Route path="/stylist/signup" element={<StylistSignUpPage />} />
-              <Route path="/stylist/login" element={<StylistLoginPage />} />
-              <Route path="/stylist/onboarding" element={<StylistOnboarding />} />
-              <Route path="/stylist" element={<StylistHome />} />
-              <Route path="/stylist/learn" element={<StylistLearnPage />} />
-              <Route path="/stylist/observation" element={<StylistObservation />} />
-              <Route path="/stylist/quiz" element={<ScalpQuiz />} />
-              <Route path="/stylist/quick-intake" element={<StylistQuickIntake />} />
-              <Route path="/stylist/clients" element={<StylistClients />} />
-              <Route path="/stylist/profile" element={<StylistProfilePage />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </Layout>
-        </BrowserRouter>
-      </AppProvider>
-    </TooltipProvider>
-  </QueryClientProvider>
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <AppProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Layout>
+              <Routes>
+                <Route path="/" element={<Welcome />} />
+                <Route path="/signup" element={<SignUpPage />} />
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+                <Route path="/onboarding" element={<Onboarding />} />
+                <Route path="/onboarding/baseline-response" element={<BaselineResponse />} />
+                <Route path="/home" element={<HomePage />} />
+                <Route path="/my-routine" element={<MyRoutine />} />
+                <Route path="/routine-tracker" element={<RoutineTracker />} />
+                <Route path="/salon-booking" element={<SalonBooking />} />
+                <Route path="/chat" element={<ChatPage />} />
+                <Route path="/mid-cycle" element={<MidCycleCheckIn />} />
+                <Route path="/wash-day" element={<WashDayAssessment />} />
+                <Route path="/results" element={<RiskOutput />} />
+                <Route path="/clinician-summary" element={<ClinicianSummary />} />
+                <Route path="/health-profile" element={<HealthProfile />} />
+                <Route path="/products" element={<ProductDirectory />} />
+                <Route path="/research" element={<ResearchProgramme />} />
+                <Route path="/find-specialist" element={<FindSpecialist />} />
+                <Route path="/history" element={<HistoryPage />} />
+                <Route path="/learn" element={<LearnPage />} />
+                <Route path="/profile" element={<ProfilePage />} />
+                <Route path="/scalp-check" element={<ScalpCheckIn />} />
+                <Route path="/spot-it" element={<SpotIt />} />
+                <Route path="/stylist/chat" element={<StylistChatPage/>}/>
+                <Route path="/salon-checkin" element={<SalonCheckIn />} />
+                <Route path="/stylist/signup" element={<StylistSignUpPage />} />
+                <Route path="/stylist/login" element={<StylistLoginPage />} />
+                <Route path="/stylist/onboarding" element={<StylistOnboarding />} />
+                <Route path="/stylist" element={<StylistHome />} />
+                <Route path="/stylist/learn" element={<StylistLearnPage />} />
+                <Route path="/stylist/observation" element={<StylistObservation />} />
+                <Route path="/stylist/quiz" element={<ScalpQuiz />} />
+                <Route path="/stylist/quick-intake" element={<StylistQuickIntake />} />
+                <Route path="/stylist/clients" element={<StylistClients />} />
+                <Route path="/stylist/profile" element={<StylistProfilePage />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </Layout>
+          </BrowserRouter>
+        </AppProvider>
+      </TooltipProvider>
+    </QueryClientProvider>
   );
 };
 

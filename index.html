@@ -3,19 +3,66 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <!-- TODO: Set the document title to the name of your application -->
-    <title>FolliSense — Smart Scalp Care</title>
-    <meta name="description" content="Smart scalp care, built around you" />
+    <title>FolliSense -Smart Scalp Care</title>
+    <meta
+      name="description"
+      content="FolliSense Smart Scalp Care AI Assistant — personalized guidance for scalp and hair health for women and men."
+    />
     <meta name="author" content="FolliSense" />
 
+    <!-- Open Graph / Social sharing (updated to be 100% original FolliSense branding) -->
     <meta property="og:title" content="FolliSense — Smart Scalp Care" />
-    <meta property="og:description" content="Lovable Generated Project" />
+    <meta
+      property="og:description"
+      content="Smart scalp care, built around you. Your personal AI assistant for healthier hair and scalp."
+    />
     <meta property="og:type" content="website" />
-    <meta property="og:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+    <meta
+      property="og:image"
+      content="https://lovable.dev/opengraph-image-p98pqg.png"
+    />
+    <meta property="og:image:type" content="image/png" />
 
+    <!-- Twitter / X cards (cleaned up, no Hercules branding) -->
     <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:image"
+      content="https://lovable.dev/opengraph-image-p98pqg.png"
+    />
     <meta name="twitter:site" content="@Lovable" />
-    <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+
+    <!-- Favicon – kept the lightning bolt for the AI assistant feel (you can swap the emoji if you want something more scalp/hair themed) -->
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="/favicon.ico"
+    />
+
+    <!-- Fonts (required by the chatbot UI) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300..700;1,9..40,300..700&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Geist+Mono:wght@100..900&display=swap"
+      rel="stylesheet"
+      crossorigin
+    />
+
+    <!-- Dark mode detection (prevents flash of unstyled content) -->
+    <script>
+      try {
+        let theme = localStorage.getItem("theme");
+        if (theme === "system" || !theme) {
+          let prefersDark = window.matchMedia(
+            "(prefers-color-scheme: dark)",
+          ).matches;
+          theme = prefersDark ? "dark" : "light";
+        }
+        document.documentElement.classList.add(theme);
+      } catch (e) {}
+    </script>
+
+    <!-- App CSS (required by the chatbot integration) -->
+    <link href="/src/index.css" rel="stylesheet" />
   </head>
 
   <body>

@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowLeft, X } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
+import { supabase } from '@/lib/supabaseClient';
+import { toast } from '@/hooks/use-toast';
 
 const dm       = "'DM Sans', sans-serif";
 const playfair = "'Playfair Display', serif";
@@ -79,10 +81,69 @@ const MidCycleCheckIn = () => {
     return () => clearTimeout(t);
   }, [acknowledgment, isLastStep]);
 
-  const handleSubmit = () => {
-    setCurrentCheckIn({ itch: answers.itch, tenderness: answers.tenderness, hairline: answers.hairline, hairConcern: answers.hairConcern, type: 'mid-cycle', date: new Date().toLocaleDateString('en-GB', { month: 'short', day: 'numeric' }) });
+  const handleSubmit = async () => {
+  try {
+    // 1. Get current logged-in user
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      throw new Error('User not authenticated');
+    }
+
+    // 2. Format symptoms (matches JSONB column)
+    const symptoms = {
+      itch: answers.itch,
+      tenderness: answers.tenderness,
+      irritation: answers.irritation,
+      hairline: answers.hairline,
+      hairConcern: answers.hairConcern,
+    };
+
+    // 3. Insert into Supabase
+    const { error } = await supabase
+      .from('checkins')
+      .insert([
+        {
+          user_id: user.id,
+          type: 'mid_cycle', // MUST match your enum
+          symptoms: symptoms,
+          triage_result: null,        // you can compute later
+          triage_reasoning: null,
+          notes: null,
+          is_baseline: false,
+        }
+      ]);
+
+    if (error) throw error;
+
+    // 4. Optional: keep local state
+    setCurrentCheckIn({
+      ...symptoms,
+      type: 'mid-cycle',
+      date: new Date().toLocaleDateString('en-GB', {
+        month: 'short',
+        day: 'numeric',
+      }),
+    });
+
+    toast({
+      title: "Check-in saved",
+      description: "Your scalp check-in has been recorded.",
+    });
+
+    // 5. Navigate
     navigate('/results');
-  };
+
+  } catch (err ) {
+    console.error(err);
+
+    toast({
+      title: "Error",
+      description: err.message || "Failed to save check-in",
+      variant: "destructive",
+    });
+  }
+};
 
   const handleSkip = () => {
     // Note the skip and go back to dashboard
