@@ -11,6 +11,8 @@ const SYMPTOM_LABEL_MAP: Record<string, string> = {
   itch: 'Itching',
   tenderness: 'Tenderness',
   hairline: 'Hairline changes',
+  centerPart: 'Center part widening',
+  crownThinning: 'Crown/vertex thinning',
   flaking: 'Flaking',
   shedding: 'Shedding',
   bumps: 'Bumps or irritation',
@@ -25,19 +27,19 @@ const SYMPTOM_LABEL_MAP: Record<string, string> = {
 
 const SEVERITY_LABEL_MAP: Record<string, string> = {
   'Mild': 'mild', 'A little': 'mild', 'Some flaking': 'mild',
-  'Slight concern': 'mild', 'A bit dry': 'mild',
+  'Slight concern': 'mild', 'A bit dry': 'mild', 'Slightly wider': 'mild',
   'Moderate': 'moderate', 'Yes, noticeably': 'moderate',
   'Noticeable change': 'moderate', 'More than usual': 'moderate',
-  'Looks a bit thinner': 'moderate',
+  'Looks a bit thinner': 'moderate', 'Noticeably wider': 'moderate', 'Noticeable': 'moderate',
   'Severe': 'severe', 'Yes, painful': 'severe',
   'Very concerned': 'severe', 'Alarming amount': 'severe',
-  'Heavy flaking': 'severe', 'Significant': 'severe',
+  'Heavy flaking': 'severe', 'Significant': 'severe', 'Significantly wider': 'severe',
 };
 
 const getSeverityLabel = (v: string): string => SEVERITY_LABEL_MAP[v] || v.toLowerCase();
 
 const SYMPTOM_KEYS: (keyof typeof SYMPTOM_LABEL_MAP)[] = [
-  'itch', 'tenderness', 'hairline', 'flaking', 'shedding', 'bumps', 'dryness', 'razorBumps', 'barberIrritation',
+  'itch', 'tenderness', 'hairline', 'centerPart', 'crownThinning', 'flaking', 'shedding', 'bumps', 'dryness', 'razorBumps', 'barberIrritation',
 ];
 
 const ClinicianSummary = () => {
@@ -207,7 +209,22 @@ const ClinicianSummary = () => {
           </div>
           <p style={{ fontSize: 13, color: '#666' }}>Triggered by: {getTriggerReason()}</p>
 
-          {/* Symptom History */}
+          {/* CCCA Clinical Flag */}
+          {currentRisk === 'red' && currentCheckIn && (() => {
+            const crownVal = (currentCheckIn as any).crownThinning as string | undefined;
+            const tenderVal = (currentCheckIn as any).tenderness as string | undefined;
+            const crownPresent = crownVal && !NONE_VALUES.includes(crownVal);
+            const tenderPresent = tenderVal && !NONE_VALUES.includes(tenderVal);
+            return crownPresent && tenderPresent ? (
+              <div style={{ marginTop: 12, padding: '12px 14px', background: '#FDF2F2', border: '1px solid #E8CECE', borderRadius: 10 }}>
+                <p style={{ fontSize: 12, fontWeight: 600, color: '#B85C5C', marginBottom: 4 }}>Clinical Note</p>
+                <p style={{ fontSize: 12, color: '#666', lineHeight: 1.6 }}>
+                  Crown/vertex thinning reported alongside tenderness. Pattern may be consistent with central centrifugal cicatricial alopecia (CCCA). Early assessment recommended.
+                </p>
+              </div>
+            ) : null;
+          })()}
+
           {historyEntries.length > 0 && (
             <>
               <SectionHeading>Symptom History</SectionHeading>

@@ -3,11 +3,11 @@ import type { CheckInData } from '@/contexts/AppContext';
 type RiskLevel = 'green' | 'amber' | 'red';
 
 const NONE_VALUES = ['None', 'No', 'No change', 'Normal', 'No concerns'];
-const MILD_VALUES = ['Mild', 'A little', 'Some flaking', 'Slight concern', 'A bit dry', 'A little more breakage or dryness than usual'];
-const MODERATE_VALUES = ['Moderate', 'Yes, noticeably', 'Noticeable change', 'More than usual', 'Looks a bit thinner', 'Noticeably dry, brittle, or breaking more than usual'];
-const SEVERE_VALUES = ['Severe', 'Yes, painful', 'Very concerned', 'Alarming amount', 'Heavy flaking', "Concerned about my hair's condition", 'Significant'];
+const MILD_VALUES = ['Mild', 'A little', 'Some flaking', 'Slight concern', 'A bit dry', 'A little more breakage or dryness than usual', 'Slightly wider'];
+const MODERATE_VALUES = ['Moderate', 'Yes, noticeably', 'Noticeable change', 'More than usual', 'Looks a bit thinner', 'Noticeably dry, brittle, or breaking more than usual', 'Noticeably wider', 'Noticeable'];
+const SEVERE_VALUES = ['Severe', 'Yes, painful', 'Very concerned', 'Alarming amount', 'Heavy flaking', "Concerned about my hair's condition", 'Significant', 'Significantly wider'];
 
-const SYMPTOM_KEYS: (keyof CheckInData)[] = ['itch', 'tenderness', 'hairline', 'flaking', 'shedding', 'bumps', 'dryness', 'razorBumps', 'barberIrritation'];
+const SYMPTOM_KEYS: (keyof CheckInData)[] = ['itch', 'tenderness', 'hairline', 'centerPart', 'crownThinning', 'flaking', 'shedding', 'bumps', 'dryness', 'razorBumps', 'barberIrritation'];
 
 const getSeverityLevel = (value: string | undefined): number => {
   if (!value || NONE_VALUES.includes(value)) return 0;
@@ -51,6 +51,9 @@ export const computeHistoricalRisk = (
 
   // RED: Hairline recession + tenderness
   if (currentSymptoms.hairline >= 1 && currentSymptoms.tenderness >= 1) return 'red';
+
+  // RED: Crown/vertex thinning + tenderness (CCCA risk)
+  if (currentSymptoms.crownThinning >= 1 && currentSymptoms.tenderness >= 1) return 'red';
 
   // Check persistence and worsening against history
   for (const key of SYMPTOM_KEYS) {
@@ -129,6 +132,13 @@ export const getTriageGuidance = (
   }
 
   if (risk === 'red') {
+    // Check for crown thinning + tenderness combination (CCCA risk)
+    if (isSymptomPresent(current.crownThinning as string | undefined) && isSymptomPresent(current.tenderness as string | undefined)) {
+      guidance.push({
+        heading: 'Crown thinning with tenderness detected',
+        message: 'Thinning at the crown combined with scalp tenderness can be an early sign of a condition that benefits from prompt professional assessment. We recommend seeing a dermatologist or trichologist soon.',
+      });
+    }
     guidance.push({
       heading: 'Professional review recommended',
       message: 'Based on your symptom patterns, we recommend consulting a trichologist or dermatologist. Your clinician summary has been generated automatically.',

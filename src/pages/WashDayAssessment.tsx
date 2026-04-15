@@ -125,6 +125,26 @@ const scalpSteps: StepDef[] = [
     ],
   },
   {
+    key: 'centerPart',
+    q: 'Has your center part looked wider recently?',
+    options: [
+      { label: 'No change', desc: 'Looks the same as usual' },
+      { label: 'Slightly wider', desc: 'A small difference, hard to tell' },
+      { label: 'Noticeably wider', desc: 'Visible widening compared to before' },
+      { label: 'Significantly wider', desc: 'Much wider than it used to be' },
+    ],
+  },
+  {
+    key: 'crownThinning',
+    q: 'Have you noticed thinning at the top of your head, away from the hairline?',
+    options: [
+      { label: 'None', desc: 'No thinning noticed' },
+      { label: 'A little', desc: 'Slight thinning, barely noticeable' },
+      { label: 'Noticeable', desc: 'Scalp more visible at the crown' },
+      { label: 'Significant', desc: 'Clear thinning, scalp very visible' },
+    ],
+  },
+  {
     key: 'shedding',
     q: 'How much hair came out at wash time?',
     qMale: 'Noticed any unusual shedding or thinning?',
@@ -300,6 +320,8 @@ const WashDayAssessment = () => {
       itch: answers.itch,
       tenderness: answers.tenderness,
       hairline: answers.hairline,
+      centerPart: answers.centerPart,
+      crownThinning: answers.crownThinning,
       flaking: answers.flaking,
       shedding: answers.shedding,
       hairFeel: answers.hairFeel,

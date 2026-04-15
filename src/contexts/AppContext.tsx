@@ -57,6 +57,8 @@ export interface CheckInData {
   itch: string;
   tenderness: string;
   hairline: string;
+  centerPart?: string;
+  crownThinning?: string;
   flaking?: string;
   shedding?: string;
   bumps?: string;

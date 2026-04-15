@@ -31,6 +31,8 @@ const baseQuestions: QuestionDef[] = [
   { key: 'tenderness', q: 'Any scalp soreness or tenderness since your last check-in?', options: ['None', 'A little', 'Yes, noticeably', 'Yes, painful'] },
   { key: 'irritation', q: 'Any bumps or irritation since your last check-in?', qMale: 'Any razor bumps, ingrown hairs, or irritation since your last check-in?', options: ['None', 'A few bumps', 'Moderate — several areas', 'Significant — widespread'], maleOptions: ['None', 'Minor razor bumps', 'Ingrown hairs', 'Folliculitis — clusters of bumps'] },
   { key: 'hairline', q: 'How are your edges looking since your last check-in?', qMale: 'How does your hairline look since your last check-in?', options: ['No change', 'Looks a bit different', 'Noticeable change', "I'm concerned"], maleOptions: ['No change', 'Slight recession at temples', 'Noticeable thinning', "I'm concerned"] },
+  { key: 'centerPart', q: 'Has your center part looked wider recently?', options: ['No change', 'Slightly wider', 'Noticeably wider', 'Significantly wider'] },
+  { key: 'crownThinning', q: 'Have you noticed thinning at the top of your head, away from the hairline?', options: ['None', 'A little', 'Noticeable', 'Significant'] },
   { key: 'hairConcern', q: 'Any unusual breakage or dryness since your last check-in?', qMale: 'Any unusual shedding, thinning, or dryness since your last check-in?', options: ['No, hair feels normal', 'A little more than usual', 'Yes, noticeably more', "Yes, I'm concerned"] },
 ];
 
@@ -96,6 +98,8 @@ const MidCycleCheckIn = () => {
       tenderness: answers.tenderness,
       irritation: answers.irritation,
       hairline: answers.hairline,
+      centerPart: answers.centerPart,
+      crownThinning: answers.crownThinning,
       hairConcern: answers.hairConcern,
     };
 
