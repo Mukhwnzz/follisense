@@ -701,7 +701,7 @@ const Onboarding = () => {
     && !(step === 8 && (symptomPhase === 'transition' || symptomPhase === 'symptoms' || symptomPhase === 'thanks' || symptomPhase === 'result'))
     && !(step === 2 && chemicalStep !== 1);
 
-  const totalProgressSegments = isMale ? TOTAL_PROGRESS_SEGMENTS_MALE : TOTAL_PROGRESS_SEGMENTS_FEMALE;
+  const activeSegment = (() => getProgressSegment())();
   const activeSegment = (() => {
     if (isMale) {
       if (step === 0) return 0;
@@ -1814,5 +1814,4 @@ const LengthCheckPhotos = ({ isShortHair, gender, onComplete, onSkip }: LengthCh
   );
 };
 
-export default Onboarding;
 export default Onboarding;
