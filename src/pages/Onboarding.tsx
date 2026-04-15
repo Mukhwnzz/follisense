@@ -1393,7 +1393,7 @@ const Onboarding = () => {
           )}
 
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 };
