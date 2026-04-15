@@ -96,6 +96,8 @@ const MidCycleCheckIn = () => {
       tenderness: answers.tenderness,
       irritation: answers.irritation,
       hairline: answers.hairline,
+      centerPart: answers.centerPart,
+      crownThinning: answers.crownThinning,
       hairConcern: answers.hairConcern,
     };
 
