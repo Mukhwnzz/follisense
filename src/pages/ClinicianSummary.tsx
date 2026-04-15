@@ -209,7 +209,22 @@ const ClinicianSummary = () => {
           </div>
           <p style={{ fontSize: 13, color: '#666' }}>Triggered by: {getTriggerReason()}</p>
 
-          {/* Symptom History */}
+          {/* CCCA Clinical Flag */}
+          {currentRisk === 'red' && currentCheckIn && (() => {
+            const crownVal = (currentCheckIn as any).crownThinning as string | undefined;
+            const tenderVal = (currentCheckIn as any).tenderness as string | undefined;
+            const crownPresent = crownVal && !NONE_VALUES.includes(crownVal);
+            const tenderPresent = tenderVal && !NONE_VALUES.includes(tenderVal);
+            return crownPresent && tenderPresent ? (
+              <div style={{ marginTop: 12, padding: '12px 14px', background: '#FDF2F2', border: '1px solid #E8CECE', borderRadius: 10 }}>
+                <p style={{ fontSize: 12, fontWeight: 600, color: '#B85C5C', marginBottom: 4 }}>Clinical Note</p>
+                <p style={{ fontSize: 12, color: '#666', lineHeight: 1.6 }}>
+                  Crown/vertex thinning reported alongside tenderness. Pattern may be consistent with central centrifugal cicatricial alopecia (CCCA). Early assessment recommended.
+                </p>
+              </div>
+            ) : null;
+          })()}
+
           {historyEntries.length > 0 && (
             <>
               <SectionHeading>Symptom History</SectionHeading>
