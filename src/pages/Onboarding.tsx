@@ -6,18 +6,14 @@ import {
   ChevronRight, ChevronUp, Camera, ImagePlus, X, Sparkles,
 } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
-<<<<<<< HEAD
 import { supabase } from '@/lib/supabaseClient';
 import { toast } from '@/hooks/use-toast';
-=======
 import { computeHistoricalRisk, getTriageGuidance } from '@/utils/triageLogic';
 import type { CheckInData, HealthProfileData } from '@/contexts/AppContext';
 import { Leaf } from 'lucide-react';
 import ScalpBaselineCapture from '@/components/ScalpBaselineCapture';
 import NorwoodScale from '@/components/NorwoodScale';
 import { computeMaleTriageRisk, getMaleTriageMessage, getMaleTriageReasoning, getSeverityTransitionText, computeSeverityDotSummary, getInterimCareSteps, getSeverityLevel } from '@/utils/maleTriageLogic';
->>>>>>> 7f6f42d3a862210af52ee4f6472c47f44dc758b8
-
 // ─── PALETTE ─────────────────────────────────────────────────────────────────
 const C = {
   bg:           '#FAF8F5',
@@ -37,33 +33,6 @@ const C = {
   mid:          '#E8DED1',
 };
 
-<<<<<<< HEAD
-const dm = "'DM Sans', sans-serif";
-
-// ─── HAIR REFERENCE PHOTOS ───────────────────────────────────────────────────
-const hairPhotos: Record<string, Record<string, { src: string; label: string }[]>> = {
-  type3: {
-    female: [
-      { src: 'https://i.pinimg.com/736x/99/59/67/995967923455cf9abd0b8ef9d4e4ba81.jpg', label: 'Type 3: S-shaped curls, bouncy' },
-      { src: 'https://i.pinimg.com/1200x/59/e2/50/59e250e2cbe1244e3e2196678551b14b.jpg', label: 'Type 3: Tighter curls, voluminous' },
-    ],
-    male: [
-      { src: 'https://i.pinimg.com/736x/a2/24/c0/a224c05d0dfbda56c5e6841df83067ef.jpg', label: 'Type 3: Defined curls, medium density' },
-    ],
-  },
-  type4: {
-    female: [
-      { src: 'https://i.pinimg.com/1200x/35/a3/1c/35a31cd46add2f0f7c933f348c60420e.jpg', label: 'Type 4a: Defined coils, springy' },
-      { src: 'https://i.pinimg.com/1200x/1b/47/2c/1b472c56063b6145d0945cc232fd056d.jpg', label: 'Type 4b: Z-pattern coils, dense' },
-      { src: 'https://i.pinimg.com/736x/a7/e7/9a/a7e79acc50020c6f6d793291e1c4c2e9.jpg', label: 'Type 4c: Tight coils, significant shrinkage' },
-    ],
-    male: [
-      { src: 'https://i.pinimg.com/1200x/c1/f8/13/c1f8138c7a1b36c682dd42554dc9b227.jpg', label: 'Type 4: Tight coils, dense, afro' },
-      { src: 'https://i.pinimg.com/736x/f5/ea/1e/f5ea1e1fe243495ddf4c22800791e0c6.jpg', label: 'Type 4: Coily texture, fade' },
-    ],
-  },
-};
-=======
 import refFemaleFront from '@/assets/ref-female-front.jpg';
 import scalpSideFemale from '@/assets/scalp-side-female.jpeg';
 import scalpBackFemale from '@/assets/scalp-back-female.jpeg';
@@ -72,8 +41,6 @@ import refMaleFront from '@/assets/ref-male-front.jpg';
 import scalpSideMaleB from '@/assets/scalp-side-male-b.jpeg';
 import scalpBackMale from '@/assets/scalp-back-male.png';
 import refMaleTop from '@/assets/ref-male-top.png';
->>>>>>> 7f6f42d3a862210af52ee4f6472c47f44dc758b8
-
 const hairTypes = [
   { id: 'type4', label: 'Type 4: Coily', desc: 'Tight coils or zig-zag pattern, dense texture, significant shrinkage' },
   { id: 'type3', label: 'Type 3: Curly', desc: 'Visible curl pattern, S-shaped curls, looser texture' },
@@ -86,24 +53,6 @@ const subTypes: Record<string, SubTypeOption[]> = {
   type3: [{ id: '3a', label: '3A' }, { id: '3b', label: '3B' }, { id: '3c', label: '3C' }, { id: 'mixed', label: 'Mixed' }, { id: 'not-sure', label: 'Not sure' }],
 };
 
-<<<<<<< HEAD
-const femaleStyleOptions = ['Braids', 'Locs', 'Twists', 'Twist out', 'Wig', 'Weave', 'Silk press', 'Blow out', 'Loose natural', 'Wash and go', 'Cornrows', 'Other'];
-const maleStyleOptions   = ['Low cut / fade', 'Waves', 'Locs', 'Twists', 'Cornrows', 'Afro', 'Bald / shaved', 'Other'];
-const protectiveFreqOptions = ['Most of the time', 'Sometimes', 'Rarely', 'Never'];
-const cycleLengthOptions    = ['1-2 weeks', '3-4 weeks', '5-6 weeks', '7-8 weeks', 'Longer than 8 weeks', 'It varies'];
-const betweenWashOptions    = ['Nothing', 'Oil my scalp', 'Use a scalp spray or tonic', 'Rinse with water only', 'Other'];
-const concernOptions        = ['Itching', 'Flaking', 'Thinning', 'Tenderness', 'Breakage', 'Dryness', 'I just want to stay on top of things', 'Not sure'];
-
-interface CapturedPhoto { area: string; dataUrl: string; }
-
-const PHOTO_AREAS = [
-  { id: 'hairline', label: 'Hairline / edges', tip: 'Face camera towards your hairline, especially at the temples.' },
-  { id: 'nape',     label: 'Nape',             tip: 'Photograph the back of your neck hairline.' },
-  { id: 'crown',    label: 'Crown / top',       tip: 'Part your hair and photograph the scalp at the crown.' },
-];
-
-const TOTAL_SCREENS = 5;
-=======
 // ─── STYLE OPTIONS ───────────────────────────────────────────────────────────
 const femaleStyleOptions = [
   'Braids', 'Locs', 'Twists', 'Twist out', 'Wig', 'Weave', 'Silk press',
@@ -173,8 +122,6 @@ const chemicalOptions = [
   { id: 'growing-out', label: 'Previously, growing out' },
   { id: 'unsure', label: 'Not sure' },
 ];
->>>>>>> 7f6f42d3a862210af52ee4f6472c47f44dc758b8
-
 // ─── SHARED STYLE HELPERS ────────────────────────────────────────────────────
 const card = (selected: boolean): React.CSSProperties => ({
   width: '100%', textAlign: 'left', padding: '13px 15px', borderRadius: 14,
@@ -194,27 +141,6 @@ const pill = (selected: boolean): React.CSSProperties => ({
   boxShadow: selected ? '0 2px 8px rgba(212,168,102,0.25)' : 'none',
 });
 
-<<<<<<< HEAD
-// ─── CURL ICON ────────────────────────────────────────────────────────────────
-const CurlIcon = ({ type, selected }: { type: string; selected: boolean }) => {
-  const color = selected ? '#FFFFFF' : C.muted;
-  if (type === 'unsure') return <HelpCircle size={17} color={color} strokeWidth={1.5} />;
-  if (type === 'type3')  return <svg width="20" height="20" viewBox="0 0 28 28"><path d="M6 20 C10 8, 14 24, 18 12 C20 6, 24 18, 24 14" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" /></svg>;
-  if (type === 'type4')  return <svg width="20" height="20" viewBox="0 0 28 28"><path d="M6 14 L7 10 L9 16 L10 10 L12 16 L13 10 L15 16 L16 10 L18 16 L19 10 L21 16 L22 10 L24 14" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>;
-  return null;
-};
-
-// ─── TAP-TO-REVEAL PHOTO GALLERY ─────────────────────────────────────────────
-const PhotoGallery = ({ photos }: { photos: { src: string; label: string }[] }) => {
-  const [idx, setIdx] = useState(0);
-  if (!photos.length) return null;
-  if (photos.length === 1) return (
-    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.25 }}
-      style={{ marginTop: 10, borderRadius: 10, overflow: 'hidden', border: `1px solid ${C.cardBorder}` }}>
-      <img src={photos[0].src} alt={photos[0].label} style={{ width: '100%', height: 200, objectFit: 'cover', display: 'block' }} />
-      <p style={{ fontFamily: dm, fontSize: 10, color: C.muted, textAlign: 'center', padding: '6px', background: '#F5F0EB' }}>{photos[0].label}</p>
-    </motion.div>
-=======
 // ─── SYMPTOM CHECKLIST (with timeframes for onboarding) ──────────────────────
 const onboardingSymptoms = [
   { key: 'itch', label: 'Itching', question: 'Have you noticed any scalp itching in the last few weeks?' },
@@ -749,9 +675,7 @@ const Onboarding = () => {
 
   const isShortHairStyle = styles.some(s =>
     ['Low cut / fade', 'Bald / shaved', 'Afro', 'High top'].includes(s) ||
-    s.toLowerCase().includes('twa')
->>>>>>> 7f6f42d3a862210af52ee4f6472c47f44dc758b8
-  );
+    s.toLowerCase().includes('twa')  );
   return (
     <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.25 }}
       style={{ marginTop: 10, position: 'relative', borderRadius: 10, overflow: 'hidden', border: `1px solid ${C.cardBorder}` }}>
@@ -771,27 +695,6 @@ const Onboarding = () => {
   );
 };
 
-<<<<<<< HEAD
-// ─── PHOTO CAPTURE STEP ───────────────────────────────────────────────────────
-const PhotoCaptureStep = ({
-  photos, onAdd, onRemove,
-}: { photos: CapturedPhoto[]; onAdd: (p: CapturedPhoto) => void; onRemove: (i: number) => void }) => {
-  const cameraRef  = useRef<HTMLInputElement>(null);
-  const galleryRef = useRef<HTMLInputElement>(null);
-  const [activeArea, setActiveArea] = useState(PHOTO_AREAS[0].id);
-
-  const handleFile = (file: File, area: string) => {
-    const reader = new FileReader();
-    reader.onload = e => { if (e.target?.result) onAdd({ area, dataUrl: e.target.result as string }); };
-    reader.readAsDataURL(file);
-  };
-
-  const handleInput = (e: React.ChangeEvent<HTMLInputElement>, area: string) => {
-    const file = e.target.files?.[0];
-    if (file) handleFile(file, area);
-    e.target.value = '';
-  };
-=======
   const getButtonText = () => {
     if (step === -1) return '';
     if (step === 2 && chemicalStep === 1) return 'Next';
@@ -812,8 +715,6 @@ const PhotoCaptureStep = ({
     && step !== 20 && step !== 21 && step !== 22 && step !== 23 && step !== 24
     && !(step === 8 && (symptomPhase === 'transition' || symptomPhase === 'symptoms' || symptomPhase === 'thanks' || symptomPhase === 'result'))
     && !(step === 2 && chemicalStep !== 1);
->>>>>>> 7f6f42d3a862210af52ee4f6472c47f44dc758b8
-
   const activeAreaData = PHOTO_AREAS.find(a => a.id === activeArea)!;
 
   return (
@@ -821,69 +722,6 @@ const PhotoCaptureStep = ({
       <input ref={cameraRef}  type="file" accept="image/*" capture="environment" style={{ display: 'none' }} onChange={e => handleInput(e, activeArea)} />
       <input ref={galleryRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={e => handleInput(e, activeArea)} />
 
-<<<<<<< HEAD
-      {/* Area tabs */}
-      <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
-        {PHOTO_AREAS.map(a => (
-          <button key={a.id} onClick={() => setActiveArea(a.id)} style={{
-            flex: 1, padding: '9px 6px', borderRadius: 12, fontFamily: dm, fontSize: 11, fontWeight: 600,
-            border: `1.5px solid ${activeArea === a.id ? C.cardBorderSel : C.cardBorder}`,
-            background: activeArea === a.id ? C.cardFill : C.card,
-            color: activeArea === a.id ? '#fff' : C.warm,
-            cursor: 'pointer', transition: 'all 0.18s', textAlign: 'center',
-          }}>
-            {a.label}
-          </button>
-        ))}
-      </div>
-
-      {/* Tip */}
-      <div style={{ background: C.gold10, border: `1px solid ${C.goldBorder}`, borderRadius: 13, padding: '12px 14px', marginBottom: 16, display: 'flex', gap: 8, alignItems: 'flex-start' }}>
-        <span style={{ fontSize: 15, flexShrink: 0 }}>💡</span>
-        <p style={{ fontFamily: dm, fontSize: 12, color: C.goldDeep, lineHeight: 1.6, margin: 0, fontWeight: 500 }}>{activeAreaData.tip}</p>
-      </div>
-
-      {/* Action buttons */}
-      <div style={{ display: 'flex', gap: 12, marginBottom: 20 }}>
-        {[
-          { label: 'Take photo', sub: 'Use camera', icon: <Camera size={20} color={C.goldDeep} strokeWidth={1.5} />, action: () => cameraRef.current?.click() },
-          { label: 'From gallery', sub: 'Choose existing', icon: <ImagePlus size={20} color={C.goldDeep} strokeWidth={1.5} />, action: () => galleryRef.current?.click() },
-        ].map(btn => (
-          <button key={btn.label} onClick={btn.action} style={{
-            flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
-            padding: '18px 12px', background: C.card, border: `1.5px solid ${C.cardBorder}`,
-            borderRadius: 16, cursor: 'pointer', transition: 'border-color 0.2s',
-            boxShadow: '0 1px 4px rgba(0,0,0,0.04)',
-          }}
-            onMouseEnter={e => (e.currentTarget.style.borderColor = C.cardBorderSel)}
-            onMouseLeave={e => (e.currentTarget.style.borderColor = C.cardBorder)}
-          >
-            <div style={{ width: 42, height: 42, borderRadius: '50%', background: C.gold10, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              {btn.icon}
-            </div>
-            <span style={{ fontFamily: dm, fontSize: 13, fontWeight: 600, color: C.heading }}>{btn.label}</span>
-            <span style={{ fontFamily: dm, fontSize: 11, color: C.muted }}>{btn.sub}</span>
-          </button>
-        ))}
-      </div>
-
-      {/* Previews */}
-      {photos.length > 0 && (
-        <div>
-          <p style={{ fontFamily: dm, fontSize: 10, fontWeight: 700, letterSpacing: '0.09em', color: C.muted, textTransform: 'uppercase', marginBottom: 10 }}>
-            Added · {photos.length} photo{photos.length > 1 ? 's' : ''}
-          </p>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
-            {photos.map((p, i) => (
-              <div key={i} style={{ position: 'relative', aspectRatio: '1', borderRadius: 12, overflow: 'hidden', border: `1.5px solid ${C.cardBorder}` }}>
-                <img src={p.dataUrl} alt={p.area} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-                <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '5px 7px', background: 'linear-gradient(to top, rgba(0,0,0,0.75), transparent)' }}>
-                  <span style={{ fontFamily: dm, fontSize: 9, color: '#fff', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{p.area}</span>
-                </div>
-                <button onClick={() => onRemove(i)} style={{ position: 'absolute', top: 5, right: 5, width: 20, height: 20, borderRadius: '50%', background: 'rgba(28,28,28,0.75)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-                  <X size={11} color="#fff" />
-                </button>
-=======
           {/* Header with progress - hide on welcome */}
           {step >= 0 && (
             <div className="flex items-center justify-between mb-4 flex-shrink-0">
@@ -905,9 +743,7 @@ const PhotoCaptureStep = ({
                       }}
                     />
                   </div>
-                ))}
->>>>>>> 7f6f42d3a862210af52ee4f6472c47f44dc758b8
-              </div>
+                ))}              </div>
             ))}
           </div>
         </div>
@@ -1269,18 +1105,6 @@ const Onboarding = () => {
             </div>
           )}
 
-<<<<<<< HEAD
-          {/* Photos step — gold CTA when photos added */}
-          {step === 4 && capturedPhotos.length > 0 && (
-            <div style={{ paddingTop: 12 }}>
-              <button onClick={handleNext} disabled={isLoading} style={{
-                width: '100%', height: 52, borderRadius: 14, border: 'none',
-                fontFamily: dm, fontWeight: 700, fontSize: 14, cursor: 'pointer',
-                background: C.ink, color: '#fff',
-                boxShadow: '0 4px 14px rgba(28,28,28,0.2)',
-              }}>
-                {isLoading ? 'Uploading…' : `Save ${capturedPhotos.length} photo${capturedPhotos.length > 1 ? 's' : ''} & finish →`}
-=======
           <div style={{ overflowY: 'auto', flex: 1, paddingBottom: showBottomButton ? '0' : '12px' }}>
             <AnimatePresence mode="wait">
               <motion.div
@@ -2108,9 +1932,7 @@ const Onboarding = () => {
                   canProceed() ? 'bg-primary text-primary-foreground' : 'bg-border text-muted-foreground cursor-not-allowed'
                 }`}
               >
-                {getButtonText()}
->>>>>>> 7f6f42d3a862210af52ee4f6472c47f44dc758b8
-              </button>
+                {getButtonText()}              </button>
             </div>
           )}
 
@@ -2120,9 +1942,6 @@ const Onboarding = () => {
   );
 };
 
-<<<<<<< HEAD
-export default Onboarding;
-=======
 // ─── UNIFIED TRIAGE RESULT (both male and female) ────────────────────────────
 const hasTelogenTriggers = (hp: HealthProfileData): string[] => {
   const triggers: string[] = [];
@@ -2530,4 +2349,4 @@ const LengthCheckPhotos = ({ isShortHair, gender, onComplete, onSkip }: LengthCh
 };
 
 export default Onboarding;
->>>>>>> 7f6f42d3a862210af52ee4f6472c47f44dc758b8
+export default Onboarding;
