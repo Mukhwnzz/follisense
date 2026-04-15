@@ -700,62 +700,6 @@ const Onboarding = () => {
   );
 };
 
-  const getButtonText = () => {
-    if (step === -1) return '';
-    if (step === 2 && chemicalStep === 1) return 'Next';
-    if (step === 6) return '';
-    if (step === 8) {
-      if (symptomPhase === 'transition') return '';
-      if (symptomPhase === 'symptoms') return '';
-      if (symptomPhase === 'thanks') return '';
-      if (symptomPhase === 'result') return '';
-    }
-    if (step === 9) return '';
-    if (step === 11) return 'Take me to my dashboard';
-    return 'Next';
-  };
-
-  // Hide bottom button on welcome, auto-advance screens, photo capture, consent, male-specific screens, and symptom flow
-  const showBottomButton = step !== -1 && step !== 0 && step !== 1 && step !== 6 && step !== 7 && step !== 9
-    && step !== 20 && step !== 21 && step !== 22 && step !== 23 && step !== 24
-    && !(step === 8 && (symptomPhase === 'transition' || symptomPhase === 'symptoms' || symptomPhase === 'thanks' || symptomPhase === 'result'))
-    && !(step === 2 && chemicalStep !== 1);
-  const activeAreaData = PHOTO_AREAS.find(a => a.id === activeArea)!;
-
-  return (
-    <div>
-      <input ref={cameraRef}  type="file" accept="image/*" capture="environment" style={{ display: 'none' }} onChange={e => handleInput(e, activeArea)} />
-      <input ref={galleryRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={e => handleInput(e, activeArea)} />
-
-          {/* Header with progress - hide on welcome */}
-          {step >= 0 && (
-            <div className="flex items-center justify-between mb-4 flex-shrink-0">
-              <button onClick={handleBack} className="p-2 -ml-2 text-foreground">
-                <ArrowLeft size={22} strokeWidth={1.8} />
-              </button>
-              <div className="flex gap-1.5">
-                {Array.from({ length: totalProgressSegments }).map((_, i) => (
-                  <div
-                    key={i}
-                    className="h-1 rounded-full bg-border overflow-hidden"
-                    style={{ width: '28px' }}
-                  >
-                    <div
-                      className="h-full bg-primary rounded-full"
-                      style={{
-                        width: i <= activeSegment ? '100%' : '0%',
-                        transition: 'width 300ms ease-out',
-                      }}
-                    />
-                  </div>
-                ))}              </div>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
 
 // ─── MAIN COMPONENT ───────────────────────────────────────────────────────────
 const Onboarding = () => {
