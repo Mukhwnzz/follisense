@@ -1403,7 +1403,6 @@ const Onboarding = () => {
             </div>
           )}
 
-        </div>
       </div>
     </div>
   );
