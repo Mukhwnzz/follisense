@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowLeft, HelpCircle, ChevronDown, ChevronLeft,
   ChevronRight, ChevronUp, Camera, ImagePlus, X, Sparkles,
+  Check, Eye, Stethoscope, ShieldCheck,
 } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 import { supabase } from '@/lib/supabaseClient';
@@ -41,6 +42,10 @@ import refMaleFront from '@/assets/ref-male-front.jpg';
 import scalpSideMaleB from '@/assets/scalp-side-male-b.jpeg';
 import scalpBackMale from '@/assets/scalp-back-male.png';
 import refMaleTop from '@/assets/ref-male-top.png';
+
+const dm = "'DM Sans', sans-serif";
+const TOTAL_SCREENS = 12;
+
 const hairTypes = [
   { id: 'type4', label: 'Type 4: Coily', desc: 'Tight coils or zig-zag pattern, dense texture, significant shrinkage' },
   { id: 'type3', label: 'Type 3: Curly', desc: 'Visible curl pattern, S-shaped curls, looser texture' },
