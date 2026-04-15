@@ -702,9 +702,6 @@ const Onboarding = () => {
     && !(step === 2 && chemicalStep !== 1);
 
   const activeSegment = getProgressSegment();
-    }
-    return step;
-  })();
 
   return (
     <div className="min-h-screen bg-background flex flex-col" style={{ maxWidth: 480, margin: '0 auto' }}>
