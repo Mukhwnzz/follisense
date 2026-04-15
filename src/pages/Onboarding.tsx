@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowLeft, HelpCircle, ChevronDown, ChevronLeft,
   ChevronRight, ChevronUp, Camera, ImagePlus, X, Sparkles,
-  Check, Eye, Stethoscope, ShieldCheck,
+  Check, Eye, Stethoscope, ShieldCheck, Image as ImageIcon,
 } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 import { supabase } from '@/lib/supabaseClient';
@@ -52,7 +52,7 @@ const hairTypes = [
   { id: 'unsure', label: 'Not sure', desc: "That's okay. We'll use the most inclusive settings" },
 ];
 
-interface SubTypeOption { id: string; label: string; }
+interface SubTypeOption { id: string; label: string; image?: string; }
 const subTypes: Record<string, SubTypeOption[]> = {
   type4: [{ id: '4a', label: '4A' }, { id: '4b', label: '4B' }, { id: '4c', label: '4C' }, { id: 'mixed', label: 'Mixed' }, { id: 'not-sure', label: 'Not sure' }],
   type3: [{ id: '3a', label: '3A' }, { id: '3b', label: '3B' }, { id: '3c', label: '3C' }, { id: 'mixed', label: 'Mixed' }, { id: 'not-sure', label: 'Not sure' }],
@@ -127,6 +127,13 @@ const chemicalOptions = [
   { id: 'growing-out', label: 'Previously, growing out' },
   { id: 'unsure', label: 'Not sure' },
 ];
+const chemicalTypeOptions = ['Relaxer', 'Texturiser', 'Keratin treatment', 'Colour / bleach', 'Other'];
+const lastTreatmentOptions = ['Within the last month', '1-3 months ago', '3-6 months ago', '6-12 months ago', 'Over a year ago'];
+const chemicalFreqOptions = ['Every 4-6 weeks', 'Every 2-3 months', 'Every 3-6 months', 'Twice a year or less'];
+
+const hairType4Hero = 'https://i.pinimg.com/1200x/35/a3/1c/35a31cd46add2f0f7c933f348c60420e.jpg';
+const hairType3Hero = 'https://i.pinimg.com/736x/99/59/67/995967923455cf9abd0b8ef9d4e4ba81.jpg';
+
 // ─── SHARED STYLE HELPERS ────────────────────────────────────────────────────
 const card = (selected: boolean): React.CSSProperties => ({
   width: '100%', textAlign: 'left', padding: '13px 15px', borderRadius: 14,
