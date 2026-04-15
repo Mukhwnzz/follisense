@@ -748,6 +748,17 @@ const Onboarding = () => {
           </div>
         )}
 
+          <div style={{ overflowY: 'auto', flex: 1, paddingBottom: showBottomButton ? '0' : '12px' }}>
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={step === 8 ? `${step}-${symptomPhase}-${symptomIndex}-${symptomAck ? 'ack' : ''}` : step === 2 ? `${step}-${chemicalStep}` : step}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.2 }}
+                className="pt-2 pb-4"
+              >
+
                 {step === 1 && (
                   <div>
                     <h2 className="text-lg font-semibold text-foreground mb-1">What's your hair type?</h2>
