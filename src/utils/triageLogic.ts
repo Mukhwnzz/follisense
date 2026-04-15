@@ -132,6 +132,13 @@ export const getTriageGuidance = (
   }
 
   if (risk === 'red') {
+    // Check for crown thinning + tenderness combination (CCCA risk)
+    if (isSymptomPresent(current.crownThinning as string | undefined) && isSymptomPresent(current.tenderness as string | undefined)) {
+      guidance.push({
+        heading: 'Crown thinning with tenderness detected',
+        message: 'Thinning at the crown combined with scalp tenderness can be an early sign of a condition that benefits from prompt professional assessment. We recommend seeing a dermatologist or trichologist soon.',
+      });
+    }
     guidance.push({
       heading: 'Professional review recommended',
       message: 'Based on your symptom patterns, we recommend consulting a trichologist or dermatologist. Your clinician summary has been generated automatically.',
