@@ -701,18 +701,7 @@ const Onboarding = () => {
     && !(step === 8 && (symptomPhase === 'transition' || symptomPhase === 'symptoms' || symptomPhase === 'thanks' || symptomPhase === 'result'))
     && !(step === 2 && chemicalStep !== 1);
 
-  const activeSegment = (() => getProgressSegment())();
-  const activeSegment = (() => {
-    if (isMale) {
-      if (step === 0) return 0;
-      if (step === 20) return 1;
-      if (step === 21) return 2;
-      if (step === 22) return 3;
-      if (step === 23) return 4;
-      if (step === 24) return 5;
-      if (step === 6 || step === 7) return 6;
-      if (step === 8 || step === 9 || step === 11) return 7;
-      return step;
+  const activeSegment = getProgressSegment();
     }
     return step;
   })();
