@@ -102,7 +102,7 @@ const StylistOnboarding = () => {
       setStylistMode(true);
       navigate('/stylist');
 
-    } catch (err ) {
+    } catch (err: any) {
       console.error('Stylist onboarding save error:', err);
       toast({
         title: 'Could not save your profile',

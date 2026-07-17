@@ -45,7 +45,7 @@ const StylistLoginPage = () => {
       setStylistMode(true);
       navigate('/stylist');
 
-    } catch (err ) {
+    } catch (err: any) {
       console.error('Stylist login error:', err);
       // Show a friendly message for wrong password / user not found
       if (err?.message?.toLowerCase().includes('invalid login credentials') ||

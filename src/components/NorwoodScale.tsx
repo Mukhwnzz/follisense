@@ -1,82 +1,102 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Check } from 'lucide-react';
 
-import stage1 from '@/assets/norwood/stage-1.png';
-import stage2 from '@/assets/norwood/stage-2.png';
-import stage3 from '@/assets/norwood/stage-3.png';
-import stage4 from '@/assets/norwood/stage-4.png';
-import stage5 from '@/assets/norwood/stage-5.png';
-import stage6 from '@/assets/norwood/stage-6.png';
-import stage7 from '@/assets/norwood/stage-7.png';
+import scalpImg1 from '@/assets/norwood_v2_stage_1.png';
+import scalpImg2 from '@/assets/norwood_v2_stage_2.png';
+import scalpImg3 from '@/assets/norwood_v2_stage_3.png';
+import scalpImg4 from '@/assets/norwood_v2_stage_4.png';
+import scalpImg5 from '@/assets/norwood_v2_stage_5.png';
+import scalpImg6 from '@/assets/norwood_v2_stage_6.png';
+import scalpImg7 from '@/assets/norwood_v2_stage_7.png';
+
+const sage   = '#7fa896';
+const sageB  = 'rgba(124,154,142,0.08)';
+const border = '#E8DED1';
+const itemBg = '#F5F0EB';
+const ink    = '#2d2d2d';
+const muted  = '#9e9e9e';
+
+// Per-image crop tuning: adjust `pos` (objectPosition) and `zoom` (scale) per
+// stage until the heads sit at roughly the same size and position in every
+// card. pos examples: 'center top', 'center 20%', '50% 10%'. zoom 1 = as-is,
+// 1.2 = 20% tighter crop, 0.9 not possible with cover (use pos instead).
+const stages = [
+  { id: '1', label: 'Stage 1', desc: 'Full hairline, no recession',            img: scalpImg1, pos: 'center top', zoom: 1 },
+  { id: '2', label: 'Stage 2', desc: 'Slight recession at temples',            img: scalpImg2, pos: 'center top', zoom: 1 },
+  { id: '3', label: 'Stage 3', desc: 'Deeper temple recession',                img: scalpImg3, pos: 'center top', zoom: 1 },
+  { id: '4', label: 'Stage 4', desc: 'Significant recession + crown thinning', img: scalpImg4, pos: 'center top', zoom: 1 },
+  { id: '5', label: 'Stage 5', desc: 'Large bald areas, narrow bridge',        img: scalpImg5, pos: 'center top', zoom: 1 },
+  { id: '6', label: 'Stage 6', desc: 'Bridge of hair gone',                    img: scalpImg6, pos: 'center top', zoom: 1 },
+  { id: '7', label: 'Stage 7', desc: 'Only sides and back remain',             img: scalpImg7, pos: 'center top', zoom: 1 },
+];
 
 interface NorwoodScaleProps {
   selected: string;
   onSelect: (stage: string) => void;
 }
 
-const stages = [
-  { id: '1', label: 'Stage 1', desc: 'Full hairline, no recession', image: stage1 },
-  { id: '2', label: 'Stage 2', desc: 'Slight recession at temples', image: stage2 },
-  { id: '3', label: 'Stage 3', desc: 'Deeper recession, M shape forming', image: stage3 },
-  { id: '4', label: 'Stage 4', desc: 'Noticeable recession and crown thinning', image: stage4 },
-  { id: '5', label: 'Stage 5', desc: 'Front and crown thinning significantly', image: stage5 },
-  { id: '6', label: 'Stage 6', desc: 'Front and crown merging', image: stage6 },
-  { id: '7', label: 'Stage 7', desc: 'Hair only on sides and back', image: stage7 },
-];
-
 const NorwoodScale = ({ selected, onSelect }: NorwoodScaleProps) => {
+  const [expanded, setExpanded] = useState<string | null>(null);
+
   return (
     <div>
-      <h2 className="text-lg font-semibold text-foreground mb-1">Where would you place your hairline right now?</h2>
-      <p className="text-sm text-muted-foreground mb-5">This helps us track any changes over time.</p>
+      <h2 style={{ fontSize: '1.125rem', fontWeight: 600, color: ink, marginBottom: 4 }}>
+        What does your hairline look like?
+      </h2>
+      <p style={{ fontSize: '0.75rem', color: muted, marginBottom: 20, lineHeight: 1.5 }}>
+        Tap the stage that best matches your current hairline. This helps us track changes over time.
+      </p>
 
-      <div className="grid grid-cols-2 gap-3 mb-4">
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
         {stages.map(stage => {
-          const isSelected = selected === stage.id;
+          const isSel = selected === stage.id;
+          const isExp = expanded === stage.id;
           return (
-            <motion.button
-              key={stage.id}
-              whileTap={{ scale: 0.97 }}
-              onClick={() => onSelect(stage.id)}
-              className="text-left relative rounded-xl overflow-hidden cursor-pointer"
-              style={{
-                border: isSelected ? '2px solid hsl(var(--primary))' : '1.5px solid hsl(var(--border))',
-                background: isSelected ? 'hsl(var(--primary) / 0.08)' : 'hsl(var(--card))',
-                padding: 0,
-              }}
+            <motion.div key={stage.id} layout
+              style={{ borderRadius: 14, overflow: 'hidden', border: `2px solid ${isSel ? sage : border}`, background: isSel ? sageB : itemBg, cursor: 'pointer', transition: 'border-color 0.15s, background 0.15s' }}
+              onClick={() => { onSelect(stage.id); setExpanded(isExp ? null : stage.id); }}
             >
-              {isSelected && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.5 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="absolute top-2 right-2 z-10"
-                >
-                  <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center">
-                    <Check size={12} color="#fff" strokeWidth={3} />
+              {/* Image */}
+              <div style={{ height: 150, overflow: 'hidden', position: 'relative', background: '#e0d8d0' }}>
+                <img src={stage.img} alt={stage.label}
+                  style={{
+                    width: '100%', height: '100%', objectFit: 'cover',
+                    objectPosition: stage.pos,
+                    transform: stage.zoom !== 1 ? `scale(${stage.zoom})` : undefined,
+                    transformOrigin: 'center top',
+                    display: 'block',
+                  }} />
+                {isSel && (
+                  <div style={{ position: 'absolute', top: 6, right: 6, width: 20, height: 20, borderRadius: '50%', background: sage, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Check size={11} color="#fff" strokeWidth={2.5} />
                   </div>
-                </motion.div>
-              )}
-              <img
-                src={stage.image}
-                alt={stage.label}
-                className="w-full rounded-t-lg"
-                style={{ objectFit: 'cover', display: 'block' }}
-              />
-              <div className="px-2.5 py-2">
-                <p className="font-semibold text-foreground text-xs">{stage.label}</p>
-                <p className="text-muted-foreground leading-tight" style={{ fontSize: '10px' }}>{stage.desc}</p>
+                )}
               </div>
-            </motion.button>
+
+              {/* Label */}
+              <div style={{ padding: '6px 8px 8px' }}>
+                <p style={{ fontSize: '0.75rem', fontWeight: 700, color: isSel ? sage : ink, margin: '0 0 1px' }}>{stage.label}</p>
+                <p style={{ fontSize: '0.65rem', color: muted, margin: 0, lineHeight: 1.3 }}>{stage.desc}</p>
+              </div>
+            </motion.div>
           );
         })}
       </div>
 
-      <button
-        onClick={() => onSelect('1')}
-        className="w-full text-center text-sm text-muted-foreground py-2 underline underline-offset-2"
-      >
-        Not sure — default to Stage 1
-      </button>
+      {selected && (
+        <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
+          style={{ marginTop: 16, background: `${sage}15`, border: `1.5px solid ${sage}40`, borderRadius: 12, padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 8 }}>
+          <Check size={14} color={sage} strokeWidth={2.5} />
+          <p style={{ fontSize: '0.8rem', color: sage, fontWeight: 600, margin: 0 }}>
+            {stages.find(s => s.id === selected)?.label} selected: {stages.find(s => s.id === selected)?.desc}
+          </p>
+        </motion.div>
+      )}
+
+      <p style={{ fontSize: '0.7rem', color: muted, marginTop: 12, lineHeight: 1.5, textAlign: 'center' }}>
+        Not sure? Pick the closest match. You can update this later.
+      </p>
     </div>
   );
 };

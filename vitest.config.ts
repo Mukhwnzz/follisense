@@ -4,7 +4,7 @@ import path from "path";
 
 // ...existing code...
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react() as any],
   test: {
     environment: "jsdom",
     globals: true,

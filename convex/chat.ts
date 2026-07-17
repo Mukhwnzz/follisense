@@ -28,6 +28,16 @@ export const createSession = mutation({
   },
 });
 
+export const saveSessionTitle = mutation({
+  args: {
+    sessionId: v.id("chatSessions"),
+    title: v.string(),
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.sessionId, { title: args.title });
+  },
+});
+
 export const addUserMessage = mutation({
   args: {
     sessionId: v.id("chatSessions"),
